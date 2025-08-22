@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
-import { logout } from "../store/slices/authSlice";
+import { logout } from "../store/slices/auth";
 import { toast } from "./ui/use-toast";
-import { selectTranslations } from "../store/slices/languageSlice";
+import { selectTranslations } from "../store/slices/language";
 import { Loader2 } from "lucide-react";
 
 export type UserRole =
