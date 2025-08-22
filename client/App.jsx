@@ -1,0 +1,411 @@
+/**
+ * Main App Component - Application Router and Layout
+ * 
+ * This component handles:
+ * - React Router setup for SPA navigation
+ * - Redux store provider setup
+ * - Global context providers (OTP, System Config)
+ * - Lazy loading of page components for performance
+ * - Role-based routing and authentication
+ * - Global error boundaries and message handling
+ */
+
+import React, { Suspense, lazy } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Provider } from "react-redux";
+import { Toaster } from "./components/ui/toaster";
+import { store } from "./store";
+import ErrorBoundary from "./components/ErrorBoundary";
+import AppInitializer from "./components/AppInitializer";
+import GlobalMessageHandler from "./components/GlobalMessageHandler";
+import AuthErrorHandler from "./components/AuthErrorHandler";
+import UnifiedLayout from "./components/layouts/UnifiedLayout";
+import OtpProvider from "./contexts/OtpContext";
+import { SystemConfigProvider } from "./contexts/SystemConfigContext";
+import RoleBasedRoute from "./components/RoleBasedRoute";
+import RoleBasedDashboard from "./components/RoleBasedDashboard";
+import { Loader2 } from "lucide-react";
+
+// Lazy load components for better performance and code splitting
+const Index = lazy(() => import("./pages/Index"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const SetPassword = lazy(() => import("./pages/SetPassword"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Unauthorized = lazy(() => import("./pages/Unauthorized"));
+
+// Role-specific dashboards - loaded on demand
+const CitizenDashboard = lazy(() => import("./pages/CitizenDashboard"));
+const WardOfficerDashboard = lazy(() => import("./pages/WardOfficerDashboard"));
+const MaintenanceDashboard = lazy(() => import("./pages/MaintenanceDashboard"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+
+// Complaint management pages
+const ComplaintsList = lazy(() => import("./pages/ComplaintsList"));
+const ComplaintDetails = lazy(() => import("./pages/ComplaintDetails"));
+const CreateComplaint = lazy(() => import("./pages/CreateComplaint"));
+const CitizenComplaintForm = lazy(() => import("./pages/CitizenComplaintForm"));
+const GuestComplaintForm = lazy(() => import("./pages/GuestComplaintForm"));
+const UnifiedComplaintForm = lazy(() => import("./pages/UnifiedComplaintForm"));
+const QuickComplaintPage = lazy(() => import("./pages/QuickComplaintPage"));
+const GuestTrackComplaint = lazy(() => import("./pages/GuestTrackComplaint"));
+const GuestServiceRequest = lazy(() => import("./pages/GuestServiceRequest"));
+const GuestDashboard = lazy(() => import("./pages/GuestDashboard"));
+
+// Ward Officer pages
+const WardTasks = lazy(() => import("./pages/WardTasks"));
+const WardManagement = lazy(() => import("./pages/WardManagement"));
+
+// Maintenance Team pages
+const MaintenanceTasks = lazy(() => import("./pages/MaintenanceTasks"));
+const TaskDetails = lazy(() => import("./pages/TaskDetails"));
+
+// Admin pages
+const AdminUsers = lazy(() => import("./pages/AdminUsers"));
+const UnifiedReports = lazy(() => import("./pages/UnifiedReports"));
+const AdminConfig = lazy(() => import("./pages/AdminConfig"));
+const AdminLanguages = lazy(() => import("./pages/AdminLanguages"));
+
+// Communication
+const Messages = lazy(() => import("./pages/Messages"));
+
+// Settings
+const Settings = lazy(() => import("./pages/Settings"));
+
+/**
+ * Loading fallback component shown during lazy loading
+ */
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center space-x-2">
+      <Loader2 className="h-6 w-6 animate-spin" />
+      <span>Loading...</span>
+    </div>
+  </div>
+);
+
+/**
+ * Main App component with routing and providers
+ */
+const App = () => {
+  return (
+    <Provider store={store}>
+      <ErrorBoundary>
+        <SystemConfigProvider>
+          <AppInitializer>
+            <OtpProvider>
+              <Router>
+                <div className="min-h-screen bg-gray-50">
+                  <Suspense fallback={<LoadingFallback />}>
+                    <Routes>
+                      {/* Public routes - accessible without authentication */}
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route
+                        path="/set-password/:token"
+                        element={<SetPassword />}
+                      />
+                      <Route
+                        path="/guest/complaint"
+                        element={<GuestComplaintForm />}
+                      />
+                      <Route
+                        path="/complaint"
+                        element={<QuickComplaintPage />}
+                      />
+                      <Route
+                        path="/guest/track"
+                        element={<GuestTrackComplaint />}
+                      />
+                      <Route
+                        path="/guest/service-request"
+                        element={<GuestServiceRequest />}
+                      />
+                      <Route
+                        path="/guest/dashboard"
+                        element={<GuestDashboard />}
+                      />
+                      <Route path="/unauthorized" element={<Unauthorized />} />
+
+                      {/* Home route - accessible to all */}
+                      <Route
+                        path="/"
+                        element={
+                          <UnifiedLayout>
+                            <Index />
+                          </UnifiedLayout>
+                        }
+                      />
+
+                      {/* Dashboard routes - Role-based unified routing */}
+                      <Route
+                        path="/dashboard"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute
+                              allowedRoles={[
+                                "CITIZEN",
+                                "WARD_OFFICER",
+                                "MAINTENANCE_TEAM",
+                                "ADMINISTRATOR",
+                              ]}
+                            >
+                              <RoleBasedDashboard />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+
+                      {/* Complaint management routes */}
+                      <Route
+                        path="/complaints"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute
+                              allowedRoles={[
+                                "CITIZEN",
+                                "WARD_OFFICER",
+                                "MAINTENANCE_TEAM",
+                                "ADMINISTRATOR",
+                              ]}
+                            >
+                              <ComplaintsList />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      <Route
+                        path="/complaints/create"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute
+                              allowedRoles={[
+                                "CITIZEN",
+                                "WARD_OFFICER",
+                                "MAINTENANCE_TEAM",
+                                "ADMINISTRATOR",
+                              ]}
+                            >
+                              <CreateComplaint />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      <Route
+                        path="/complaints/citizen-form"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute allowedRoles={["CITIZEN"]}>
+                              <QuickComplaintPage />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      <Route
+                        path="/complaints/new"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute allowedRoles={["CITIZEN"]}>
+                              <QuickComplaintPage />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      <Route
+                        path="/complaints/:id"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute
+                              allowedRoles={[
+                                "CITIZEN",
+                                "WARD_OFFICER",
+                                "MAINTENANCE_TEAM",
+                                "ADMINISTRATOR",
+                              ]}
+                            >
+                              <ComplaintDetails />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+
+                      {/* Ward Officer specific routes */}
+                      <Route
+                        path="/tasks"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute allowedRoles={["WARD_OFFICER"]}>
+                              <WardTasks />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      <Route
+                        path="/ward"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute allowedRoles={["WARD_OFFICER"]}>
+                              <WardManagement />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+
+                      {/* Maintenance Team specific routes */}
+                      <Route
+                        path="/maintenance"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute allowedRoles={["MAINTENANCE_TEAM"]}>
+                              <MaintenanceTasks />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      <Route
+                        path="/tasks/:id"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute allowedRoles={["MAINTENANCE_TEAM"]}>
+                              <TaskDetails />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+
+                      {/* Communication routes */}
+                      <Route
+                        path="/messages"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute
+                              allowedRoles={[
+                                "WARD_OFFICER",
+                                "MAINTENANCE_TEAM",
+                              ]}
+                            >
+                              <Messages />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+
+                      {/* Unified Reports route */}
+                      <Route
+                        path="/reports"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute
+                              allowedRoles={[
+                                "WARD_OFFICER",
+                                "ADMINISTRATOR",
+                                "MAINTENANCE_TEAM",
+                              ]}
+                            >
+                              <UnifiedReports />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+
+                      {/* Admin specific routes */}
+                      <Route
+                        path="/admin/users"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute allowedRoles={["ADMINISTRATOR"]}>
+                              <AdminUsers />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      <Route
+                        path="/admin/config"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute allowedRoles={["ADMINISTRATOR"]}>
+                              <AdminConfig />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      <Route
+                        path="/admin/languages"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute allowedRoles={["ADMINISTRATOR"]}>
+                              <AdminLanguages />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      {/* Redirect old analytics routes to unified reports */}
+                      <Route
+                        path="/admin/analytics"
+                        element={<Navigate to="/reports" replace />}
+                      />
+                      <Route
+                        path="/admin/reports-analytics"
+                        element={<Navigate to="/reports" replace />}
+                      />
+
+                      {/* Profile and Settings - Available to all authenticated users */}
+                      <Route
+                        path="/profile"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute
+                              allowedRoles={[
+                                "CITIZEN",
+                                "WARD_OFFICER",
+                                "MAINTENANCE_TEAM",
+                                "ADMINISTRATOR",
+                              ]}
+                            >
+                              <Profile />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+                      <Route
+                        path="/settings"
+                        element={
+                          <UnifiedLayout>
+                            <RoleBasedRoute
+                              allowedRoles={[
+                                "CITIZEN",
+                                "WARD_OFFICER",
+                                "MAINTENANCE_TEAM",
+                                "ADMINISTRATOR",
+                              ]}
+                            >
+                              <Settings />
+                            </RoleBasedRoute>
+                          </UnifiedLayout>
+                        }
+                      />
+
+                      {/* Catch-all route - redirect to home */}
+                      <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                  </Suspense>
+                </div>
+                {/* Global UI components */}
+                <Toaster />
+                <GlobalMessageHandler />
+                <AuthErrorHandler />
+              </Router>
+            </OtpProvider>
+          </AppInitializer>
+        </SystemConfigProvider>
+      </ErrorBoundary>
+    </Provider>
+  );
+};
+
+export default App;
