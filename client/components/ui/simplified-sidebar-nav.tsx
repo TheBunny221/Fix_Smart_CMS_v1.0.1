@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
-import { toggleSidebarCollapsed } from "../../store/slices/uiSlice";
+import { toggleSidebarCollapsed } from "../../store/slices/ui";
 import { Button } from "./button";
 import { cn } from "../../lib/utils";
 import {
@@ -39,11 +39,11 @@ export const SimplifiedSidebarNav: React.FC<SimplifiedSidebarNavProps> = ({
   const dispatch = useAppDispatch();
   const location = useLocation();
   const { user } = useAppSelector((state) => state.auth);
-  const { translations } = useAppSelector((state) => state.language);
-  const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
+  const translations = useAppSelector((state) => state.language.translations);
+  const sidebarCollapsed = useAppSelector((state) => state.ui.sidebarCollapsed);
 
   // Use UI slice state instead of local state
-  const isCollapsed = isSidebarCollapsed;
+  const isCollapsed = sidebarCollapsed;
 
   const navigationItems: SidebarNavItem[] = [
     {
