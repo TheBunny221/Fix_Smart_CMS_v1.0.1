@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { useAppDispatch } from "../store/hooks";
-import { setCredentials } from "../store/slices/authSlice";
+import { setCredentials } from "../store/slices/auth";
 import {
   useVerifyOTPLoginMutation,
   useVerifyRegistrationOTPMutation,
