@@ -16,19 +16,24 @@ type ComplaintType =
   | "OTHERS";
 
 type Priority = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+// Local type definition for file attachments
+interface FileAttachment {
+  id: string;
+  file: File;
+}
 import {
   submitGuestComplaint,
   clearGuestData,
-  FileAttachment,
-} from "../store/slices/guestSlice";
+} from "../store/slices/guest";
 import {
   useGetWardsQuery,
   useVerifyGuestOtpMutation,
   useGenerateCaptchaQuery,
   useLazyGenerateCaptchaQuery,
 } from "../store/api/guestApi";
-import { selectAuth, setCredentials } from "../store/slices/authSlice";
-import { showSuccessToast, showErrorToast } from "../store/slices/uiSlice";
+import { setCredentials } from "../store/slices/auth";
+// import { showSuccessToast, showErrorToast } from "../store/slices/ui";
 import { useToast } from "../hooks/use-toast";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -57,7 +62,7 @@ import {
   AlertCircle,
   X,
 } from "lucide-react";
-import { createComplaint } from "@/store/slices/complaintsSlice";
+import { createComplaint } from "../store/slices/complaints";
 
 interface QuickComplaintFormProps {
   onSuccess?: (complaintId: string) => void;
@@ -233,13 +238,11 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
      
       if (isLoading) return; // 👈 
       if (!captcha || !captchaId) {
-        dispatch(
-          showErrorToast(
-            translations?.forms?.invalidCaptcha || "Invalid CAPTCHA",
-            translations?.forms?.enterCaptcha ||
-              "Please enter the CAPTCHA code",
-          ),
-        );
+        toast({
+          title: translations?.forms?.invalidCaptcha || "Invalid CAPTCHA",
+          description: translations?.forms?.enterCaptcha || "Please enter the CAPTCHA code",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -250,13 +253,11 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
         !formData.area ||
         !formData.description
       ) {
-        dispatch(
-          showErrorToast(
-            translations?.forms?.requiredField || "Required Field",
-            translations?.forms?.requiredField ||
-              "Please fill all required fields",
-          ),
-        );
+        toast({
+          title: translations?.forms?.requiredField || "Required Field",
+          description: translations?.forms?.requiredField || "Please fill all required fields",
+          variant: "destructive",
+        });
         return;
       }
 
