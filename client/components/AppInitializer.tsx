@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { useSystemConfig } from "../contexts/SystemConfigContext";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
-import { setCredentials, clearCredentials } from "../store/slices/authSlice";
-import { initializeLanguage } from "../store/slices/languageSlice";
-import { initializeTheme, setOnlineStatus } from "../store/slices/uiSlice";
+import { setCredentials, clearCredentials } from "../store/slices/auth";
+import { initializeLanguage } from "../store/slices/language";
+import { setTheme } from "../store/slices/ui";
 import { useGetCurrentUserQuery } from "../store/api/authApi";
 
 // Error logging utility - avoid accessing error.data to prevent response body issues
@@ -53,7 +53,8 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       try {
         // Initialize theme
         try {
-          dispatch(initializeTheme());
+          const savedTheme = localStorage.getItem("theme") || "light";
+          dispatch(setTheme(savedTheme));
         } catch (themeError) {
           console.warn("Theme initialization failed:", themeError);
         }
@@ -140,42 +141,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
           // If still loading, we'll wait for the query to complete
         }
 
-        // Setup online/offline listeners with error handling
-        const handleOnline = () => {
-          try {
-            dispatch(setOnlineStatus(true));
-          } catch (error) {
-            console.warn("Failed to update online status:", error);
-          }
-        };
-
-        const handleOffline = () => {
-          try {
-            dispatch(setOnlineStatus(false));
-          } catch (error) {
-            console.warn("Failed to update offline status:", error);
-          }
-        };
-
-        try {
-          window.addEventListener("online", handleOnline);
-          window.addEventListener("offline", handleOffline);
-        } catch (listenerError) {
-          console.warn(
-            "Failed to add online/offline listeners:",
-            listenerError,
-          );
-        }
-
-        // Cleanup function
-        return () => {
-          try {
-            window.removeEventListener("online", handleOnline);
-            window.removeEventListener("offline", handleOffline);
-          } catch (cleanupError) {
-            console.warn("Failed to remove event listeners:", cleanupError);
-          }
-        };
+        // App initialization completed
       } finally {
         // Only set initialized when we're done with the user query (or don't need it)
         if (
