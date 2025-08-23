@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import QuickComplaintForm from "../components/QuickComplaintForm";
 
-const Index: React.FC = () => {
+const Index = () => {
   const { translations, currentLanguage } = useAppSelector(
     (state) => state.language,
   );
@@ -30,274 +30,205 @@ const Index: React.FC = () => {
   const { appName, getConfig } = useSystemConfig();
   const navigate = useNavigate();
 
-  // Form state
-  const [isFormExpanded, setIsFormExpanded] = useState(false);
-
   // Redirect authenticated users to dashboard
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate("/dashboard", { replace);
+      navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
   // Show loading if translations not ready
-  if (translations) {
+  if (!translations) {
     return (
-      
-        
-          
-          
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">
             {translations?.common?.loading || "Loading..."}
-          
-        
-      
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       {/* Hero Section */}
-      
-        
-          
-            
-              
-              
-                {translations?.nav?.home || `${appName} Portal`}
-              
-            
-            
+      <section className="py-20 px-4">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="mb-8">
+            <h1 className="text-5xl font-bold text-gray-900 mb-4">
+              {translations?.nav?.home || `${appName} Portal`}
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               {translations?.guest?.guestSubmissionDescription ||
-                `Welcome to the ${appName} Complaint Management System. Submit civic issues, track progress, and help build a better city together.`}
-            
+                "Empowering citizens with digital governance solutions for a smarter, more connected community."}
+            </p>
+          </div>
 
-            
-              {/**  setIsFormExpanded(isFormExpanded)}
-                size="lg"
-                className="bg-primary hover:bg-primary/90"
-              >
-                 
-                  
-                  {translations?.complaints?.registerComplaint ||
-                    "Register Complaint"}
-                
-              **/}
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Button asChild size="lg" className="text-lg px-8 py-6">
+              <Link to="/guest/complaint">
+                <FileText className="w-5 h-5 mr-2" />
+                {translations?.guest?.submitComplaint || "Submit Complaint"}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
+              <Link to="/guest/track">
+                <BarChart3 className="w-5 h-5 mr-2" />
+                {translations?.guest?.trackComplaint || "Track Complaint"}
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
+              <Link to="/login">
+                <User className="w-5 h-5 mr-2" />
+                {translations?.auth?.login || "Login"}
+              </Link>
+            </Button>
+          </div>
 
-               setIsFormExpanded(isFormExpanded)}
-                size="lg"
-                className="bg-primary hover:bg-primary/90"
-                variant="outline"
-              >
-                
-                {translations?.complaints?.registerComplaint ||
-                  "Register Complaint"}
-              
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <Card className="border-none shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center text-blue-600">
+                  <Clock className="w-8 h-8 mr-3" />
+                  {translations?.features?.quickService || "Quick Service"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  {translations?.features?.quickServiceDesc ||
+                    "Submit and track complaints efficiently with our streamlined digital platform."}
+                </p>
+              </CardContent>
+            </Card>
 
-              {isAuthenticated ? (
-                
-                  
-                    
-                      
-                      {translations?.nav?.login ||
-                        translations?.auth?.login ||
-                        "Login"}
-                    
-                  
-                  
-                    
-                      
-                      {translations?.nav?.trackStatus || "Track Complaint"}
-                    
-                  
-                
-              ) : (
-                
-                  
-                    
-                      
-                      {translations?.nav?.dashboard || "Dashboard"}
-                    
-                  
-                  
-                    
-                      
-                      {translations?.nav?.myComplaints || "My Complaints"}
-                    
-                  
-                
-              )}
-            
-          
-        
-      
+            <Card className="border-none shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center text-green-600">
+                  <Shield className="w-8 h-8 mr-3" />
+                  {translations?.features?.transparent || "Transparent Process"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  {translations?.features?.transparentDesc ||
+                    "Real-time updates and transparent tracking of your service requests."}
+                </p>
+              </CardContent>
+            </Card>
 
-      {/* Complaint Registration Form */}
-      {isFormExpanded && (
-        
-           {
-              setIsFormExpanded(false);
-            }}
-            onClose={() => setIsFormExpanded(false)}
-          />
-        
-      )}
+            <Card className="border-none shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center text-purple-600">
+                  <CheckCircle className="w-8 h-8 mr-3" />
+                  {translations?.features?.efficient || "Efficient Resolution"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  {translations?.features?.efficientDesc ||
+                    "Direct communication with relevant departments for faster resolution."}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
 
-      {/* Main Content */}
-      
-        
-          {/* Contact Information */}
-          
-            
-              
-                
-                
-                  {translations?.guest?.supportContact ||
-                    "Need Help? Contact Us"}
-                
-              
-            
-            
-              
-                
-                  
-                  
-                    
-                      {translations?.guest?.supportContact || "Helpline"}
-                    
-                    
-                      {getConfig("CONTACT_HELPLINE", "1800-XXX-XXXX")}
-                    
-                  
-                
-                
-                  
-                  
-                    
-                      {translations?.auth?.email || "Email Support"}
-                    
-                    
-                      {getConfig("CONTACT_EMAIL", "support@cochinsmartcity.in")}
-                    
-                  
-                
-                
-                  
-                  
-                    
-                      {translations?.common?.time || "Office Hours"}
-                    
-                    
-                      {getConfig("CONTACT_OFFICE_HOURS",
-                        "Monday - Friday,
-                      )}
-                    
-                  
-                
-                
-                  
-                  
-                    
-                      {translations?.complaints?.location || "Office Location"}
-                    
-                    
-                      {getConfig(
-                        "CONTACT_OFFICE_ADDRESS",
-                        "Cochin Corporation Office",
-                      )}
-                    
-                  
-                
-              
-            
-          
+      {/* Quick Complaint Form Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              {translations?.guest?.quickComplaint || "Quick Complaint"}
+            </h2>
+            <p className="text-gray-600">
+              {translations?.guest?.quickComplaintDesc ||
+                "Submit your complaint quickly using our simplified form."}
+            </p>
+          </div>
+          <QuickComplaintForm />
+        </div>
+      </section>
 
-          {/* Service Features */}
-          
-            
-              
-                
-                
-                  {translations?.features?.keyFeatures || "Key Features"}
-                
-              
-            
-            
-              
-                
-                  
-                  
-                    
-                      {translations?.complaints?.trackStatus || "Track Status"}
-                    
-                    
-                      {currentLanguage === "hi"
-                        ? "वास्���विक समय में तुरंत अपडेट के साथ शिकायत ���ी प्रगति की निगरानी करें"
-                         === "ml"
-                          ? "തൽക്ഷണ അപ്‌ഡേറ്റുകൾക്കൊപ്പം പരാതി പുരോഗതി തത്സമയം നിരീക്ഷിക��കുക"
-                          : "Monitor complaint progress in real time with instant updates"}
-                    
-                  
-                
-                
-                  
-                  
-                    
-                      {translations?.complaints?.registerComplaint ||
-                        "Quick Complaint Registration"}
-                    
-                    
-                      {currentLanguage === "hi"
-                        ? "प्रकार, फोटो और स्थान के साथ एक मिनट से भी कम समय में मुद्दे ल��ग करें"
-                         === "ml"
-                          ? "ടൈപ്പ്, ഫോട്ടോ, ലൊക്കേഷൻ എന്നിവ ഉപയോഗിച്ച് ഒരു മിനിറ���റിനുള്ളിൽ പ്രശ്നങ്ങൾ ��േഖപ്പെടുത്തുക"
-                          : "Log issues in under a minute with type, photo, and location"}
-                    
-                  
-                
-                
-                  
-                  
-                    
-                      {currentLanguage === "hi"
-                        ? "ईमेल अलर्���"
-                         === "ml"
-                          ? "ഇമെയി��� അലേർട്ടുക���"
-                          : "Email Alerts"}
-                    
-                    
-                      {currentLanguage === "hi"
-                        ? "पंजीकरण से समाधान तक प्रत्येक चरण में सूचना प्राप्त करें"
-                         === "ml"
-                          ? "രജി��്ട്രേഷൻ മുതൽ പരിഹാരം വരെ ഓരോ ഘട്ടത്തിലും അറിയിപ്പ് ലഭിക്കുക"
-                          : "Get notified at each stage — from registration to resolution"}
-                    
-                  
-                
-                
-                  
-                  
-                    
-                      {currentLanguage === "hi"
-                        ? "बहुभाषी सहायता"
-                         === "ml"
-                          ? "ബഹുഭ��ഷാ പിന്തുണ"
-                          : "Multilingual Support"}
-                    
-                    
-                      {currentLanguage === "hi"
-                        ? "अंग्रेजी, मलयालम और हिंदी में उपलब्ध"
-                         === "ml"
-                          ? "ഇംഗ്ലീഷ്, മലയാളം, ഹിന്ദി എന്നിവയിൽ ലഭ്യമാണ്"
-                          : "Available in English, Malayalam, and Hindi"}
-                    
-                  
-                
-              
-            
-          
-        
-      
-    
+      {/* Contact Information */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              {translations?.contact?.title || "Contact Information"}
+            </h2>
+            <p className="text-gray-600">
+              {translations?.contact?.description ||
+                "Get in touch with us for any assistance or inquiries."}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="flex flex-col items-center text-blue-600">
+                  <Phone className="w-12 h-12 mb-3" />
+                  {translations?.contact?.phone || "Phone"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">{getConfig("contactPhone") || "+91-XXX-XXX-XXXX"}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="flex flex-col items-center text-green-600">
+                  <Mail className="w-12 h-12 mb-3" />
+                  {translations?.contact?.email || "Email"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">{getConfig("contactEmail") || "info@smartcity.gov.in"}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center">
+              <CardHeader>
+                <CardTitle className="flex flex-col items-center text-purple-600">
+                  <MapPin className="w-12 h-12 mb-3" />
+                  {translations?.contact?.address || "Address"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">
+                  {getConfig("contactAddress") || "Smart City Office, Government Building"}
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-8">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <p className="text-gray-400">
+            © 2024 {appName}. {translations?.footer?.rights || "All rights reserved."}
+          </p>
+          <div className="mt-4 flex justify-center space-x-6">
+            <Link to="/privacy" className="text-gray-400 hover:text-white text-sm">
+              {translations?.footer?.privacy || "Privacy Policy"}
+            </Link>
+            <Link to="/terms" className="text-gray-400 hover:text-white text-sm">
+              {translations?.footer?.terms || "Terms of Service"}
+            </Link>
+            <Link to="/help" className="text-gray-400 hover:text-white text-sm">
+              {translations?.footer?.help || "Help"}
+            </Link>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 };
 
