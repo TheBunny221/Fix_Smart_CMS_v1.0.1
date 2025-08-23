@@ -13,17 +13,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Loader2, Mail, Clock, ArrowLeft } from "lucide-react";
 import { cn } from "../lib/utils";
 
-export ) => void;
-  onResend: () => void;
-  isVerifying?;
-  isResending?;
-  error?;
-  expiresAt?;
-  title?;
-  description?;
-}
-
-const OtpDialog: React.FC = ({
+const OtpDialog = ({
   open,
   onOpenChange,
   context,
@@ -85,7 +75,7 @@ const OtpDialog: React.FC = ({
 
   const handleOtpChange = (index, value) => {
     // Only allow digits
-    if (/^\d*$/.test(value)) return;
+    if (!/^\d*$/.test(value)) return;
 
     const newOtp = otpCode.split("");
     newOtp[index] = value;
@@ -94,13 +84,23 @@ const OtpDialog: React.FC = ({
     setOtpCode(newOtpString);
 
     // Move to next input if value is entered
-    if (value && index  {
-    if (e.key === "Backspace" && otpCode[index] && index > 0) {
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otpCode[index] && index > 0) {
       // Move to previous input on backspace if current is empty
       inputRefs.current[index - 1]?.focus();
     } else if (e.key === "ArrowLeft" && index > 0) {
       inputRefs.current[index - 1]?.focus();
-    } else if (e.key === "ArrowRight" && index  {
+    } else if (e.key === "ArrowRight" && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData("text/plain");
     const digits = pastedData.replace(/\D/g, "").slice(0, 6);
@@ -114,7 +114,7 @@ const OtpDialog: React.FC = ({
   };
 
   const handleVerify = async () => {
-    if (otpCode.length == 6) {
+    if (otpCode.length !== 6) {
       setLocalError("Please enter the complete 6-digit code");
       return;
     }
@@ -122,7 +122,7 @@ const OtpDialog: React.FC = ({
     // Call parent's verify function with the OTP code
     // The parent will handle the actual verification based on context
     try {
-      await onVerified({ token, user, otpCode });
+      await onVerified({ token: otpCode, user: email, otpCode });
     } catch (err) {
       // Error handled by parent
     }
@@ -143,14 +143,16 @@ const OtpDialog: React.FC = ({
 
   const getContextConfig = () => {
     switch (context) {
-      case "login" {
+      case "login":
+        return {
           title: title || "Verify Your Identity",
           description:
             description || "Enter the 6-digit code sent to your email to login",
           submitText: "Verify & Login",
           icon: "🔐",
         };
-      case "register" {
+      case "register":
+        return {
           title: title || "Complete Registration",
           description:
             description ||
@@ -158,7 +160,8 @@ const OtpDialog: React.FC = ({
           submitText: "Verify & Complete Registration",
           icon: "✨",
         };
-      case "guestComplaint" {
+      case "guestComplaint":
+        return {
           title: title || "Verify Your Complaint",
           description:
             description ||
@@ -166,7 +169,8 @@ const OtpDialog: React.FC = ({
           submitText: "Verify & Activate Complaint",
           icon: "📝",
         };
-      case "complaintAuth" {
+      case "complaintAuth":
+        return {
           title: title || "Verify Your Access",
           description:
             description ||
@@ -174,11 +178,12 @@ const OtpDialog: React.FC = ({
           submitText: "Verify & Continue",
           icon: "🔍",
         };
-      default {
+      default:
+        return {
           title: "Verify OTP",
           description: "Enter the 6-digit code sent to your email",
           submitText: "Verify",
-          icon: "✉️",
+          icon: "��️",
         };
     }
   };
@@ -187,34 +192,36 @@ const OtpDialog: React.FC = ({
   const displayError = error || localError;
 
   return (
-    
-      
-        
-          
-            
-          
-          {config.title}
-          
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span>{config.icon}</span>
+            {config.title}
+          </DialogTitle>
+          <DialogDescription className="text-left">
             {config.description}
-            
-            {email}
-          
-        
+            <br />
+            <strong>{email}</strong>
+          </DialogDescription>
+        </DialogHeader>
 
-        
+        <div className="space-y-4">
           {displayError && (
-            
-              
+            <Alert variant="destructive">
+              <AlertDescription>
                 {displayError}
-              
-            
+              </AlertDescription>
+            </Alert>
           )}
 
-          
-            Enter 6-digit code
-            
-              {Array.from({ length).map((_, index) => (
-                 (inputRefs.current[index] = el)}
+          <div className="space-y-2">
+            <Label>Enter 6-digit code</Label>
+            <div className="flex gap-2 justify-center">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <Input
+                  key={index}
+                  ref={(el) => (inputRefs.current[index] = el)}
                   type="text"
                   inputMode="numeric"
                   maxLength={1}
@@ -222,58 +229,61 @@ const OtpDialog: React.FC = ({
                   onChange={(e) => handleOtpChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
                   onPaste={handlePaste}
-                  className={cn("w-12 h-12 text-center text-lg font-mono border-2",
-                    "focus,
-                    otpCode[index] && "border-primary bg-primary/5",
+                  className={cn(
+                    "w-12 h-12 text-center text-lg font-mono border-2",
+                    "focus:ring-2 focus:ring-primary",
+                    otpCode[index] && "border-primary bg-primary/5"
                   )}
                   aria-label={`OTP digit ${index + 1}`}
                 />
               ))}
-            
-          
+            </div>
+          </div>
 
-          
+          <Button onClick={handleVerify} disabled={isVerifying || otpCode.length !== 6} className="w-full">
             {isVerifying ? (
-              
-                
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Verifying...
-              
+              </>
             ) : (
               config.submitText
             )}
-          
+          </Button>
 
-          
+          <div className="flex items-center justify-between text-sm">
             {timeLeft > 0 ? (
-              
-                
+              <span className="text-muted-foreground flex items-center gap-1">
+                <Clock className="w-4 h-4" />
                 Expires in {formatTime(timeLeft)}
-              
+              </span>
             ) : (
-              
+              <Button variant="link" onClick={handleResendOtp} disabled={isResending} className="p-0 h-auto">
                 {isResending ? (
-                  
-                    
+                  <>
+                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                     Sending...
-                  
+                  </>
                 ) : (
                   "Resend OTP"
                 )}
-              
+              </Button>
             )}
 
-             onOpenChange(false)}
-              className="p-0 h-auto font-normal"
-            >
-              
+            <Button variant="link" onClick={() => onOpenChange(false)} className="p-0 h-auto font-normal">
+              <ArrowLeft className="w-4 h-4 mr-1" />
               Back
-            
-          
+            </Button>
+          </div>
 
-          {complaintId && (Complaint ID)}
-        
-      
-    
+          {complaintId && (
+            <div className="text-center text-xs text-muted-foreground">
+              Complaint ID: <code className="bg-muted px-1 rounded">{complaintId}</code>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
