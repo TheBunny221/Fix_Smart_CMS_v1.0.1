@@ -1,281 +1,148 @@
-import { baseApi, ApiResponse, optimisticUpdate } from "./baseApi";
+import { baseApi } from "./baseApi";
 
-// Types for complaint operations
-export >;
-  remarks?;
-  feedback?;
-  rating?;
-  escalationLevel;
-  slaStatus: "ontime" | "warning" | "overdue" | "completed";
-  timeElapsed;
-  statusLogs: Array;
-}
-
-export 
-
-export 
-
-export 
-
-export interface ComplaintListParams extends ComplaintFilters {
-  page?;
-  limit?;
-  sortBy?;
-  sortOrder: "asc" | "desc";
-}
-
-// Complaints API slice
 export const complaintsApi = baseApi.injectEndpoints({
-  endpoints) => ({
-    // Get complaints list with pagination and filtering
-    getComplaints, ComplaintListParams>({
-        query) => {
-          const searchParams = new URLSearchParams();
-          Object.entries(params).forEach(([key, value]) => {
-            if (value == undefined && value == null) {
-              if (Array.isArray(value)) {
-                value.forEach((v) => searchParams.append(key, v));
-              } else {
-                searchParams.append(key, value.toString());
-              }
-            }
-          });
-          return `/complaints?${searchParams.toString()}`;
-        },
-        // Let RTK Query handle response naturally
-        providesTags: (result) =>
-          result?.data && Array.isArray(result.data)
-            ? [
-                ...result.data.map(({ id }) => ({
-                  type,
-                  id,
-                })),
-                { type: "Complaint", id: "LIST" },
-              ]
-            : [{ type: "Complaint", id: "LIST" }],
-      },
-    ),
-
-    // Get single complaint
-    getComplaint: builder.query, string>({
-      query) => `/complaints/${id}`,
-      // Let RTK Query handle response naturally
-      providesTags: (result, error, id) => [{ type: "Complaint", id }],
-    }),
-
-    // Create new complaint
-    createComplaint: builder.mutation,
-      CreateComplaintRequest
-    >({
-      query) => ({
-        url,
-        method: "POST",
-        body,
-      }),
-      // Let RTK Query handle response naturally
-      invalidatesTags: [{ type: "Complaint", id: "LIST" }],
-      // Optimistic update for immediate feedback
-      onQueryStarted: async (newComplaint, { dispatch, queryFulfilled }) => {
-        try {
-          const { data } = await queryFulfilled;
-          // Update complaints list if it's cached
-          dispatch(
-            complaintsApi.util.updateQueryData("getComplaints", {}, (draft) => {
-              if (draft.data) {
-                draft.data.unshift(data.data);
-              }
-            }),
-          );
-        } catch {
-          // Error handled by base query
-        }
-      },
-    }),
-
-    // Update complaint
-    updateComplaint: builder.mutation,
-      UpdateComplaintRequest
-    >({
-      query, ...data }) => ({
-        url,
-        method: "PUT",
-        body,
-      }),
-      // Let RTK Query handle response naturally
-      invalidatesTags: (result, error, { id }) => [
-        { type: "Complaint", id },
-        { type: "Complaint", id: "LIST" },
-      ],
-      // Optimistic update
-      onQueryStarted: async (
-        { id, ...patch },
-        { dispatch, queryFulfilled },
-      ) => {
-        // Update single complaint query
-        const patchResult1 = dispatch(
-          complaintsApi.util.updateQueryData("getComplaint", id, (draft) => {
-            if (draft.data) {
-              Object.assign(draft.data, patch);
-            }
-          }),
-        );
-
-        // Update complaints list
-        const patchResult2 = dispatch(
-          complaintsApi.util.updateQueryData("getComplaints", {}, (draft) => {
-            if (draft.data) {
-              draft.data = optimisticUpdate(draft.data, { id, ...patch });
-            }
-          }),
-        );
-
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult1.undo();
-          patchResult2.undo();
-        }
-      },
-    }),
-
-    // Assign complaint
-    assignComplaint: builder.mutation,
-      { id; assignedTo; remarks: string }
-    >({
-      query, assignedTo, remarks }) => ({
-        url,
-        method: "PUT",
-        body: { assignedTo, remarks },
-      }),
-      // Let RTK Query handle response naturally
-      invalidatesTags: (result, error, { id }) => [
-        { type: "Complaint", id },
-        { type: "Complaint", id: "LIST" },
-      ],
-    }),
-
-    // Update complaint status
-    updateComplaintStatus: builder.mutation,
-      { id; status: Complaint["status"]; remarks: string }
-    >({
-      query, status, remarks }) => ({
-        url,
-        method: "PUT",
-        body: { status, remarks },
-      }),
-      // Let RTK Query handle response naturally
-      invalidatesTags: (result, error, { id }) => [
-        { type: "Complaint", id },
-        { type: "Complaint", id: "LIST" },
-      ],
-    }),
-
-    // Add complaint feedback
-    addComplaintFeedback: builder.mutation,
-      { id; feedback; rating: number }
-    >({
-      query, feedback, rating }) => ({
-        url,
-        method: "POST",
-        body: { citizenFeedback, rating },
-      }),
-      // Let RTK Query handle response naturally
-      invalidatesTags: (result, error, { id }) => [
-        { type: "Complaint", id },
-        { type: "Complaint", id: "LIST" },
-      ],
-    }),
-
-    // Upload complaint attachments
-    uploadComplaintAttachment: builder.mutation,
-      { complaintId; file: File }
-    >({
-      query, file }) => {
-        const formData = new FormData();
-        formData.append("complaintAttachment", file);
-        return {
-          url: `/uploads/complaint/${complaintId}/attachment`,
-          method: "POST",
-          body,
-          formData,
-        };
-      },
-      // Let RTK Query handle response naturally
-      invalidatesTags: (result, error, { complaintId }) => [
-        { type: "Complaint", id: complaintId },
-      ],
-    }),
-
-    // Get complaint types
-    getComplaintTypes: builder.query,
-      void
-    >({
-      query) => "/complaint-types",
-      // Let RTK Query handle response naturally
-      providesTags: ["ComplaintType"],
-    }),
-
-    // Get complaint statistics
-    getComplaintStatistics: builder.query;
-        byPriority: Record;
-        byType: Record;
-        slaCompliance;
-        avgResolutionTime;
-      }>,
-      { dateFrom?; dateTo?; ward: string }
-    >({
-      query) => {
+  endpoints: (builder) => ({
+    getComplaints: builder.query({
+      query: (params = {}) => {
         const searchParams = new URLSearchParams();
+        
         Object.entries(params).forEach(([key, value]) => {
-          if (value) searchParams.append(key, value);
-        });
-        return `/complaints/stats?${searchParams.toString()}`;
-      },
-      // Let RTK Query handle response naturally
-      providesTags: ["Analytics"],
-    }),
-
-    // Get ward users for assignment (role-based access)
-    getWardUsers: builder.query;
-        pagination: {
-          page;
-          limit;
-          total;
-          pages;
-        };
-      }>,
-      {
-        page?;
-        limit?;
-        role?;
-        status?;
-      }
-    >({
-      query) => {
-        const searchParams = new URLSearchParams();
-        Object.entries(params).forEach(([key, value]) => {
-          if (value == undefined && value == "") {
+          if (value !== undefined && value !== null && value !== '') {
             searchParams.append(key, value.toString());
           }
         });
-        return `/complaints/ward-users?${searchParams.toString()}`;
+        
+        return {
+          url: `/complaints?${searchParams.toString()}`,
+          method: 'GET',
+        };
       },
-      providesTags: ["User"],
+      providesTags: ['Complaint'],
+    }),
+
+    getComplaintById: builder.query({
+      query: (id) => ({
+        url: `/complaints/${id}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'Complaint', id }],
+    }),
+
+    createComplaint: builder.mutation({
+      query: (complaintData) => ({
+        url: '/complaints',
+        method: 'POST',
+        body: complaintData,
+      }),
+      invalidatesTags: ['Complaint'],
+    }),
+
+    updateComplaint: builder.mutation({
+      query: ({ id, ...complaintData }) => ({
+        url: `/complaints/${id}`,
+        method: 'PUT',
+        body: complaintData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Complaint', id },
+        'Complaint',
+      ],
+    }),
+
+    deleteComplaint: builder.mutation({
+      query: (id) => ({
+        url: `/complaints/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Complaint'],
+    }),
+
+    getComplaintStatistics: builder.query({
+      query: (params = {}) => {
+        const searchParams = new URLSearchParams();
+        
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            searchParams.append(key, value.toString());
+          }
+        });
+        
+        return {
+          url: `/complaints/statistics?${searchParams.toString()}`,
+          method: 'GET',
+        };
+      },
+      providesTags: ['ComplaintStats'],
+    }),
+
+    assignComplaint: builder.mutation({
+      query: ({ id, assignedTo, priority }) => ({
+        url: `/complaints/${id}/assign`,
+        method: 'POST',
+        body: { assignedTo, priority },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Complaint', id },
+        'Complaint',
+      ],
+    }),
+
+    updateComplaintStatus: builder.mutation({
+      query: ({ id, status, remarks }) => ({
+        url: `/complaints/${id}/status`,
+        method: 'PUT',
+        body: { status, remarks },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Complaint', id },
+        'Complaint',
+      ],
+    }),
+
+    addComplaintFeedback: builder.mutation({
+      query: ({ complaintId, rating, comment }) => ({
+        url: `/complaints/${complaintId}/feedback`,
+        method: 'POST',
+        body: { rating, comment },
+      }),
+      invalidatesTags: (result, error, { complaintId }) => [
+        { type: 'Complaint', id: complaintId },
+        'Complaint',
+      ],
+    }),
+
+    escalateComplaint: builder.mutation({
+      query: ({ id, escalationLevel, reason }) => ({
+        url: `/complaints/${id}/escalate`,
+        method: 'POST',
+        body: { escalationLevel, reason },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: 'Complaint', id },
+        'Complaint',
+      ],
+    }),
+
+    getComplaintHistory: builder.query({
+      query: (id) => ({
+        url: `/complaints/${id}/history`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'ComplaintHistory', id }],
     }),
   }),
 });
 
-// Export hooks
 export const {
   useGetComplaintsQuery,
-  useGetComplaintQuery,
+  useGetComplaintByIdQuery,
   useCreateComplaintMutation,
   useUpdateComplaintMutation,
+  useDeleteComplaintMutation,
+  useGetComplaintStatisticsQuery,
   useAssignComplaintMutation,
   useUpdateComplaintStatusMutation,
   useAddComplaintFeedbackMutation,
-  useUploadComplaintAttachmentMutation,
-  useGetComplaintTypesQuery,
-  useGetComplaintStatisticsQuery,
-  useGetWardUsersQuery,
+  useEscalateComplaintMutation,
+  useGetComplaintHistoryQuery,
 } = complaintsApi;
