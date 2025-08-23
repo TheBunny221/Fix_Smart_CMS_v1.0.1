@@ -6,25 +6,26 @@ import { toast } from "./ui/use-toast";
 import { selectTranslations } from "../store/slices/language";
 import { Loader2 } from "lucide-react";
 
-  | "CITIZEN"
-  | "WARD_OFFICER"
-  | "MAINTENANCE_TEAM"
-  | "ADMINISTRATOR"
-  | "GUEST";
-
-
+// User roles constant
+const UserRoles = {
+  CITIZEN: "CITIZEN",
+  WARD_OFFICER: "WARD_OFFICER",
+  MAINTENANCE_TEAM: "MAINTENANCE_TEAM", 
+  ADMINISTRATOR: "ADMINISTRATOR",
+  GUEST: "GUEST"
+};
 
 // Loading component for authentication checks
-const AuthLoadingComponent: React.FC = () => (
-  
-    
-      
-      Verifying authentication...
-    
-  
+const AuthLoadingComponent = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center space-x-2">
+      <Loader2 className="h-6 w-6 animate-spin" />
+      <span>Verifying authentication...</span>
+    </div>
+  </div>
 );
 
-const RoleBasedRoute: React.FC = ({
+const RoleBasedRoute = ({
   children,
   allowedRoles,
   fallbackPath = "/login",
@@ -49,25 +50,56 @@ const RoleBasedRoute: React.FC = ({
           const tokenPayload = JSON.parse(atob(token.split(".")[1]));
           const currentTime = Date.now() / 1000;
 
-          if (tokenPayload.exp && tokenPayload.exp  clearInterval(interval);
+          if (tokenPayload.exp && tokenPayload.exp < currentTime) {
+            // Token expired
+            dispatch(logout());
+            toast({
+              title:
+                translations?.messages?.sessionExpired || "Session Expired",
+              description: "Please login again to continue.",
+              variant: "destructive",
+            });
+          }
+        } catch (error) {
+          // Invalid token format
+          console.warn("Invalid token format:", error);
+          dispatch(logout());
+        }
+      }
+    };
+
+    // Check token on mount and every minute
+    handleTokenExpiration();
+    const interval = setInterval(handleTokenExpiration, 60000);
+
+    return () => clearInterval(interval);
   }, [token, isAuthenticated, dispatch, translations]);
 
   // Show loading during authentication check
   if (isLoading) {
-    return loadingComponent || ;
+    return loadingComponent || <AuthLoadingComponent />;
   }
 
   // Handle unauthenticated users
-  if (requiresAuth && (isAuthenticated || user)) {
+  if (requiresAuth && (!isAuthenticated || !user)) {
     const redirectPath =
-      location.pathname == fallbackPath ? fallbackPath : "/";
+      location.pathname !== fallbackPath ? fallbackPath : "/";
     return (
-      
+      <Navigate
+        to={redirectPath}
+        state={{
+          from: location,
+          message:
+            translations?.messages?.unauthorizedAccess ||
+            "Please login to access this page.",
+        }}
+        replace
+      />
     );
   }
 
   // Handle role-based access control
-  if (user && allowedRoles.includes(user.role)) {
+  if (user && !allowedRoles.includes(user.role)) {
     // Execute custom unauthorized callback
     if (onUnauthorized) {
       onUnauthorized();
@@ -75,45 +107,47 @@ const RoleBasedRoute: React.FC = ({
 
     // Show toast notification
     toast({
-      title,
+      title: translations?.messages?.unauthorizedAccess || "Access Denied",
       description: `You don't have permission to access this page. Required roles: ${allowedRoles.join(", ")}`,
       variant: "destructive",
     });
 
-    return ;
+    return <Navigate to={unauthorizedPath} replace />;
   }
 
   // Handle custom permission checks
-  if (user && checkPermissions && checkPermissions(user)) {
+  if (user && checkPermissions && !checkPermissions(user)) {
     toast({
-      title,
+      title: translations?.messages?.unauthorizedAccess || "Access Denied",
       description: "You don't have the required permissions for this action.",
       variant: "destructive",
     });
 
-    return ;
+    return <Navigate to={unauthorizedPath} replace />;
   }
 
   // All checks passed, render children
-  return {children};
+  return <>{children}</>;
 };
 
 export default RoleBasedRoute;
 
 // Higher-order component for easy role-based component wrapping
-export function withRoleBasedAccess(Component,
+export function withRoleBasedAccess(
+  Component,
   allowedRoles,
-  options: {
-    fallbackPath?;
-    unauthorizedPath?;
-    checkPermissions: (user) => boolean;
-  },
+  options = {},
 ) {
   return function RoleProtectedComponent(props) {
     return (
-      
-        
-      
+      <RoleBasedRoute
+        allowedRoles={allowedRoles}
+        fallbackPath={options?.fallbackPath}
+        unauthorizedPath={options?.unauthorizedPath}
+        checkPermissions={options?.checkPermissions}
+      >
+        <Component {...props} />
+      </RoleBasedRoute>
     );
   };
 }
@@ -123,26 +157,24 @@ export function usePermissions() {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   const hasRole = (roles) => {
-    if (isAuthenticated || user) return false;
+    if (!isAuthenticated || !user) return false;
     const roleArray = Array.isArray(roles) ? roles : [roles];
     return roleArray.includes(user.role);
   };
 
   const hasAnyRole = (roles) => {
-    if (isAuthenticated || user) return false;
+    if (!isAuthenticated || !user) return false;
     return roles.some((role) => user.role === role);
   };
 
   const hasAllRoles = (roles) => {
-    if (isAuthenticated || user) return false;
+    if (!isAuthenticated || !user) return false;
     return roles.every((role) => user.role === role);
   };
 
-  const canAccess = (requiredRoles,
-    customCheck) => boolean,
-  ) => {
-    if (hasRole(requiredRoles)) return false;
-    if (customCheck && customCheck(user)) return false;
+  const canAccess = (requiredRoles, customCheck) => {
+    if (!hasRole(requiredRoles)) return false;
+    if (customCheck && !customCheck(user)) return false;
     return true;
   };
 
@@ -153,10 +185,13 @@ export function usePermissions() {
     hasAnyRole,
     hasAllRoles,
     canAccess,
-    isAdmin: hasRole("ADMINISTRATOR"),
-    isCitizen: hasRole("CITIZEN"),
-    isWardOfficer: hasRole("WARD_OFFICER"),
-    isMaintenanceTeam: hasRole("MAINTENANCE_TEAM"),
-    isGuest: hasRole("GUEST"),
+    isAdmin: hasRole(UserRoles.ADMINISTRATOR),
+    isCitizen: hasRole(UserRoles.CITIZEN),
+    isWardOfficer: hasRole(UserRoles.WARD_OFFICER),
+    isMaintenanceTeam: hasRole(UserRoles.MAINTENANCE_TEAM),
+    isGuest: hasRole(UserRoles.GUEST),
   };
 }
+
+// Export roles for use in other components
+export { UserRoles };
