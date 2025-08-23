@@ -1,34 +1,26 @@
 import { baseApi } from "./baseApi";
 
-// Types for system configuration
-export 
-
-export 
-
 // System Config API slice
 export const systemConfigApi = baseApi.injectEndpoints({
-  endpoints) => ({
+  endpoints: (builder) => ({
     // Get public system configuration
-    getPublicSystemConfig, void>({
-        query) => "/system-config/public",
-        providesTags: ["SystemConfig"],
-      },
-    ),
+    getPublicSystemConfig: builder.query({
+      query: () => "/system-config/public",
+      providesTags: ["SystemConfig"],
+    }),
 
     // Get all system configuration (admin only)
-    getAllSystemConfig: builder.query, void>({
-      query) => "/system-config",
+    getAllSystemConfig: builder.query({
+      query: () => "/system-config",
       providesTags: ["SystemConfig"],
     }),
 
     // Update system configuration (admin only)
-    updateSystemConfig: builder.mutation,
-      { key; value; description: string }
-    >({
-      query) => ({
-        url,
+    updateSystemConfig: builder.mutation({
+      query: (configData) => ({
+        url: "/system-config",
         method: "PUT",
-        body,
+        body: configData,
       }),
       invalidatesTags: ["SystemConfig"],
     }),

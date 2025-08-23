@@ -1,92 +1,59 @@
-import { baseApi, ApiResponse } from "./baseApi";
-
-// Guest API types
-export ;
-}
-
-export 
-
-export 
-
-export 
-
-export 
-
-export 
-
-export 
-
-export 
-
-export 
-
-export 
+import { baseApi } from "./baseApi";
 
 // Guest API slice
 export const guestApi = baseApi.injectEndpoints({
-  endpoints) => ({
+  endpoints: (builder) => ({
     // OTP Verification for Complaint Tracking
-    requestComplaintOtp,
-      { complaintId: string }
-    >({
-      query) => ({
-        url,
+    requestComplaintOtp: builder.mutation({
+      query: (data) => ({
+        url: "/guest-otp/request-complaint-otp",
         method: "POST",
-        body,
+        body: data,
       }),
     }),
 
-    verifyComplaintOtp: builder.mutation,
-      { complaintId; otpCode: string }
-    >({
-      query) => ({
-        url,
+    verifyComplaintOtp: builder.mutation({
+      query: (data) => ({
+        url: "/guest-otp/verify-complaint-otp",
         method: "POST",
-        body,
+        body: data,
       }),
     }),
+    
     // Submit guest complaint
-    submitGuestComplaint: builder.mutation,
-      GuestComplaintRequest | FormData
-    >({
-      query) => ({
-        url,
+    submitGuestComplaint: builder.mutation({
+      query: (complaintData) => ({
+        url: "/guest/complaint",
         method: "POST",
-        body,
+        body: complaintData,
       }),
       // Removed transformResponse to prevent response body conflicts
     }),
 
     // Verify guest OTP and create account
-    verifyGuestOtp: builder.mutation,
-      GuestOtpVerifyRequest
-    >({
-      query) => ({
-        url,
+    verifyGuestOtp: builder.mutation({
+      query: (data) => ({
+        url: "/guest/verify-otp",
         method: "POST",
-        body,
+        body: data,
       }),
       // Removed transformResponse to prevent response body conflicts
       invalidatesTags: ["Auth"],
     }),
 
     // Resend guest OTP
-    resendGuestOtp: builder.mutation,
-      GuestOtpResendRequest
-    >({
-      query) => ({
-        url,
+    resendGuestOtp: builder.mutation({
+      query: (data) => ({
+        url: "/guest/resend-otp",
         method: "POST",
-        body,
+        body: data,
       }),
       // Removed transformResponse to prevent response body conflicts
     }),
 
     // Track complaint (public endpoint)
-    trackComplaint: builder.query,
-      TrackComplaintRequest
-    >({
-      query, email, phoneNumber }) => {
+    trackComplaint: builder.query({
+      query: ({ complaintId, email, phoneNumber }) => {
         const params = new URLSearchParams();
         if (email) params.append("email", email);
         if (phoneNumber) params.append("phoneNumber", phoneNumber);
@@ -103,47 +70,39 @@ export const guestApi = baseApi.injectEndpoints({
     }),
 
     // Get public statistics
-    getPublicStats: builder.query, void>({
-      query) => "/guest/stats",
+    getPublicStats: builder.query({
+      query: () => "/guest/stats",
       // Removed transformResponse to prevent response body conflicts
       providesTags: ["Analytics"],
     }),
 
     // Get complaint types (public endpoint)
-    getPublicComplaintTypes: builder.query>,
-      void
-    >({
-      query) => "/guest/complaint-types",
+    getPublicComplaintTypes: builder.query({
+      query: () => "/guest/complaint-types",
       // Removed transformResponse to prevent response body conflicts
       providesTags: ["ComplaintType"],
     }),
 
     // Get wards (public endpoint)
-    getWards: builder.query;
-        }>
-      >,
-      void
-    >({
-      query) => "/guest/wards",
+    getWards: builder.query({
+      query: () => "/guest/wards",
       // Removed transformResponse to prevent response body conflicts
       providesTags: ["Ward"],
     }),
 
     // Generate CAPTCHA
-    generateCaptcha: builder.query, void>({
-      query) => "/captcha/generate",
-      // Don't cache CAPTCHA should be unique
-      keepUnusedDataFor,
+    generateCaptcha: builder.query({
+      query: () => "/captcha/generate",
+      // Don't cache CAPTCHA as each should be unique
+      keepUnusedDataFor: 0,
     }),
 
     // Verify CAPTCHA (optional standalone endpoint)
-    verifyCaptcha: builder.mutation,
-      CaptchaVerifyRequest
-    >({
-      query) => ({
-        url,
+    verifyCaptcha: builder.mutation({
+      query: (data) => ({
+        url: "/captcha/verify",
         method: "POST",
-        body,
+        body: data,
       }),
     }),
   }),

@@ -1,119 +1,86 @@
-import { baseApi, ApiResponse } from "./baseApi";
-
-// API types
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import { baseApi } from "./baseApi";
 
 // Auth API slice
 export const authApi = baseApi.injectEndpoints({
-  endpoints) => ({
+  endpoints: (builder) => ({
     // Login with password
-    loginWithPassword,
-      LoginRequest
-    >({
-      query) => ({
-        url,
+    loginWithPassword: builder.mutation({
+      query: (credentials) => ({
+        url: "/auth/login",
         method: "POST",
-        body,
+        body: credentials,
       }),
       // Let RTK Query handle response naturally
       invalidatesTags: ["Auth"],
     }),
 
     // Request OTP for login
-    requestOTPLogin: builder.mutation,
-      OTPRequest
-    >({
-      query) => ({
-        url,
+    requestOTPLogin: builder.mutation({
+      query: (data) => ({
+        url: "/auth/login-otp",
         method: "POST",
-        body,
+        body: data,
       }),
       // Remove transformResponse to avoid response body conflicts
     }),
 
     // Verify OTP login
-    verifyOTPLogin: builder.mutation,
-      OTPVerifyRequest
-    >({
-      query) => ({
-        url,
+    verifyOTPLogin: builder.mutation({
+      query: (data) => ({
+        url: "/auth/verify-otp",
         method: "POST",
-        body,
+        body: data,
       }),
       // Let RTK Query handle response naturally
       invalidatesTags: ["Auth"],
     }),
 
     // Register user
-    register: builder.mutation,
-      RegisterRequest
-    >({
-      query) => ({
-        url,
+    register: builder.mutation({
+      query: (userData) => ({
+        url: "/auth/register",
         method: "POST",
-        body,
+        body: userData,
       }),
       // Let RTK Query handle response naturally
       invalidatesTags: ["Auth"],
     }),
 
     // Verify registration OTP
-    verifyRegistrationOTP: builder.mutation,
-      OTPVerifyRequest
-    >({
-      query) => ({
-        url,
+    verifyRegistrationOTP: builder.mutation({
+      query: (data) => ({
+        url: "/auth/verify-registration-otp",
         method: "POST",
-        body,
+        body: data,
       }),
       // Let RTK Query handle response naturally
       invalidatesTags: ["Auth"],
     }),
 
     // Resend registration OTP
-    resendRegistrationOTP: builder.mutation,
-      OTPRequest
-    >({
-      query) => ({
-        url,
+    resendRegistrationOTP: builder.mutation({
+      query: (data) => ({
+        url: "/auth/resend-registration-otp",
         method: "POST",
-        body,
+        body: data,
       }),
       // Let RTK Query handle response naturally
     }),
 
     // Send password setup email
-    sendPasswordSetupEmail: builder.mutation,
-      OTPRequest
-    >({
-      query) => ({
-        url,
+    sendPasswordSetupEmail: builder.mutation({
+      query: (data) => ({
+        url: "/auth/send-password-setup",
         method: "POST",
-        body,
+        body: data,
       }),
       // Let RTK Query handle response naturally
     }),
 
     // Set password
-    setPassword: builder.mutation,
-      SetPasswordRequest
-    >({
-      query, password }) => ({
-        url,
+    setPassword: builder.mutation({
+      query: ({ token, password }) => ({
+        url: `/auth/set-password/${token}`,
         method: "POST",
         body: { password },
       }),
@@ -122,13 +89,11 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     // Change password
-    changePassword: builder.mutation,
-      ChangePasswordRequest
-    >({
-      query) => ({
-        url,
+    changePassword: builder.mutation({
+      query: (data) => ({
+        url: "/auth/change-password",
         method: "PUT",
-        body,
+        body: data,
         headers: {
           "Content-Type": "application/json",
         },
@@ -139,26 +104,24 @@ export const authApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled;
         } catch (error) {
-          console.error("Change password error details, error);
+          console.error("Change password error details:", error);
         }
       },
     }),
 
     // Get current user
-    getCurrentUser: builder.query, void>({
-      query) => "/auth/me",
+    getCurrentUser: builder.query({
+      query: () => "/auth/me",
       // Let RTK Query handle response naturally
       providesTags: ["Auth"],
     }),
 
     // Update profile
-    updateProfile: builder.mutation,
-      UpdateProfileRequest
-    >({
-      query) => ({
-        url,
+    updateProfile: builder.mutation({
+      query: (data) => ({
+        url: "/auth/profile",
         method: "PUT",
-        body,
+        body: data,
       }),
       // Let RTK Query handle response naturally
       invalidatesTags: ["Auth", "User"],
@@ -181,9 +144,9 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     // Logout
-    logout: builder.mutation, void>({
-      query) => ({
-        url,
+    logout: builder.mutation({
+      query: () => ({
+        url: "/auth/logout",
         method: "POST",
       }),
       // Let RTK Query handle response naturally
@@ -191,9 +154,9 @@ export const authApi = baseApi.injectEndpoints({
     }),
 
     // Refresh token (if supported by backend)
-    refreshToken: builder.mutation, void>({
-      query) => ({
-        url,
+    refreshToken: builder.mutation({
+      query: () => ({
+        url: "/auth/refresh",
         method: "POST",
       }),
       // Let RTK Query handle response naturally
