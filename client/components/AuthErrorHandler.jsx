@@ -3,7 +3,7 @@ import { useAppSelector, useAppDispatch } from "../store/hooks";
 import { logout } from "../store/slices/auth";
 import { useToast } from "../hooks/use-toast";
 
-const AuthErrorHandler: React.FC = () => {
+const AuthErrorHandler = () => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -23,7 +23,7 @@ const AuthErrorHandler: React.FC = () => {
           localStorage.removeItem("token");
 
           toast({
-            title,
+            title: "Session Invalid",
             description:
               "Your session is no longer valid. Please log in again.",
             variant: "destructive",
@@ -55,14 +55,14 @@ const AuthErrorHandler: React.FC = () => {
             localStorage.removeItem("token");
 
             toast({
-              title,
+              title: "Session Invalid",
               description:
                 "Your session is no longer valid. Please log in again.",
               variant: "destructive",
             });
           }
         } catch (e) {
-          console.warn("Failed to parse auth error, e);
+          console.warn("Failed to parse auth error", e);
           localStorage.removeItem("auth_error");
         }
       }
