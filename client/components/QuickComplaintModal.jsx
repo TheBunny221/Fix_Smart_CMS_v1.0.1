@@ -1,37 +1,33 @@
 import React from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
-import { ScrollArea } from "./ui/scroll-area";
-import QuickComplaintForm from "./QuickComplaintForm";
 import { useAppSelector } from "../store/hooks";
+import ComplaintForm from "./forms/ComplaintForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
-
-
-const QuickComplaintModal: React.FC = ({
-  isOpen,
-  onClose,
+const QuickComplaintModal = ({
+  open,
+  onOpenChange,
   onSuccess,
 }) => {
   const { translations } = useAppSelector((state) => state.language);
 
   const handleSuccess = (complaintId) => {
     onSuccess?.(complaintId);
-    onClose();
+    onOpenChange(false);
   };
 
   return (
-    
-      
-        
-          
-            {translations?.complaints?.registerComplaint ||
-              "Quick Complaint Form"}
-          
-        
-        
-          
-        
-      
-    
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Submit New Complaint</DialogTitle>
+        </DialogHeader>
+        <ComplaintForm
+          onSuccess={handleSuccess}
+          onCancel={() => onOpenChange(false)}
+          isModal={true}
+        />
+      </DialogContent>
+    </Dialog>
   );
 };
 
