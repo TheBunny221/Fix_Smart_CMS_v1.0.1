@@ -1,114 +1,77 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Shield } from "lucide-react";
-import { cn } from "../../lib/utils";
 import {
-  getLogoClasses,
-  getResponsiveLogoClasses,
-  getTextLogoClasses,
-  LogoProps,
+  LogoImage,
+  LogoText,
+  LogoContainer,
+  getLogoProps,
 } from "../../lib/logoUtils";
 import { useSystemConfig } from "../../contexts/SystemConfigContext";
 
-interface ExtendedLogoProps extends LogoProps {
-  to?;
-  onClick: () => void;
-  responsive?;
-}
-
 /**
  * Reusable Logo component that adapts to system configuration
+ * Displays app name/logo with optional link and responsive behavior
  */
-export const Logo: React.FC = ({
-  logoUrl,
-  appName,
-  size = "medium",
-  context = "nav",
-  className,
+const Logo = ({
+  size = "md",
+  variant = "full",
+  theme = "auto",
+  className = "",
   showText = true,
-  fallbackIcon = Shield,
   to,
   onClick,
-  responsive = false,
+  responsive = true,
 }) => {
-  const classes = responsive
-    ? getResponsiveLogoClasses(size)
-    : getLogoClasses(size, context);
+  const { appName, appLogo } = useSystemConfig();
+  
+  const logoProps = getLogoProps({
+    size,
+    variant,
+    theme,
+    responsive,
+  });
 
-  const hasCustomLogo = logoUrl && logoUrl == "/logo.png";
-
-  const content = (
-    
-      {/* Logo Image or Fallback Icon */}
-      {hasCustomLogo ? (
-         {
-            // Fallback to icon if image fails to load
-            const target = e.target;
-            target.style.display = "none";
-            const fallback = target.nextElementSibling;
-            if (fallback) {
-              fallback.style.display = "block";
-            }
-          }}
+  const logoContent = (
+    <LogoContainer className={`${logoProps.container} ${className}`}>
+      {appLogo && variant !== "text" && (
+        <LogoImage
+          src={appLogo}
+          alt={`${appName} Logo`}
+          className={logoProps.image}
         />
-      ) : null}
-
-      {/* Fallback Icon */}
-      
-
-      {/* App Name Text */}
-      {showText && (
-        
-          {/* Full name on larger screens */}
-          
-            {appName}
-          
-
-          {/* Abbreviated name on mobile */}
-          
-            {appName
-              .split(" ")
-              .map((word) => word[0])
-              .join("")}
-          
-        
       )}
-    
+      {showText && variant !== "image" && (
+        <LogoText className={logoProps.text}>
+          {appName}
+        </LogoText>
+      )}
+    </LogoContainer>
   );
 
-  // Wrap in Link if 'to' prop is provided
+  // If 'to' prop is provided, wrap in Link
   if (to) {
     return (
-      
-        {content}
-      
+      <Link to={to} onClick={onClick} className="inline-block">
+        {logoContent}
+      </Link>
     );
   }
 
-  // Wrap in button if onClick is provided
+  // If onClick is provided, wrap in button
   if (onClick) {
     return (
-      
-        {content}
-      
+      <button
+        onClick={onClick}
+        className="inline-block bg-transparent border-none cursor-pointer p-0"
+        type="button"
+      >
+        {logoContent}
+      </button>
     );
   }
 
-  return content;
-};
-
-/**
- * App Logo component with system configuration
- */
-
-
-export const AppLogo: React.FC = (props) => {
-  // Import the hook at the top of the file
-  const { appName, appLogoUrl, appLogoSize } = useSystemConfig();
-
-  return (
-    
-  );
+  // Default: just return the logo content
+  return logoContent;
 };
 
 export default Logo;

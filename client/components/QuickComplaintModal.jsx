@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppSelector } from "../store/hooks";
-import ComplaintForm from "./forms/ComplaintForm";
+// ComplaintForm component not available
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 const QuickComplaintModal = ({
@@ -21,11 +21,10 @@ const QuickComplaintModal = ({
         <DialogHeader>
           <DialogTitle>Submit New Complaint</DialogTitle>
         </DialogHeader>
-        <ComplaintForm
-          onSuccess={handleSuccess}
-          onCancel={() => onOpenChange(false)}
-          isModal={true}
-        />
+        <div className="p-4 text-center">
+          <p className="text-gray-600">Complaint form component not available.</p>
+          <p className="text-sm text-gray-500 mt-2">Please implement the ComplaintForm component.</p>
+        </div>
       </DialogContent>
     </Dialog>
   );
