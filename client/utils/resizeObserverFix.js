@@ -76,7 +76,7 @@ export const fixResizeObserverError = () => {
                   error.message.includes("ResizeObserver loop")
                 )
               ) {
-                console.error("ResizeObserver callback error, error);
+                console.error("ResizeObserver callback error", error);
               }
             }
           });
