@@ -131,6 +131,30 @@ export const {
 export default baseApi;
 
 /**
+ * Utility function for optimistic updates in RTK Query
+ * @param {Array|Object} data - Current data (array or object)
+ * @param {Object} update - Update object containing id and fields to update
+ * @returns {Array|Object} Updated data
+ */
+export const optimisticUpdate = (data, update) => {
+  if (!data || !update) return data;
+
+  // Handle array data (list of items)
+  if (Array.isArray(data)) {
+    return data.map(item =>
+      item.id === update.id ? { ...item, ...update } : item
+    );
+  }
+
+  // Handle object data (single item)
+  if (data.id === update.id) {
+    return { ...data, ...update };
+  }
+
+  return data;
+};
+
+/**
  * Utility function to extract error message from API error
  * @param {Object} error - Error object from API response
  * @returns {string} Error message string
