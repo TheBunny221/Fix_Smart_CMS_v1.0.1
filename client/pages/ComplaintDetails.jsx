@@ -35,7 +35,7 @@ import {
 } from "lucide-react";
 import jsPDF from "jspdf";
 
-const ComplaintDetails: React.FC = () => {
+const ComplaintDetails = () => {
   const { id } = useParams();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const { translations } = useAppSelector((state) => state.language);
@@ -48,10 +48,10 @@ const ComplaintDetails: React.FC = () => {
 
   // Use RTK Query to fetch complaint details
   const {
-    data,
+    data: complaintResponse,
     isLoading,
     error,
-  } = useGetComplaintQuery(id, { skip);
+  } = useGetComplaintQuery(id, { skip: !id });
 
   const complaint = complaintResponse?.data?.complaint;
 
@@ -95,7 +95,7 @@ const ComplaintDetails: React.FC = () => {
   };
 
   const handleExportDetails = () => {
-    if (complaint) {
+    if (!complaint) {
       console.error("No complaint data available for export");
       return;
     }
@@ -169,8 +169,7 @@ const ComplaintDetails: React.FC = () => {
       if (complaint.status) {
         addText(t.complaints?.status || "Status", 12, true);
         // Translate status if available
-        const statusKey =
-          complaint.status.toLowerCase() typeof t.complaints;
+        const statusKey = complaint.status.toLowerCase();
         const translatedStatus = t.complaints?.[statusKey] || complaint.status;
         addText(translatedStatus);
         yPosition += sectionSpacing;
@@ -179,8 +178,7 @@ const ComplaintDetails: React.FC = () => {
       if (complaint.priority) {
         addText(t.complaints?.priority || "Priority", 12, true);
         // Translate priority if available
-        const priorityKey =
-          complaint.priority.toLowerCase() typeof t.complaints;
+        const priorityKey = complaint.priority.toLowerCase();
         const translatedPriority =
           t.complaints?.[priorityKey] || complaint.priority;
         addText(translatedPriority);
@@ -308,11 +306,11 @@ const ComplaintDetails: React.FC = () => {
 
       // Footer with export information
       yPosition += sectionSpacing * 2;
-      addText(`${t.common?.export || "Exported"}).toLocaleString()}`,
+      addText(`${t.common?.export || "Exported"}: ${new Date().toLocaleString()}`,
         8,
       );
       if (user?.fullName) {
-        addText(`${t.common?.by || "By"}, 8);
+        addText(`${t.common?.by || "By"}: ${user.fullName}`, 8);
       }
 
       // Save PDF
@@ -321,172 +319,165 @@ const ComplaintDetails: React.FC = () => {
 
       console.log("Complaint details exported successfully");
     } catch (error) {
-      console.error("Failed to export complaint details, error);
+      console.error("Failed to export complaint details:", error);
     }
   };
 
   if (isLoading) {
     return (
-      
-        
-          
-          
-          
-            
-              
-            
-            
-              
-              
-            
-          
-        
-      
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading complaint details...</p>
+        </div>
+      </div>
     );
   }
 
   if (error) {
     return (
-      
-        
-        
-          Error Loading Complaint
-        
-        
-          Failed to load complaint details. Please try again.
-        
-        
-          
-            
-            Back to Complaints
-          
-        
-      
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-red-600">Error Loading Complaint</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 mb-4">Failed to load complaint details. Please try again.</p>
+          <Link to="/complaints">
+            <Button>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Complaints
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     );
   }
 
-  if (complaint) {
+  if (!complaint) {
     return (
-      
-        
-        
-          Complaint Not Found
-        
-        
-          The complaint you're looking for doesn't exist.
-        
-        
-          
-            
-            Back to Complaints
-          
-        
-      
+      <Card>
+        <CardHeader>
+          <CardTitle>Complaint Not Found</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 mb-4">The complaint you're looking for doesn't exist.</p>
+          <Link to="/complaints">
+            <Button>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Complaints
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    
+    <div className="space-y-6">
       {/* Header */}
-      
-        
-          
-            
-              
-                
-                Back
-              
-            
-            
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Link to="/complaints">
+            <Button variant="outline" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
               Complaint #
               {complaint?.complaintId || complaint?.id?.slice(-6) || "Unknown"}
-            
-          
-          
-            
-              {complaint?.status?.replace("_", " ") || "Unknown"}
-            
-            
-              {complaint?.priority || "Unknown"} Priority
-            
-            
-              Created{" "}
-              {complaint?.submittedOn
-                ? new Date(complaint.submittedOn).toLocaleDateString()
-                : "Unknown"}
-            
-          
-        
-      
+            </h1>
+          </div>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Badge className={getStatusColor(complaint?.status)}>
+            {complaint?.status?.replace("_", " ") || "Unknown"}
+          </Badge>
+          <Badge className={getPriorityColor(complaint?.priority)}>
+            {complaint?.priority || "Unknown"} Priority
+          </Badge>
+          <div className="text-sm text-gray-500">
+            Created{" "}
+            {complaint?.submittedOn
+              ? new Date(complaint.submittedOn).toLocaleDateString()
+              : "Unknown"}
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
-      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Main Details */}
-        
+        <div className="lg:col-span-2 space-y-6">
           {/* Complaint Details */}
-          
-            
-              
-                
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <FileText className="h-5 w-5 mr-2" />
                 Complaint Details
-              
-            
-            
-              
-                Type
-                
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">Type</label>
+                <p className="text-gray-900">
                   {complaint?.type?.replace("_", " ") || "Unknown Type"}
-                
-              
-              
-                Description
-                
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Description</label>
+                <p className="text-gray-900">
                   {complaint?.description || "No description available"}
-                
-              
-              
-                
-                  
-                    
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500 flex items-center">
+                    <MapPin className="h-4 w-4 mr-1" />
                     Location
-                  
-                  {complaint.area}
-                  {complaint.landmark && (Near)}
-                
-                
-                  
-                    
+                  </label>
+                  <p className="text-gray-900">{complaint.area}</p>
+                  {complaint.landmark && <p className="text-gray-600 text-sm">(Near {complaint.landmark})</p>}
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500 flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
                     Timeline
-                  
-                  
-                    
+                  </label>
+                  <div className="text-sm space-y-1">
+                    <p className="text-gray-900">
                       Submitted:{" "}
                       {new Date(complaint.submittedOn).toLocaleString()}
-                    
-                    {complaint.assignedOn && (Assigned).toLocaleString()}
-                      
+                    </p>
+                    {complaint.assignedOn && (
+                      <p className="text-gray-700">
+                        Assigned: {new Date(complaint.assignedOn).toLocaleString()}
+                      </p>
                     )}
-                    {complaint.resolvedOn && (Resolved).toLocaleString()}
-                      
+                    {complaint.resolvedOn && (
+                      <p className="text-gray-700">
+                        Resolved: {new Date(complaint.resolvedOn).toLocaleString()}
+                      </p>
                     )}
-                  
-                
-              
-            
-          
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Status Updates / Comments */}
-          
-            
-              
-                
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <MessageSquare className="h-5 w-5 mr-2" />
                 {user?.role === "CITIZEN"
                   ? "Status Updates"
                   : "Status Updates & Comments"}
-              
-            
-            
-              
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 {/* Real status logs with remarks and comments */}
                 {complaint.statusLogs && complaint.statusLogs.length > 0 ? (
                   complaint.statusLogs.map((log, index) => {
@@ -546,223 +537,263 @@ const ComplaintDetails: React.FC = () => {
                     const isCitizen = user?.role === "CITIZEN";
 
                     return (
-                      
-                        
-                          
-                            
-                              
+                      <div key={index} className={`p-4 border-l-4 ${getStatusColor(log.toStatus)} bg-gray-50`}>
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-2">
+                              <h4 className="font-semibold text-gray-900">
                                 {getStatusLabel(log.toStatus)}
-                              
+                              </h4>
                               {/* Show staff details only to non-citizens */}
-                              {isCitizen && log.user && (
-                                
+                              {!isCitizen && log.user && (
+                                <span className="text-sm text-gray-600">
                                   {log.user.fullName} ({log.user.role})
-                                
+                                </span>
                               )}
-                            
+                            </div>
 
                             {/* Show appropriate message based on user role */}
                             {isCitizen ? (
-                              
+                              <p className="text-gray-700 mb-2">
                                 {getCitizenStatusMessage(log.toStatus, log)}
-                              
-                            ) : ({log.comment && (
-                                  
-                                    Remarks)}
-                              
+                              </p>
+                            ) : (
+                              <div>
+                                {log.comment && (
+                                  <div className="mb-2">
+                                    <span className="text-sm font-medium text-gray-500">Remarks:</span>
+                                    <p className="text-gray-700">{log.comment}</p>
+                                  </div>
+                                )}
+                              </div>
                             )}
 
                             {log.fromStatus && (
-                              
+                              <p className="text-sm text-gray-600">
                                 Status changed from{" "}
-                                
+                                <span className="font-medium">
                                   {log.fromStatus}
+                                </span>
                                 {" "}
                                 to{" "}
-                                
+                                <span className="font-medium">
                                   {log.toStatus}
-                                
-                              
+                                </span>
+                              </p>
                             )}
-                          
-                          
+                          </div>
+                          <div className="text-sm text-gray-500 ml-4">
                             {new Date(log.timestamp).toLocaleString()}
-                          
-                        
-                      
+                          </div>
+                        </div>
+                      </div>
                     );
                   })
-                ) : ({user?.role === "CITIZEN"
-                        ? "No updates available for your complaint yet"
-                        )}
-              
-            
-          
+                ) : (
+                  <p className="text-gray-500 text-center py-4">
+                    {user?.role === "CITIZEN"
+                      ? "No updates available for your complaint yet."
+                      : "No status updates recorded."}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
           {/* General Remarks - Hidden from citizens may contain internal notes */}
-          {complaint.remarks && user?.role == "CITIZEN" && (
-            
-              
-                
-                  
+          {complaint.remarks && user?.role !== "CITIZEN" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
                   General Remarks
-                
-              
-              
-                
-                  
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                  <p className="text-gray-700">
                     {complaint.remarks}
-                  
-                
-              
-            
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           )}
-        
+        </div>
 
         {/* Right Column - Contact & Meta Info */}
-        
+        <div className="space-y-6">
           {/* Contact Information */}
-          
-            
-              
-                
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <User className="h-5 w-5 mr-2" />
                 Contact Information
-              
-            
-            
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
               {complaint.contactName && (
-                
-                  
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-2 text-gray-400" />
                   {complaint.contactName}
-                
+                </div>
               )}
-              
-                
+              <div className="flex items-center">
+                <Phone className="h-4 w-4 mr-2 text-gray-400" />
                 {complaint.contactPhone}
-              
+              </div>
               {complaint.contactEmail && (
-                
-                  
+                <div className="flex items-center">
+                  <Mail className="h-4 w-4 mr-2 text-gray-400" />
                   {complaint.contactEmail}
-                
+                </div>
               )}
-            
-          
+            </CardContent>
+          </Card>
 
           {/* Assignment Information */}
-          {complaint.assignedTo && (Assignment Info
-              
-              
-                
-                  Assigned To
-                  
-                    {typeof complaint.assignedTo === "object" &&
-                    complaint.assignedTo
-                      ? complaint.assignedTo.fullName
-                      ).toLocaleDateString()}
-                    
-                  
-                )}
-              
-            
+          {complaint.assignedTo && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Assignment Info</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">Assigned To</span>
+                    <p className="text-gray-900">
+                      {typeof complaint.assignedTo === "object" &&
+                      complaint.assignedTo
+                        ? complaint.assignedTo.fullName
+                        : complaint.assignedTo}
+                    </p>
+                  </div>
+                  {complaint.assignedOn && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Assigned On</span>
+                      <p className="text-gray-900">
+                        {new Date(complaint.assignedOn).toLocaleDateString()}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* Attachments */}
-          
-            
-              
-                
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Image className="h-5 w-5 mr-2" />
                 Attachments ({complaint?.attachments?.length || 0})
-              
-            
-            
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               {complaint?.attachments && complaint.attachments.length > 0 ? (
-                
+                <div className="space-y-3">
                   {complaint.attachments.map((attachment) => (
-                    
-                      
+                    <div key={attachment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div className="flex items-center space-x-3">
                         {attachment.mimeType?.startsWith("image/") ? (
-                          
+                          <Image className="h-5 w-5 text-blue-600" />
                         ) : (
-                          
+                          <FileText className="h-5 w-5 text-gray-600" />
                         )}
-                        
-                          
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
                             {attachment.originalName}
-                          
-                          
+                          </p>
+                          <p className="text-xs text-gray-500">
                             {(attachment.size / 1024).toFixed(1)} KB •{" "}
                             {new Date(
                               attachment.uploadedAt,
                             ).toLocaleDateString()}
-                          
-                        
-                      
-                      
-                         window.open(attachment.url, "_blank")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(attachment.url, "_blank")}
                         >
-                          
-                        
+                          <Download className="h-4 w-4" />
+                        </Button>
                         {attachment.mimeType?.startsWith("image/") && (
-                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
                               window.open(attachment.url, "_blank")
                             }
                           >
                             View
-                          
+                          </Button>
                         )}
-                      
-                    
+                      </div>
+                    </div>
                   ))}
-                
+                </div>
               ) : (
-                
-                  
+                <p className="text-gray-500 text-center py-4">
+                  <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
                   No attachments
-                
+                </p>
               )}
-            
-          
+            </CardContent>
+          </Card>
 
           {/* Quick Actions */}
-          
-            
-              Quick Actions
-            
-            
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
               {/* Status update button for Ward Officers and Administrators */}
               {(user?.role === "WARD_OFFICER" ||
                 user?.role === "ADMINISTRATOR") && (
-                 setShowStatusDialog(true)}
+                <Button
+                  className="w-full"
+                  onClick={() => setShowStatusDialog(true)}
                 >
-                  
+                  <MessageSquare className="h-4 w-4 mr-2" />
                   Update Status
-                
+                </Button>
               )}
 
               {/* Show feedback button for resolved/closed complaints if user is the complainant */}
               {(complaint.status === "RESOLVED" ||
                 complaint.status === "CLOSED") &&
                 complaint.submittedById === user?.id &&
-                complaint.rating && (
-                   setShowFeedbackDialog(true)}
-                  >
-                    
-                    Provide Feedback
-                  
-                )}
+                !complaint.rating && (
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => setShowFeedbackDialog(true)}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Provide Feedback
+                </Button>
+              )}
 
-              
-                
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={handleExportDetails}
+              >
+                <Download className="h-4 w-4 mr-2" />
                 Export Details
-              
-            
-          
-        
-      
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Status Update Dialog */}
-       setShowStatusDialog(false)}
+      <ComplaintStatusUpdate
+        complaint={complaint}
+        isOpen={showStatusDialog}
+        onClose={() => setShowStatusDialog(false)}
         onSuccess={() => {
           setShowStatusDialog(false);
           // The complaint data will be automatically updated by RTK Query
@@ -770,13 +801,16 @@ const ComplaintDetails: React.FC = () => {
       />
 
       {/* Feedback Dialog */}
-       setShowFeedbackDialog(false)}
+      <ComplaintFeedbackDialog
+        complaint={complaint}
+        isOpen={showFeedbackDialog}
+        onClose={() => setShowFeedbackDialog(false)}
         onSuccess={() => {
           // The complaint data will be automatically updated by RTK Query
           // due to invalidation tags
         }}
       />
-    
+    </div>
   );
 };
 
