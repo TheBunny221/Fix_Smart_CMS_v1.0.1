@@ -1,23 +1,21 @@
 import { useMemo } from "react";
 import { useGetComplaintTypesQuery } from "../store/api/complaintTypesApi";
 
-export 
-
 export const useComplaintTypes = () => {
-  const { data, isLoading, error } = useGetComplaintTypesQuery();
+  const { data: response, isLoading, error } = useGetComplaintTypesQuery();
 
   const complaintTypes = useMemo(() => {
-    if (response?.data) return [];
+    if (!response?.data) return [];
     return response.data;
   }, [response]);
 
   const complaintTypeOptions = useMemo(() => {
-    if (response?.data) return [];
+    if (!response?.data) return [];
 
     return response.data
       .filter((type) => type.isActive)
       .map((type) => ({
-        value),
+        value: type.id,
         label: type.name,
         description: type.description,
         priority: type.priority,
