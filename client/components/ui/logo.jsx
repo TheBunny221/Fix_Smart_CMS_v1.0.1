@@ -5,7 +5,7 @@ import {
   LogoText,
   LogoContainer,
   getLogoProps,
-} from "../../lib/logoUtils";
+} from "../../lib/logoUtils.jsx";
 import { useSystemConfig } from "../../contexts/SystemConfigContext";
 
 /**

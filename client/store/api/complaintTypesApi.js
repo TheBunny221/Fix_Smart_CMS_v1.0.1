@@ -1,61 +1,51 @@
 import { baseApi } from "./baseApi";
 
-export 
-
-export 
-
-export interface UpdateComplaintTypeRequest extends CreateComplaintTypeRequest {
-  isActive?;
-}
-
 export const complaintTypesApi = baseApi.injectEndpoints({
-  endpoints) => ({
+  endpoints: (builder) => ({
     // Get all complaint types (public)
     getComplaintTypes: builder.query({
-      query) => "/complaint-types",
+      query: () => "/complaint-types",
       providesTags: ["ComplaintType"],
     }),
 
     // Get complaint type by ID
     getComplaintTypeById: builder.query({
-      query) => `/complaint-types/${id}`,
+      query: (id) => `/complaint-types/${id}`,
       providesTags: (_result, _error, id) => [{ type: "ComplaintType", id }],
     }),
 
     // Create complaint type (admin only)
     createComplaintType: builder.mutation({
-      query) => ({
-        url,
+      query: (data) => ({
+        url: "/complaint-types",
         method: "POST",
-        body,
+        body: data,
       }),
       invalidatesTags: ["ComplaintType"],
     }),
 
     // Update complaint type (admin only)
     updateComplaintType: builder.mutation({
-      query, data }) => ({
-        url,
+      query: ({ id, ...data }) => ({
+        url: `/complaint-types/${id}`,
         method: "PUT",
-        body,
+        body: data,
       }),
       invalidatesTags: ["ComplaintType"],
     }),
 
     // Delete complaint type (admin only)
     deleteComplaintType: builder.mutation({
-      query) => ({
-        url,
+      query: (id) => ({
+        url: `/complaint-types/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["ComplaintType"],
     }),
 
     // Get complaint type statistics
-    getComplaintTypeStats: builder.query },
-      void
-    >({
-      query) => "/complaint-types/stats",
+    getComplaintTypeStats: builder.query({
+      query: () => "/complaint-types/stats",
       providesTags: ["ComplaintType"],
     }),
   }),
