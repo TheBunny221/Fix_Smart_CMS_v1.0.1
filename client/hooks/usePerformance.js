@@ -19,10 +19,7 @@ export function useDebounce(value, delay) {
 }
 
 // Hook for debounced callbacks
-export function useDebouncedCallback any>(callback,
-  delay,
-  deps,
-) {
+export function useDebouncedCallback(callback, delay, deps) {
   const debouncedCallback = useMemo(
     () => debounce(callback, delay),
     [...deps, delay],
@@ -38,10 +35,7 @@ export function useDebouncedCallback any>(callback,
 }
 
 // Hook for throttled callbacks
-export function useThrottledCallback any>(callback,
-  delay,
-  deps,
-) {
+export function useThrottledCallback(callback, delay, deps) {
   const throttledCallback = useMemo(
     () => throttle(callback, delay),
     [...deps, delay],
@@ -57,16 +51,12 @@ export function useThrottledCallback any>(callback,
 }
 
 // Hook for memoized expensive calculations
-export function useMemoizedComputation(computation) => T,
-  deps: React.DependencyList,
-) {
+export function useMemoizedComputation(computation, deps) {
   return useMemo(computation, deps);
 }
 
 // Hook for intersection observer (lazy loading)
-export function useIntersectionObserver(
-  options = {},
-): [React.RefCallback, boolean] {
+export function useIntersectionObserver(options = {}) {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [element, setElement] = useState(null);
 
@@ -75,7 +65,7 @@ export function useIntersectionObserver(
   }, []);
 
   useEffect(() => {
-    if (element) return;
+    if (!element) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -136,14 +126,14 @@ export function useVirtualScrolling({
 }
 
 // Hook for image lazy loading
-export function useLazyImage(src, placeholder?) {
+export function useLazyImage(src, placeholder) {
   const [imageSrc, setImageSrc] = useState(placeholder || "");
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
   const [ref, isIntersecting] = useIntersectionObserver();
 
   useEffect(() => {
-    if (isIntersecting && src && isLoaded && isError) {
+    if (isIntersecting && src && !isLoaded && !isError) {
       const img = new Image();
 
       img.onload = () => {
@@ -161,7 +151,7 @@ export function useLazyImage(src, placeholder?) {
 
   return {
     ref,
-    src,
+    src: imageSrc,
     isLoaded,
     isError,
     isIntersecting,
@@ -169,10 +159,7 @@ export function useLazyImage(src, placeholder?) {
 }
 
 // Hook for prefetching data
-export function usePrefetch(prefetchFn) => Promise,
-  deps: React.DependencyList = [],
-  delay = 100,
-) {
+export function usePrefetch(prefetchFn, deps = [], delay = 100) {
   const timeoutRef = useRef();
 
   const prefetch = useCallback(() => {
@@ -209,13 +196,13 @@ export function usePerformanceMeasurement(name) {
   const end = useCallback(() => {
     if (startTimeRef.current) {
       const duration = performance.now() - startTimeRef.current;
-      console.log(`Performance [${name}])}ms`);
+      console.log(`Performance [${name}]: ${duration}ms`);
 
       // Send to analytics if needed
       if (window.gtag) {
         window.gtag("event", "timing_complete", {
           name,
-          value),
+          value: Math.round(duration),
         });
       }
 
@@ -231,12 +218,12 @@ export function usePerformanceMeasurement(name) {
 // Hook for batch state updates
 export function useBatchUpdates(initialState, delay = 16) {
   const [state, setState] = useState(initialState);
-  const pendingUpdatesRef = useRef[]>([]);
+  const pendingUpdatesRef = useRef([]);
   const timeoutRef = useRef();
 
-  const batchedSetState = useCallback((update) => Partial)) => {
+  const batchedSetState = useCallback((update) => {
       const updateObject =
-        typeof update === "function" ? update(state) ;
+        typeof update === "function" ? update(state) : update;
       pendingUpdatesRef.current.push(updateObject);
 
       if (timeoutRef.current) {
@@ -268,16 +255,10 @@ export function useBatchUpdates(initialState, delay = 16) {
 }
 
 // Hook for optimized list rendering
-export function useOptimizedList({
-  items,
-  getItemKey,
-  compareItems,
-}, index) => string | number;
-  compareItems: (a, b) => boolean;
-}) {
+export function useOptimizedList({ items, getItemKey, compareItems }) {
   const memoizedItems = useMemo(() => {
     return items.map((item, index) => ({
-      key, index),
+      key: getItemKey(item, index),
       item,
       index,
     }));
@@ -306,7 +287,7 @@ export function useOptimizedList({
   );
 
   return {
-    items,
+    items: memoizedItems,
     getItem,
     hasItem,
     itemsMap,
@@ -324,10 +305,10 @@ export function useVisibilityTracking(threshold = 0.5) {
   });
 
   useEffect(() => {
-    if (isIntersecting && isVisible) {
+    if (isIntersecting && !isVisible) {
       setIsVisible(true);
       startTimeRef.current = Date.now();
-    } else if (isIntersecting && isVisible) {
+    } else if (!isIntersecting && isVisible) {
       setIsVisible(false);
       if (startTimeRef.current) {
         setVisibilityTime(Date.now() - startTimeRef.current);
@@ -390,7 +371,7 @@ export function useMemoryMonitoring() {
   useEffect(() => {
     const updateMemoryInfo = () => {
       if ("memory" in performance) {
-        setMemoryInfo((performance).memory);
+        setMemoryInfo(performance.memory);
       }
     };
 
@@ -412,7 +393,7 @@ export function useShallowMemo(obj) {
 
     // Check if any values have changed
     for (const key of keys) {
-      if (obj[key] == ref.current[key]) {
+      if (obj[key] !== ref.current[key]) {
         ref.current = obj;
         break;
       }
