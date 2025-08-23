@@ -14,25 +14,17 @@ import {
 import OtpDialog from "../components/OtpDialog";
 import { useToast } from "../hooks/use-toast";
 
-export ) => void;
-  onCancel: () => void;
-}
-
-
-
 const OtpContext = createContext(null);
 
 export const useOtpFlow = () => {
   const context = useContext(OtpContext);
-  if (context) {
+  if (!context) {
     throw new Error("useOtpFlow must be used within an OtpProvider");
   }
   return context;
 };
 
-export const OtpProvider: React.FC = ({
-  children,
-}) => {
+export const OtpProvider = ({ children }) => {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const [config, setConfig] = useState(null);
@@ -52,9 +44,9 @@ export const OtpProvider: React.FC = ({
         setConfig(flowConfig);
         setIsOpen(true);
       } catch (error) {
-        console.error("Failed to open OTP flow, error);
+        console.error("Failed to open OTP flow:", error);
         toast({
-          title,
+          title: "Error",
           description: "Failed to open verification dialog",
           variant: "destructive",
         });
@@ -71,46 +63,49 @@ export const OtpProvider: React.FC = ({
       }
       setConfig(null);
     } catch (error) {
-      console.error("Failed to close OTP flow, error);
+      console.error("Failed to close OTP flow:", error);
       // Still try to close the dialog
       setIsOpen(false);
       setConfig(null);
     }
   }, [config]);
 
-  const handleVerified = useCallback(async (data) => {
-      if (config || data.otpCode) return;
+  const handleVerified = useCallback(
+    async (data) => {
+      if (!config || !data.otpCode) return;
 
       try {
         let result;
 
         switch (config.context) {
-          case "login" = await verifyLoginOtp({
-              email,
+          case "login":
+            result = await verifyLoginOtp({
+              email: config.email,
               otpCode: data.otpCode,
             }).unwrap();
             break;
 
-          case "register" = await verifyRegisterOtp({
-              email,
+          case "register":
+            result = await verifyRegisterOtp({
+              email: config.email,
               otpCode: data.otpCode,
             }).unwrap();
             break;
 
           case "guestComplaint":
-            if (config.complaintId) {
+            if (!config.complaintId) {
               toast({
-                title,
+                title: "Error",
                 description: "Complaint ID is required for guest verification",
                 variant: "destructive",
               });
               return;
             }
             result = await verifyGuestOtp({
-              email,
+              email: config.email,
               otpCode: data.otpCode,
               complaintId: config.complaintId,
-              createAccount,
+              createAccount: true,
             }).unwrap();
             break;
 
@@ -118,14 +113,14 @@ export const OtpProvider: React.FC = ({
             // Handle complaint auth verification
             // This might use a different API endpoint
             result = await verifyLoginOtp({
-              email,
+              email: config.email,
               otpCode: data.otpCode,
             }).unwrap();
             break;
 
           default:
             toast({
-              title,
+              title: "Error",
               description: "Invalid OTP context",
               variant: "destructive",
             });
@@ -134,8 +129,9 @@ export const OtpProvider: React.FC = ({
 
         // Store credentials if we have a token
         if (result.data?.token && result.data?.user) {
-          dispatch(setCredentials({
-              token,
+          dispatch(
+            setCredentials({
+              token: result.data.token,
               user: result.data.user,
             }),
           );
@@ -150,14 +146,14 @@ export const OtpProvider: React.FC = ({
 
         // Show success message
         const contextMessages = {
-          login: "Successfully logged in",
-          register: "Account created successfully",
-          guestComplaint: "Complaint verified and account created",
-          complaintAuth: "Access verified",
+          login: "Successfully logged in!",
+          register: "Account created successfully!",
+          guestComplaint: "Complaint verified and account created!",
+          complaintAuth: "Access verified!",
         };
 
         toast({
-          title,
+          title: "Success",
           description: contextMessages[config.context],
         });
 
@@ -166,7 +162,7 @@ export const OtpProvider: React.FC = ({
         setConfig(null);
       } catch (error) {
         // Error will be handled by the mutation and shown in the dialog
-        console.error("OTP verification failed, error);
+        console.error("OTP verification failed:", error);
       }
     },
     [
@@ -180,23 +176,23 @@ export const OtpProvider: React.FC = ({
   );
 
   const handleResend = useCallback(async () => {
-    if (config) return;
+    if (!config) return;
 
     try {
       switch (config.context) {
         case "login":
         case "complaintAuth":
-          await resendLoginOtp({ email).unwrap();
+          await resendLoginOtp({ email: config.email }).unwrap();
           break;
 
         case "register":
-          await resendRegisterOtp({ email).unwrap();
+          await resendRegisterOtp({ email: config.email }).unwrap();
           break;
 
         case "guestComplaint":
           if (config.complaintId) {
             await resendGuestOtp({
-              email,
+              email: config.email,
               complaintId: config.complaintId,
             }).unwrap();
           }
@@ -204,12 +200,12 @@ export const OtpProvider: React.FC = ({
       }
 
       toast({
-        title,
+        title: "OTP Resent",
         description: "A new verification code has been sent to your email.",
       });
     } catch (error) {
       toast({
-        title,
+        title: "Failed to Resend",
         description: error.message || "Failed to resend OTP. Please try again.",
         variant: "destructive",
       });
@@ -223,12 +219,26 @@ export const OtpProvider: React.FC = ({
   };
 
   return (
-    
+    <OtpContext.Provider value={contextValue}>
       {children}
       {config && (
-        
+        <OtpDialog
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          context={config.context}
+          email={config.email}
+          complaintId={config.complaintId}
+          title={config.title}
+          description={config.description}
+          onVerified={handleVerified}
+          onResend={handleResend}
+          // These will be managed by the mutations
+          isVerifying={false}
+          isResending={false}
+          error={null}
+        />
       )}
-    
+    </OtpContext.Provider>
   );
 };
 
