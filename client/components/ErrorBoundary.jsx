@@ -1,13 +1,9 @@
 import React from "react";
 
-
-
-
-
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError, error, errorInfo: null };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -15,7 +11,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("Error Boundary caught an error, error, errorInfo);
+    console.error("Error Boundary caught an error:", error, errorInfo);
     this.setState({
       error,
       errorInfo,
@@ -25,18 +21,35 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        
-          🚨 Application Error
-          Something went wrong
-          
-            Error Details
-            
+        <div
+          style={{
+            padding: "20px",
+            background: "#fee",
+            color: "#900",
+            minHeight: "100vh",
+            fontFamily: "Arial, sans-serif",
+          }}
+        >
+          <h1>🚨 Application Error</h1>
+          <h2>Something went wrong</h2>
+          <details style={{ marginTop: "20px" }}>
+            <summary>Error Details</summary>
+            <pre
+              style={{
+                background: "#fff",
+                padding: "10px",
+                overflow: "auto",
+                marginTop: "10px",
+                fontSize: "12px",
+              }}
+            >
               {this.state.error && this.state.error.toString()}
-              
+              <br />
               {this.state.errorInfo && this.state.errorInfo.componentStack}
-            
-          
-           window.location.reload()}
+            </pre>
+          </details>
+          <button
+            onClick={() => window.location.reload()}
             style={{
               marginTop: "20px",
               padding: "10px 20px",
@@ -48,8 +61,8 @@ class ErrorBoundary extends React.Component {
             }}
           >
             Reload Page
-          
-        
+          </button>
+        </div>
       );
     }
 
