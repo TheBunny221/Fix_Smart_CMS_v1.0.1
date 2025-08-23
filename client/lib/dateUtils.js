@@ -2,34 +2,34 @@ import { format, parseISO, isValid } from "date-fns";
 
 export const formatDate = (date) => {
   try {
-    const dateObj = typeof date === "string" ? parseISO(date) ;
-    if (isValid(dateObj)) {
+    const dateObj = typeof date === "string" ? parseISO(date) : date;
+    if (!isValid(dateObj)) {
       return "Invalid Date";
     }
     return format(dateObj, "MMM dd, yyyy");
   } catch (error) {
-    console.warn("Error formatting date, date, error);
+    console.warn("Error formatting date", date, error);
     return "Invalid Date";
   }
 };
 
 export const formatDateTime = (date) => {
   try {
-    const dateObj = typeof date === "string" ? parseISO(date) ;
-    if (isValid(dateObj)) {
+    const dateObj = typeof date === "string" ? parseISO(date) : date;
+    if (!isValid(dateObj)) {
       return "Invalid Date";
     }
-    return format(dateObj, "MMM dd, yyyy HH);
+    return format(dateObj, "MMM dd, yyyy HH:mm");
   } catch (error) {
-    console.warn("Error formatting datetime, date, error);
+    console.warn("Error formatting datetime", date, error);
     return "Invalid Date";
   }
 };
 
 export const formatRelativeTime = (date) => {
   try {
-    const dateObj = typeof date === "string" ? parseISO(date) ;
-    if (isValid(dateObj)) {
+    const dateObj = typeof date === "string" ? parseISO(date) : date;
+    if (!isValid(dateObj)) {
       return "Invalid Date";
     }
 
@@ -47,7 +47,7 @@ export const formatRelativeTime = (date) => {
       return formatDate(dateObj);
     }
   } catch (error) {
-    console.warn("Error formatting relative time, date, error);
+    console.warn("Error formatting relative time", date, error);
     return "Invalid Date";
   }
 };
