@@ -5,7 +5,7 @@
 
 export function debugFetchEnvironment() {
   const info = {
-    originalFetchAvailable: (globalThis).__originalFetch,
+    originalFetchAvailable: globalThis.__originalFetch,
     currentFetchType: "unknown",
     thirdPartyOverrides: [],
     environment:
@@ -33,15 +33,15 @@ export function debugFetchEnvironment() {
   }
 
   // Check for other common overrides
-  if ((window).FS) {
+  if (window.FS) {
     info.thirdPartyOverrides.push("FullStory");
   }
 
-  if ((window).gtag) {
+  if (window.gtag) {
     info.thirdPartyOverrides.push("Google Analytics");
   }
 
-  if ((window).analytics) {
+  if (window.analytics) {
     info.thirdPartyOverrides.push("Segment");
   }
 
@@ -70,11 +70,8 @@ export function logFetchDebugInfo() {
  * Creates a robust fetch function that tries multiple approaches
  */
 export function createRobustFetch() {
-  return async function robustFetch(
-    input,
-    init,
-  ) {
-    const originalFetch = (globalThis).__originalFetch;
+  return async function robustFetch(input, init) {
+    const originalFetch = globalThis.__originalFetch;
 
     // Try original fetch first if available
     if (originalFetch) {
@@ -89,7 +86,8 @@ export function createRobustFetch() {
     try {
       return await fetch(input, init);
     } catch (error) {
-      console.warn("Current fetch failed, trying XMLHttpRequest fallback:",
+      console.warn(
+        "Current fetch failed, trying XMLHttpRequest fallback:",
         error,
       );
 
@@ -109,14 +107,11 @@ export function createRobustFetch() {
                 .getAllResponseHeaders()
                 .split("\r\n")
                 .filter((line) => line.trim())
-                .reduce(
-                  (headers, line) => {
-                    const [key, value] = line.split(": ");
-                    if (key && value) headers[key] = value;
-                    return headers;
-                  },
-                  {},
-                ),
+                .reduce((headers, line) => {
+                  const [key, value] = line.split(": ");
+                  if (key && value) headers[key] = value;
+                  return headers;
+                }, {}),
             ),
           });
           resolve(response);

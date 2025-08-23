@@ -80,14 +80,14 @@ const Profile = () => {
   const [setupToken, setSetupToken] = useState("");
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
   const handlePasswordChange = (field, value) => {
-    setPasswordData(prev => ({
+    setPasswordData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -97,25 +97,33 @@ const Profile = () => {
     try {
       await dispatch(updateProfile(formData)).unwrap();
       setIsEditing(false);
-      dispatch(addNotification({
-        type: "success",
-        message: translations?.profile?.profileUpdated || "Profile updated successfully",
-      }));
+      dispatch(
+        addNotification({
+          type: "success",
+          message:
+            translations?.profile?.profileUpdated ||
+            "Profile updated successfully",
+        }),
+      );
     } catch (error) {
       console.error("Profile update error", error);
-      dispatch(addNotification({
-        type: "error",
-        message: getApiErrorMessage(error),
-      }));
+      dispatch(
+        addNotification({
+          type: "error",
+          message: getApiErrorMessage(error),
+        }),
+      );
     }
   };
 
   const handlePasswordUpdate = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      dispatch(addNotification({
-        type: "error",
-        message: "Passwords do not match",
-      }));
+      dispatch(
+        addNotification({
+          type: "error",
+          message: "Passwords do not match",
+        }),
+      );
       return;
     }
 
@@ -143,16 +151,22 @@ const Profile = () => {
       setSetupToken("");
       setEmailStep("none");
 
-      dispatch(addNotification({
-        type: "success",
-        message: user?.hasPassword ? "Password set successfully" : "Password changed successfully",
-      }));
+      dispatch(
+        addNotification({
+          type: "success",
+          message: user?.hasPassword
+            ? "Password set successfully"
+            : "Password changed successfully",
+        }),
+      );
     } catch (error) {
       console.error("Password change error", error);
-      dispatch(addNotification({
-        type: "error",
-        message: getApiErrorMessage(error),
-      }));
+      dispatch(
+        addNotification({
+          type: "error",
+          message: getApiErrorMessage(error),
+        }),
+      );
     } finally {
       setIsChangingPassword(false);
     }
@@ -164,19 +178,24 @@ const Profile = () => {
         email: user?.email,
       }).unwrap();
       setEmailStep("sent");
-      dispatch(addNotification({
-        type: "success",
-        message: "Password setup link sent to your email",
-      }));
+      dispatch(
+        addNotification({
+          type: "success",
+          message: "Password setup link sent to your email",
+        }),
+      );
     } catch (error) {
-      dispatch(addNotification({
-        type: "error",
-        message: getApiErrorMessage(error),
-      }));
+      dispatch(
+        addNotification({
+          type: "error",
+          message: getApiErrorMessage(error),
+        }),
+      );
     }
   };
 
-  const isPasswordValid = passwordData.newPassword.length >= 6 &&
+  const isPasswordValid =
+    passwordData.newPassword.length >= 6 &&
     /[A-Z]/.test(passwordData.newPassword) &&
     /[a-z]/.test(passwordData.newPassword) &&
     /\d/.test(passwordData.newPassword);
@@ -188,7 +207,8 @@ const Profile = () => {
           {translations?.profile?.title || "My Profile"}
         </h1>
         <p className="text-gray-600 mt-2">
-          {translations?.profile?.description || "Manage your account settings and preferences"}
+          {translations?.profile?.description ||
+            "Manage your account settings and preferences"}
         </p>
       </div>
 
@@ -210,7 +230,8 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <User className="w-5 h-5 mr-2" />
-                {translations?.profile?.personalInformation || "Personal Information"}
+                {translations?.profile?.personalInformation ||
+                  "Personal Information"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -236,7 +257,9 @@ const Profile = () => {
                   <Input
                     id="fullName"
                     value={formData.fullName}
-                    onChange={(e) => handleInputChange("fullName", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("fullName", e.target.value)
+                    }
                     disabled={!isEditing}
                   />
                 </div>
@@ -248,7 +271,9 @@ const Profile = () => {
                     <Input
                       id="email"
                       value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
                       disabled={!isEditing}
                       className="pl-10"
                     />
@@ -262,7 +287,9 @@ const Profile = () => {
                     <Input
                       id="phoneNumber"
                       value={formData.phoneNumber}
-                      onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("phoneNumber", e.target.value)
+                      }
                       disabled={!isEditing}
                       className="pl-10"
                     />
@@ -275,7 +302,9 @@ const Profile = () => {
                     <Input
                       id="ward"
                       value={formData.ward}
-                      onChange={(e) => handleInputChange("ward", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("ward", e.target.value)
+                      }
                       disabled={!isEditing || user.role === "ward-officer"}
                     />
                   </div>
@@ -287,7 +316,9 @@ const Profile = () => {
                     <Input
                       id="department"
                       value={formData.department}
-                      onChange={(e) => handleInputChange("department", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("department", e.target.value)
+                      }
                       disabled={!isEditing || user.role === "maintenance"}
                     />
                   </div>
@@ -335,7 +366,9 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Shield className="w-5 h-5 mr-2" />
-                {!user?.hasPassword ? "Set Up Password" : translations?.profile?.changePassword || "Change Password"}
+                {!user?.hasPassword
+                  ? "Set Up Password"
+                  : translations?.profile?.changePassword || "Change Password"}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -344,7 +377,9 @@ const Profile = () => {
                 <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-center mb-2">
                     <AlertTriangle className="w-5 h-5 text-blue-600 mr-2" />
-                    <h4 className="font-semibold text-blue-800">Password Setup Required</h4>
+                    <h4 className="font-semibold text-blue-800">
+                      Password Setup Required
+                    </h4>
                   </div>
                   <p className="text-blue-700 mb-4">
                     We'll send you a secure link to set up your password.
@@ -363,7 +398,9 @@ const Profile = () => {
                         Setup link sent! Check your email.
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="setupToken">Setup Token (from email)</Label>
+                        <Label htmlFor="setupToken">
+                          Setup Token (from email)
+                        </Label>
                         <Input
                           id="setupToken"
                           value={setupToken}
@@ -372,10 +409,14 @@ const Profile = () => {
                           className="w-full"
                         />
                         <p className="text-sm text-gray-600">
-                          You can either click the link in your email to go to the setup page, 
-                          or copy the token from the link and paste it here.
+                          You can either click the link in your email to go to
+                          the setup page, or copy the token from the link and
+                          paste it here.
                         </p>
-                        <Button variant="outline" onClick={handleSendSetupEmail}>
+                        <Button
+                          variant="outline"
+                          onClick={handleSendSetupEmail}
+                        >
                           Resend Email
                         </Button>
                       </div>
@@ -387,14 +428,17 @@ const Profile = () => {
               {user?.hasPassword && (
                 <div className="space-y-4 mb-6">
                   <Label htmlFor="currentPassword">
-                    {translations?.profile?.currentPassword || "Current Password"}
+                    {translations?.profile?.currentPassword ||
+                      "Current Password"}
                   </Label>
                   <div className="relative">
                     <Input
                       id="currentPassword"
                       type={showPasswords.current ? "text" : "password"}
                       value={passwordData.currentPassword}
-                      onChange={(e) => handlePasswordChange("currentPassword", e.target.value)}
+                      onChange={(e) =>
+                        handlePasswordChange("currentPassword", e.target.value)
+                      }
                       placeholder="Enter current password"
                     />
                     <Button
@@ -402,12 +446,18 @@ const Profile = () => {
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3"
-                      onClick={() => setShowPasswords(prev => ({
-                        ...prev,
-                        current: !prev.current,
-                      }))}
+                      onClick={() =>
+                        setShowPasswords((prev) => ({
+                          ...prev,
+                          current: !prev.current,
+                        }))
+                      }
                     >
-                      {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {showPasswords.current ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -422,7 +472,9 @@ const Profile = () => {
                     id="newPassword"
                     type={showPasswords.new ? "text" : "password"}
                     value={passwordData.newPassword}
-                    onChange={(e) => handlePasswordChange("newPassword", e.target.value)}
+                    onChange={(e) =>
+                      handlePasswordChange("newPassword", e.target.value)
+                    }
                     placeholder="Enter new password"
                     disabled={!user?.hasPassword && !setupToken}
                   />
@@ -431,9 +483,15 @@ const Profile = () => {
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                    onClick={() =>
+                      setShowPasswords((prev) => ({ ...prev, new: !prev.new }))
+                    }
                   >
-                    {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPasswords.new ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -447,7 +505,9 @@ const Profile = () => {
                     id="confirmPassword"
                     type={showPasswords.confirm ? "text" : "password"}
                     value={passwordData.confirmPassword}
-                    onChange={(e) => handlePasswordChange("confirmPassword", e.target.value)}
+                    onChange={(e) =>
+                      handlePasswordChange("confirmPassword", e.target.value)
+                    }
                     placeholder="Confirm new password"
                     disabled={!user?.hasPassword && !setupToken}
                   />
@@ -456,19 +516,27 @@ const Profile = () => {
                     variant="ghost"
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3"
-                    onClick={() => setShowPasswords(prev => ({
-                      ...prev,
-                      confirm: !prev.confirm,
-                    }))}
+                    onClick={() =>
+                      setShowPasswords((prev) => ({
+                        ...prev,
+                        confirm: !prev.confirm,
+                      }))
+                    }
                   >
-                    {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPasswords.confirm ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
               </div>
 
               {/* Password Requirements */}
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="font-medium text-sm mb-2">Password Requirements:</p>
+                <p className="font-medium text-sm mb-2">
+                  Password Requirements:
+                </p>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>At least 6 characters long</li>
                   <li>Contains at least one uppercase letter (A-Z)</li>
@@ -479,17 +547,22 @@ const Profile = () => {
 
               <Button
                 onClick={handlePasswordUpdate}
-                disabled={isChangingPassword || !isPasswordValid || passwordData.newPassword !== passwordData.confirmPassword}
+                disabled={
+                  isChangingPassword ||
+                  !isPasswordValid ||
+                  passwordData.newPassword !== passwordData.confirmPassword
+                }
                 className="mt-6"
               >
                 <Lock className="w-4 h-4 mr-2" />
-                {isChangingPassword ? (
-                  !user?.hasPassword ? "Setting Up..." : "Changing..."
-                ) : !user?.hasPassword ? (
-                  "Set Up Password"
-                ) : (
-                  translations?.profile?.changePassword || "Change Password"
-                )}
+                {isChangingPassword
+                  ? !user?.hasPassword
+                    ? "Setting Up..."
+                    : "Changing..."
+                  : !user?.hasPassword
+                    ? "Set Up Password"
+                    : translations?.profile?.changePassword ||
+                      "Change Password"}
               </Button>
             </CardContent>
           </Card>

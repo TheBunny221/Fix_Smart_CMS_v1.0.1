@@ -362,7 +362,11 @@ const Register = () => {
                 </Link>
               </p>
               <div>
-                <Button variant="outline" onClick={() => navigate("/")} className="mt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/")}
+                  className="mt-2"
+                >
                   <Home className="h-4 w-4 mr-2" />
                   Back to Home
                 </Button>

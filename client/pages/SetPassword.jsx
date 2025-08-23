@@ -57,7 +57,7 @@ const SetPassword = () => {
   // Validate password requirements
   useEffect(() => {
     const { password, confirmPassword } = formData;
-    
+
     setPasswordValidation({
       minLength: password.length >= 8,
       hasUpper: /[A-Z]/.test(password),
@@ -107,17 +107,16 @@ const SetPassword = () => {
   // Check if form is valid
   const isFormValid = Object.values(passwordValidation).every(Boolean);
 
-  const ValidationItem = ({
-    isValid,
-    text,
-  }) => (
+  const ValidationItem = ({ isValid, text }) => (
     <div className="flex items-center space-x-2">
       {isValid ? (
         <CheckCircle className="w-4 h-4 text-green-500" />
       ) : (
         <AlertCircle className="w-4 h-4 text-gray-400" />
       )}
-      <span className={`text-sm ${isValid ? 'text-green-600' : 'text-gray-500'}`}>
+      <span
+        className={`text-sm ${isValid ? "text-green-600" : "text-gray-500"}`}
+      >
         {text}
       </span>
     </div>
@@ -132,9 +131,7 @@ const SetPassword = () => {
           <h1 className="text-2xl font-bold text-gray-900">
             Set Your Password
           </h1>
-          <p className="text-gray-600">
-            {appName} - Secure your account
-          </p>
+          <p className="text-gray-600">{appName} - Secure your account</p>
         </div>
 
         <Card>
@@ -148,9 +145,7 @@ const SetPassword = () => {
             {/* Error Alert */}
             {error && (
               <Alert variant="destructive">
-                <AlertDescription>
-                  {error}
-                </AlertDescription>
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
@@ -215,7 +210,9 @@ const SetPassword = () => {
 
               {/* Password Requirements */}
               <div className="space-y-2">
-                <Label className="text-sm font-medium">Password Requirements</Label>
+                <Label className="text-sm font-medium">
+                  Password Requirements
+                </Label>
                 <div className="space-y-1 p-3 bg-gray-50 rounded-md">
                   <ValidationItem
                     isValid={passwordValidation.minLength}
@@ -252,7 +249,8 @@ const SetPassword = () => {
             {!token && (
               <Alert variant="destructive">
                 <AlertDescription>
-                  Invalid or expired password reset token. Please request a new password reset link.
+                  Invalid or expired password reset token. Please request a new
+                  password reset link.
                 </AlertDescription>
               </Alert>
             )}

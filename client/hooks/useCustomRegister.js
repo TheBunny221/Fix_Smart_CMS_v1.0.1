@@ -13,7 +13,8 @@ export const useCustomRegister = () => {
       console.log("Testing API connectivity...");
       try {
         const testResponse = await fetch("/api/health");
-        console.log("Health check response:",
+        console.log(
+          "Health check response:",
           testResponse.status,
           testResponse.statusText,
         );
@@ -21,13 +22,15 @@ export const useCustomRegister = () => {
         console.log("Health check data:", healthData);
       } catch (testError) {
         console.error("Health check failed:", testError);
-        console.error("Health check error details:",
+        console.error(
+          "Health check error details:",
           testError.name,
           testError.message,
         );
       }
 
-      console.log("Making fetch request to /api/auth/register with data:",
+      console.log(
+        "Making fetch request to /api/auth/register with data:",
         data,
       );
 
@@ -85,7 +88,8 @@ export const useCustomRegister = () => {
 
       // Check if this is already a structured error from our API response handling
       if (error.status) {
-        console.log("Re-throwing structured API error with status:",
+        console.log(
+          "Re-throwing structured API error with status:",
           error.status,
         );
         throw error;

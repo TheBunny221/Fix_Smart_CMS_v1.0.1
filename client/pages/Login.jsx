@@ -96,10 +96,12 @@ const Login = () => {
     }
 
     try {
-      await dispatch(loginWithPassword({
-        email: formData.email,
-        password: formData.password,
-      })).unwrap();
+      await dispatch(
+        loginWithPassword({
+          email: formData.email,
+          password: formData.password,
+        }),
+      ).unwrap();
 
       toast({
         title: "Success",
@@ -149,9 +151,11 @@ const Login = () => {
 
   const handlePasswordSetupRequest = async () => {
     try {
-      await dispatch(sendPasswordSetupEmail({
-        email: formData.email,
-      })).unwrap();
+      await dispatch(
+        sendPasswordSetupEmail({
+          email: formData.email,
+        }),
+      ).unwrap();
 
       toast({
         title: "Email Sent",
@@ -210,9 +214,7 @@ const Login = () => {
             {/* Error Alert */}
             {error && (
               <Alert variant="destructive">
-                <AlertDescription>
-                  {error}
-                </AlertDescription>
+                <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
@@ -247,9 +249,7 @@ const Login = () => {
 
             <Tabs
               value={loginMethod}
-              onValueChange={(value) =>
-                setLoginMethod(value)
-              }
+              onValueChange={(value) => setLoginMethod(value)}
             >
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="password">
@@ -309,7 +309,9 @@ const Login = () => {
                   <Button
                     type="submit"
                     className="w-full"
-                    disabled={isLoading || !formData.email || !formData.password}
+                    disabled={
+                      isLoading || !formData.email || !formData.password
+                    }
                   >
                     {isLoading ? "Signing in..." : "Sign in with Password"}
                   </Button>
@@ -351,7 +353,10 @@ const Login = () => {
                 </h3>
                 <div className="space-y-2">
                   {demoCredentials.map((cred, index) => (
-                    <div key={index} className="flex items-center justify-between">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between"
+                    >
                       <div className="text-xs">
                         <Badge variant="outline" className="mr-2">
                           {cred.role}

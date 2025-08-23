@@ -221,7 +221,8 @@ export function useBatchUpdates(initialState, delay = 16) {
   const pendingUpdatesRef = useRef([]);
   const timeoutRef = useRef();
 
-  const batchedSetState = useCallback((update) => {
+  const batchedSetState = useCallback(
+    (update) => {
       const updateObject =
         typeof update === "function" ? update(state) : update;
       pendingUpdatesRef.current.push(updateObject);

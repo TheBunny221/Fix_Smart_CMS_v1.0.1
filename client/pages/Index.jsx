@@ -74,13 +74,23 @@ const Index = () => {
                 {translations?.guest?.submitComplaint || "Submit Complaint"}
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="text-lg px-8 py-6"
+            >
               <Link to="/guest/track">
                 <BarChart3 className="w-5 h-5 mr-2" />
                 {translations?.guest?.trackComplaint || "Track Complaint"}
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="text-lg px-8 py-6"
+            >
               <Link to="/login">
                 <User className="w-5 h-5 mr-2" />
                 {translations?.auth?.login || "Login"}
@@ -176,7 +186,9 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">{getConfig("contactPhone") || "+91-XXX-XXX-XXXX"}</p>
+                <p className="text-gray-600">
+                  {getConfig("contactPhone") || "+91-XXX-XXX-XXXX"}
+                </p>
               </CardContent>
             </Card>
 
@@ -188,7 +200,9 @@ const Index = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">{getConfig("contactEmail") || "info@smartcity.gov.in"}</p>
+                <p className="text-gray-600">
+                  {getConfig("contactEmail") || "info@smartcity.gov.in"}
+                </p>
               </CardContent>
             </Card>
 
@@ -201,7 +215,8 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600">
-                  {getConfig("contactAddress") || "Smart City Office, Government Building"}
+                  {getConfig("contactAddress") ||
+                    "Smart City Office, Government Building"}
                 </p>
               </CardContent>
             </Card>
@@ -213,13 +228,20 @@ const Index = () => {
       <footer className="bg-gray-900 text-white py-8">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <p className="text-gray-400">
-            © 2024 {appName}. {translations?.footer?.rights || "All rights reserved."}
+            © 2024 {appName}.{" "}
+            {translations?.footer?.rights || "All rights reserved."}
           </p>
           <div className="mt-4 flex justify-center space-x-6">
-            <Link to="/privacy" className="text-gray-400 hover:text-white text-sm">
+            <Link
+              to="/privacy"
+              className="text-gray-400 hover:text-white text-sm"
+            >
               {translations?.footer?.privacy || "Privacy Policy"}
             </Link>
-            <Link to="/terms" className="text-gray-400 hover:text-white text-sm">
+            <Link
+              to="/terms"
+              className="text-gray-400 hover:text-white text-sm"
+            >
               {translations?.footer?.terms || "Terms of Service"}
             </Link>
             <Link to="/help" className="text-gray-400 hover:text-white text-sm">

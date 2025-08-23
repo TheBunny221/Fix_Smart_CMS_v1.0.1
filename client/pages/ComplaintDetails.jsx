@@ -306,7 +306,8 @@ const ComplaintDetails = () => {
 
       // Footer with export information
       yPosition += sectionSpacing * 2;
-      addText(`${t.common?.export || "Exported"}: ${new Date().toLocaleString()}`,
+      addText(
+        `${t.common?.export || "Exported"}: ${new Date().toLocaleString()}`,
         8,
       );
       if (user?.fullName) {
@@ -338,10 +339,14 @@ const ComplaintDetails = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-red-600">Error Loading Complaint</CardTitle>
+          <CardTitle className="text-red-600">
+            Error Loading Complaint
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600 mb-4">Failed to load complaint details. Please try again.</p>
+          <p className="text-gray-600 mb-4">
+            Failed to load complaint details. Please try again.
+          </p>
           <Link to="/complaints">
             <Button>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -360,7 +365,9 @@ const ComplaintDetails = () => {
           <CardTitle>Complaint Not Found</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-600 mb-4">The complaint you're looking for doesn't exist.</p>
+          <p className="text-gray-600 mb-4">
+            The complaint you're looking for doesn't exist.
+          </p>
           <Link to="/complaints">
             <Button>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -420,13 +427,17 @@ const ComplaintDetails = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Type</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Type
+                </label>
                 <p className="text-gray-900">
                   {complaint?.type?.replace("_", " ") || "Unknown Type"}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Description</label>
+                <label className="text-sm font-medium text-gray-500">
+                  Description
+                </label>
                 <p className="text-gray-900">
                   {complaint?.description || "No description available"}
                 </p>
@@ -438,7 +449,11 @@ const ComplaintDetails = () => {
                     Location
                   </label>
                   <p className="text-gray-900">{complaint.area}</p>
-                  {complaint.landmark && <p className="text-gray-600 text-sm">(Near {complaint.landmark})</p>}
+                  {complaint.landmark && (
+                    <p className="text-gray-600 text-sm">
+                      (Near {complaint.landmark})
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500 flex items-center">
@@ -452,12 +467,14 @@ const ComplaintDetails = () => {
                     </p>
                     {complaint.assignedOn && (
                       <p className="text-gray-700">
-                        Assigned: {new Date(complaint.assignedOn).toLocaleString()}
+                        Assigned:{" "}
+                        {new Date(complaint.assignedOn).toLocaleString()}
                       </p>
                     )}
                     {complaint.resolvedOn && (
                       <p className="text-gray-700">
-                        Resolved: {new Date(complaint.resolvedOn).toLocaleString()}
+                        Resolved:{" "}
+                        {new Date(complaint.resolvedOn).toLocaleString()}
                       </p>
                     )}
                   </div>
@@ -537,7 +554,10 @@ const ComplaintDetails = () => {
                     const isCitizen = user?.role === "CITIZEN";
 
                     return (
-                      <div key={index} className={`p-4 border-l-4 ${getStatusColor(log.toStatus)} bg-gray-50`}>
+                      <div
+                        key={index}
+                        className={`p-4 border-l-4 ${getStatusColor(log.toStatus)} bg-gray-50`}
+                      >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-2">
@@ -561,8 +581,12 @@ const ComplaintDetails = () => {
                               <div>
                                 {log.comment && (
                                   <div className="mb-2">
-                                    <span className="text-sm font-medium text-gray-500">Remarks:</span>
-                                    <p className="text-gray-700">{log.comment}</p>
+                                    <span className="text-sm font-medium text-gray-500">
+                                      Remarks:
+                                    </span>
+                                    <p className="text-gray-700">
+                                      {log.comment}
+                                    </p>
                                   </div>
                                 )}
                               </div>
@@ -573,8 +597,7 @@ const ComplaintDetails = () => {
                                 Status changed from{" "}
                                 <span className="font-medium">
                                   {log.fromStatus}
-                                </span>
-                                {" "}
+                                </span>{" "}
                                 to{" "}
                                 <span className="font-medium">
                                   {log.toStatus}
@@ -611,9 +634,7 @@ const ComplaintDetails = () => {
               </CardHeader>
               <CardContent>
                 <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                  <p className="text-gray-700">
-                    {complaint.remarks}
-                  </p>
+                  <p className="text-gray-700">{complaint.remarks}</p>
                 </div>
               </CardContent>
             </Card>
@@ -659,7 +680,9 @@ const ComplaintDetails = () => {
               <CardContent>
                 <div className="space-y-2">
                   <div>
-                    <span className="text-sm font-medium text-gray-500">Assigned To</span>
+                    <span className="text-sm font-medium text-gray-500">
+                      Assigned To
+                    </span>
                     <p className="text-gray-900">
                       {typeof complaint.assignedTo === "object" &&
                       complaint.assignedTo
@@ -669,7 +692,9 @@ const ComplaintDetails = () => {
                   </div>
                   {complaint.assignedOn && (
                     <div>
-                      <span className="text-sm font-medium text-gray-500">Assigned On</span>
+                      <span className="text-sm font-medium text-gray-500">
+                        Assigned On
+                      </span>
                       <p className="text-gray-900">
                         {new Date(complaint.assignedOn).toLocaleDateString()}
                       </p>
@@ -692,7 +717,10 @@ const ComplaintDetails = () => {
               {complaint?.attachments && complaint.attachments.length > 0 ? (
                 <div className="space-y-3">
                   {complaint.attachments.map((attachment) => (
-                    <div key={attachment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div
+                      key={attachment.id}
+                      className="flex items-center justify-between p-3 border rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         {attachment.mimeType?.startsWith("image/") ? (
                           <Image className="h-5 w-5 text-blue-600" />
@@ -766,15 +794,15 @@ const ComplaintDetails = () => {
                 complaint.status === "CLOSED") &&
                 complaint.submittedById === user?.id &&
                 !complaint.rating && (
-                <Button
-                  className="w-full"
-                  variant="outline"
-                  onClick={() => setShowFeedbackDialog(true)}
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Provide Feedback
-                </Button>
-              )}
+                  <Button
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => setShowFeedbackDialog(true)}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Provide Feedback
+                  </Button>
+                )}
 
               <Button
                 className="w-full"
