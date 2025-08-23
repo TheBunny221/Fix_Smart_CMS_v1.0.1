@@ -2,13 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useGetPublicSystemConfigQuery } from "../store/api/systemConfigApi";
 import { getApiErrorMessage } from "../store/api/baseApi";
 
-
-
-
-
-const SystemConfigContext = createContext(
-  undefined,
-);
+const SystemConfigContext = createContext(undefined);
 
 export const useSystemConfig = () => {
   const context = useContext(SystemConfigContext);
@@ -20,16 +14,12 @@ export const useSystemConfig = () => {
   return context;
 };
 
-
-
-export const SystemConfigProvider: React.FC = ({
-  children,
-}) => {
+export const SystemConfigProvider = ({ children }) => {
   const [config, setConfig] = useState({});
 
   // Use RTK Query hook for better error handling and caching
   const {
-    data,
+    data: configResponse,
     isLoading,
     error,
     refetch,
@@ -46,10 +36,8 @@ export const SystemConfigProvider: React.FC = ({
       console.log("System config loaded successfully via RTK Query");
     } else if (error) {
       const errorMessage = getApiErrorMessage(error);
-      console.error("Error fetching system config via RTK Query,
-        errorMessage,
-      );
-      console.error("Full error details, {
+      console.error("Error fetching system config via RTK Query", errorMessage);
+      console.error("Full error details", {
         status: error?.status,
         data: error?.data,
         message: error?.message,
@@ -57,7 +45,7 @@ export const SystemConfigProvider: React.FC = ({
       });
       // Fallback to default values
       setConfig({
-        APP_NAME,
+        APP_NAME: "Kochi Smart City",
         APP_LOGO_URL: "/logo.png",
         APP_LOGO_SIZE: "medium",
         COMPLAINT_ID_PREFIX: "KSC",
@@ -75,8 +63,6 @@ export const SystemConfigProvider: React.FC = ({
     return config[key] || defaultValue;
   };
 
-  // RTK Query handles data fetching automatically, no manual useEffect needed
-
   const appName = getConfig("APP_NAME", "Kochi Smart City");
   const appLogoUrl = getConfig("APP_LOGO_URL", "/logo.png");
   const appLogoSize = getConfig("APP_LOGO_SIZE", "medium");
@@ -92,8 +78,8 @@ export const SystemConfigProvider: React.FC = ({
   };
 
   return (
-    
+    <SystemConfigContext.Provider value={value}>
       {children}
-    
+    </SystemConfigContext.Provider>
   );
 };
