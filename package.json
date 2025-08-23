@@ -42,6 +42,9 @@
     "db:stats": "node prisma/migration-utils.js stats",
     "db:cleanup": "node prisma/migration-utils.js cleanup",
     "db:check": "node prisma/migration-utils.js check",
+    "convert:ts-to-js": "node scripts/convert-ts-to-js.js",
+    "convert:dry-run": "node scripts/convert-ts-to-js.js --dry-run",
+    "convert:verbose": "node scripts/convert-ts-to-js.js --verbose",
     "postinstall": "npm run db:generate"
   },
   "dependencies": {
