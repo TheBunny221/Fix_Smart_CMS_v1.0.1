@@ -131,6 +131,24 @@ export const {
 export default baseApi;
 
 /**
+ * Utility function to extract error message from API error
+ * @param {Object} error - Error object from API response
+ * @returns {string} Error message string
+ */
+export const getApiErrorMessage = (error) => {
+  if (!error) return "An unexpected error occurred";
+
+  // If error has a direct message
+  if (error.data?.message) {
+    return error.data.message;
+  }
+
+  // Use the handleApiError function to get standardized error
+  const standardError = handleApiError(error);
+  return standardError.message;
+};
+
+/**
  * Utility function to create consistent error responses
  * @param {Object} error - Error object from API response
  * @returns {Object} Standardized error object
