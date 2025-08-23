@@ -32,7 +32,7 @@ import {
 } from "../components/ui/select";
 import { Shield, User, Mail, Lock, Phone, MapPin, Home } from "lucide-react";
 
-const Register: React.FC = () => {
+const Register = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
@@ -44,9 +44,9 @@ const Register: React.FC = () => {
   // API hooks
   const [registerUser, { isLoading: isRegistering }] = useRegisterMutation();
   const {
-    data,
-    isLoading,
-    error,
+    data: wardsResponse,
+    isLoading: wardsLoading,
+    error: wardsError,
   } = useGetWardsQuery();
   const wardsData = Array.isArray(wardsResponse?.data)
     ? wardsResponse.data
@@ -66,7 +66,7 @@ const Register: React.FC = () => {
   }, [isAuthenticated, user, navigate]);
 
   const [formData, setFormData] = useState({
-    fullName,
+    fullName: "",
     email: "",
     phoneNumber: "",
     password: "",
@@ -77,16 +77,16 @@ const Register: React.FC = () => {
 
   // Transform wards data for the form
   const wards = wardsData.map((ward) => ({
-    value,
+    value: ward.id,
     label: ward.name,
   }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (formData.password == formData.confirmPassword) {
+    if (formData.password !== formData.confirmPassword) {
       toast({
-        title,
+        title: "Error",
         description: "Passwords do not match",
         variant: "destructive",
       });
@@ -95,7 +95,7 @@ const Register: React.FC = () => {
 
     try {
       const result = await registerUser({
-        fullName,
+        fullName: formData.fullName,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
         password: formData.password,
@@ -106,38 +106,38 @@ const Register: React.FC = () => {
       if (result.data?.requiresOtpVerification) {
         // OTP verification required - open unified dialog
         openOtpFlow({
-          context,
+          context: "registration",
           email: formData.email,
           title: "Complete Registration",
           description:
             "Enter the verification code sent to your email to activate your account",
           onSuccess: (data) => {
             toast({
-              title,
-              description: `Welcome ${data.user?.fullName} Your account has been verified.`,
+              title: "Success",
+              description: `Welcome ${data.user?.fullName}! Your account has been verified.`,
             });
             // Navigation will be handled by auth state change
           },
         });
 
         toast({
-          title,
+          title: "Check Your Email",
           description: "Please check your email for the verification code.",
         });
       } else {
         // Direct registration without OTP
         toast({
-          title,
-          description: "Account created successfully Welcome aboard",
+          title: "Success",
+          description: "Account created successfully! Welcome aboard!",
         });
         // Navigation will be handled by auth state change
       }
     } catch (error) {
-      console.error("Registration error, JSON.stringify(error, null, 2));
-      console.error("Registration error object, error);
+      console.error("Registration error:", JSON.stringify(error, null, 2));
+      console.error("Registration error object:", error);
 
       // Handle RTK Query error structure
-      console.log("RTK Query error structure, error);
+      console.log("RTK Query error structure:", error);
 
       // Check if this is an RTK Query error with data
       const errorData = error?.data?.data || error?.data;
@@ -149,34 +149,34 @@ const Register: React.FC = () => {
 
         if (isActive && action === "login") {
           toast({
-            title,
+            title: "Email Already Registered",
             description:
               "This email is already registered. Please log in instead.",
             variant: "destructive",
             action: (
-              
+              <Button variant="outline" onClick={() => navigate("/login")}>
                 Go to Login
-              
+              </Button>
             ),
           });
-        } else if (isActive && action === "verify_email") {
+        } else if (!isActive && action === "verify_email") {
           toast({
-            title,
+            title: "Email Verification Required",
             description:
               "This email is already registered but not verified. Please check your email for verification code.",
           });
 
           // Open OTP flow for the existing unverified user
           openOtpFlow({
-            context,
+            context: "registration",
             email: formData.email,
             title: "Complete Registration",
             description:
               "Enter the verification code sent to your email to activate your account. Click 'Resend Code' if you need a new verification email.",
             onSuccess: (data) => {
               toast({
-                title,
-                description: `Welcome ${data.user?.fullName} Your account has been verified.`,
+                title: "Success",
+                description: `Welcome ${data.user?.fullName}! Your account has been verified.`,
               });
             },
           });
@@ -187,167 +187,191 @@ const Register: React.FC = () => {
           errorData?.message ||
           error?.data?.message ||
           getApiErrorMessage(error);
-        console.log("Extracted error message, errorMessage);
+        console.log("Extracted error message:", errorMessage);
         toast({
-          title,
-          description,
+          title: "Registration Failed",
+          description: errorMessage,
           variant: "destructive",
         });
       }
     }
   };
 
-  return ({/* Header */}
-        
-          
-            
-            
-              {appName}
-              Create Your Account
-            
-          
-        
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <Logo size={appLogoSize} />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">{appName}</h1>
+          <p className="text-gray-600 mt-2">Create Your Account</p>
+        </div>
 
         {/* Registration Form */}
-        
-          
-            
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-center">
+              <Shield className="h-6 w-6 mx-auto mb-2" />
               Register for E-Governance Portal
-            
-          
-          
-            
-              
-                Full Name
-                
-                  
-                  
-                      setFormData({ ...formData, fullName)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Label htmlFor="fullName">Full Name</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullName: e.target.value })
                     }
                     placeholder="Enter your full name"
                     className="pl-10"
                     required
                   />
-                
-              
+                </div>
+              </div>
 
-              
-                Email Address
-                
-                  
-                  
-                      setFormData({ ...formData, email)
+              <div>
+                <Label htmlFor="email">Email Address</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
                     }
                     placeholder="Enter your email"
                     className="pl-10"
                     required
                   />
-                
-              
+                </div>
+              </div>
 
-              
-                Phone Number
-                
-                  
-                  
-                      setFormData({ ...formData, phoneNumber)
+              <div>
+                <Label htmlFor="phoneNumber">Phone Number</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phoneNumber: e.target.value })
                     }
                     placeholder="Enter your phone number"
                     className="pl-10"
                     required
                   />
-                
-              
+                </div>
+              </div>
 
-              
-                Ward
-                
-                    setFormData({ ...formData, wardId)
+              <div>
+                <Label htmlFor="wardId">Ward</Label>
+                <Select
+                  value={formData.wardId}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, wardId: value })
                   }
                 >
-                  
-                    
-                  
-                  
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your ward" />
+                  </SelectTrigger>
+                  <SelectContent>
                     {wardsLoading ? (
-                      
+                      <SelectItem value="" disabled>
                         Loading wards...
-                      
+                      </SelectItem>
                     ) : wardsError ? (
-                      
+                      <SelectItem value="" disabled>
                         Error loading wards
-                      
+                      </SelectItem>
                     ) : (
                       wards.map((ward) => (
-                        
+                        <SelectItem key={ward.value} value={ward.value}>
                           {ward.label}
-                        
+                        </SelectItem>
                       ))
                     )}
-                  
-                
-              
+                  </SelectContent>
+                </Select>
+              </div>
 
-              
-                Password
-                
-                  
-                  
-                      setFormData({ ...formData, password)
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
                     }
                     placeholder="Create a password"
                     className="pl-10"
                     required
                   />
-                
-              
+                </div>
+              </div>
 
-              
-                Confirm Password
-                
-                  
-                  
+              <div>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={(e) =>
                       setFormData({
                         ...formData,
-                        confirmPassword,
+                        confirmPassword: e.target.value,
                       })
                     }
                     placeholder="Confirm your password"
                     className="pl-10"
                     required
                   />
-                
-              
+                </div>
+              </div>
 
-              
+              <Button type="submit" className="w-full" disabled={isRegistering}>
                 {isRegistering ? "Creating Account..." : "Create Account"}
-              
-            
+              </Button>
+            </form>
 
-            
-              
+            <div className="mt-4 text-center space-y-2">
+              <p className="text-sm text-gray-600">
                 Already have an account?{" "}
-                
+                <Link to="/login" className="text-blue-600 hover:underline">
                   Sign in here
-                
-              
-              
+                </Link>
+              </p>
+              <p className="text-sm text-gray-600">
                 Or{" "}
-                
-                  Submit
-                
-              
-              
-                
-                  
+                <Link to="/guest" className="text-blue-600 hover:underline">
+                  Submit Complaint as Guest
+                </Link>
+              </p>
+              <div>
+                <Button variant="outline" onClick={() => navigate("/")} className="mt-2">
+                  <Home className="h-4 w-4 mr-2" />
                   Back to Home
-                
-              
-            
-          
-        
-      
-    
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 };
 
