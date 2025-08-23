@@ -3,8 +3,6 @@
  * Especially useful for handling third-party library interference like FullStory
  */
 
-export 
-
 export function debugFetchEnvironment() {
   const info = {
     originalFetchAvailable: (globalThis).__originalFetch,
@@ -53,10 +51,10 @@ export function debugFetchEnvironment() {
 export function logFetchDebugInfo() {
   const info = debugFetchEnvironment();
   console.group("🔍 Fetch Environment Debug Info");
-  console.log("Original Fetch Available, info.originalFetchAvailable);
-  console.log("Current Fetch Type, info.currentFetchType);
-  console.log("Third-party Overrides, info.thirdPartyOverrides);
-  console.log("Environment, info.environment);
+  console.log("Original Fetch Available:", info.originalFetchAvailable);
+  console.log("Current Fetch Type:", info.currentFetchType);
+  console.log("Third-party Overrides:", info.thirdPartyOverrides);
+  console.log("Environment:", info.environment);
 
   if (info.thirdPartyOverrides.length > 0) {
     console.warn(
@@ -71,10 +69,10 @@ export function logFetchDebugInfo() {
 /**
  * Creates a robust fetch function that tries multiple approaches
  */
-export function createRobustFetch(): typeof fetch {
+export function createRobustFetch() {
   return async function robustFetch(
     input,
-    init?,
+    init,
   ) {
     const originalFetch = (globalThis).__originalFetch;
 
@@ -83,7 +81,7 @@ export function createRobustFetch(): typeof fetch {
       try {
         return await originalFetch(input, init);
       } catch (error) {
-        console.warn("Original fetch failed, trying current fetch, error);
+        console.warn("Original fetch failed, trying current fetch:", error);
       }
     }
 
@@ -91,7 +89,7 @@ export function createRobustFetch(): typeof fetch {
     try {
       return await fetch(input, init);
     } catch (error) {
-      console.warn("Current fetch failed, trying XMLHttpRequest fallback,
+      console.warn("Current fetch failed, trying XMLHttpRequest fallback:",
         error,
       );
 
@@ -104,7 +102,7 @@ export function createRobustFetch(): typeof fetch {
         xhr.timeout = 15000;
         xhr.onload = () => {
           const response = new Response(xhr.responseText, {
-            status,
+            status: xhr.status,
             statusText: xhr.statusText,
             headers: new Headers(
               xhr
@@ -113,7 +111,7 @@ export function createRobustFetch(): typeof fetch {
                 .filter((line) => line.trim())
                 .reduce(
                   (headers, line) => {
-                    const [key, value] = line.split(");
+                    const [key, value] = line.split(": ");
                     if (key && value) headers[key] = value;
                     return headers;
                   },
