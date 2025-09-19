@@ -77,7 +77,6 @@ const MaintenanceTasks: React.FC = () => {
     error,
     refetch: refetchComplaints,
   } = useGetComplaintsQuery({
-    assignedToId: user?.id,
     maintenanceTeamId: user?.id,
     page: 1,
     limit: 100,
@@ -102,88 +101,59 @@ const MaintenanceTasks: React.FC = () => {
   }
 
   // Extract tasks from API response
+  // Helper: normalize a complaint object into a task
+  function mapComplaintToTask(complaint: any) {
+    let lat: number | null = null;
+    let lng: number | null = null;
+
+    // Try parsing coordinates
+    try {
+      const coords =
+        typeof complaint.coordinates === "string"
+          ? JSON.parse(complaint.coordinates)
+          : complaint.coordinates;
+
+      lat = coords?.latitude ?? coords?.lat ?? complaint.latitude ?? null;
+      lng = coords?.longitude ?? coords?.lng ?? complaint.longitude ?? null;
+    } catch {
+      lat = complaint.latitude ?? null;
+      lng = complaint.longitude ?? null;
+    }
+
+    return {
+      id: complaint.id,
+      title: complaint.title || `${complaint.type} Issue`,
+      location: complaint.area,
+      address: [complaint.area, complaint.landmark, complaint.address]
+        .filter(Boolean)
+        .join(", "),
+      priority: complaint.priority || "MEDIUM",
+      status: complaint.status,
+      estimatedTime: getPriorityEstimatedTime(complaint.priority),
+      dueDate: complaint.deadline
+        ? new Date(complaint.deadline).toISOString().split("T")[0]
+        : null,
+      isOverdue: complaint.deadline
+        ? new Date(complaint.deadline) < new Date() &&
+          !["RESOLVED", "CLOSED"].includes(complaint.status)
+        : false,
+      description: complaint.description,
+      assignedAt: complaint.assignedOn || complaint.submittedOn,
+      resolvedAt: complaint.resolvedOn,
+      photo: complaint.attachments?.[0]?.url || null,
+      latitude: lat,
+      longitude: lng,
+      complaintId: complaint.complaintId,
+      statusLogs: complaint.statusLogs || [],
+    };
+  }
+
   const tasks = useMemo(() => {
-    if (Array.isArray(complaintsResponse?.data?.complaints)) {
-      return complaintsResponse!.data!.complaints.map((complaint: any) => {
-        let lat = complaint.latitude;
-        let lng = complaint.longitude;
-        if ((!lat || !lng) && complaint.coordinates) {
-          try {
-            const c =
-              typeof complaint.coordinates === "string"
-                ? JSON.parse(complaint.coordinates)
-                : complaint.coordinates;
-            lat = c?.latitude ?? c?.lat ?? lat;
-            lng = c?.longitude ?? c?.lng ?? lng;
-          } catch {}
-        }
-        return {
-          id: complaint.id,
-          title: complaint.title || `${complaint.type} Issue`,
-          location: complaint.area,
-          address: `${complaint.area}${complaint.landmark ? ", " + complaint.landmark : ""}${complaint.address ? ", " + complaint.address : ""}`,
-          priority: complaint.priority || "MEDIUM",
-          status: complaint.status,
-          estimatedTime: getPriorityEstimatedTime(complaint.priority),
-          dueDate: complaint.deadline
-            ? new Date(complaint.deadline).toISOString().split("T")[0]
-            : null,
-          isOverdue: complaint.deadline
-            ? new Date(complaint.deadline) < new Date() &&
-              ["RESOLVED", "CLOSED"].includes(complaint.status) === false
-            : false,
-          description: complaint.description,
-          assignedAt: complaint.assignedOn || complaint.submittedOn,
-          resolvedAt: complaint.resolvedOn,
-          photo: complaint.attachments?.[0]?.url || null,
-          latitude: lat,
-          longitude: lng,
-          complaintId: complaint.complaintId,
-          statusLogs: complaint.statusLogs || [],
-        };
-      });
-    }
-    if (Array.isArray((complaintsResponse as any)?.data)) {
-      return (complaintsResponse as any).data.map((complaint: any) => {
-        let lat = complaint.latitude;
-        let lng = complaint.longitude;
-        if ((!lat || !lng) && complaint.coordinates) {
-          try {
-            const c =
-              typeof complaint.coordinates === "string"
-                ? JSON.parse(complaint.coordinates)
-                : complaint.coordinates;
-            lat = c?.latitude ?? c?.lat ?? lat;
-            lng = c?.longitude ?? c?.lng ?? lng;
-          } catch {}
-        }
-        return {
-          id: complaint.id,
-          title: complaint.title || `${complaint.type} Issue`,
-          location: complaint.area,
-          address: `${complaint.area}${complaint.landmark ? ", " + complaint.landmark : ""}${complaint.address ? ", " + complaint.address : ""}`,
-          priority: complaint.priority || "MEDIUM",
-          status: complaint.status,
-          estimatedTime: getPriorityEstimatedTime(complaint.priority),
-          dueDate: complaint.deadline
-            ? new Date(complaint.deadline).toISOString().split("T")[0]
-            : null,
-          isOverdue: complaint.deadline
-            ? new Date(complaint.deadline) < new Date() &&
-              ["RESOLVED", "CLOSED"].includes(complaint.status) === false
-            : false,
-          description: complaint.description,
-          assignedAt: complaint.assignedOn || complaint.submittedOn,
-          resolvedAt: complaint.resolvedOn,
-          photo: complaint.attachments?.[0]?.url || null,
-          latitude: lat,
-          longitude: lng,
-          complaintId: complaint.complaintId,
-          statusLogs: complaint.statusLogs || [],
-        };
-      });
-    }
-    return [];
+    const data =
+      complaintsResponse?.data?.complaints ??
+      (Array.isArray(complaintsResponse?.data) ? complaintsResponse.data : []);
+
+    return Array.isArray(data) ? data.map(mapComplaintToTask) : [];
   }, [complaintsResponse]);
 
   // Calculate task counts with mutually exclusive buckets
@@ -208,51 +178,6 @@ const MaintenanceTasks: React.FC = () => {
   };
 
   const showStatCards = false;
-
-  const quickFilters = [
-    {
-      key: "all",
-      label: "All",
-      count: taskCounts.total,
-      icon: <ListTodo className="h-3 w-3" />,
-    },
-    {
-      key: "pending",
-      label: "Pending",
-      count: taskCounts.pending,
-      icon: <Clock className="h-3 w-3" />,
-    },
-    {
-      key: "overdue",
-      label: "Overdue",
-      count: taskCounts.overdue,
-      icon: <AlertCircle className="h-3 w-3" />,
-    },
-    {
-      key: "inProgress",
-      label: "In Progress",
-      count: taskCounts.inProgress,
-      icon: <Clock className="h-3 w-3" />,
-    },
-    {
-      key: "resolved",
-      label: "Resolved",
-      count: taskCounts.resolved,
-      icon: <CheckCircle className="h-3 w-3" />,
-    },
-    {
-      key: "reopened",
-      label: "Reopened",
-      count: taskCounts.reopened,
-      icon: <RotateCcw className="h-3 w-3" />,
-    },
-    {
-      key: "closed",
-      label: "Closed",
-      count: taskCounts.closed,
-      icon: <CheckCircle className="h-3 w-3" />,
-    },
-  ];
 
   // Filter tasks based on active filter
   const filteredTasks = tasks.filter((task) => {
@@ -329,6 +254,7 @@ const MaintenanceTasks: React.FC = () => {
   // Handle navigation
   const handleNavigate = async (task: any) => {
     try {
+      console.log("Navigating to task:", task.coordinates);
       setNavigatingId(task.id);
       let lat = task.latitude;
       let lng = task.longitude;
@@ -671,16 +597,16 @@ const MaintenanceTasks: React.FC = () => {
             </Card>
           </div>
         </div>
-        {/* <div className="mt-4 flex items-center justify-end">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
-            className="h-7 rounded-full px-3 py-1 border border-blue-200/40 bg-white text-blue-700 hover:bg-blue-50"
+            className="h-7 rounded-full px-2.5 py-1 border border-blue-200/40 bg-white text-blue-700 hover:bg-blue-50"
             onClick={() => refetchComplaints()}
           >
             Refresh
           </Button>
-        </div>*/}
+        </div>
       </div>
 
       {/* Total card + StatusOverviewGrid (reuse WardOfficer components for consistent UI) */}
@@ -700,7 +626,7 @@ const MaintenanceTasks: React.FC = () => {
 
         {/* Modern status grid (All, Pending, Overdue, In Progress, Resolved, Reopened, Closed) */}
         <div className="mt-3">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
             {[
               // {
               //   id: "all",

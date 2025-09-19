@@ -35,7 +35,7 @@ const MaintenanceDashboard = lazy(() => import("./pages/MaintenanceDashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 // Complaint management
-import ComplaintsList from "./pages/ComplaintsList";
+const ComplaintsList = lazy(() => import("./pages/ComplaintsList"));
 const ComplaintDetails = lazy(() => import("./pages/ComplaintDetails"));
 const CreateComplaint = lazy(() => import("./pages/CreateComplaint"));
 const CitizenComplaintForm = lazy(() => import("./pages/CitizenComplaintForm"));
@@ -207,6 +207,23 @@ const App: React.FC = () => {
                         />
                         <Route
                           path="/complaints/:id"
+                          element={
+                            <UnifiedLayout>
+                              <RoleBasedRoute
+                                allowedRoles={[
+                                  "CITIZEN",
+                                  "WARD_OFFICER",
+                                  "MAINTENANCE_TEAM",
+                                  "ADMINISTRATOR",
+                                ]}
+                              >
+                                <ComplaintDetails />
+                              </RoleBasedRoute>
+                            </UnifiedLayout>
+                          }
+                        />
+                        <Route
+                          path="/complaint/:id"
                           element={
                             <UnifiedLayout>
                               <RoleBasedRoute
