@@ -158,7 +158,10 @@ export interface ServiceRequestStatsResponse {
 export const serviceRequestsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get all service requests with filters
-    getServiceRequests: builder.query<ServiceRequestsResponse, ServiceRequestFilters>({
+    getServiceRequests: builder.query<
+      ServiceRequestsResponse,
+      ServiceRequestFilters
+    >({
       query: (filters = {}) => {
         const params = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
@@ -168,7 +171,16 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
         });
         return `service-requests?${params.toString()}`;
       },
-      providesTags: ["ServiceRequest"],
+      providesTags: (result) =>
+        result?.data && Array.isArray(result.data)
+          ? [
+              ...result.data.map(({ id }) => ({
+                type: "ServiceRequest" as const,
+                id,
+              })),
+              { type: "ServiceRequest", id: "LIST" },
+            ]
+          : [{ type: "ServiceRequest", id: "LIST" }],
     }),
 
     // Get service request by ID
@@ -184,7 +196,7 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["ServiceRequest"],
+      invalidatesTags: [{ type: "ServiceRequest", id: "LIST" }],
     }),
 
     // Update service request
@@ -196,7 +208,7 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: "ServiceRequest", id },
-        "ServiceRequest",
+        { type: "ServiceRequest", id: "LIST" },
       ],
     }),
 
@@ -208,7 +220,7 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, id) => [
         { type: "ServiceRequest", id },
-        "ServiceRequest",
+        { type: "ServiceRequest", id: "LIST" },
       ],
     }),
 
@@ -219,7 +231,10 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
     }),
 
     // Get service request statistics
-    getServiceRequestStats: builder.query<ServiceRequestStatsResponse, { userId?: string; wardId?: string }>({
+    getServiceRequestStats: builder.query<
+      ServiceRequestStatsResponse,
+      { userId?: string; wardId?: string }
+    >({
       query: (params = {}) => {
         const searchParams = new URLSearchParams();
         Object.entries(params).forEach(([key, value]) => {
@@ -227,7 +242,7 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
         });
         return `service-requests/stats?${searchParams.toString()}`;
       },
-      providesTags: ["ServiceRequest"],
+      providesTags: [{ type: "ServiceRequest", id: "STATS" }],
     }),
 
     // Assign service request to user
@@ -239,7 +254,7 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: "ServiceRequest", id },
-        "ServiceRequest",
+        { type: "ServiceRequest", id: "LIST" },
       ],
     }),
 
@@ -252,7 +267,7 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: "ServiceRequest", id },
-        "ServiceRequest",
+        { type: "ServiceRequest", id: "LIST" },
       ],
     }),
 
@@ -265,7 +280,7 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: "ServiceRequest", id },
-        "ServiceRequest",
+        { type: "ServiceRequest", id: "LIST" },
       ],
     }),
 

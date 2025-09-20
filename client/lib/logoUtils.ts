@@ -159,5 +159,5 @@ export interface LogoProps {
   context?: "nav" | "auth" | "footer" | "mobile";
   className?: string;
   showText?: boolean;
-  fallbackIcon?: React.ComponentType<{ className?: string }>;
+  fallbackIcon?: React.ElementType<{ className?: string }>;
 }

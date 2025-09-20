@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { ReactNode } from "react";
 
 // Types
 export interface Toast {
@@ -17,7 +18,7 @@ export interface Modal {
   id: string;
   type: "alert" | "confirm" | "custom";
   title: string;
-  content: string | React.ReactNode;
+  content: string | ReactNode;
   onConfirm?: () => void;
   onCancel?: () => void;
   confirmText?: string;
@@ -94,18 +95,63 @@ export interface UIState {
 
   // Error states
   hasError: boolean;
-  errorMessage?: string;
+  errorMessage: string | null;
 }
 
-// Initial state
-  const initialState: UIState = {
-    isLoading: false,
-    isOnline: navigator.onLine,
+// Helper utilities for accessing browser APIs safely. These guards are
+// necessary because Redux slices are evaluated in non-browser environments
+// (tests, SSR) where `window`, `navigator`, or `localStorage` may be
+// undefined. Accessing them without checks caused runtime errors during
+// StrictMode double renders.
+const isBrowser = typeof window !== "undefined";
+
+const readLocalStorage = (key: string): string | null => {
+  if (!isBrowser) return null;
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const writeLocalStorage = (key: string, value: string) => {
+  if (!isBrowser) return;
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage errors (quota, disabled storage, etc.).
+  }
+};
+
+const getInitialOnlineStatus = (): boolean => {
+  if (!isBrowser || typeof navigator === "undefined") {
+    return true;
+  }
+  try {
+    return navigator.onLine;
+  } catch {
+    return true;
+  }
+};
+
+const getInitialTheme = (): "light" | "dark" | "system" => {
+  const stored = readLocalStorage("theme");
+  if (stored === "light" || stored === "dark" || stored === "system") {
+    return stored;
+  }
+  return "system";
+};
+
+const getInitialSidebarCollapsed = (): boolean => {
+  return readLocalStorage("sidebarCollapsed") === "true";
+};
+
+const createInitialState = (): UIState => ({
+  isLoading: false,
+  isOnline: getInitialOnlineStatus(),
   isSidebarOpen: true,
-  isSidebarCollapsed:
-    localStorage.getItem("sidebarCollapsed") === "true" || false,
-  theme:
-    (localStorage.getItem("theme") as "light" | "dark" | "system") || "system",
+  isSidebarCollapsed: getInitialSidebarCollapsed(),
+  theme: getInitialTheme(),
   modals: [],
   toasts: [],
   notifications: [],
@@ -119,11 +165,16 @@ export interface UIState {
   globalSearchQuery: "",
   isSearchOpen: false,
   layout: "default",
-    hasError: false,
-  };
+  hasError: false,
+  errorMessage: null,
+});
+
+// Initial state
+const initialState: UIState = createInitialState();
 
 // Helper functions
-const generateId = () => Math.random().toString(36).substr(2, 9);
+const generateId = () => Math.random().toString(36).slice(2, 11);
+const DEFAULT_TOAST_DURATION = 5000;
 
 // UI slice
 const uiSlice = createSlice({
@@ -135,12 +186,12 @@ const uiSlice = createSlice({
       state,
       action: PayloadAction<{ isLoading: boolean; text?: string }>,
     ) => {
-        state.isLoading = action.payload.isLoading;
-        if (action.payload.text !== undefined) {
-          state.loadingText = action.payload.text;
-        } else {
-          delete state.loadingText;
-        }
+      state.isLoading = action.payload.isLoading;
+      if (action.payload.text !== undefined) {
+        state.loadingText = action.payload.text;
+      } else {
+        delete state.loadingText;
+      }
     },
 
     // Sidebar
@@ -152,24 +203,21 @@ const uiSlice = createSlice({
     },
     toggleSidebarCollapsed: (state) => {
       state.isSidebarCollapsed = !state.isSidebarCollapsed;
-      localStorage.setItem(
-        "sidebarCollapsed",
-        state.isSidebarCollapsed.toString(),
-      );
+      writeLocalStorage("sidebarCollapsed", state.isSidebarCollapsed.toString());
     },
     setSidebarCollapsed: (state, action: PayloadAction<boolean>) => {
       state.isSidebarCollapsed = action.payload;
-      localStorage.setItem("sidebarCollapsed", action.payload.toString());
+      writeLocalStorage("sidebarCollapsed", action.payload.toString());
     },
 
     // Theme
     setTheme: (state, action: PayloadAction<"light" | "dark" | "system">) => {
       state.theme = action.payload;
-      localStorage.setItem("theme", action.payload);
+      writeLocalStorage("theme", action.payload);
     },
     initializeTheme: (state) => {
       // Initialize theme from localStorage or system preference
-      const savedTheme = localStorage.getItem("theme") as
+      const savedTheme = readLocalStorage("theme") as
         | "light"
         | "dark"
         | "system"
@@ -178,12 +226,12 @@ const uiSlice = createSlice({
         state.theme = savedTheme;
       } else {
         state.theme = "system";
-        localStorage.setItem("theme", "system");
+        writeLocalStorage("theme", "system");
       }
     },
     initializeSidebar: (state) => {
       // Initialize sidebar state from localStorage
-      const savedSidebarCollapsed = localStorage.getItem("sidebarCollapsed");
+      const savedSidebarCollapsed = readLocalStorage("sidebarCollapsed");
       if (savedSidebarCollapsed !== null) {
         state.isSidebarCollapsed = savedSidebarCollapsed === "true";
       }
@@ -215,7 +263,7 @@ const uiSlice = createSlice({
     showToast: (state, action: PayloadAction<Omit<Toast, "id">>) => {
       const toast: Toast = {
         id: generateId(),
-        duration: 5000,
+        duration: action.payload.duration ?? DEFAULT_TOAST_DURATION,
         ...action.payload,
       };
       state.toasts.push(toast);
@@ -232,10 +280,16 @@ const uiSlice = createSlice({
     // Notifications
     addNotification: (
       state,
-      action: PayloadAction<Omit<Notification, "id">>,
+      action: PayloadAction<
+        Omit<Notification, "id" | "isRead" | "createdAt"> &
+          Partial<Pick<Notification, "isRead" | "createdAt">>
+      >,
     ) => {
       const notification: Notification = {
         id: generateId(),
+        isRead: action.payload.isRead ?? false,
+        createdAt:
+          action.payload.createdAt ?? new Date().toISOString(),
         ...action.payload,
       };
       state.notifications.unshift(notification);
@@ -348,19 +402,19 @@ const uiSlice = createSlice({
       action: PayloadAction<{ hasError: boolean; message?: string }>,
     ) => {
       state.hasError = action.payload.hasError;
-        if (action.payload.message !== undefined) {
-          state.errorMessage = action.payload.message;
-        } else {
-          delete state.errorMessage;
-        }
+      if (action.payload.message !== undefined) {
+        state.errorMessage = action.payload.message;
+      } else {
+        state.errorMessage = null;
+      }
     },
     clearError: (state) => {
-        state.hasError = false;
-        delete state.errorMessage;
+      state.hasError = false;
+      state.errorMessage = null;
     },
 
     // Reset
-    resetUI: () => initialState,
+    resetUI: () => createInitialState(),
   },
 });
 

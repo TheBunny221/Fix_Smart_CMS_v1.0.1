@@ -18,6 +18,8 @@ import {
 } from "./ui/alert-dialog";
 import { useToast } from "../hooks/use-toast";
 
+type ToastPayload = Parameters<ReturnType<typeof useToast>["toast"]>[0];
+
 const GlobalMessageHandler: React.FC = () => {
   const dispatch = useAppDispatch();
   const modals = useAppSelector(selectModals);
@@ -27,12 +29,17 @@ const GlobalMessageHandler: React.FC = () => {
   // Handle toasts using shadcn/ui toast system
   useEffect(() => {
     toasts.forEach((toastItem) => {
-      toast({
+      const toastPayload: ToastPayload = {
         title: toastItem.title,
         description: toastItem.message,
         variant: toastItem.type === "error" ? "destructive" : "default",
-        duration: toastItem.duration,
-      });
+      };
+
+      if (typeof toastItem.duration === "number") {
+        toastPayload.duration = toastItem.duration;
+      }
+
+      toast(toastPayload);
 
       // Remove from store after showing
       dispatch(hideToast(toastItem.id));

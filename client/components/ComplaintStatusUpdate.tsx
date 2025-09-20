@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getApiErrorMessage } from "../store/api/baseApi";
 import { useAppSelector } from "../store/hooks";
 import {
-  useUpdateComplaintStatusMutation,
   useAssignComplaintMutation,
-  useUpdateComplaintMutation,
   useGetWardUsersQuery,
+  useUpdateComplaintMutation,
+  useUpdateComplaintStatusMutation,
 } from "../store/api/complaintsApi";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -29,17 +29,20 @@ import {
 import { Badge } from "./ui/badge";
 import { useToast } from "../hooks/use-toast";
 import { AlertCircle, CheckCircle, Clock, User, UserCheck } from "lucide-react";
+import type { Complaint as ComplaintApiModel } from "../store/api/complaintsApi";
+import type { ComplaintStatus } from "../store/slices/complaintsSlice";
 
 interface ComplaintStatusUpdateProps {
   complaint: {
     id: string;
     complaintId?: string;
-    status: string;
+    status: ComplaintStatus;
     priority: string;
     type: string;
     description: string;
     area: string;
     assignedTo?: { id: string; fullName: string } | null;
+    wardOfficer?: { id: string; fullName: string } | null;
   };
   isOpen: boolean;
   onClose: () => void;
@@ -47,13 +50,22 @@ interface ComplaintStatusUpdateProps {
   mode?: "status" | "assign" | "both";
 }
 
-const COMPLAINT_STATUSES = [
-  {
-    value: "REGISTERED",
-    label: "Registered",
-    icon: AlertCircle,
-    color: "bg-yellow-100 text-yellow-800",
-  },
+type ComplaintStatusOption = {
+  value: ComplaintStatus;
+  label: string;
+  icon: typeof AlertCircle;
+  color: string;
+};
+
+const DEFAULT_STATUS: ComplaintStatusOption = {
+  value: "REGISTERED",
+  label: "Registered",
+  icon: AlertCircle,
+  color: "bg-yellow-100 text-yellow-800",
+};
+
+const COMPLAINT_STATUSES: ComplaintStatusOption[] = [
+  DEFAULT_STATUS,
   {
     value: "ASSIGNED",
     label: "Assigned",
@@ -86,6 +98,27 @@ const COMPLAINT_STATUSES = [
   },
 ];
 
+const toApiStatus = (
+  status: ComplaintStatus,
+): ComplaintApiModel["status"] => {
+  switch (status) {
+    case "REGISTERED":
+      return "registered";
+    case "ASSIGNED":
+      return "assigned";
+    case "IN_PROGRESS":
+      return "in_progress";
+    case "RESOLVED":
+      return "resolved";
+    case "CLOSED":
+      return "closed";
+    case "REOPENED":
+      return "reopened";
+    default:
+      return "registered";
+  }
+};
+
 const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
   complaint,
   isOpen,
@@ -102,30 +135,32 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
     useAssignComplaintMutation();
   const [updateComplaint] = useUpdateComplaintMutation();
 
-  const [formData, setFormData] = useState({
-    status: "",
+  const [formData, setFormData] = useState<{
+    status: ComplaintStatus;
+    assignedTo: string;
+    remarks: string;
+  }>({
+    status: complaint.status,
     assignedTo: "unassigned",
     remarks: "",
   });
 
-  // Update form data when complaint changes
   useEffect(() => {
-    // Prefer wardOfficer if present (new field), otherwise fall back to assignedTo
-    const currentAssigneeId = (complaint as any).wardOfficer?.id || complaint.assignedTo?.id || "unassigned";
+    const currentAssigneeId =
+      complaint.wardOfficer?.id || complaint.assignedTo?.id || "unassigned";
     setFormData({
       status: complaint.status,
       assignedTo: currentAssigneeId,
       remarks: "",
     });
-  }, [complaint.status, (complaint as any).wardOfficer?.id, complaint.assignedTo?.id]);
+  }, [complaint.assignedTo?.id, complaint.status, complaint.wardOfficer?.id]);
 
   const isLoading = isUpdatingStatus || isAssigning;
 
-  // Fetch assignable users consistently with UpdateComplaintModal
   const getUsersFilter = () => {
     if (user?.role === "ADMINISTRATOR") return { role: "WARD_OFFICER" };
     if (user?.role === "WARD_OFFICER") return { role: "MAINTENANCE_TEAM" };
-    return {} as any;
+    return {};
   };
 
   const { data: usersResponse, isLoading: usersLoading } = useGetWardUsersQuery(
@@ -136,42 +171,75 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
     },
   );
 
-  const assignableUsers = usersResponse?.data?.users || [];
+  const assignableUsers = useMemo(
+    () => usersResponse?.data?.users ?? [],
+    [usersResponse?.data?.users],
+  );
+
+  const getStatusInfo = (status: ComplaintStatus): ComplaintStatusOption =>
+    COMPLAINT_STATUSES.find((item) => item.value === status) ?? DEFAULT_STATUS;
+
+  const currentStatusInfo = getStatusInfo(complaint.status);
+  const newStatusInfo = getStatusInfo(formData.status as ComplaintStatus);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      const trimmedRemarks = formData.remarks.trim();
+
       if (
         mode === "status" ||
         (mode === "both" && formData.status !== complaint.status)
       ) {
-        await updateComplaintStatus({
+        const statusPayload: {
+          id: string;
+          status: ComplaintStatus;
+          remarks?: string;
+        } = {
           id: complaint.id,
-          status: formData.status as any,
-          remarks: formData.remarks || undefined,
-        }).unwrap();
+          status: toApiStatus(formData.status),
+        };
+
+        if (trimmedRemarks) {
+          statusPayload.remarks = trimmedRemarks;
+        }
+
+        await updateComplaintStatus(statusPayload).unwrap();
       }
 
       if (
         mode === "assign" ||
         (mode === "both" &&
-          formData.assignedTo !== ((complaint as any).wardOfficer?.id || complaint.assignedTo?.id || "unassigned"))
+          formData.assignedTo !==
+            (complaint.wardOfficer?.id ||
+              complaint.assignedTo?.id ||
+              "unassigned"))
       ) {
         if (user?.role === "WARD_OFFICER") {
-          await assignComplaint({
+          const assignPayload: {
+            id: string;
+            assignedTo: string;
+            remarks?: string;
+          } = {
             id: complaint.id,
             assignedTo:
               formData.assignedTo === "unassigned" ? "" : formData.assignedTo,
-            remarks: formData.remarks || undefined,
-          }).unwrap();
+          };
+
+          if (trimmedRemarks) {
+            assignPayload.remarks = trimmedRemarks;
+          }
+
+          await assignComplaint(assignPayload).unwrap();
         } else if (user?.role === "ADMINISTRATOR") {
-          const updateData: any = {};
+          const updateData: Record<string, string> = {};
           if (formData.assignedTo !== "unassigned") {
-            // Use wardOfficerId when admins assign a ward officer
             updateData.wardOfficerId = formData.assignedTo;
           }
-          if (formData.remarks) updateData.remarks = formData.remarks;
+          if (trimmedRemarks) {
+            updateData.remarks = trimmedRemarks;
+          }
           await updateComplaint({ id: complaint.id, ...updateData }).unwrap();
         }
       }
@@ -183,11 +251,9 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
 
       onSuccess?.();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       const message =
-        error?.data?.message ||
-        getApiErrorMessage(error) ||
-        "Failed to update complaint";
+        getApiErrorMessage(error) || "Failed to update complaint";
       toast({
         title: "Error",
         description: message,
@@ -195,16 +261,6 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
       });
     }
   };
-
-  const getStatusInfo = (status: string) => {
-    return (
-      COMPLAINT_STATUSES.find((s) => s.value === status) ||
-      COMPLAINT_STATUSES[0]
-    );
-  };
-
-  const currentStatusInfo = getStatusInfo(complaint.status);
-  const newStatusInfo = getStatusInfo(formData.status);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -220,9 +276,8 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Complaint Summary */}
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <h3 className="font-medium mb-2">Complaint Summary</h3>
+          <div className="rounded-lg bg-gray-50 p-4">
+            <h3 className="mb-2 font-medium">Complaint Summary</h3>
             <div className="space-y-2 text-sm">
               <p>
                 <strong>Type:</strong> {complaint.type.replace("_", " ")}
@@ -233,35 +288,37 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
               <p>
                 <strong>Description:</strong> {complaint.description}
               </p>
-              <div className="flex items-center gap-2 mt-2">
+              <div className="mt-2 flex items-center gap-2">
                 <Badge className={currentStatusInfo.color}>
                   {currentStatusInfo.label}
                 </Badge>
-                {((complaint as any).wardOfficer || complaint.assignedTo) && (
+                {(complaint.wardOfficer || complaint.assignedTo) && (
                   <Badge variant="outline" className="flex items-center gap-1">
                     <UserCheck className="h-3 w-3" />
-                    {((complaint as any).wardOfficer || complaint.assignedTo).fullName}
+                    {(complaint.wardOfficer || complaint.assignedTo)?.fullName}
                   </Badge>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Status Update */}
           {(mode === "status" || mode === "both") && (
             <div className="space-y-2">
               <Label htmlFor="status">Update Status</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, status: value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    status: value as ComplaintStatus,
+                  }))
                 }
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {COMPLAINT_STATUSES.filter((s) => s.value !== "REOPENED").map(
+                  {COMPLAINT_STATUSES.filter((status) => status.value !== "REOPENED").map(
                     (status) => (
                       <SelectItem key={status.value} value={status.value}>
                         <div className="flex items-center gap-2">
@@ -275,16 +332,14 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
               </Select>
 
               {formData.status !== complaint.status && (
-                <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
-                  Status will change from{" "}
-                  <strong>{currentStatusInfo.label}</strong> to{" "}
-                  <strong>{newStatusInfo.label}</strong>
+                <div className="rounded bg-blue-50 p-2 text-sm text-blue-600">
+                  Status will change from <strong>{currentStatusInfo.label}</strong>{" "}
+                  to <strong>{newStatusInfo.label}</strong>
                 </div>
               )}
             </div>
           )}
 
-          {/* Assignment */}
           {(mode === "assign" || mode === "both") && (
             <div className="space-y-2">
               <Label htmlFor="assignedTo">
@@ -314,22 +369,20 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
                       Loading users...
                     </SelectItem>
                   ) : (
-                    assignableUsers.map((u) => (
-                      <SelectItem key={u.id} value={u.id}>
-                        <div className="flex justify-between items-center w-full">
-                          <div className="flex flex-col">
-                            <span>{u.fullName}</span>
-                            {u.email && (
-                              <span className="text-xs text-gray-500">
-                                {u.email}
-                              </span>
-                            )}
-                            {u.ward?.name && (
-                              <span className="text-xs text-blue-600">
-                                {u.ward.name}
-                              </span>
-                            )}
-                          </div>
+                    assignableUsers.map((assignableUser) => (
+                      <SelectItem key={assignableUser.id} value={assignableUser.id}>
+                        <div className="flex w-full flex-col">
+                          <span>{assignableUser.fullName}</span>
+                          {assignableUser.email && (
+                            <span className="text-xs text-gray-500">
+                              {assignableUser.email}
+                            </span>
+                          )}
+                          {assignableUser.ward?.name && (
+                            <span className="text-xs text-blue-600">
+                              {assignableUser.ward.name}
+                            </span>
+                          )}
                         </div>
                       </SelectItem>
                     ))
@@ -339,7 +392,6 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
             </div>
           )}
 
-          {/* Remarks */}
           <div className="space-y-2">
             <Label htmlFor="remarks">Remarks (Optional)</Label>
             <Textarea

@@ -1,18 +1,17 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "@/store/store";
-import { fetchWardDashboardStats } from "@/store/slices/complaintsSlice";
+import { Card, CardContent, CardHeader } from "./ui/card";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { fetchWardDashboardStats } from "../store/slices/complaintsSlice";
 
 const AllComplaintCard = ({ wardId }: { wardId: string }) => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { wardDashboardStats, loading } = useSelector((state: RootState) => state.complaints);
+    const dispatch = useAppDispatch();
+    const { wardDashboardStats, isLoading, loading } = useAppSelector((state) => state.complaints);
 
     useEffect(() => {
         dispatch(fetchWardDashboardStats(wardId));
     }, [dispatch, wardId]);
 
-    if (loading) {
+    if (loading ?? isLoading) {
         return (
             <Card>
                 <CardHeader>

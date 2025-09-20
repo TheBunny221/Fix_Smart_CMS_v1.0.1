@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useGetPublicSystemConfigQuery } from "../store/api/systemConfigApi";
 import { getApiErrorMessage } from "../store/api/baseApi";
 
@@ -12,23 +19,39 @@ interface SystemConfigContextType {
   appLogoUrl: string;
   appLogoSize: string;
   isLoading: boolean;
+  isReady: boolean;
   refreshConfig: () => Promise<void>;
   getConfig: (key: string, defaultValue?: string) => string;
 }
 
-const SystemConfigContext = createContext<SystemConfigContextType | undefined>(
-  undefined,
+const fallbackConfig: SystemConfig = {
+  APP_NAME: "Kochi Smart City",
+  APP_LOGO_URL: "/logo.png",
+  APP_LOGO_SIZE: "medium",
+  COMPLAINT_ID_PREFIX: "KSC",
+  COMPLAINT_ID_START_NUMBER: "1",
+  COMPLAINT_ID_LENGTH: "4",
+};
+
+const defaultContextValue: SystemConfigContextType = {
+  config: fallbackConfig,
+  appName: fallbackConfig.APP_NAME,
+  appLogoUrl: fallbackConfig.APP_LOGO_URL,
+  appLogoSize: fallbackConfig.APP_LOGO_SIZE,
+  isLoading: false,
+  isReady: false,
+  refreshConfig: async () => {
+    /* no-op default */
+  },
+  getConfig: (key: string, defaultValue: string = "") =>
+    fallbackConfig[key] ?? defaultValue,
+};
+
+const SystemConfigContext = createContext<SystemConfigContextType>(
+  defaultContextValue,
 );
 
-export const useSystemConfig = () => {
-  const context = useContext(SystemConfigContext);
-  if (context === undefined) {
-    throw new Error(
-      "useSystemConfig must be used within a SystemConfigProvider",
-    );
-  }
-  return context;
-};
+export const useSystemConfig = () => useContext(SystemConfigContext);
 
 interface SystemConfigProviderProps {
   children: React.ReactNode;
@@ -37,72 +60,72 @@ interface SystemConfigProviderProps {
 export const SystemConfigProvider: React.FC<SystemConfigProviderProps> = ({
   children,
 }) => {
-  const [config, setConfig] = useState<SystemConfig>({});
+  const [config, setConfig] = useState<SystemConfig>(fallbackConfig);
+  const [isReady, setIsReady] = useState(false);
 
-  // Use RTK Query hook for better error handling and caching
-  const {
-    data: configResponse,
-    isLoading,
-    error,
-    refetch,
-  } = useGetPublicSystemConfigQuery();
+  const { data, isLoading, isFetching, error, refetch } =
+    useGetPublicSystemConfigQuery();
 
-  // Process the RTK Query data when it changes
   useEffect(() => {
-    if (configResponse?.success && Array.isArray(configResponse.data)) {
-      const configMap: SystemConfig = {};
-      configResponse.data.forEach((setting: any) => {
+    if (data?.success && Array.isArray(data.data)) {
+      const configMap: SystemConfig = { ...fallbackConfig };
+      data.data.forEach((setting: { key: string; value: string }) => {
         configMap[setting.key] = setting.value;
       });
       setConfig(configMap);
-      console.log("System config loaded successfully via RTK Query");
-    } else if (error) {
-      const errorMessage = getApiErrorMessage(error);
+      setIsReady(true);
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (error) {
       console.error(
         "Error fetching system config via RTK Query:",
-        errorMessage,
+        getApiErrorMessage(error),
       );
-      console.error("Full error details:", {
-        status: error?.status,
-        data: error?.data,
-        message: error?.message,
-        error: error?.error,
-      });
-      // Fallback to default values
-      setConfig({
-        APP_NAME: "Kochi Smart City",
-        APP_LOGO_URL: "/logo.png",
-        APP_LOGO_SIZE: "medium",
-        COMPLAINT_ID_PREFIX: "KSC",
-        COMPLAINT_ID_START_NUMBER: "1",
-        COMPLAINT_ID_LENGTH: "4",
-      });
+      setConfig(fallbackConfig);
+      setIsReady(true);
     }
-  }, [configResponse, error]);
+  }, [error]);
 
-  const refreshConfig = async () => {
-    await refetch();
-  };
+  useEffect(() => {
+    if (!isLoading && !isFetching && !isReady) {
+      setIsReady(true);
+    }
+  }, [isLoading, isFetching, isReady]);
 
-  const getConfig = (key: string, defaultValue: string = "") => {
-    return config[key] || defaultValue;
-  };
+  const refreshConfig = useCallback(async () => {
+    try {
+      await refetch();
+    } catch (err) {
+      console.error("Failed to refresh system config:", err);
+    }
+  }, [refetch]);
 
-  // RTK Query handles data fetching automatically, no manual useEffect needed
+  const getConfig = useCallback(
+    (key: string, defaultValue: string = "") => config[key] ?? defaultValue,
+    [config],
+  );
 
-  const appName = getConfig("APP_NAME", "Kochi Smart City");
-  const appLogoUrl = getConfig("APP_LOGO_URL", "/logo.png");
-  const appLogoSize = getConfig("APP_LOGO_SIZE", "medium");
+  const value = useMemo<SystemConfigContextType>(() => {
+    const appName = getConfig("APP_NAME", fallbackConfig.APP_NAME);
+    const appLogoUrl = getConfig("APP_LOGO_URL", fallbackConfig.APP_LOGO_URL);
+    const appLogoSize = getConfig(
+      "APP_LOGO_SIZE",
+      fallbackConfig.APP_LOGO_SIZE,
+    );
 
-  const value: SystemConfigContextType = {
-    config,
-    appName,
-    appLogoUrl,
-    appLogoSize,
-    isLoading,
-    refreshConfig,
-    getConfig,
-  };
+    return {
+      config,
+      appName,
+      appLogoUrl,
+      appLogoSize,
+      isLoading,
+      isReady,
+      refreshConfig,
+      getConfig,
+    };
+  }, [config, getConfig, isLoading, isReady, refreshConfig]);
 
   return (
     <SystemConfigContext.Provider value={value}>

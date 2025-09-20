@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useAppDispatch } from "../store/hooks";
 import { setCredentials } from "../store/slices/authSlice";
 import {
@@ -28,17 +36,23 @@ interface OtpContextValue {
   openOtpFlow: (config: OtpFlowConfig) => void;
   closeOtpFlow: () => void;
   isOpen: boolean;
+  isReady: boolean;
 }
 
-const OtpContext = createContext<OtpContextValue | null>(null);
-
-export const useOtpFlow = () => {
-  const context = useContext(OtpContext);
-  if (!context) {
-    throw new Error("useOtpFlow must be used within an OtpProvider");
-  }
-  return context;
+const defaultContextValue: OtpContextValue = {
+  openOtpFlow: () => {
+    if (process.env.NODE_ENV !== "production") {
+      console.warn("OTP flow opened before provider was mounted.");
+    }
+  },
+  closeOtpFlow: () => {},
+  isOpen: false,
+  isReady: false,
 };
+
+const OtpContext = createContext<OtpContextValue>(defaultContextValue);
+
+export const useOtpFlow = () => useContext(OtpContext);
 
 export const OtpProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -47,6 +61,15 @@ export const OtpProvider: React.FC<{ children: React.ReactNode }> = ({
   const { toast } = useToast();
   const [config, setConfig] = useState<OtpFlowConfig | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    setIsReady(true);
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // API hooks with error boundaries
   const [verifyLoginOtp] = useVerifyOTPLoginMutation();
@@ -58,31 +81,19 @@ export const OtpProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const openOtpFlow = useCallback(
     (flowConfig: OtpFlowConfig) => {
-      try {
-        setConfig(flowConfig);
-        setIsOpen(true);
-      } catch (error) {
-        console.error("Failed to open OTP flow:", error);
-        toast({
-          title: "Error",
-          description: "Failed to open verification dialog",
-          variant: "destructive",
-        });
-      }
+      setConfig(flowConfig);
+      setIsOpen(true);
     },
-    [toast],
+    [],
   );
 
   const closeOtpFlow = useCallback(() => {
     try {
       setIsOpen(false);
-      if (config?.onCancel) {
-        config.onCancel();
-      }
+      config?.onCancel?.();
       setConfig(null);
     } catch (error) {
       console.error("Failed to close OTP flow:", error);
-      // Still try to close the dialog
       setIsOpen(false);
       setConfig(null);
     }
@@ -145,7 +156,6 @@ export const OtpProvider: React.FC<{ children: React.ReactNode }> = ({
             return;
         }
 
-        // Store credentials if we have a token
         if (result.data?.token && result.data?.user) {
           dispatch(
             setCredentials({
@@ -154,7 +164,9 @@ export const OtpProvider: React.FC<{ children: React.ReactNode }> = ({
             }),
           );
 
-          localStorage.setItem("token", result.data.token);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("token", result.data.token);
+          }
         }
 
         // Call success callback
@@ -176,8 +188,10 @@ export const OtpProvider: React.FC<{ children: React.ReactNode }> = ({
         });
 
         // Close dialog
-        setIsOpen(false);
-        setConfig(null);
+        if (isMountedRef.current) {
+          setIsOpen(false);
+          setConfig(null);
+        }
       } catch (error: any) {
         // Error will be handled by the mutation and shown in the dialog
         console.error("OTP verification failed:", error);
@@ -230,11 +244,15 @@ export const OtpProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [config, resendLoginOtp, resendRegisterOtp, resendGuestOtp, toast]);
 
-  const contextValue: OtpContextValue = {
-    openOtpFlow,
-    closeOtpFlow,
-    isOpen,
-  };
+  const contextValue = useMemo<OtpContextValue>(
+    () => ({
+      openOtpFlow,
+      closeOtpFlow,
+      isOpen,
+      isReady,
+    }),
+    [closeOtpFlow, isOpen, isReady, openOtpFlow],
+  );
 
   return (
     <OtpContext.Provider value={contextValue}>

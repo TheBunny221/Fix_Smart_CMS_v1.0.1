@@ -79,6 +79,20 @@ export interface UpdateComplaintRequest {
   priority?: Complaint["priority"];
 }
 
+export interface ComplaintPagination {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  limit: number;
+  hasNext?: boolean;
+  hasPrev?: boolean;
+}
+
+export interface ComplaintListResponse {
+  complaints: Complaint[];
+  pagination?: ComplaintPagination;
+}
+
 export interface ComplaintFilters {
   status?: string[];
   priority?: string[];
@@ -107,7 +121,10 @@ export interface ComplaintListParams extends ComplaintFilters {
 export const complaintsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get complaints list with pagination and filtering
-    getComplaints: builder.query<ApiResponse<Complaint[]>, ComplaintListParams>(
+    getComplaints: builder.query<
+      ApiResponse<ComplaintListResponse>,
+      ComplaintListParams
+    >(
       {
         query: (params) => {
           const searchParams = new URLSearchParams();
@@ -124,9 +141,9 @@ export const complaintsApi = baseApi.injectEndpoints({
         },
         // Let RTK Query handle response naturally
         providesTags: (result) =>
-          result?.data && Array.isArray(result.data)
+          result?.data?.complaints
             ? [
-                ...result.data.map(({ id }) => ({
+                ...result.data.complaints.map(({ id }) => ({
                   type: "Complaint" as const,
                   id,
                 })),
@@ -161,11 +178,15 @@ export const complaintsApi = baseApi.injectEndpoints({
           const { data } = await queryFulfilled;
           // Update complaints list if it's cached
           dispatch(
-            complaintsApi.util.updateQueryData("getComplaints", {}, (draft) => {
-              if (draft.data) {
-                draft.data.unshift(data.data);
-              }
-            }),
+            complaintsApi.util.updateQueryData(
+              "getComplaints",
+              {},
+              (draft) => {
+                if (draft.data?.complaints) {
+                  draft.data.complaints.unshift(data.data);
+                }
+              },
+            ),
           );
         } catch {
           // Error handled by base query
@@ -204,11 +225,18 @@ export const complaintsApi = baseApi.injectEndpoints({
 
         // Update complaints list
         const patchResult2 = dispatch(
-          complaintsApi.util.updateQueryData("getComplaints", {}, (draft) => {
-            if (draft.data) {
-              draft.data = optimisticUpdate(draft.data, { id, ...patch });
-            }
-          }),
+          complaintsApi.util.updateQueryData(
+            "getComplaints",
+            {},
+            (draft) => {
+              if (draft.data?.complaints) {
+                draft.data.complaints = optimisticUpdate(
+                  draft.data.complaints,
+                  { id, ...patch },
+                );
+              }
+            },
+          ),
         );
 
         try {

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from "react";
+import type { PointerDownOutsideEvent } from "@radix-ui/react-dialog";
 import { cn } from "../lib/utils";
 import {
   useFocusTrap,
@@ -43,6 +44,18 @@ export const AccessibleDialog: React.FC<AccessibleDialogProps> = ({
   const { saveFocus, restoreFocus } = useFocusManagement();
   const { announce } = useScreenReader();
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open && closeOnOverlayClick) {
+      onClose();
+    }
+  };
+
+  const handlePointerDownOutside = (event: PointerDownOutsideEvent) => {
+    if (!closeOnOverlayClick) {
+      event.preventDefault();
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       saveFocus();
@@ -74,15 +87,10 @@ export const AccessibleDialog: React.FC<AccessibleDialogProps> = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={closeOnOverlayClick ? onClose : undefined}
-    >
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(sizeClasses[size], className)}
-        onPointerDownOutside={
-          closeOnOverlayClick ? undefined : (e) => e.preventDefault()
-        }
+        onPointerDownOutside={handlePointerDownOutside}
         aria-labelledby="dialog-title"
         aria-describedby={description ? "dialog-description" : undefined}
       >
@@ -283,7 +291,9 @@ export const AccessibleTabs: React.FC<AccessibleTabsProps> = ({
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const enabledTabs = tabs.filter((tab) => !tab.disabled);
-  const enabledTabElements = tabRefs.current.filter(Boolean);
+  const enabledTabElements = tabRefs.current.filter(
+    (element): element is HTMLButtonElement => element !== null,
+  );
 
   useKeyboardNavigation(enabledTabElements, {
     orientation,
@@ -394,7 +404,11 @@ export const AccessibleMenu: React.FC<AccessibleMenuProps> = ({
 
   const enabledItems = items.filter((item) => !item.disabled);
 
-  useKeyboardNavigation(itemRefs.current.filter(Boolean), {
+  const enabledItemRefs = itemRefs.current.filter(
+    (element): element is HTMLButtonElement => element !== null,
+  );
+
+  useKeyboardNavigation(enabledItemRefs, {
     orientation: "vertical",
     onSelect: (index) => {
       const item = enabledItems[index];

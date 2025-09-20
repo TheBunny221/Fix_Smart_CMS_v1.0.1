@@ -1,306 +1,23 @@
-export interface Translation {
-  // Common
-  common: {
-    submit: string;
-    cancel: string;
-    save: string;
-    edit: string;
-    delete: string;
-    view: string;
-    search: string;
-    loading: string;
-    error: string;
-    success: string;
-    required: string;
-    optional: string;
-    all: string;
-    none: string;
-    yes: string;
-    no: string;
-    close: string;
-    back: string;
-    next: string;
-    previous: string;
-    refresh: string;
-    export: string;
-    download: string;
-    upload: string;
-  };
+type TranslationLeaf = string;
 
-  // Navigation
-  nav: {
-    home: string;
-    dashboard: string;
-    complaints: string;
-    users: string;
-    reports: string;
-    profile: string;
-    settings: string;
-    logout: string;
-    switchRole: string;
-    myComplaints: string;
-    trackStatus: string;
-    reopenComplaint: string;
-    ward: string;
-  };
+export interface TranslationObject {
+  [key: string]: TranslationLeaf | TranslationObject;
+}
 
-  // Authentication
-  auth: {
-    login: string;
-    register: string;
-    logout: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    forgotPassword: string;
-    resetPassword: string;
-    profile: string;
-    updateProfile: string;
-    rememberMe: string;
-    loginSuccess: string;
-    loginError: string;
-    invalidCredentials: string;
-    sessionExpired: string;
-    guestMode: string;
-    continueAsGuest: string;
-      signUp: string;
-  };
-
-  // Complaints
-  complaints: {
-    registerComplaint: string;
-    complaintId: string;
-    complaintType: string;
-    description: string;
-    status: string;
-    priority: string;
-    submittedBy: string;
-    submittedDate: string;
-    lastUpdated: string;
-    assignedTo: string;
-    slaDeadline: string;
-    ward: string;
-    area: string;
-    location: string;
-    address: string;
-    mobile: string;
-    attachments: string;
-    remarks: string;
-    trackStatus: string;
-    myComplaints: string;
-    reopenComplaint: string;
-    feedback: string;
-
-    // Status
-    registered: string;
-    assigned: string;
-    inProgress: string;
-    resolved: string;
-    closed: string;
-    reopened: string;
-
-    // Priority
-    low: string;
-    medium: string;
-    high: string;
-    critical: string;
-
-    // Types
-    waterSupply: string;
-    electricity: string;
-    roadRepair: string;
-    garbageCollection: string;
-    streetLighting: string;
-    sewerage: string;
-    publicHealth: string;
-    traffic: string;
-    others: string;
-  };
-
-  // Forms
-  forms: {
-    contactInformation: string;
-    problemDetails: string;
-    locationDetails: string;
-    complaintDescription: string;
-    optionalUploads: string;
-    captchaVerification: string;
-    enterCaptcha: string;
-    resetForm: string;
-    submitComplaint: string;
-    complaintSubmitted: string;
-    complaintSubmissionError: string;
-    fileUploadError: string;
-    invalidCaptcha: string;
-    requiredField: string;
-    invalidEmail: string;
-    invalidPhone: string;
-    minCharacters: string;
-  };
-
-  // Guest complaint form
-  guestForm: {
-    submitComplaint: string;
-    reportCivicIssues: string;
-    personalInformation: string;
-    complaintInformation: string;
-    locationInformation: string;
-    attachments: string;
-    reviewComplaint: string;
-    submitForVerification: string;
-    fullName: string;
-    emailAddress: string;
-    phoneNumber: string;
-    complaintType: string;
-    priority: string;
-    description: string;
-    ward: string;
-    subZone: string;
-    areaLocality: string;
-    nearbyLandmark: string;
-    completeAddress: string;
-    locationOnMap: string;
-    interactiveMapComing: string;
-    currentLocationDetected: string;
-    addPhotos: string;
-    addPhotosDescription: string;
-    uploadInstructions: string;
-    maxFilesAllowed: string;
-    fileSizeLimit: string;
-    allowedFormats: string;
-    uploadedImages: string;
-    preview: string;
-    remove: string;
-    reviewYourComplaint: string;
-    reviewDescription: string;
-    readyToSubmit: string;
-    readyToSubmitDescription: string;
-    whatHappensNext: string;
-    step1: string;
-    step2: string;
-    step3: string;
-    step4: string;
-    steps: {
-      details: string;
-      location: string;
-      attachments: string;
-      review: string;
-      submit: string;
-    };
-    progress: string;
-    stepOf: string;
-    completeRequiredFields: string;
-    fillRequiredInformation: string;
-    fixValidationErrors: string;
-    completeAllRequiredFields: string;
-    invalidFileType: string;
-    onlyImageFormats: string;
-    fileTooLarge: string;
-    selectSmallerFiles: string;
-    trackingNumber: string;
-    verificationCodeSent: string;
-    checkEmailForCode: string;
-    welcomeToSmartCity: string;
-    complaintVerified: string;
-    nowRegisteredCitizen: string;
-    canTrackProgress: string;
-    securityTip: string;
-    setPasswordForEasierLogin: string;
-    goToDashboard: string;
-    submitAnotherComplaint: string;
-    alreadyHaveAccount: string;
-    loginHere: string;
-    currentLocationIncluded: string;
-    selectOnMap: string;
-    imagePreview: string;
-    previewOfUploadedImage: string;
-    clickToUploadOrDrag: string;
-    invalidEmailFormat: string;
-    invalidPhoneFormat: string;
-    descriptionTooShort: string;
-    wardRequired: string;
-    areaRequired: string;
-    characterCount: string;
-    locationDetectedIncluded: string;
-  };
-
-  // Profile
-  profile: {
-    personalInformation: string;
-    contactDetails: string;
-    preferences: string;
-    changePassword: string;
-    avatar: string;
-    updateProfile: string;
-    profileUpdated: string;
-    currentPassword: string;
-    newPassword: string;
-    confirmPassword: string;
-    passwordMismatch: string;
-    passwordChanged: string;
-  };
-
-  // Settings
-  settings: {
-    generalSettings: string;
-    languageSettings: string;
-    notificationSettings: string;
-    privacySettings: string;
-    language: string;
-    notifications: string;
-    emailAlerts: string;
-    smsAlerts: string;
-    darkMode: string;
-    soundEffects: string;
-    dataRetention: string;
-    accountDeletion: string;
-  };
-
-  // Dashboard
-  dashboard: {
-    overview: string;
-    statistics: string;
-    totalComplaints: string;
-    resolvedToday: string;
-    slaBreaches: string;
-    activeUsers: string;
-    complaintsByStatus: string;
-    slaCompliance: string;
-    recentComplaints: string;
-    pendingTasks: string;
-    performanceMetrics: string;
-    wardPerformance: string;
-    quickActions: string;
-    notifications: string;
-    alerts: string;
-    reports: string;
-    overallCompliance: string;
-    onTime: string;
-    warning: string;
-    overdue: string;
-  };
-
-  // Admin
-  admin: {
-    userManagement: string;
-    systemConfiguration: string;
-    languageManagement: string;
-    analytics: string;
-    reports: string;
-  };
-
-  // Errors & Messages
-  messages: {
-    networkError: string;
-    serverError: string;
-    notFound: string;
-    unauthorized: string;
-    forbidden: string;
-    validationError: string;
-    sessionExpired: string;
-    operationSuccess: string;
-    operationFailed: string;
-  };
+export interface Translation extends TranslationObject {
+  common: Record<string, TranslationLeaf>;
+  nav: Record<string, TranslationLeaf>;
+  auth: Record<string, TranslationLeaf>;
+  complaints: Record<string, TranslationLeaf>;
+  forms: Record<string, TranslationLeaf>;
+  guest: Record<string, TranslationLeaf>;
+  guestForm: TranslationObject;
+  profile: Record<string, TranslationLeaf>;
+  settings: Record<string, TranslationLeaf>;
+  dashboard: Record<string, TranslationLeaf>;
+  reports: Record<string, TranslationLeaf>;
+  admin: Record<string, TranslationLeaf>;
+  messages: Record<string, TranslationLeaf>;
 }
 
 export const englishTranslations: Translation = {
@@ -426,6 +143,33 @@ export const englishTranslations: Translation = {
     invalidEmail: "Please enter a valid email address",
     invalidPhone: "Please enter a valid phone number",
     minCharacters: "Minimum 5 characters required",
+  },
+  guest: {
+    guestSubmission: "Guest Submission",
+    registeredUser: "Registered User",
+    emailVerification: "Email Verification",
+    otpSent: "OTP Sent",
+    otpVerification: "OTP Verification",
+    verifyAndSubmit: "Verify & Submit",
+    sendOtpAndSubmit: "Send OTP & Submit",
+    trackComplaint: "Track Complaint",
+    guestSubmissionProcess: "Guest Submission Process",
+    guestSubmissionDescription:
+      "For guest users, we'll send an OTP to your email for verification before submitting your complaint. This ensures the authenticity of your submission and enables you to track your complaint later.",
+    welcomeBack: "Welcome back",
+    loginRequired: "Login Required",
+    loginRequiredDescription:
+      "Please login or register to submit complaints as a registered user.",
+    enterOtp: "Enter 6-digit OTP",
+    resendOtp: "Resend",
+    otpExpires: "OTP expires in",
+    otpInstructions:
+      "We've sent a 6-digit OTP to your email. Please enter it below to submit your complaint.",
+    checkEmail: "Check your email inbox and spam folder",
+    recentComplaints: "Your Recent Complaints",
+    complaintDetails: "Complaint Details",
+    nextSteps: "Next Steps",
+    supportContact: "Need Help?",
   },
   guestForm: {
     submitComplaint: "Submit a Complaint",
@@ -572,6 +316,25 @@ export const englishTranslations: Translation = {
     warning: "Warning",
     overdue: "Overdue",
   },
+  reports: {
+    complaintReports: "Complaint Reports",
+    performanceReports: "Performance Reports",
+    slaReports: "SLA Reports",
+    userReports: "User Reports",
+    wardReports: "Ward Reports",
+    typeReports: "Type Reports",
+    statusReports: "Status Reports",
+    dateRange: "Date Range",
+    from: "From",
+    to: "To",
+    generate: "Generate",
+    export: "Export",
+    print: "Print",
+    chart: "Chart",
+    table: "Table",
+    summary: "Summary",
+    details: "Details",
+  },
   admin: {
     userManagement: "User Management",
     systemConfiguration: "System Configuration",
@@ -593,7 +356,53 @@ export const englishTranslations: Translation = {
   },
 };
 
-export const hindiTranslations: Translation = {
+type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends Array<unknown>
+    ? T[K]
+    : T[K] extends object
+      ? DeepPartial<T[K]>
+      : T[K];
+};
+
+const mergeTranslations = <T extends object>(
+  base: T,
+  overrides?: DeepPartial<T>,
+): T => {
+  if (!overrides) {
+    return base;
+  }
+
+  const result = { ...(base as Record<string, unknown>) } as T;
+
+  (Object.keys(overrides) as (keyof T)[]).forEach((key) => {
+    const overrideValue = overrides[key];
+    if (overrideValue === undefined) {
+      return;
+    }
+
+    const baseValue = base[key];
+
+    if (
+      baseValue &&
+      overrideValue &&
+      typeof baseValue === 'object' &&
+      typeof overrideValue === 'object' &&
+      !Array.isArray(baseValue) &&
+      !Array.isArray(overrideValue)
+    ) {
+      result[key] = mergeTranslations(
+        baseValue as object,
+        overrideValue as DeepPartial<object>,
+      ) as T[typeof key];
+    } else {
+      result[key] = overrideValue as T[typeof key];
+    }
+  });
+
+  return result;
+};
+
+const hindiTranslationOverrides: DeepPartial<Translation> = {
   common: {
     submit: "जमा करें",
     cancel: "रद्द करें",
@@ -752,6 +561,25 @@ export const hindiTranslations: Translation = {
     warning: "चेतावनी",
     overdue: "देरी से",
   },
+  reports: {
+    complaintReports: "Complaint Reports",
+    performanceReports: "Performance Reports",
+    slaReports: "SLA Reports",
+    userReports: "User Reports",
+    wardReports: "Ward Reports",
+    typeReports: "Type Reports",
+    statusReports: "Status Reports",
+    dateRange: "Date Range",
+    from: "From",
+    to: "To",
+    generate: "Generate",
+    export: "Export",
+    print: "Print",
+    chart: "Chart",
+    table: "Table",
+    summary: "Summary",
+    details: "Details",
+  },
   admin: {
     userManagement: "उपयोगकर्ता प्रबंधन",
     systemConfiguration: "सिस्टम कॉन्फ़िगरेशन",
@@ -773,7 +601,7 @@ export const hindiTranslations: Translation = {
   },
 };
 
-export const malayalamTranslations: Translation = {
+const malayalamTranslationOverrides: DeepPartial<Translation> = {
   common: {
     submit: "സമർപ്പിക്കുക",
     cancel: "റദ്ദാക്കുക",
@@ -932,6 +760,25 @@ export const malayalamTranslations: Translation = {
     warning: "മുന്നറിയിപ്പ്",
     overdue: "കാലഹരണപ്പെട്ട",
   },
+  reports: {
+    complaintReports: "Complaint Reports",
+    performanceReports: "Performance Reports",
+    slaReports: "SLA Reports",
+    userReports: "User Reports",
+    wardReports: "Ward Reports",
+    typeReports: "Type Reports",
+    statusReports: "Status Reports",
+    dateRange: "Date Range",
+    from: "From",
+    to: "To",
+    generate: "Generate",
+    export: "Export",
+    print: "Print",
+    chart: "Chart",
+    table: "Table",
+    summary: "Summary",
+    details: "Details",
+  },
   admin: {
     userManagement: "ഉപയോക്തൃ മാനേജ്മെന്റ്",
     systemConfiguration: "സിസ്റ്റം കോൺഫിഗറേഷൻ",
@@ -955,7 +802,21 @@ export const malayalamTranslations: Translation = {
   },
 };
 
-export const translations = {
+export const hindiTranslations: Translation = mergeTranslations(
+  englishTranslations,
+  hindiTranslationOverrides,
+);
+
+export const malayalamTranslations: Translation = mergeTranslations(
+  englishTranslations,
+  malayalamTranslationOverrides,
+);
+
+export const SUPPORTED_LANGUAGES = ["en", "hi", "ml"] as const;
+export type Language = (typeof SUPPORTED_LANGUAGES)[number];
+export const DEFAULT_LANGUAGE: Language = "en";
+
+export const translations: Record<Language, Translation> = {
   en: englishTranslations,
   hi: hindiTranslations,
   ml: malayalamTranslations,

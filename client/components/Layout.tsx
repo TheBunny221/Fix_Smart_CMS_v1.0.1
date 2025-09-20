@@ -5,7 +5,14 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { logout } from "../store/slices/authSlice";
 import { setLanguage } from "../store/slices/languageSlice";
-import { toggleSidebar, setSidebarOpen } from "../store/slices/uiSlice";
+import {
+  toggleSidebar,
+  setSidebarOpen,
+  markNotificationAsRead,
+  removeNotification,
+  markAllNotificationsAsRead,
+  clearNotifications,
+} from "../store/slices/uiSlice";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,7 +52,7 @@ const Layout: React.FC<LayoutProps> = ({ userRole }) => {
   const { isSidebarOpen, notifications } = useAppSelector((state) => state.ui);
 
   // Use authenticated user's role if available, otherwise fall back to prop
-  const effectiveUserRole = user?.role || userRole || "citizen";
+  const effectiveUserRole = (user?.role || userRole || "CITIZEN") as User["role"];
   const unreadNotifications = notifications.filter((n) => !n.isRead).length;
 
   // Return loading state if translations are not yet loaded
@@ -61,7 +68,7 @@ const Layout: React.FC<LayoutProps> = ({ userRole }) => {
 
   const getNavigationItems = () => {
     switch (effectiveUserRole) {
-      case "citizen":
+      case "CITIZEN":
         return [
           {
             path: "/",
@@ -145,7 +152,7 @@ const Layout: React.FC<LayoutProps> = ({ userRole }) => {
 
   const getRoleLabel = () => {
     switch (effectiveUserRole) {
-      case "citizen":
+      case "CITIZEN":
         return "Citizen Portal";
       case "ADMINISTRATOR":
         return "Admin " + translations.nav.dashboard;

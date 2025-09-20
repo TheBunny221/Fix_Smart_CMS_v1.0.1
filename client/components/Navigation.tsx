@@ -1,4 +1,5 @@
 import React from "react";
+import type { ComponentType } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
 import { useSystemConfig } from "../contexts/SystemConfigContext";
@@ -38,6 +39,10 @@ import {
   AlertTriangle,
   PieChart,
 } from "lucide-react";
+
+const ShieldFallbackIcon: ComponentType<{ className?: string }> = (props) => (
+  <Shield {...props} />
+);
 
 type UserRole =
   | "CITIZEN"
@@ -231,7 +236,7 @@ const Navigation: React.FC = () => {
                 context="nav"
                 to="/"
                 responsive
-                fallbackIcon={Shield}
+                fallbackIcon={ShieldFallbackIcon}
               />
             </div>
 
@@ -388,7 +393,7 @@ const Navigation: React.FC = () => {
               context="nav"
               to="/"
               responsive
-              fallbackIcon={Shield}
+              fallbackIcon={ShieldFallbackIcon}
             />
           </div>
 

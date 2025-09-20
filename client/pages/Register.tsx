@@ -31,6 +31,11 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { Shield, User, Mail, Lock, Phone, MapPin, Home } from "lucide-react";
+import type { ComponentType } from "react";
+
+const ShieldFallbackIcon: ComponentType<{ className?: string }> = (props) => (
+  <Shield {...props} />
+);
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -103,7 +108,13 @@ const Register: React.FC = () => {
         wardId: formData.wardId,
       }).unwrap();
 
-      if (result.data?.requiresOtpVerification) {
+      const registerData = result.data;
+      if (
+        registerData &&
+        typeof registerData === "object" &&
+        "requiresOtpVerification" in registerData &&
+        (registerData as { requiresOtpVerification: boolean }).requiresOtpVerification
+      ) {
         // OTP verification required - open unified dialog
         openOtpFlow({
           context: "register",
@@ -211,7 +222,7 @@ const Register: React.FC = () => {
               appName={appName}
               size={appLogoSize}
               context="auth"
-              fallbackIcon={Shield}
+              fallbackIcon={ShieldFallbackIcon}
               showText={false}
               className="mr-3"
             />

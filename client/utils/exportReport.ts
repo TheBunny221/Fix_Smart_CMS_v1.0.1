@@ -64,9 +64,12 @@ export async function exportComplaintReport(complaint: any, role: string, option
   const margin = 40;
   let y = margin;
 
-  const gray = [245, 247, 250];
-  const primary = [28, 100, 242];
-  const muted = [100, 116, 139];
+  const gray: [number, number, number] = [245, 247, 250];
+  const primary: [number, number, number] = [28, 100, 242];
+  const muted: [number, number, number] = [100, 116, 139];
+  const [grayR, grayG, grayB] = gray;
+  const [primaryR, primaryG, primaryB] = primary;
+  const [mutedR, mutedG, mutedB] = muted;
 
   const ensureSpace = (needed = 24) => {
     if (y + needed > pageHeight - margin) {
@@ -85,7 +88,7 @@ export async function exportComplaintReport(complaint: any, role: string, option
     for (let i = 1; i <= total; i++) {
       doc.setPage(i);
       // Header bar
-      doc.setFillColor(...gray as any);
+      doc.setFillColor(grayR, grayG, grayB);
       doc.rect(0, 0, pageWidth, 64, "F");
 
       // Logo (left)
@@ -96,7 +99,7 @@ export async function exportComplaintReport(complaint: any, role: string, option
       }
 
       // Title (center)
-      doc.setTextColor(primary[0], primary[1], primary[2]);
+      doc.setTextColor(primaryR, primaryG, primaryB);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       const titleX = pageWidth / 2 - doc.getTextWidth(headerTitle) / 2;
@@ -125,7 +128,7 @@ export async function exportComplaintReport(complaint: any, role: string, option
 
   const section = (title: string) => {
     ensureSpace(36);
-    doc.setFillColor(...gray as any);
+    doc.setFillColor(grayR, grayG, grayB);
     doc.roundedRect(margin, y, pageWidth - margin * 2, 28, 6, 6, "F");
     doc.setTextColor(30);
     doc.setFont("helvetica", "bold");
@@ -199,7 +202,7 @@ export async function exportComplaintReport(complaint: any, role: string, option
       complaint.statusLogs.forEach((log: any, idx: number) => {
         ensureSpace(28);
         // Timeline bullet
-        doc.setFillColor(primary[0], primary[1], primary[2]);
+        doc.setFillColor(primaryR, primaryG, primaryB);
         doc.circle(margin + 4, y - 6, 3, "F");
         // Status label
         doc.setFont("helvetica", "bold");

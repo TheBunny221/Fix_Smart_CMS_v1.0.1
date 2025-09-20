@@ -1,5 +1,44 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 
+const isBrowser = typeof window !== "undefined";
+
+const safeGetItem = (key: string): string | null => {
+  if (!isBrowser) return null;
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const safeSetItem = (key: string, value: string) => {
+  if (!isBrowser) return;
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage failures (private mode, quota, etc.)
+  }
+};
+
+const safeRemoveItem = (key: string) => {
+  if (!isBrowser) return;
+  try {
+    window.localStorage.removeItem(key);
+  } catch {
+    // Ignore storage failures (private mode, quota, etc.)
+  }
+};
+
+const decodeJwtPayload = (token: string) => {
+  const [, rawPayload] = token.split(".");
+  if (!rawPayload || typeof atob !== "function") {
+    throw new Error("Invalid token payload");
+  }
+  const normalized = rawPayload.replace(/-/g, "+").replace(/_/g, "/");
+  const json = atob(normalized);
+  return JSON.parse(json);
+};
+
 // Types
 export interface User {
   id: string;
@@ -35,14 +74,14 @@ export interface AuthState {
   error: string | null;
   otpStep: "none" | "sent" | "verified";
   requiresPasswordSetup: boolean;
-  otpEmail?: string;
-  otpExpiresAt?: string;
+  otpEmail: string | null;
+  otpExpiresAt: string | null;
   registrationStep: "none" | "completed" | "otp_required" | "otp_verified";
-  registrationData?: {
+  registrationData: {
     email: string;
     fullName: string;
     role: string;
-  };
+  } | null;
 }
 
 // Check if JWT token is expired
@@ -50,7 +89,7 @@ const isTokenExpired = (token: string): boolean => {
   try {
     // Simple JWT expiration check without verification
     // Just decode the payload to check exp claim
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    const payload = decodeJwtPayload(token);
     const now = Math.floor(Date.now() / 1000);
     return payload.exp && payload.exp < now;
   } catch {
@@ -60,8 +99,11 @@ const isTokenExpired = (token: string): boolean => {
 
 // Get initial token from localStorage with expiration check
 const getInitialToken = () => {
+  if (!isBrowser) {
+    return null;
+  }
   try {
-    const token = localStorage.getItem("token");
+    const token = safeGetItem("token");
     if (!token || token === "null" || token === "undefined") {
       return null;
     }
@@ -69,7 +111,7 @@ const getInitialToken = () => {
     // Check if token is expired
     if (isTokenExpired(token)) {
       console.warn("🕒 Stored token has expired, removing from localStorage");
-      localStorage.removeItem("token");
+      safeRemoveItem("token");
       return null;
     }
 
@@ -77,13 +119,13 @@ const getInitialToken = () => {
   } catch (error) {
     console.warn("⚠️ Error checking token expiration:", error);
     // If there's an error, remove the potentially corrupted token
-    localStorage.removeItem("token");
+    safeRemoveItem("token");
     return null;
   }
 };
 
 // Initial state
-const initialState: AuthState = {
+const createInitialState = (): AuthState => ({
   user: null,
   token: getInitialToken(),
   isLoading: false,
@@ -91,9 +133,13 @@ const initialState: AuthState = {
   error: null,
   otpStep: "none",
   requiresPasswordSetup: false,
+  otpEmail: null,
+  otpExpiresAt: null,
   registrationStep: "none",
-  registrationData: undefined,
-};
+  registrationData: null,
+});
+
+const initialState: AuthState = createInitialState();
 
 // Helper function to handle API errors with user-friendly messages
 const getErrorMessage = (status: number, data: any): string => {
@@ -173,7 +219,7 @@ export const loginWithPassword = createAsyncThunk(
 
       console.warn("login res", data);
       // Store token in localStorage
-      localStorage.setItem("token", data.data.token);
+      safeSetItem("token", data.data.token);
 
       return data.data;
     } catch (error) {
@@ -225,7 +271,7 @@ export const verifyOTPLogin = createAsyncThunk(
       });
 
       // Store token in localStorage
-      localStorage.setItem("token", data.data.token);
+      safeSetItem("token", data.data.token);
 
       return data.data;
     } catch (error) {
@@ -272,7 +318,7 @@ export const setPassword = createAsyncThunk(
       });
 
       // Store token in localStorage
-      localStorage.setItem("token", data.data.token);
+      safeSetItem("token", data.data.token);
 
       return data.data;
     } catch (error) {
@@ -349,7 +395,7 @@ export const registerUser = createAsyncThunk(
       }
 
       // Store token in localStorage if no OTP required
-      localStorage.setItem("token", data.data.token);
+      safeSetItem("token", data.data.token);
 
       return data.data;
     } catch (error) {
@@ -374,7 +420,7 @@ export const verifyRegistrationOTP = createAsyncThunk(
       });
 
       // Store token in localStorage
-      localStorage.setItem("token", data.data.token);
+      safeSetItem("token", data.data.token);
 
       return data.data;
     } catch (error) {
@@ -410,7 +456,7 @@ export const resendRegistrationOTP = createAsyncThunk(
 export const loginWithToken = createAsyncThunk(
   "auth/loginWithToken",
   async (_, { rejectWithValue }) => {
-    const token = localStorage.getItem("token");
+    const token = safeGetItem("token");
 
     if (!token) {
       return rejectWithValue({ message: "No token found" });
@@ -425,7 +471,7 @@ export const loginWithToken = createAsyncThunk(
 
       return { user: data.data.user, token };
     } catch (error) {
-      localStorage.removeItem("token");
+      safeRemoveItem("token");
       return rejectWithValue({
         message:
           error instanceof Error ? error.message : "Token validation failed",
@@ -503,7 +549,7 @@ export const logout = createAsyncThunk(
     const token = state.auth.token;
 
     // Always clear local state first
-    localStorage.removeItem("token");
+    safeRemoveItem("token");
 
     // Try to notify server, but don't fail if it doesn't work
     if (token) {
@@ -538,11 +584,11 @@ const authSlice = createSlice({
     setError: (state, action: PayloadAction<string>) => {
       state.error = action.payload;
     },
-    resetAuth: () => initialState,
+    resetAuth: () => createInitialState(),
     resetOTPState: (state) => {
       state.otpStep = "none";
-      state.otpEmail = undefined;
-      state.otpExpiresAt = undefined;
+      state.otpEmail = null;
+      state.otpExpiresAt = null;
       state.requiresPasswordSetup = false;
     },
     setRequiresPasswordSetup: (state, action: PayloadAction<boolean>) => {
@@ -550,7 +596,7 @@ const authSlice = createSlice({
     },
     resetRegistrationState: (state) => {
       state.registrationStep = "none";
-      state.registrationData = undefined;
+      state.registrationData = null;
     },
     setCredentials: (
       state,
@@ -562,12 +608,12 @@ const authSlice = createSlice({
       state.error = null;
       state.isLoading = false;
       // Persist token to localStorage
-      localStorage.setItem("token", action.payload.token);
+      safeSetItem("token", action.payload.token);
 
       // Set up token expiration warning
       try {
-        const payload = JSON.parse(atob(action.payload.token.split(".")[1]));
-        if (payload.exp) {
+        const payload = decodeJwtPayload(action.payload.token);
+        if (payload?.exp) {
           const expiresAt = payload.exp * 1000; // Convert to milliseconds
           const now = Date.now();
           const timeToExpiry = expiresAt - now;
@@ -595,9 +641,11 @@ const authSlice = createSlice({
       state.otpStep = "none";
       state.requiresPasswordSetup = false;
       state.registrationStep = "none";
-      state.registrationData = undefined;
+      state.registrationData = null;
+      state.otpEmail = null;
+      state.otpExpiresAt = null;
       // Remove token from localStorage
-      localStorage.removeItem("token");
+      safeRemoveItem("token");
     },
   },
   extraReducers: (builder) => {
@@ -846,6 +894,10 @@ const authSlice = createSlice({
         state.error = null;
         state.otpStep = "none";
         state.requiresPasswordSetup = false;
+        state.otpEmail = null;
+        state.otpExpiresAt = null;
+        state.registrationStep = "none";
+        state.registrationData = null;
       });
   },
 });
