@@ -91,7 +91,7 @@ describe('Context Safety Tests', () => {
       
       render(<TestSystemConfigComponent />);
       
-      expect(screen.getByTestId('app-name')).toHaveTextContent('Kochi Smart City');
+      expect(screen.getByTestId('app-name')).toHaveTextContent('NLC-CMS');
       expect(screen.getByTestId('logo-url')).toHaveTextContent('/logo.png');
       expect(screen.getByTestId('custom-config')).toHaveTextContent('default');
       
@@ -131,7 +131,7 @@ describe('Context Safety Tests', () => {
       );
       
       // Should fall back to default values
-      expect(screen.getByTestId('app-name')).toHaveTextContent('Kochi Smart City');
+      expect(screen.getByTestId('app-name')).toHaveTextContent('NLC-CMS');
     });
   });
 
