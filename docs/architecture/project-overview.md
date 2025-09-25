@@ -1,4 +1,4 @@
-# Cochin Smart City Complaint Management System
+# NLC-CMS Complaint Management System
 
 ## Project Overview
 
