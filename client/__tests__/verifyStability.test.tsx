@@ -172,7 +172,7 @@ describe('✅ Production Stability Verification', () => {
     // Should have default values, not crash
     expect(screen.getByTestId('has-config')).toHaveTextContent('true');
     expect(screen.getByTestId('has-otp')).toHaveTextContent('true');
-    expect(screen.getByTestId('app-name')).toHaveTextContent('Kochi Smart City');
+    expect(screen.getByTestId('app-name')).toHaveTextContent('NLC-CMS');
   });
 
   it('✅ No memory leaks on unmount', async () => {
