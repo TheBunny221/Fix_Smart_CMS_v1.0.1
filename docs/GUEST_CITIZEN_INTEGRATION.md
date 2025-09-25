@@ -8,7 +8,7 @@
 
 ## 🎯 Overview
 
-This document provides a comprehensive overview of the completed Guest and Citizen feature integration in the Cochin Smart City Complaint Management System. All features have been implemented, tested, and are production-ready.
+This document provides a comprehensive overview of the completed Guest and Citizen feature integration in the NLC-CMS Complaint Management System. All features have been implemented, tested, and are production-ready.
 
 ---
 
