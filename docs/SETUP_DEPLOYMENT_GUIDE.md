@@ -1,6 +1,6 @@
 # Setup, Deployment & Troubleshooting Guide
 
-This comprehensive guide covers everything you need to know about setting up, deploying, and maintaining the Cochin Smart City Complaint Management System.
+This comprehensive guide covers everything you need to know about setting up, deploying, and maintaining the NLC-CMS Complaint Management System.
 
 ## 📋 Table of Contents
 
@@ -257,7 +257,7 @@ SMTP_PORT=2525
 SMTP_USER=your-mailtrap-username
 SMTP_PASS=your-mailtrap-password
 FROM_EMAIL=noreply@cochinsmartcity.gov.in
-FROM_NAME="Cochin Smart City"
+FROM_NAME="NLC-CMS"
 
 # OTP Settings
 OTP_EXPIRY_MINUTES=10
@@ -300,7 +300,7 @@ SMTP_PORT=587
 SMTP_USER=your-production-email@gmail.com
 SMTP_PASS=your-app-specific-password
 FROM_EMAIL=complaints@cochinsmartcity.gov.in
-FROM_NAME="Cochin Smart City - Complaint Portal"
+FROM_NAME="NLC-CMS - Complaint Portal"
 
 # SSL/Security
 HTTPS_ENABLED=true
@@ -1184,4 +1184,4 @@ sudo systemctl restart postgresql
 pm2 restart all
 ```
 
-This comprehensive guide should help you successfully set up, deploy, and maintain the Cochin Smart City Complaint Management System. For additional support, refer to the API documentation and component mapping guides.
+This comprehensive guide should help you successfully set up, deploy, and maintain the NLC-CMS Complaint Management System. For additional support, refer to the API documentation and component mapping guides.
