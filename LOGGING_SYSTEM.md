@@ -1,6 +1,6 @@
 # Unified Logging System
 
-This document describes the comprehensive logging system implemented for both frontend (React) and backend (Node.js/Express) components of the Cochin Smart City application.
+This document describes the comprehensive logging system implemented for both frontend (React) and backend (Node.js/Express) components of the NLC-CMS application.
 
 ## Overview
 
