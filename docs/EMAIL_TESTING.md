@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Cochin Smart City application now uses **Ethereal Email** for development and testing purposes. Ethereal is a fake SMTP service that captures emails instead of sending them to real recipients, making it perfect for testing email functionality.
+The NLC-CMS application now uses **Ethereal Email** for development and testing purposes. Ethereal is a fake SMTP service that captures emails instead of sending them to real recipients, making it perfect for testing email functionality.
 
 ## Configuration
 
@@ -16,7 +16,7 @@ EMAIL_SERVICE="smtp.ethereal.email"
 EMAIL_USER="mike.abshire59@ethereal.email"
 EMAIL_PASS="TW6wxYXSnmjatt3sxc"
 EMAIL_PORT="587"
-EMAIL_FROM="Cochin Smart City <noreply@cochinsmartcity.gov.in>"
+EMAIL_FROM="NLC-CMS <noreply@cochinsmartcity.gov.in>"
 
 # Development Email (Ethereal for testing)
 ETHEREAL_USER="mike.abshire59@ethereal.email"
@@ -124,7 +124,7 @@ When emails are sent in development mode, you'll see console output like:
 
 All emails use a consistent design with:
 
-- **Header**: Gradient background with Cochin Smart City branding
+- **Header**: Gradient background with NLC-CMS branding
 - **Content**: Clean, responsive HTML layout
 - **Footer**: Disclaimer and contact information
 - **Colors**: Brand colors (#667eea, #764ba2)
