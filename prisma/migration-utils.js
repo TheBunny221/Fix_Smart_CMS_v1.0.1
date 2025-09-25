@@ -158,7 +158,7 @@ export async function backupDatabase(backupDir = "./backups") {
         (sum, data) => sum + data.length,
         0,
       ),
-      description: "Kochi Smart City database backup",
+      description: "NLC-CMS database backup",
     };
 
     fs.writeFileSync(
