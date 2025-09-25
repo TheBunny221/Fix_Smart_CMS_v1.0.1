@@ -191,7 +191,7 @@ describe("Guest Complaint Submission Flow", () => {
 
     // Should show success page
     cy.get('[data-testid="success-page"]').should("be.visible");
-    cy.contains("Welcome to Cochin Smart City!");
+    cy.contains("Welcome to NLC-CMS!");
     cy.contains("CSC123456789");
 
     // Test navigation options
