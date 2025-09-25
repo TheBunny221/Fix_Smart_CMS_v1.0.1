@@ -22,12 +22,12 @@ This document outlines the comprehensive improvements made to fix null reference
 // Default configuration values to prevent null reference errors
 const DEFAULT_CONFIG: SystemConfigContextType = {
   config: {
-    APP_NAME: "Kochi Smart City",
+    APP_NAME: "NLC-CMS",
     APP_LOGO_URL: "/logo.png",
     APP_LOGO_SIZE: "medium",
     // ... other defaults
   },
-  appName: "Kochi Smart City",
+  appName: "NLC-CMS",
   appLogoUrl: "/logo.png",
   appLogoSize: "medium",
   isLoading: false,
