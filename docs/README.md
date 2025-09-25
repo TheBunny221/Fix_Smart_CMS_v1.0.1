@@ -1,6 +1,6 @@
-# Cochin Smart City Complaint Management System - Documentation
+# NLC-CMS Complaint Management System - Documentation
 
-Welcome to the comprehensive documentation for the Cochin Smart City Complaint Management System. This repository contains all the information you need to understand, develop, deploy, and maintain this full-stack application.
+Welcome to the comprehensive documentation for the NLC-CMS Complaint Management System. This repository contains all the information you need to understand, develop, deploy, and maintain this full-stack application.
 
 ## 📚 Documentation Overview
 
