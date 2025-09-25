@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Kochi Smart City - Production Deployment Script
+# NLC-CMS - Production Deployment Script
 # This script helps deploy the application to production environment
 
 set -e  # Exit on any error
@@ -45,7 +45,7 @@ if [ "$EUID" -eq 0 ]; then
     log_warning "Running as root. Consider running as application user for better security."
 fi
 
-log_info "🚀 Starting Kochi Smart City Production Deployment"
+log_info "🚀 Starting NLC-CMS Production Deployment"
 echo "================================================="
 
 # Step 1: Environment Validation
@@ -212,7 +212,7 @@ if [ ! -f "$SERVICE_FILE" ] && [ -w "/etc/systemd/system" ]; then
     
     cat > "$SERVICE_FILE" << EOF
 [Unit]
-Description=Kochi Smart City Application
+Description=NLC-CMS Application
 After=network.target postgresql.service
 
 [Service]
