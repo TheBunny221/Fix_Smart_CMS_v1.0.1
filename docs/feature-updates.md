@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the comprehensive enhancements implemented to improve the registration flow, error handling, messaging system, and user experience of the Cochin Smart City E-Governance Portal.
+This document outlines the comprehensive enhancements implemented to improve the registration flow, error handling, messaging system, and user experience of the NLC-CMS E-Governance Portal.
 
 ## Implementation Date
 
