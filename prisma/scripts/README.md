@@ -1,6 +1,6 @@
 # Prisma Setup Scripts
 
-This directory contains automated setup scripts for the Kochi Smart City database in both Windows and Unix/Linux environments.
+This directory contains automated setup scripts for the NLC-CMS database in both Windows and Unix/Linux environments.
 
 ## Available Scripts
 
