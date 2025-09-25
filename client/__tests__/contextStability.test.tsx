@@ -179,7 +179,7 @@ describe('🔒 Context Stability Tests', () => {
       // Render without provider
       render(<TestComponent />);
       
-      expect(screen.getByTestId('config')).toHaveTextContent('Kochi Smart City');
+      expect(screen.getByTestId('config')).toHaveTextContent('NLC-CMS');
     });
   });
 
@@ -405,7 +405,7 @@ describe('🔒 Context Stability Tests', () => {
       
       // Should fall back to default values
       await waitFor(() => {
-        expect(screen.getByTestId('app-name')).toHaveTextContent('Kochi Smart City');
+        expect(screen.getByTestId('app-name')).toHaveTextContent('NLC-CMS');
       });
     });
   });
