@@ -1,4 +1,4 @@
-# Cochin Smart City API - Complete Backend Reference
+# NLC-CMS API - Complete Backend Reference
 
 This document provides a comprehensive reference for all backend API endpoints, authentication patterns, and integration requirements for the NLC-CMS Complaint Management System.
 
