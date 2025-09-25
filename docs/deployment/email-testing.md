@@ -14,7 +14,7 @@ EMAIL_SERVICE="smtp.ethereal.email"   # or your SMTP service
 EMAIL_USER="<dev-inbox-username>"
 EMAIL_PASS="<dev-inbox-password>"
 EMAIL_PORT="587"
-EMAIL_FROM="Cochin Smart City <noreply@cochinsmartcity.gov.in>"
+EMAIL_FROM="NLC-CMS <noreply@cochinsmartcity.gov.in>"
 
 # Optional: Explicit ethereal creds if using Ethereal (for local only)
 ETHEREAL_USER="<ethereal-username>"
