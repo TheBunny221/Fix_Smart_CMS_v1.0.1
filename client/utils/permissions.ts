@@ -1,4 +1,4 @@
-// Role-based permissions system for the Cochin Smart City application
+// Role-based permissions system for the NLC-CMS application
 
 export type UserRole =
   | "CITIZEN"
