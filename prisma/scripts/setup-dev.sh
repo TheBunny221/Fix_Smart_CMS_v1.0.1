@@ -1,5 +1,5 @@
 #!/bin/bash
-# Kochi Smart City - Development Environment Setup (Unix/Linux/macOS)
+# NLC-CMS - Development Environment Setup (Unix/Linux/macOS)
 # ===================================================================
 
 # Colors for output
@@ -37,7 +37,7 @@ set -e
 trap 'log_error "Setup failed at line $LINENO. Exit code: $?"' ERR
 
 echo
-log_header "🚀 Kochi Smart City - Development Environment Setup"
+log_header "🚀 NLC-CMS - Development Environment Setup"
 log_header "=================================================="
 echo
 

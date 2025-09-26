@@ -68,8 +68,11 @@ import {
   Info,
 } from "lucide-react";
 
+import { useSystemConfig } from "../contexts/SystemConfigContext";
+
 const AdminDashboard: React.FC = () => {
   const { translations } = useAppSelector((state) => state.language);
+  const { appName } = useSystemConfig();
 
   // Fetch real-time data using API queries
   const {
@@ -224,13 +227,12 @@ const AdminDashboard: React.FC = () => {
                 🛡️ Administrator Dashboard 🛠️
               </h1>
               <p className="text-purple-100">
-                Complete system overview and management controls for Cochin
-                Smart City
+                Complete system overview and management controls for {appName}
               </p>
             </div>
             <Shield className="h-16 w-16 text-purple-200" />
           </div>
-         {/* <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-lg p-3 shadow">
               <div className="text-2xl font-bold text-gray-900">
                 {systemStats.totalComplaints}
@@ -299,24 +301,24 @@ const AdminDashboard: React.FC = () => {
               {
                 value: systemStats.totalComplaints,
                 label: "Total Complaints",
-                tooltip: "All complaints in the system."
+                tooltip: "All complaints in the system.",
               },
               {
                 value: systemStats.activeUsers || 0,
                 label: "Active Users",
-                tooltip: "Users who have logged in recently."
+                tooltip: "Users who have logged in recently.",
               },
               {
                 value: `${metrics?.slaCompliance || 0}%`,
                 label: "SLA Compliance",
                 tooltip:
-                  "Average on-time performance across complaint types, using each type’s configured SLA hours."
+                  "Average on-time performance across complaint types, using each type’s configured SLA hours.",
               },
               {
                 value: `${(metrics?.citizenSatisfaction || 0).toFixed(1)}/5`,
                 label: "Satisfaction",
-                tooltip: "Average citizen feedback score."
-              }
+                tooltip: "Average citizen feedback score.",
+              },
             ].map((item, i) => (
               <div
                 key={i}
@@ -324,7 +326,9 @@ const AdminDashboard: React.FC = () => {
                  backdrop-blur-xl border border-white/30 shadow-sm
                  transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
-                <div className="text-3xl font-semibold text-gray-900">{item.value}</div>
+                <div className="text-3xl font-semibold text-gray-900">
+                  {item.value}
+                </div>
                 <div className="mt-2 text-sm text-gray-700 flex items-center gap-1">
                   {item.label}
                   <UITooltip>
@@ -339,10 +343,6 @@ const AdminDashboard: React.FC = () => {
               </div>
             ))}
           </div>
-
-
-
-
         </div>
 
         {hasError && (
