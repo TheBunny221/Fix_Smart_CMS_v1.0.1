@@ -1,5 +1,6 @@
 import type { AnalyticsData, FilterOptions } from "../types/reports";
 import { HeatmapData } from "../components/charts/HeatmapGrid";
+import type { FilterOptions, AnalyticsData } from "../types/reports";
 
 interface User {
   role?: string;
