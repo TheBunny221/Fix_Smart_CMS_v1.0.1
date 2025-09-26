@@ -308,7 +308,7 @@ async function generateDatabaseReport() {
 }
 
 async function runFullCheck() {
-  log("magenta", "🚀 Kochi Smart City - Database Setup Validation");
+  log("magenta", "🚀 NLC-CMS - Database Setup Validation");
   log("magenta", "===============================================\n");
 
   const checks = [
@@ -444,7 +444,7 @@ switch (command) {
     break;
 
   default:
-    log("cyan", "Kochi Smart City - Database Setup Tool");
+    log("cyan", "NLC-CMS - Database Setup Tool");
     log("cyan", "=====================================");
     log("white", "\nUsage: node scripts/setup-database.js <command>");
     log("white", "\nCommands:");

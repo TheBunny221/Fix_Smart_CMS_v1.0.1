@@ -1,6 +1,6 @@
-# Kochi Smart City - Database Setup Guide
+# NLC-CMS - Database Setup Guide
 
-This guide provides comprehensive instructions for setting up and managing the PostgreSQL database for the Kochi Smart City Complaint Management System in both development and production environments.
+This guide provides comprehensive instructions for setting up and managing the PostgreSQL database for the NLC-CMS Complaint Management System in both development and production environments.
 
 ## Table of Contents
 

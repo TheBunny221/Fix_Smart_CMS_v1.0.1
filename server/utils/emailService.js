@@ -143,63 +143,121 @@ export const sendEmail = async ({ to, subject, text, html }) => {
 export const sendOTPEmail = async (
   email,
   otpCode,
-  purpose = "verification",
+  purposeOrOptions = "verification",
 ) => {
-  const subject =
-    purpose === "login" ? "Login OTP - NLC-CMS" : "Verification OTP - NLC-CMS";
+  const isOptionsObject =
+    purposeOrOptions && typeof purposeOrOptions === "object";
+  const {
+    purpose = "verification",
+    fullName = "Citizen",
+    contextId = null,
+    contextLabel = null,
+  } = isOptionsObject ? purposeOrOptions : { purpose: purposeOrOptions };
+
+  const normalized = String(purpose || "verification").toLowerCase();
+
+  const resolveMeta = () => {
+    switch (normalized) {
+      case "login":
+        return {
+          subject: "OTP for Login - NLC-CMS",
+          title: "Login Verification",
+          intro:
+            "You've requested to login to your account. Please use the verification code below.",
+        };
+      case "registration":
+      case "verify":
+      case "verification":
+        return {
+          subject: "OTP for Email Verification - NLC-CMS",
+          title: "Email Verification",
+          intro:
+            "Please use the verification code below to verify your email address.",
+        };
+      case "complaint_verification":
+        return {
+          subject: `OTP for Complaint Verification${contextId ? ` - ${contextId}` : ""}`,
+          title: "Complaint Verification",
+          intro: contextId
+            ? `You're verifying complaint ${contextId}. Use the code below to continue.`
+            : "Use the verification code below to continue.",
+        };
+      case "complaint_tracking":
+        return {
+          subject: `OTP for Complaint Tracking${contextId ? ` - ${contextId}` : ""}`,
+          title: "Complaint Verification",
+          intro: contextId
+            ? `You've requested to track your complaint ${contextId}. Please use the verification code below to access your complaint details.`
+            : "Use the verification code below to access your complaint details.",
+        };
+      case "service_request":
+        return {
+          subject: `OTP for Service Request Verification${contextId ? ` - ${contextId}` : ""}`,
+          title: "Service Request Verification",
+          intro: contextLabel
+            ? `You're verifying your ${contextLabel} request${
+                contextId ? ` (${contextId})` : ""
+              }. Use the code below to continue.`
+            : "Use the verification code below to verify your service request.",
+        };
+      default:
+        return {
+          subject: "OTP for Verification - NLC-CMS",
+          title: "Verification",
+          intro:
+            "Please use the verification code below to complete your action.",
+        };
+    }
+  };
+
+  const { subject, title, intro } = resolveMeta();
+
+  const greetingName = fullName || "Citizen";
 
   const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
-        <h1 style="color: white; margin: 0;">NLC-CMS</h1>
-        <p style="color: white; margin: 5px 0 0 0;">E-Governance Portal</p>
-      </div>
-      
-      <div style="padding: 30px; background: #f9f9f9;">
-        <h2 style="color: #333; margin-bottom: 20px;">
-          ${purpose === "login" ? "Login" : "Verification"} OTP
-        </h2>
-        
-        <p style="color: #666; font-size: 16px; line-height: 1.5;">
-          ${
-            purpose === "login"
-              ? "You have requested to login to your account. Please use the following OTP:"
-              : "Please use the following OTP to verify your email address:"
-          }
-        </p>
-        
-        <div style="background: white; padding: 20px; text-align: center; margin: 20px 0; border-radius: 8px; border: 2px dashed #667eea;">
-          <h1 style="color: #667eea; font-size: 32px; letter-spacing: 8px; margin: 0; font-family: monospace;">
-            ${otpCode}
-          </h1>
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">🔐 ${title}</h1>
+          </div>
+
+          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
+            <h2 style="color: #1e40af; margin: 0 0 10px 0; font-size: 20px;">Hello ${greetingName},</h2>
+            <p style="margin: 0; color: #374151; line-height: 1.6;">
+              ${intro}
+            </p>
+          </div>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <div style="background-color: #1f2937; color: white; font-size: 36px; font-weight: bold; letter-spacing: 8px; padding: 20px; border-radius: 8px; display: inline-block;">
+              ${otpCode}
+            </div>
+            <p style="margin: 15px 0 0 0; color: #6b7280; font-size: 14px;">
+              This code will expire in 10 minutes
+            </p>
+          </div>
+
+          <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; margin: 25px 0;">
+            <p style="margin: 0; color: #92400e; font-size: 14px;">
+              <strong>Security Note:</strong> Never share this OTP with anyone. Our team will never ask for your OTP.
+            </p>
+          </div>
+
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+            <p style="margin: 0; color: #6b7280; font-size: 12px; text-align: center;">
+              If you didn't request this verification, please ignore this email.
+            </p>
+          </div>
         </div>
-        
-        <p style="color: #666; font-size: 14px;">
-          This OTP will expire in <strong>10 minutes</strong>. Please do not share this OTP with anyone.
-        </p>
-        
-        ${
-          purpose !== "login"
-            ? `
-          <p style="color: #666; font-size: 14px; margin-top: 20px;">
-            After verification, you will be automatically registered and can access your citizen dashboard.
-          </p>
-        `
-            : ""
-        }
       </div>
-      
-      <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
-        <p style="margin: 0;">This is an automated message from NLC-CMS E-Governance Portal.</p>
-        <p style="margin: 5px 0 0 0;">Please do not reply to this email.</p>
-      </div>
-    </div>
-  `;
+    `;
+
+  const text = `${intro} OTP: ${otpCode}. This code will expire in 10 minutes.`;
 
   return await sendEmail({
     to: email,
     subject,
-    text: `Your ${purpose} OTP is: ${otpCode}. This OTP will expire in 10 minutes.`,
+    text,
     html,
   });
 };

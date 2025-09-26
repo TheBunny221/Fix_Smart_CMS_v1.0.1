@@ -398,9 +398,7 @@ describe("GuestComplaintForm", () => {
       });
       renderWithProviders(<GuestComplaintForm />, store);
 
-      expect(
-        screen.getByText("Welcome to Cochin Smart City!"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Welcome to NLC-CMS!")).toBeInTheDocument();
       expect(screen.getByText("CSC123456789")).toBeInTheDocument();
     });
   });

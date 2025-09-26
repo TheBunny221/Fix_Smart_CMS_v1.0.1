@@ -19,7 +19,7 @@ async function testEmailService() {
     console.log("1️⃣ Testing Basic Email...");
     const basicEmailResult = await sendEmail({
       to: "",
-      subject: "Test Email from Cochin Smart City",
+      subject: "Test Email from NLC-CMS",
       text: "This is a test email to verify the email service integration.",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

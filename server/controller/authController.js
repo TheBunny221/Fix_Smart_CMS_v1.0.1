@@ -3,7 +3,7 @@ import { asyncHandler } from "../middleware/errorHandler.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { sendEmail } from "../utils/emailService.js";
+import { sendEmail, sendOTPEmail } from "../utils/emailService.js";
 import logger from "../utils/logger.js";
 
 const prisma = getPrisma();
@@ -137,17 +137,9 @@ export const register = asyncHandler(async (req, res) => {
   });
 
   // Send OTP email
-  const emailSent = await sendEmail({
-    to: user.email,
-    subject: "Complete Your Registration - NLC-CMS",
-    text: `Welcome! Please verify your email to complete registration. Your OTP is: ${otpCode}. This OTP will expire in 10 minutes.`,
-    html: `
-      <h2>Welcome to NLC-CMS!</h2>
-      <p>Thank you for registering. To complete your registration, please verify your email with the OTP below:</p>
-      <h3 style="color: #2563eb; font-size: 24px; letter-spacing: 2px;">${otpCode}</h3>
-      <p>This OTP will expire in 10 minutes.</p>
-      <p>After verification, you'll be able to access your dashboard.</p>
-    `,
+  const emailSent = await sendOTPEmail(user.email, otpCode, {
+    purpose: "registration",
+    fullName: user.fullName,
   });
 
   if (!emailSent) {
@@ -397,11 +389,9 @@ export const loginWithOTP = asyncHandler(async (req, res) => {
   });
 
   // Send OTP email
-  const emailSent = await sendEmail({
-    to: user.email,
-    subject: "Login OTP - NLC-CMS",
-    text: `Your login OTP is: ${otpCode}. This OTP will expire in 10 minutes.`,
-    html: `<p>Your login OTP is: <strong>${otpCode}</strong></p><p>This OTP will expire in 10 minutes.</p>`,
+  const emailSent = await sendOTPEmail(user.email, otpCode, {
+    purpose: "login",
+    fullName: user.fullName,
   });
 
   if (!emailSent) {
@@ -972,16 +962,9 @@ export const resendRegistrationOTP = asyncHandler(async (req, res) => {
   });
 
   // Send OTP email
-  const emailSent = await sendEmail({
-    to: user.email,
-    subject: "Complete Your Registration - NLC-CMS (Resent)",
-    text: `Your new verification OTP is: ${otpCode}. This OTP will expire in 10 minutes.`,
-    html: `
-      <h2>New Verification OTP</h2>
-      <p>Your new verification OTP is:</p>
-      <h3 style="color: #2563eb; font-size: 24px; letter-spacing: 2px;">${otpCode}</h3>
-      <p>This OTP will expire in 10 minutes.</p>
-    `,
+  const emailSent = await sendOTPEmail(user.email, otpCode, {
+    purpose: "registration",
+    fullName: user.fullName,
   });
 
   if (!emailSent) {

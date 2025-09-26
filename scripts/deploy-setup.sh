@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Kochi Smart City - Production Deployment Setup Script
+# NLC-CMS - Production Deployment Setup Script
 # This script automates the setup process for production deployment
 
 set -e  # Exit on any error
 
-echo "🚀 Kochi Smart City - Production Deployment Setup"
+echo "🚀 NLC-CMS - Production Deployment Setup"
 echo "================================================="
 
 # Configuration
@@ -151,7 +151,7 @@ EMAIL_SERVICE="smtp.gmail.com"
 EMAIL_USER="your-email@gmail.com"
 EMAIL_PASS="your-app-password"
 EMAIL_PORT="587"
-EMAIL_FROM="Kochi Smart City <noreply@kochismartcity.gov.in>"
+EMAIL_FROM="NLC-CMS <noreply@kochismartcity.gov.in>"
 
 # Rate Limiting
 RATE_LIMIT_WINDOW_MS=900000
@@ -170,7 +170,7 @@ print_status "Creating systemd service..."
 
 sudo tee /etc/systemd/system/kochi-smart-city.service > /dev/null << EOF
 [Unit]
-Description=Kochi Smart City Application
+Description=NLC-CMS Application
 After=network.target postgresql.service
 Requires=postgresql.service
 
@@ -223,7 +223,7 @@ print_status "Creating backup script..."
 cat > $APP_DIR/backup.sh << 'EOF'
 #!/bin/bash
 
-# Kochi Smart City Backup Script
+# NLC-CMS Backup Script
 BACKUP_DIR="/var/backups/kochi-smart-city"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 DB_NAME="kochi_smart_city"
@@ -254,7 +254,7 @@ print_status "Creating monitoring script..."
 cat > $APP_DIR/monitor.sh << 'EOF'
 #!/bin/bash
 
-# Kochi Smart City Monitoring Script
+# NLC-CMS Monitoring Script
 SERVICE_NAME="kochi-smart-city"
 LOG_FILE="/var/log/kochi-smart-city/monitor.log"
 

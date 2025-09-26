@@ -93,13 +93,10 @@ const Index: React.FC = () => {
                   setIsTrackExpanded(false);
                 }}
                 size="lg"
-                className="bg-primary hover:bg-primary/90"
-                variant="outline"
+                variant="default"
+                className="transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg"
               >
-                <FileText
-                  className="mr-2 h-5 w-5"
-                  style={{ color: "#ffffff" }}
-                />
+                <FileText className="mr-2 h-5 w-5" />
                 {translations?.complaints?.registerComplaint ||
                   "Register Complaint"}
               </Button>
@@ -213,7 +210,7 @@ const Index: React.FC = () => {
                       {currentLanguage === "hi"
                         ? "प्रकार, फोटो और स्थान के साथ एक मिनट से भी कम समय में मुद्दे ल��ग करें"
                         : currentLanguage === "ml"
-                          ? "ടൈപ്പ്, ഫോട്ടോ, ലൊക്കേഷൻ എന്നിവ ഉപയോഗിച്ച് ഒരു മിനിറ���റിനുള്ളിൽ പ്രശ്നങ്ങൾ ��േഖപ്പെടുത്തുക"
+                          ? "ടൈപ്പ്, ഫോട്ടോ, ലൊക്കേഷൻ എന്നിവ ��പയോഗിച്ച് ഒരു മിനിറ���റിനുള്ളിൽ പ്രശ്നങ്ങൾ ��േഖപ്പെടുത്തുക"
                           : "Log issues in under a minute with type, photo, and location"}
                     </div>
                   </div>
@@ -232,7 +229,7 @@ const Index: React.FC = () => {
                       {currentLanguage === "hi"
                         ? "पंजीकरण से समाधान तक प्रत्येक चरण में सूचना प्राप���त करें"
                         : currentLanguage === "ml"
-                          ? "രജി��്ട്രേഷൻ മുതൽ പരിഹാരം വരെ ഓരോ ഘട്ടത്തിലും അറിയിപ്പ് ലഭിക്കുക"
+                          ? "രജി��്ട്രേഷൻ മ���തൽ പരിഹാരം വരെ ഓരോ ഘട്ടത്തിലും അറിയിപ്പ് ലഭിക്കുക"
                           : "Get notified at each stage — from registration to resolution"}
                     </div>
                   </div>
