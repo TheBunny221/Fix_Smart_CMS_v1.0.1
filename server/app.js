@@ -44,12 +44,12 @@ import responseFormatter from "./middleware/responseFormatter.js";
 // Enhanced request logging middleware using our logger
 const enhancedRequestLogger = (req, res, next) => {
   const start = Date.now();
-  
-  res.on('finish', () => {
+
+  res.on("finish", () => {
     const duration = Date.now() - start;
     logger.request(req, res, duration);
   });
-  
+
   next();
 };
 
@@ -94,10 +94,10 @@ const swaggerOptions = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Cochin Smart City API",
+      title: "NLC-CMS API",
       version: "1.0.0",
       description:
-        "Comprehensive API for the Cochin Smart City Complaint Management System",
+        "Comprehensive API for the NLC-CMS Complaint Management System",
       contact: {
         name: "API Support",
         email: "api-support@cochinsmartcity.gov.in",
@@ -266,7 +266,7 @@ export function createApp() {
     swaggerUi.setup(specs, {
       explorer: true,
       customCss: ".swagger-ui .topbar { display: none }",
-      customSiteTitle: "Cochin Smart City API Documentation",
+      customSiteTitle: "NLC-CMS API Documentation",
     }),
   );
 
@@ -283,7 +283,7 @@ export function createApp() {
   // Public routes first (no auth required)
   app.use("/api/guest-otp", guestOtpRoutes);
   app.use("/api/captcha", captchaRoutes);
-  
+
   // Other API routes
   app.use("/api/auth", authRoutes);
   app.use("/api/users", userRoutes);
@@ -365,7 +365,7 @@ export function createApp() {
     app.get("/", (req, res) => {
       res.json({
         success: true,
-        message: "Cochin Smart City API - Build files not found",
+        message: "NLC-CMS API - Build files not found",
         documentation: "/api-docs",
         health: "/api/health",
         note: "Run 'npm run build' to generate static files",

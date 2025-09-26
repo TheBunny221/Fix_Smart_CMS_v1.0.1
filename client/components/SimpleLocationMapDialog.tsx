@@ -36,7 +36,7 @@
 //   initialLocation,
 // }) => {
 //   const { getConfig, isLoading: configLoading } = useSystemConfig();
-  
+
 //   // Kochi coordinates and boundaries
 //   const KOCHI_DEFAULT_LAT = 9.9312;
 //   const KOCHI_DEFAULT_LNG = 76.2673;
@@ -46,7 +46,7 @@
 //     east: 76.39,
 //     west: 76.20
 //   };
-  
+
 //   const defaultLat = parseFloat(getConfig("MAP_DEFAULT_LAT", KOCHI_DEFAULT_LAT.toString())) || KOCHI_DEFAULT_LAT;
 //   const defaultLng = parseFloat(getConfig("MAP_DEFAULT_LNG", KOCHI_DEFAULT_LNG.toString())) || KOCHI_DEFAULT_LNG;
 //   const mapPlace = getConfig("MAP_SEARCH_PLACE", "Kochi, Kerala, India");
@@ -128,7 +128,7 @@
 //     const initializeMap = async () => {
 //       try {
 //         console.log('🗺️ [DEBUG] Starting map initialization...');
-        
+
 //         // Clear any existing map first
 //         if (leafletMapRef.current) {
 //           console.log('🗺️ [DEBUG] Cleaning up existing map...');
@@ -196,11 +196,11 @@
 //           maxZoom: 19,
 //           subdomains: ['a', 'b', 'c'],
 //         });
-        
+
 //         tileLayer.on('tileerror', (e: any) => {
 //           console.warn('🗺️ [WARN] Tile loading error:', e);
 //         });
-        
+
 //         tileLayer.addTo(leafletMapRef.current);
 
 //         // Add marker
@@ -243,7 +243,7 @@
 //           [bboxSouth, bboxEast], // SE
 //           [bboxSouth, bboxWest]  // Close the polygon
 //         ];
-        
+
 //         const boundaryPolygon = L.polygon(boundaryCoords, {
 //           color: '#3b82f6',
 //           weight: 2,
@@ -252,7 +252,7 @@
 //           fillOpacity: 0.1,
 //           dashArray: '5, 10'
 //         }).addTo(leafletMapRef.current);
-        
+
 //         boundaryPolygon.bindPopup('Kochi Service Area Boundary');
 
 //         // Handle map ready event
@@ -260,7 +260,7 @@
 //           console.log('🗺️ [DEBUG] Map is ready');
 //           setMapError(null);
 //           setMapInitialized(true);
-          
+
 //           // Ensure proper sizing
 //           setTimeout(() => {
 //             try {
@@ -293,7 +293,7 @@
 //       if (initializationTimeout) {
 //         clearTimeout(initializationTimeout);
 //       }
-      
+
 //       // Cleanup map
 //       if (leafletMapRef.current) {
 //         console.log('🗺️ [DEBUG] Cleaning up map on unmount');
@@ -489,7 +489,7 @@
 //     console.log('📍 [DEBUG] Getting current location...');
 //     setIsLoadingLocation(true);
 //     setMapError(null);
-    
+
 //     try {
 //       if (!("geolocation" in navigator)) {
 //         const errorMsg = "Geolocation is not supported by this browser.";
@@ -535,27 +535,27 @@
 //           clearTimeout(timeoutId);
 //           const newPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
 //           console.log('📍 [DEBUG] Location obtained:', newPos);
-          
+
 //           // Validate location is within Kochi boundaries
 //           if (!isWithinKochiBoundary(newPos.lat, newPos.lng)) {
 //             showBoundaryError("Current location");
 //             setIsLoadingLocation(false);
 //             return;
 //           }
-          
+
 //           setPosition(newPos);
-          
+
 //           // Update map view first
 //           if (leafletMapRef.current) {
 //             leafletMapRef.current.setView([newPos.lat, newPos.lng], 16);
 //             markerRef.current?.setLatLng([newPos.lat, newPos.lng]);
 //             console.log('📍 [DEBUG] Map updated with new location');
 //           }
-          
+
 //           // Then run detection functions
 //           detectAdministrativeArea(newPos);
 //           reverseGeocode(newPos);
-          
+
 //           setIsLoadingLocation(false);
 //           setMapError(null);
 //         },
@@ -593,14 +593,14 @@
 
 //     console.log('🔍 [DEBUG] Searching for location:', query);
 //     setMapError(null);
-    
+
 //     try {
 //       const viewbox = hasBbox
 //         ? `&viewbox=${encodeURIComponent(`${bboxWest},${bboxNorth},${bboxEast},${bboxSouth}`)}&bounded=1`
 //         : "";
 //       const cc = countryCodes ? `&countrycodes=${encodeURIComponent(countryCodes)}` : "";
 //       const q = `${query}, ${mapPlace}`;
-      
+
 //       const searchUrl = `/api/geo/search?q=${encodeURIComponent(q)}&limit=5&addressdetails=1${viewbox}${cc}`;
 //       console.log('🔍 [DEBUG] Search URL:', searchUrl);
 
@@ -610,9 +610,9 @@
 //       const response = await fetch(searchUrl, {
 //         signal: controller.signal,
 //       });
-      
+
 //       clearTimeout(timeoutId);
-      
+
 //       if (response.status === 429) {
 //         const payload = await response.json().catch(() => null);
 //         const retryAfter = payload?.data?.retryAfter || response.headers.get('retry-after') || 'a few';
@@ -637,19 +637,19 @@
 //           lat: parseFloat(result.lat),
 //           lng: parseFloat(result.lon),
 //         };
-        
+
 //         if (isNaN(newPos.lat) || isNaN(newPos.lng)) {
 //           throw new Error('Invalid coordinates received from search');
 //         }
-        
+
 //         console.log('🔍 [DEBUG] Found location:', newPos);
-        
+
 //         // Validate search result is within Kochi boundaries
 //         if (!isWithinKochiBoundary(newPos.lat, newPos.lng)) {
 //           showBoundaryError("Search result");
 //           return;
 //         }
-        
+
 //         setPosition(newPos);
 //         setAddress(result.display_name);
 //         setSearchQuery(''); // Clear search after successful search
@@ -686,7 +686,7 @@
 //       }
 //     } catch (error) {
 //       console.error('🔍 [ERROR] Search error:', error);
-      
+
 //       if (error instanceof Error) {
 //         if (error.name === 'AbortError') {
 //           setMapError("Search timed out. Please try again.");
@@ -706,25 +706,25 @@
 //       area: area.trim(),
 //       landmark: landmark.trim()
 //     });
-    
+
 //     // Validate coordinates
 //     if (isNaN(position.lat) || isNaN(position.lng)) {
 //       setMapError('Invalid coordinates selected. Please try selecting a location again.');
 //       return;
 //     }
-    
+
 //     // Validate that we have at least coordinates
 //     if (!position.lat || !position.lng) {
 //       setMapError('Please select a location on the map first.');
 //       return;
 //     }
-    
+
 //     // Final boundary validation before confirming
 //     if (!isWithinKochiBoundary(position.lat, position.lng)) {
 //       showBoundaryError("Selected location");
 //       return;
 //     }
-    
+
 //     try {
 //       onLocationSelect({
 //         latitude: position.lat,
@@ -733,7 +733,7 @@
 //         area: area.trim() || 'Unknown Area',
 //         landmark: landmark.trim(),
 //       });
-      
+
 //       console.log('✅ [DEBUG] Location selection confirmed successfully');
 //       toast({
 //         title: "Location Confirmed",
@@ -752,11 +752,11 @@
 //       searchLocation();
 //     }
 //   };
-  
+
 //   // Add keyboard shortcuts
 //   useEffect(() => {
 //     if (!isOpen) return;
-    
+
 //     const handleKeyDown = (e: KeyboardEvent) => {
 //       // Escape to close
 //       if (e.key === 'Escape') {
@@ -767,7 +767,7 @@
 //         handleConfirm();
 //       }
 //     };
-    
+
 //     document.addEventListener('keydown', handleKeyDown);
 //     return () => document.removeEventListener('keydown', handleKeyDown);
 //   }, [isOpen, onClose, handleConfirm]);
@@ -873,7 +873,7 @@
 //                       </div>
 //                     </div>
 //                   )}
-                  
+
 //                   <div
 //                     ref={mapRef}
 //                     className="h-full w-full relative"
@@ -882,7 +882,7 @@
 //                       background: '#f0f0f0'
 //                     }}
 //                   />
-                  
+
 //                   {/* Center crosshair indicator - only show when map is ready */}
 //                   {mapInitialized && (
 //                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center z-20">
@@ -896,14 +896,14 @@
 //                       </svg>
 //                     </div>
 //                   )}
-                  
+
 //                   {/* Map status indicator */}
 //                   {mapInitialized && (
 //                     <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm rounded px-2 py-1 text-xs text-gray-600 shadow-sm z-30 pointer-events-none">
 //                       📍 Click map or drag marker to select location
 //                     </div>
 //                   )}
-                  
+
 //                   {/* Kochi boundary info */}
 //                   {mapInitialized && (
 //                     <div className="absolute bottom-2 left-2 bg-blue-50/90 backdrop-blur-sm rounded px-2 py-1 text-xs text-blue-700 shadow-sm z-30 border border-blue-200 pointer-events-none">
@@ -922,14 +922,14 @@
 //                   Getting your current location...
 //                 </div>
 //               )}
-              
+
 //               {isDetectingArea && (
 //                 <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded">
 //                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600"></div>
 //                   Detecting administrative area...
 //                 </div>
 //               )}
-              
+
 //               <p className="text-xs text-gray-500">
 //                 💡 <strong>Tips:</strong> Click anywhere on the map, drag the marker, search for a location, or use your current location.
 //               </p>
@@ -1423,7 +1423,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
         if (resizeObserver) {
           resizeObserver.disconnect();
         }
-        
+
         leafletMapRef.current?.off();
         leafletMapRef.current?.remove();
       } catch {
@@ -1984,25 +1984,25 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
                       <div className="relative">
                         {/* Outer ring with pulse animation */}
                         <div className="absolute inset-0 rounded-full border-2 border-blue-400 opacity-30 animate-ping" style={{ width: '32px', height: '32px', top: '-2px', left: '-2px' }}></div>
-                        
+
                         {/* Main crosshair */}
                         <svg width="32" height="32" viewBox="0 0 32 32" className="text-gray-700 drop-shadow-lg">
                           {/* White background circle for contrast */}
                           <circle cx="16" cy="16" r="6" fill="white" fillOpacity="0.9" stroke="#e5e7eb" strokeWidth="1" />
-                          
+
                           {/* Center dot */}
                           <circle cx="16" cy="16" r="2" fill="currentColor" />
-                          
+
                           {/* Crosshair lines */}
                           <line x1="16" y1="2" x2="16" y2="8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                           <line x1="16" y1="24" x2="16" y2="30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                           <line x1="2" y1="16" x2="8" y2="16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                           <line x1="24" y1="16" x2="30" y2="16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                          
+
                           {/* Inner circle outline */}
                           <circle cx="16" cy="16" r="5" stroke="currentColor" strokeWidth="1.5" fill="none" opacity="0.8" />
                         </svg>
-                        
+
                         {/* Tooltip */}
                         <div className="absolute top-8 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-75">
                           Click to place pin here

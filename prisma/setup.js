@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Kochi Smart City - Interactive Database Setup
+ * NLC-CMS - Interactive Database Setup
  * =============================================
  *
  * This script helps users choose and run the appropriate database setup
@@ -94,7 +94,7 @@ const getScriptPath = (scriptName) => {
 
 // Main menu
 const showMainMenu = () => {
-  log("magenta", "\n🏙️ Kochi Smart City - Database Setup");
+  log("magenta", "\n🏙️ NLC-CMS - Database Setup");
   log("magenta", "===================================");
   log("white", "\nChoose your setup option:");
   log("white", "");
@@ -267,7 +267,7 @@ const handleChoice = async (choice) => {
 // Main function
 const main = async () => {
   try {
-    log("magenta", "🏙️ Welcome to Kochi Smart City Database Setup!");
+    log("magenta", "🏙️ Welcome to NLC-CMS Database Setup!");
 
     // Check if we're in the right directory
     if (!fs.existsSync("package.json")) {

@@ -1,5 +1,5 @@
 import { getPrisma } from "../db/connection.js";
-import { sendEmail } from "../utils/emailService.js";
+import { sendEmail, sendOTPEmail } from "../utils/emailService.js";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
@@ -28,11 +28,11 @@ const generateJWTToken = (user) => {
 export const requestComplaintOtp = async (req, res) => {
   try {
     const { complaintId } = req.body;
-    console.log('🔍 Guest OTP Request Debug:', {
+    console.log("🔍 Guest OTP Request Debug:", {
       body: req.body,
       headers: req.headers,
       url: req.url,
-      method: req.method
+      method: req.method,
     });
     if (!complaintId) {
       return res.status(400).json({
@@ -99,51 +99,11 @@ export const requestComplaintOtp = async (req, res) => {
       },
     });
 
-    // Send OTP email
-    const emailSubject = `OTP for Complaint Tracking - ${complaint.complaintId || complaint.id}`;
-    const emailContent = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
-        <div style="background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">🔐 Complaint Verification</h1>
-          </div>
-
-          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
-            <h2 style="color: #1e40af; margin: 0 0 10px 0; font-size: 20px;">Hello ${fullName},</h2>
-            <p style="margin: 0; color: #374151; line-height: 1.6;">
-              You've requested to track your complaint <strong>${complaint.complaintId || complaint.id}</strong>.
-              Please use the verification code below to access your complaint details.
-            </p>
-          </div>
-
-          <div style="text-align: center; margin: 30px 0;">
-            <div style="background-color: #1f2937; color: white; font-size: 36px; font-weight: bold; letter-spacing: 8px; padding: 20px; border-radius: 8px; display: inline-block;">
-              ${otp}
-            </div>
-            <p style="margin: 15px 0 0 0; color: #6b7280; font-size: 14px;">
-              This code will expire in 10 minutes
-            </p>
-          </div>
-
-          <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; margin: 25px 0;">
-            <p style="margin: 0; color: #92400e; font-size: 14px;">
-              <strong>Security Note:</strong> Never share this OTP with anyone. Our team will never ask for your OTP.
-            </p>
-          </div>
-
-          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
-            <p style="margin: 0; color: #6b7280; font-size: 12px; text-align: center;">
-              If you didn't request this verification, please ignore this email.
-            </p>
-          </div>
-        </div>
-      </div>
-    `;
-
-    await sendEmail({
-      to: email,
-      subject: emailSubject,
-      html: emailContent,
+    // Send OTP email using unified template
+    await sendOTPEmail(email, otp, {
+      purpose: "complaint_tracking",
+      fullName: fullName,
+      contextId: complaint.complaintId || complaint.id,
     });
 
     res.json({

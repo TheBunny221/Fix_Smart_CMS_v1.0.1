@@ -36,17 +36,16 @@ router.post("/test-email", async (req, res) => {
       // Test basic email
       result = await sendEmail({
         to,
-        subject: subject || "Test Email from Cochin Smart City",
+        subject: subject || "Test Email from NLC-CMS",
         text:
-          text ||
-          "This is a test email from the Cochin Smart City E-Governance Portal.",
+          text || "This is a test email from the NLC-CMS E-Governance Portal.",
         html:
           html ||
           `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align: center;">
               <h1 style="color: white; margin: 0;">Test Email</h1>
-              <p style="color: white; margin: 5px 0 0 0;">Cochin Smart City E-Governance Portal</p>
+              <p style="color: white; margin: 5px 0 0 0;">NLC-CMS E-Governance Portal</p>
             </div>
             
             <div style="padding: 30px; background: #f9f9f9;">
@@ -71,7 +70,7 @@ router.post("/test-email", async (req, res) => {
             </div>
             
             <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
-              <p style="margin: 0;">This is a test message from Cochin Smart City E-Governance Portal.</p>
+              <p style="margin: 0;">This is a test message from NLC-CMS E-Governance Portal.</p>
             </div>
           </div>
         `,

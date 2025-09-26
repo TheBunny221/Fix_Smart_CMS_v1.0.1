@@ -1,6 +1,6 @@
 # Database Setup and Migration Guide
 
-This document provides comprehensive instructions for setting up and migrating the Kochi Smart City database from SQLite (development) to PostgreSQL (production).
+This document provides comprehensive instructions for setting up and migrating the NLC-CMS database from SQLite (development) to PostgreSQL (production).
 
 ## Table of Contents
 
@@ -39,7 +39,7 @@ EMAIL_SERVICE="smtp.ethereal.email"
 EMAIL_USER="your-ethereal-user"
 EMAIL_PASS="your-ethereal-pass"
 EMAIL_PORT="587"
-EMAIL_FROM="Kochi Smart City <noreply@kochismartcity.gov.in>"
+EMAIL_FROM="NLC-CMS <noreply@kochismartcity.gov.in>"
 
 # Rate Limiting
 RATE_LIMIT_WINDOW_MS=900000
@@ -71,7 +71,7 @@ EMAIL_SERVICE="smtp.gmail.com"
 EMAIL_USER="your-production-email@gmail.com"
 EMAIL_PASS="your-app-password"
 EMAIL_PORT="587"
-EMAIL_FROM="Kochi Smart City <noreply@kochismartcity.gov.in>"
+EMAIL_FROM="NLC-CMS <noreply@kochismartcity.gov.in>"
 
 # Rate Limiting
 RATE_LIMIT_WINDOW_MS=900000

@@ -1,9 +1,9 @@
 @echo off
-REM Kochi Smart City - Production Environment Setup (Windows)
+REM NLC-CMS - Production Environment Setup (Windows)
 REM ========================================================
 
 echo.
-echo 🏭 Kochi Smart City - Production Environment Setup
+echo 🏭 NLC-CMS - Production Environment Setup
 echo ================================================
 echo.
 

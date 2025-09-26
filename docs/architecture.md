@@ -36,14 +36,14 @@ The NLC-CMS Complaint Management System is a comprehensive full-stack web applic
 │                    EXTERNAL SYSTEMS                        │
 ├─────────────────────────────────────────────────────────────┤
 │  • SMTP Email Service                                      │
-│  • SMS Gateway (Future)                                    │
+��  • SMS Gateway (Future)                                    │
 │  • File Storage (Local/Cloud)                             │
 │  • Authentication Providers (JWT-based)                   │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    COCHIN SMART CITY SYSTEM                │
+│                    NLC-CMS SYSTEM                │
 ├─────────────────────────────────────────────────────────────┤
 │  ┌─────────────────┐  ┌─────────────────┐  ┌──────────────┐ │
 │  │   FRONTEND      │  │    BACKEND      │  │   DATABASE   │ │
@@ -61,7 +61,7 @@ The NLC-CMS Complaint Management System is a comprehensive full-stack web applic
 │  • Ward Officers                                           │
 │  • Maintenance Teams                                       │
 │  • System Administrators                                   │
-└──────────────────────────────────────────────��──────────────┘
+└─────────────────────────────────────��────────��──────────────┘
 ```
 
 ---
@@ -574,7 +574,7 @@ usePagination(); // Pagination logic
 4. Database → User Data → Backend
 5. Backend → Generate JWT → Frontend
 6. Frontend → Store Token → LocalStorage
-7. Subsequent Requests → Include Bearer Token
+7. Subsequent Requests �� Include Bearer Token
 ```
 
 ### Authorization Layers
@@ -643,7 +643,7 @@ router.use(authorize("ADMINISTRATOR")); // Role authorization
 │  • TypeScript compilation                               │
 │  • Auto-restart on file changes                        │
 │  • Development-specific environment variables          │
-└─────────────────────────────────────────────────────────┘
+└──────────────────────────────────���──────────────────────┘
 ```
 
 ### Production Environment
@@ -660,7 +660,7 @@ router.use(authorize("ADMINISTRATOR")); // Role authorization
 │    ┌───────▼────────┐         ┌────────▼─────────┐     │
 │    │  Static Files  │         │    API Routes    │     │
 │    │     (SPA)      │         │                  │     │
-│    │   Cached       │         │    ┌──────────┐  │     │
+│    │   Cached       │         │    ┌─────────���┐  │     │
 │    └────────────────┘         │    │   PM2    │  │     │
 │                               │    │ Cluster  │  │     │
 │                               │    │ :4005    │  │     │
@@ -734,7 +734,7 @@ cochin-smart-city/
 │   │   └── 📄 validations.ts          # Validation schemas
 │   ├── 📁 pages/                      # Route components
 │   │   ├── 📄 Index.tsx               # Home page (guest form)
-│   │   ├── 📄 Login.tsx               # Authentication page
+│   │   ├��─ 📄 Login.tsx               # Authentication page
 │   │   ├── 📄 Register.tsx            # User registration
 │   │   ├── 📄 CitizenDashboard.tsx    # Citizen dashboard
 │   │   ├── 📄 AdminDashboard.tsx      # Admin dashboard
@@ -771,7 +771,7 @@ cochin-smart-city/
 │   └── 📄 vite-env.d.ts               # Vite type definitions
 ├── 📁 server/                         # Backend application
 │   ├── 📁 controller/                 # Business logic controllers
-│   │   ├── 📄 authController.js       # Authentication logic
+│   │   ├── ��� authController.js       # Authentication logic
 │   │   ├── 📄 complaintController.js  # Complaint management
 │   │   ├── 📄 guestController.js      # Guest operations
 │   │   ├── 📄 adminController.js      # Administrative functions
@@ -795,7 +795,7 @@ cochin-smart-city/
 │   ├── 📁 middleware/                 # Express middleware
 │   │   ├── 📄 auth.js                 # Authentication middleware
 │   │   ├── 📄 validation.js           # Request validation
-│   │   ├── 📄 errorHandler.js         # Error handling
+��   │   ├── 📄 errorHandler.js         # Error handling
 │   │   └── 📄 requestLogger.js        # Request logging
 │   ├── 📁 model/                      # Database models (if using)
 │   │   ├── 📄 User.js                 # User model
@@ -813,7 +813,7 @@ cochin-smart-city/
 │   ├── 📄 schema.prisma               # Database schema definition
 │   └── 📄 seed.js                     # Database seeding script
 ├── 📁 docs/                           # Project documentation
-│   ├── 📄 architecture.md             # This file
+���   ├── 📄 architecture.md             # This file
 │   ├── 📄 PROJECT_OVERVIEW.md         # Project overview
 │   ├── 📄 BACKEND_API_REFERENCE.md    # API documentation
 │   ├── 📄 UI_COMPONENT_MAP.md         # Component mapping

@@ -1,6 +1,6 @@
 import { getPrisma } from "../db/connection.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
-import { sendEmail } from "../utils/emailService.js";
+import { sendEmail, sendOTPEmail } from "../utils/emailService.js";
 import { verifyCaptchaForComplaint } from "./captchaController.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -320,19 +320,9 @@ export const submitGuestComplaintWithAttachments = asyncHandler(
     });
 
     // Send OTP email
-    const emailSent = await sendEmail({
-      to: email,
-      subject: "Verify Your Complaint - NLC-CMS",
-      text: `Your complaint has been registered with ID: ${complaint.complaintId}. To complete the process, please verify your email with OTP: ${otpCode}. This OTP will expire in 10 minutes.`,
-      html: `
-      <h2>Complaint Registered Successfully</h2>
-      <p>Your complaint has been registered with ID: <strong>${complaint.complaintId}</strong></p>
-      <p>To complete the verification process, please use the following OTP:</p>
-      <h3 style=\"color: #2563eb; font-size: 24px; letter-spacing: 2px;\">${otpCode}</h3>
-      <p>This OTP will expire in 10 minutes.</p>
-      <p>After verification, you will be automatically registered as a citizen and can track your complaint.</p>
-      ${attachmentRecords.length > 0 ? `<p>Your complaint includes ${attachmentRecords.length} attachment(s).</p>` : ""}
-    `,
+    const emailSent = await sendOTPEmail(email, otpCode, {
+      purpose: "complaint_verification",
+      contextId: complaint.complaintId,
     });
 
     if (!emailSent) {
@@ -422,16 +412,8 @@ export const submitGuestComplaint = asyncHandler(async (req, res) => {
     },
   });
 
-  const emailSent = await sendEmail({
-    to: email,
-    subject: "Verify Your Email to Submit Complaint - NLC-CMS",
-    text: `Your OTP for complaint submission is: ${otpCode}. This OTP will expire in 10 minutes.`,
-    html: `
-      <h2>Email Verification Required</h2>
-      <p>Use the following OTP to verify your email and submit your complaint:</p>
-      <h3 style="color: #2563eb; font-size: 24px; letter-spacing: 2px;">${otpCode}</h3>
-      <p>This OTP will expire in 10 minutes.</p>
-    `,
+  const emailSent = await sendOTPEmail(email, otpCode, {
+    purpose: "complaint_verification",
   });
 
   if (!emailSent) {
@@ -720,16 +702,8 @@ export const resendOTP = asyncHandler(async (req, res) => {
     data: { email, otpCode, purpose: "GUEST_VERIFICATION", expiresAt },
   });
 
-  const emailSent = await sendEmail({
-    to: email,
-    subject: "Verify Your Email - NLC-CMS (Resent)",
-    text: `Your new verification OTP is: ${otpCode}. This OTP will expire in 10 minutes.`,
-    html: `
-      <h2>New Verification OTP</h2>
-      <p>Your new verification OTP is:</p>
-      <h3 style="color: #2563eb; font-size: 24px; letter-spacing: 2px;">${otpCode}</h3>
-      <p>This OTP will expire in 10 minutes.</p>
-    `,
+  const emailSent = await sendOTPEmail(email, otpCode, {
+    purpose: "complaint_verification",
   });
 
   if (!emailSent) {
@@ -947,7 +921,7 @@ export const getPublicComplaintTypes = asyncHandler(async (req, res) => {
 
 // import { getPrisma } from "../db/connection.js";
 // import { asyncHandler } from "../middleware/errorHandler.js";
-// import { sendEmail } from "../utils/emailService.js";
+// import { sendEmail, sendOTPEmail } from "../utils/emailService.js";
 // import { verifyCaptchaForComplaint } from "./captchaController.js";
 // import jwt from "jsonwebtoken";
 // import bcrypt from "bcryptjs";
