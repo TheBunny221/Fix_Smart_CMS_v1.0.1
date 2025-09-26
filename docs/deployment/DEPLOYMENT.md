@@ -185,7 +185,7 @@ npm run build
 3. Start with PM2 (recommended)
 
 ```bash
-pm2 start ecosystem.prod.config.cjs --only cochin-api
+pm2 start ecosystem.prod.config.cjs --only NLC-CMS
 pm2 save
 pm2 status
 ```
@@ -292,7 +292,7 @@ npm ci --omit=dev
 npm run db:generate:prod
 npm run db:migrate:prod
 npm run build
-pm2 start ecosystem.prod.config.cjs --only cochin-api
+pm2 start ecosystem.prod.config.cjs --only NLC-CMS
 pm2 save
 ```
 
