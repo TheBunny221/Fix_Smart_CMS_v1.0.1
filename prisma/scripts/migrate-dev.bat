@@ -3,7 +3,7 @@ REM NLC-CMS - Development Migration Script (Windows)
 REM ========================================================
 
 echo.
-echo 🔄 Kochi Smart City - Development Database Migration
+echo 🔄 NLC-CMS - Development Database Migration
 echo ==============================================
 echo.
 
