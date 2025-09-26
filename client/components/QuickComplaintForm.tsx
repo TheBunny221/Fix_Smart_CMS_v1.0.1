@@ -66,6 +66,7 @@ import {
 import { createComplaint } from "@/store/slices/complaintsSlice";
 import { useSystemConfig } from "../contexts/SystemConfigContext";
 import { prewarmMapAssets } from "../utils/mapTilePrefetch";
+import { emailSchema, nameSchema, phoneSchema } from "../lib/validations";
 
 interface QuickComplaintFormProps {
   onSuccess?: (complaintId: string) => void;
@@ -117,6 +118,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
     coordinates: null,
   });
   const [files, setFiles] = useState<File[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [captcha, setCaptcha] = useState("");
   const [captchaId, setCaptchaId] = useState<string | null>(null);
   const [isMapDialogOpen, setIsMapDialogOpen] = useState(false);
@@ -212,7 +214,42 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
     label: type.label,
     icon: getIconForComplaintType(type.value),
   }));
-  console.warn(problemTypes);
+  const validateField = (field: keyof FormData | "captcha", value: string) => {
+    try {
+      switch (field) {
+        case "fullName":
+          nameSchema.parse(value);
+          break;
+        case "mobile":
+          phoneSchema.parse(value);
+          break;
+        case "email":
+          if (submissionMode === "guest") {
+            emailSchema.parse(value);
+          } else if (value) {
+            emailSchema.parse(value);
+          }
+          break;
+        case "area":
+          if (!value || value.trim().length < 3)
+            throw new Error("Area must be at least 3 characters");
+          break;
+        case "description":
+          if (!value || value.trim().length < 10)
+            throw new Error("Description must be at least 10 characters");
+          break;
+        case "captcha":
+          if (!value) throw new Error("Please complete the CAPTCHA verification");
+          break;
+        default:
+          break;
+      }
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    } catch (e: any) {
+      const msg = e?.errors?.[0]?.message || e?.message || "Invalid value";
+      setErrors((prev) => ({ ...prev, [field]: msg }));
+    }
+  };
   // Derive sub-zones for the selected ward (from public wards response which includes subZones)
   const selectedWard = wards.find((w: any) => w.id === formData.ward);
   const subZonesForWard = selectedWard?.subZones || [];
@@ -224,7 +261,14 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
   const handleFileUpload = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const selectedFiles = Array.from(event.target.files || []);
-      const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/jpg",
+        "video/mp4",
+        "video/webm",
+        "video/ogg",
+      ];
       const validFiles: File[] = [];
 
       selectedFiles.forEach((file) => {
@@ -541,9 +585,13 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                     onChange={(e) =>
                       handleInputChange("fullName", e.target.value)
                     }
+                    onBlur={() => validateField("fullName", formData.fullName)}
                     placeholder={`${translations?.common?.name || "Enter your"} ${translations?.auth?.fullName || "full name"}`}
                     required
                   />
+                  {errors.fullName && (
+                    <p className="text-sm text-red-500">{errors.fullName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="mobile">
@@ -556,10 +604,14 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                     onChange={(e) =>
                       handleInputChange("mobile", e.target.value)
                     }
+                    onBlur={() => validateField("mobile", formData.mobile)}
                     placeholder={`${translations?.common?.required || "Enter your"} ${translations?.complaints?.mobile || "mobile number"}`}
                     required
                     disabled={isAuthenticated && !!user?.phoneNumber}
                   />
+                  {errors.mobile && (
+                    <p className="text-sm text-red-500">{errors.mobile}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">
@@ -570,9 +622,13 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
+                    onBlur={() => validateField("email", formData.email)}
                     placeholder={`${translations?.common?.optional || "Enter your"} ${translations?.auth?.email || "email address"}`}
                     disabled={isAuthenticated && !!user?.email}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-red-500">{errors.email}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -665,12 +721,16 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                     id="area"
                     value={formData.area}
                     onChange={(e) => handleInputChange("area", e.target.value)}
+                    onBlur={() => validateField("area", formData.area)}
                     placeholder={
                       translations?.forms?.minCharacters ||
                       "Enter area (minimum 3 characters)"
                     }
                     required
                   />
+                  {errors.area && (
+                    <p className="text-sm text-red-500">{errors.area}</p>
+                  )}
                 </div>
 
                 {/* Sub-Zone Selection - shows when ward selected and sub-zones available */}
@@ -768,10 +828,14 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                   onChange={(e) =>
                     handleInputChange("description", e.target.value)
                   }
+                  onBlur={() => validateField("description", formData.description)}
                   placeholder={`${translations?.forms?.complaintDescription || "Describe your complaint in detail"}...`}
                   rows={4}
                   required
                 />
+                {errors.description && (
+                  <p className="text-sm text-red-500">{errors.description}</p>
+                )}
               </div>
             </div>
 
@@ -793,7 +857,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                   <input
                     type="file"
                     multiple
-                    accept="image/jpeg,image/png"
+                    accept="image/jpeg,image/png,image/jpg,video/mp4,video/webm,video/ogg"
                     onChange={handleFileUpload}
                     className="hidden"
                     id="file-upload"
@@ -814,21 +878,45 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                   <p className="text-sm font-medium">
                     {translations?.complaints?.files || "Uploaded Files"}:
                   </p>
-                  <div className="flex flex-wrap gap-2">
-                    {files.map((file, index) => (
-                      <Badge key={index} variant="secondary" className="pr-1">
-                        {file.name}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="h-auto p-1 ml-1 hover:bg-destructive hover:text-destructive-foreground"
-                          onClick={() => removeFile(index)}
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {files.map((file, index) => {
+                      const url = URL.createObjectURL(file);
+                      const isImage = file.type.startsWith("image/");
+                      const isVideo = file.type.startsWith("video/");
+                      return (
+                        <div
+                          key={index}
+                          className="relative rounded border overflow-hidden"
                         >
-                          ×
-                        </Button>
-                      </Badge>
-                    ))}
+                          <button
+                            type="button"
+                            className="absolute top-1 right-1 z-10 bg-white/80 rounded-full px-2 py-0.5 text-xs"
+                            onClick={() => removeFile(index)}
+                            aria-label={`Remove ${file.name}`}
+                          >
+                            ×
+                          </button>
+                          {isImage ? (
+                            <img
+                              src={url}
+                              alt={file.name}
+                              className="w-full h-32 object-cover"
+                            />
+                          ) : isVideo ? (
+                            <video
+                              src={url}
+                              className="w-full h-32 object-cover"
+                              controls
+                            />
+                          ) : (
+                            <div className="p-3 text-sm break-all">{file.name}</div>
+                          )}
+                          <div className="p-2 text-xs text-gray-600 truncate">
+                            {file.name}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
