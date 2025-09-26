@@ -4,6 +4,7 @@ import type {
   FetchArgs,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { logout } from "../slices/authSlice";
 import { createRobustFetch, logFetchDebugInfo } from "../../utils/fetchDebug";
 
