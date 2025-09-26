@@ -134,13 +134,11 @@ All emails use a consistent design with:
 ### Common Issues and Solutions
 
 1. **Emails not sending**
-
    - Check server logs for email transporter creation messages
    - Verify environment variables are loaded correctly
    - Ensure Ethereal credentials are valid
 
 2. **Preview URLs not showing**
-
    - Check if running in development mode
    - Verify nodemailer version supports getTestMessageUrl()
 

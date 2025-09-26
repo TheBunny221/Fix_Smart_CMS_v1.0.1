@@ -171,7 +171,6 @@ December 2024
    ```
 
 2. **Complete Registration Form**:
-
    - Fill out all required fields
    - Select appropriate ward and role
    - Submit form
@@ -185,7 +184,6 @@ December 2024
 ### 6.2 Error Handling Testing
 
 1. **Test Invalid Data**:
-
    - Submit forms with invalid data
    - Verify user-friendly error messages
 
@@ -196,7 +194,6 @@ December 2024
 ### 6.3 Auto-Login Testing
 
 1. **Test Token Persistence**:
-
    - Login successfully
    - Refresh browser
    - Verify automatic re-authentication

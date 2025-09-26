@@ -239,7 +239,8 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
             throw new Error("Description must be at least 10 characters");
           break;
         case "captcha":
-          if (!value) throw new Error("Please complete the CAPTCHA verification");
+          if (!value)
+            throw new Error("Please complete the CAPTCHA verification");
           break;
         default:
           break;
@@ -828,7 +829,9 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                   onChange={(e) =>
                     handleInputChange("description", e.target.value)
                   }
-                  onBlur={() => validateField("description", formData.description)}
+                  onBlur={() =>
+                    validateField("description", formData.description)
+                  }
                   placeholder={`${translations?.forms?.complaintDescription || "Describe your complaint in detail"}...`}
                   rows={4}
                   required
@@ -909,7 +912,9 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                               controls
                             />
                           ) : (
-                            <div className="p-3 text-sm break-all">{file.name}</div>
+                            <div className="p-3 text-sm break-all">
+                              {file.name}
+                            </div>
                           )}
                           <div className="p-2 text-xs text-gray-600 truncate">
                             {file.name}

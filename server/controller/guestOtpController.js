@@ -28,11 +28,11 @@ const generateJWTToken = (user) => {
 export const requestComplaintOtp = async (req, res) => {
   try {
     const { complaintId } = req.body;
-    console.log('🔍 Guest OTP Request Debug:', {
+    console.log("🔍 Guest OTP Request Debug:", {
       body: req.body,
       headers: req.headers,
       url: req.url,
-      method: req.method
+      method: req.method,
     });
     if (!complaintId) {
       return res.status(400).json({

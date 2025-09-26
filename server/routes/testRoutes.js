@@ -38,8 +38,7 @@ router.post("/test-email", async (req, res) => {
         to,
         subject: subject || "Test Email from NLC-CMS",
         text:
-          text ||
-          "This is a test email from the NLC-CMS E-Governance Portal.",
+          text || "This is a test email from the NLC-CMS E-Governance Portal.",
         html:
           html ||
           `

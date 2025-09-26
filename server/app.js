@@ -44,12 +44,12 @@ import responseFormatter from "./middleware/responseFormatter.js";
 // Enhanced request logging middleware using our logger
 const enhancedRequestLogger = (req, res, next) => {
   const start = Date.now();
-  
-  res.on('finish', () => {
+
+  res.on("finish", () => {
     const duration = Date.now() - start;
     logger.request(req, res, duration);
   });
-  
+
   next();
 };
 
@@ -283,7 +283,7 @@ export function createApp() {
   // Public routes first (no auth required)
   app.use("/api/guest-otp", guestOtpRoutes);
   app.use("/api/captcha", captchaRoutes);
-  
+
   // Other API routes
   app.use("/api/auth", authRoutes);
   app.use("/api/users", userRoutes);

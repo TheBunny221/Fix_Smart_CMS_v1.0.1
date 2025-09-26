@@ -194,12 +194,11 @@ export const sendOTPEmail = async (
         return {
           subject: `OTP for Service Request Verification${contextId ? ` - ${contextId}` : ""}`,
           title: "Service Request Verification",
-          intro:
-            contextLabel
-              ? `You're verifying your ${contextLabel} request${
-                  contextId ? ` (${contextId})` : ""
-                }. Use the code below to continue.`
-              : "Use the verification code below to verify your service request.",
+          intro: contextLabel
+            ? `You're verifying your ${contextLabel} request${
+                contextId ? ` (${contextId})` : ""
+              }. Use the code below to continue.`
+            : "Use the verification code below to verify your service request.",
         };
       default:
         return {
