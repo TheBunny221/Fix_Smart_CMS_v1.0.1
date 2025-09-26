@@ -970,12 +970,16 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
               <Input
                 value={captcha}
                 onChange={(e) => setCaptcha(e.target.value)}
+                onBlur={() => validateField("captcha", captcha)}
                 placeholder={
                   translations?.forms?.enterCaptcha ||
                   "Enter the code shown above"
                 }
                 required
               />
+              {errors.captcha && (
+                <p className="text-sm text-red-500">{errors.captcha}</p>
+              )}
             </div>
 
             {/* OTP Input Section for Guest Users */}
