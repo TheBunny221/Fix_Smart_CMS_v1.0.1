@@ -68,8 +68,11 @@ import {
   Info,
 } from "lucide-react";
 
+import { useSystemConfig } from "../contexts/SystemConfigContext";
+
 const AdminDashboard: React.FC = () => {
   const { translations } = useAppSelector((state) => state.language);
+  const { appName } = useSystemConfig();
 
   // Fetch real-time data using API queries
   const {
@@ -224,8 +227,7 @@ const AdminDashboard: React.FC = () => {
                 🛡️ Administrator Dashboard 🛠️
               </h1>
               <p className="text-purple-100">
-                Complete system overview and management controls for Cochin
-                Smart City
+                Complete system overview and management controls for {appName}
               </p>
             </div>
             <Shield className="h-16 w-16 text-purple-200" />
