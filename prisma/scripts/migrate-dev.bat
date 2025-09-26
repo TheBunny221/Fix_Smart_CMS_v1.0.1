@@ -1,5 +1,5 @@
 @echo off
-REM Kochi Smart City - Development Migration Script (Windows)
+REM NLC-CMS - Development Migration Script (Windows)
 REM ========================================================
 
 echo.
