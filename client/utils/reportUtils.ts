@@ -1,5 +1,6 @@
 import type { AnalyticsData, FilterOptions } from "../types/reports";
 import { HeatmapData } from "../components/charts/HeatmapGrid";
+import type { FilterOptions, AnalyticsData } from "../types/reports";
 
 interface User {
   role?: string;
@@ -7,7 +8,10 @@ interface User {
 }
 
 // Helper to construct query parameters
-const buildQueryParams = (filters: FilterOptions, user?: User | null): URLSearchParams => {
+const buildQueryParams = (
+  filters: FilterOptions,
+  user?: User | null,
+): URLSearchParams => {
   const queryParams = new URLSearchParams({
     from: filters.dateRange.from,
     to: filters.dateRange.to,
@@ -28,7 +32,10 @@ const buildQueryParams = (filters: FilterOptions, user?: User | null): URLSearch
 /**
  * Fetches the main analytics data for the reports page.
  */
-export const getAnalyticsData = async (filters: FilterOptions, user: User | null): Promise<AnalyticsData> => {
+export const getAnalyticsData = async (
+  filters: FilterOptions,
+  user: User | null,
+): Promise<AnalyticsData> => {
   const queryParams = buildQueryParams(filters, user);
 
   let endpoint = "/api/reports/analytics";
@@ -78,7 +85,10 @@ export const getAnalyticsData = async (filters: FilterOptions, user: User | null
 /**
  * Fetches heatmap data based on filters.
  */
-export const getHeatmapData = async (filters: FilterOptions, user: User | null): Promise<HeatmapData> => {
+export const getHeatmapData = async (
+  filters: FilterOptions,
+  user: User | null,
+): Promise<HeatmapData> => {
   const queryParams = new URLSearchParams({
     from: filters.dateRange.from,
     to: filters.dateRange.to,
@@ -90,7 +100,11 @@ export const getHeatmapData = async (filters: FilterOptions, user: User | null):
   // Enforce ward scope for Ward Officers; allow Admins to scope to a ward
   if (user?.role === "WARD_OFFICER" && user?.wardId) {
     queryParams.set("ward", user.wardId);
-  } else if (user?.role === "ADMINISTRATOR" && filters.ward && filters.ward !== "all") {
+  } else if (
+    user?.role === "ADMINISTRATOR" &&
+    filters.ward &&
+    filters.ward !== "all"
+  ) {
     queryParams.set("ward", filters.ward);
   }
 

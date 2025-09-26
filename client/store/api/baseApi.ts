@@ -186,9 +186,18 @@ const baseQueryWithReauth: BaseQueryFn<
           } as any;
           try {
             const { toast } = await import("../../hooks/use-toast");
-            const { getFriendlyApiMessage } = await import("../../lib/apiHandler");
-            const msg = getFriendlyApiMessage({ status: response.status, data });
-            toast({ title: "Request failed", description: msg, variant: "destructive" });
+            const { getFriendlyApiMessage } = await import(
+              "../../lib/apiHandler"
+            );
+            const msg = getFriendlyApiMessage({
+              status: response.status,
+              data,
+            });
+            toast({
+              title: "Request failed",
+              description: msg,
+              variant: "destructive",
+            });
           } catch {}
           return { error: errorObj };
         }
@@ -203,7 +212,11 @@ const baseQueryWithReauth: BaseQueryFn<
         const { toast } = await import("../../hooks/use-toast");
         const { getFriendlyApiMessage } = await import("../../lib/apiHandler");
         const msg = getFriendlyApiMessage(errorObj);
-        toast({ title: "Request failed", description: msg, variant: "destructive" });
+        toast({
+          title: "Request failed",
+          description: msg,
+          variant: "destructive",
+        });
       } catch {}
       return {
         error: errorObj,
