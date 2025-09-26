@@ -1,6 +1,6 @@
 import { getPrisma } from "../db/connection.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
-import { sendEmail } from "../utils/emailService.js";
+import { sendEmail, sendOTPEmail } from "../utils/emailService.js";
 
 const prisma = getPrisma();
 
@@ -190,28 +190,10 @@ export const submitGuestServiceRequest = asyncHandler(async (req, res) => {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  const emailSent = await sendEmail({
-    to: email,
-    subject: `Service Request Submitted - ${serviceTypeLabel}`,
-    text: `Your ${serviceTypeLabel} request has been submitted with ID: ${serviceRequest.id}. To complete the process, please verify your email with OTP: ${otpCode}. This OTP will expire in 10 minutes.`,
-    html: `
-      <h2>Service Request Submitted Successfully</h2>
-      <p>Your <strong>${serviceTypeLabel}</strong> request has been submitted with ID: <strong>${serviceRequest.id}</strong></p>
-      
-      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <h3>Request Details:</h3>
-        <p><strong>Service:</strong> ${serviceTypeLabel}</p>
-        <p><strong>Priority:</strong> ${priority}</p>
-        <p><strong>Preferred Appointment:</strong> ${appointmentDateTime.toLocaleDateString()} at ${preferredTime}</p>
-        <p><strong>Expected Completion:</strong> ${expectedCompletion.toLocaleDateString()}</p>
-      </div>
-
-      <p>To complete the verification process, please use the following OTP:</p>
-      <h3 style="color: #2563eb; font-size: 24px; letter-spacing: 2px;">${otpCode}</h3>
-      <p>This OTP will expire in 10 minutes.</p>
-      
-      <p>You will receive an email confirmation with your appointment details once the request is processed.</p>
-    `,
+  const emailSent = await sendOTPEmail(email, otpCode, {
+    purpose: "service_request",
+    contextId: serviceRequest.id,
+    contextLabel: serviceTypeLabel,
   });
 
   if (!emailSent) {
