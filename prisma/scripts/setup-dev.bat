@@ -1,9 +1,9 @@
 @echo off
-REM Kochi Smart City - Development Environment Setup (Windows)
+REM NLC-CMS - Development Environment Setup (Windows)
 REM ============================================================
 
 echo.
-echo 🚀 Kochi Smart City - Development Environment Setup
+echo 🚀 NLC-CMS - Development Environment Setup
 echo ================================================
 echo.
 

@@ -55,8 +55,8 @@ This comprehensive guide covers everything you need to know about setting up, de
 
 ```bash
 # Clone the project
-git clone https://github.com/your-org/cochin-smart-city.git
-cd cochin-smart-city
+git clone https://github.com/your-org/nlc-cms.git
+cd nlc-cms
 
 # Check Node.js version
 node --version  # Should be 18.0.0 or higher
@@ -421,8 +421,8 @@ sudo usermod -aG sudo cochin-app
 sudo su - cochin-app
 
 # Clone repository
-git clone https://github.com/your-org/cochin-smart-city.git
-cd cochin-smart-city
+git clone https://github.com/your-org/nlc-cms.git
+cd nlc-cms
 
 # Install dependencies
 npm ci --only=production

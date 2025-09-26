@@ -1,5 +1,5 @@
 #!/bin/bash
-# Kochi Smart City - Development Seeding Script (Unix/Linux/macOS)
+# NLC-CMS - Development Seeding Script (Unix/Linux/macOS)
 # =================================================================
 
 # Colors for output
@@ -36,7 +36,7 @@ set -e
 trap 'log_error "Seeding failed at line $LINENO. Exit code: $?"' ERR
 
 echo
-log_header "🌱 Kochi Smart City - Development Database Seeding"
+log_header "🌱 NLC-CMS - Development Database Seeding"
 log_header "==========================================="
 echo
 

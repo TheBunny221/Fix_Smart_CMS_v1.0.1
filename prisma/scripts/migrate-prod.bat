@@ -1,9 +1,9 @@
 @echo off
-REM Kochi Smart City - Production Migration Script (Windows)
+REM NLC-CMS - Production Migration Script (Windows)
 REM =======================================================
 
 echo.
-echo 🏭 Kochi Smart City - Production Database Migration
+echo 🏭 NLC-CMS - Production Database Migration
 echo =============================================
 echo.
 

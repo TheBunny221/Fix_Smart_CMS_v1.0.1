@@ -1,6 +1,61 @@
 import { useCallback, useMemo, useRef, useEffect, useState } from "react";
 import { useCallback, useMemo, useRef, useEffect, useState } from "react";
-import { debounce, throttle } from "lodash-es";
+
+// Lightweight debounce/throttle implementations to avoid extra deps
+type AnyFn = (...args: any[]) => any;
+
+type Cancelable<T extends AnyFn> = T & { cancel: () => void };
+
+function createDebounce<T extends AnyFn>(fn: T, wait: number): Cancelable<T> {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  const wrapped = ((...args: Parameters<T>) => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), wait);
+  }) as Cancelable<T>;
+  wrapped.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  };
+  return wrapped;
+}
+
+function createThrottle<T extends AnyFn>(fn: T, wait: number): Cancelable<T> {
+  let last = 0;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  let lastArgs: Parameters<T> | null = null;
+  const invoke = () => {
+    last = Date.now();
+    timeout = null;
+    if (lastArgs) {
+      fn(...lastArgs);
+      lastArgs = null;
+    }
+  };
+  const wrapped = ((...args: Parameters<T>) => {
+    const now = Date.now();
+    const remaining = wait - (now - last);
+    lastArgs = args;
+    if (remaining <= 0 || remaining > wait) {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+      invoke();
+    } else if (!timeout) {
+      timeout = setTimeout(invoke, remaining);
+    }
+  }) as Cancelable<T>;
+  wrapped.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+    lastArgs = null;
+  };
+  return wrapped;
+}
 
 // Hook for debounced values
 export function useDebounce<T>(value: T, delay: number): T {
@@ -26,7 +81,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
   deps: React.DependencyList = [],
 ): T {
   const debouncedCallback = useMemo(
-    () => debounce(callback, delay),
+    () => createDebounce(callback, delay),
     [...deps, delay],
   );
 
@@ -46,7 +101,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
   deps: React.DependencyList = [],
 ): T {
   const throttledCallback = useMemo(
-    () => throttle(callback, delay),
+    () => createThrottle(callback, delay),
     [...deps, delay],
   );
 
