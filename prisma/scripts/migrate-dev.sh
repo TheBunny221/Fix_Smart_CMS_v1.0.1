@@ -1,5 +1,5 @@
 #!/bin/bash
-# Kochi Smart City - Development Migration Script (Unix/Linux/macOS)
+# NLC-CMS - Development Migration Script (Unix/Linux/macOS)
 # ==================================================================
 
 # Colors for output
@@ -36,7 +36,7 @@ set -e
 trap 'log_error "Migration failed at line $LINENO. Exit code: $?"' ERR
 
 echo
-log_header "🔄 Kochi Smart City - Development Database Migration"
+log_header "🔄 NLC-CMS - Development Database Migration"
 log_header "=============================================="
 echo
 
