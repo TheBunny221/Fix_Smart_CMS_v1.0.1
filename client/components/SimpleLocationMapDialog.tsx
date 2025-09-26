@@ -2013,7 +2013,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
 
                   {/* Map hints with enhanced z-index */}
                   {mapInitialized && (
-                    <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm rounded-md px-3 py-2 text-xs text-gray-700 shadow-lg border z-[1001]">
+                    <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm rounded-md px-3 py-2 text-xs text-gray-700 shadow-lg border z-[1001]">
                       📍 Click map or drag marker to select location
                     </div>
                   )}
