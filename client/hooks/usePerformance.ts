@@ -101,7 +101,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
   deps: React.DependencyList = [],
 ): T {
   const throttledCallback = useMemo(
-    () => throttle(callback, delay),
+    () => createThrottle(callback, delay),
     [...deps, delay],
   );
 
