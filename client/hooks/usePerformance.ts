@@ -81,7 +81,7 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
   deps: React.DependencyList = [],
 ): T {
   const debouncedCallback = useMemo(
-    () => debounce(callback, delay),
+    () => createDebounce(callback, delay),
     [...deps, delay],
   );
 
