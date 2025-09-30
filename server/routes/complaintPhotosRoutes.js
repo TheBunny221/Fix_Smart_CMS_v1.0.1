@@ -11,38 +11,40 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(protect);
-
 // Complaint photos routes
 router.get(
   "/complaints/:id/photos",
+  protect,
   authorize("MAINTENANCE_TEAM", "WARD_OFFICER", "ADMINISTRATOR", "CITIZEN"),
   getComplaintPhotos
 );
 
 router.post(
   "/complaints/:id/photos",
+  protect,
   authorize("MAINTENANCE_TEAM"),
-  uploadPhoto.array("photos", 10), // Allow up to 10 photos at once
+  uploadPhoto.array("photos", 10),
   uploadComplaintPhotos
 );
 
 // Individual photo routes
 router.get(
   "/complaint-photos/:id",
+  protect,
   authorize("MAINTENANCE_TEAM", "WARD_OFFICER", "ADMINISTRATOR", "CITIZEN"),
   getComplaintPhoto
 );
 
 router.put(
   "/complaint-photos/:id",
+  protect,
   authorize("MAINTENANCE_TEAM"),
   updatePhotoDescription
 );
 
 router.delete(
   "/complaint-photos/:id",
+  protect,
   authorize("MAINTENANCE_TEAM"),
   deleteComplaintPhoto
 );
