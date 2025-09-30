@@ -982,7 +982,9 @@ export const getComplaints = asyncHandler(async (req, res) => {
             },
           },
           complaintType: { select: { id: true, name: true } },
-          attachments: true,
+          attachments: {
+            where: { entityType: "COMPLAINT" },
+          },
           statusLogs: {
             orderBy: { timestamp: "desc" },
             take: 1,
