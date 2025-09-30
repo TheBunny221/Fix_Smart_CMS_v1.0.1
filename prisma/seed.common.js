@@ -902,6 +902,9 @@ export default async function seedCommon(prisma, options = {}) {
           await prisma.attachment.create({
             data: {
               complaintId: complaint.id,
+              entityType: "COMPLAINT",
+              entityId: complaint.id,
+              uploadedById: complaint.submittedById,
               fileName: `photo_${complaintIndex}.jpg`,
               originalName: `site-photo-${complaintIndex}.jpg`,
               mimeType: "image/jpeg",
@@ -914,6 +917,9 @@ export default async function seedCommon(prisma, options = {}) {
           await prisma.attachment.create({
             data: {
               complaintId: complaint.id,
+              entityType: "COMPLAINT",
+              entityId: complaint.id,
+              uploadedById: complaint.submittedById,
               fileName: `report_${complaintIndex}.pdf`,
               originalName: `inspection-report-${complaintIndex}.pdf`,
               mimeType: "application/pdf",
