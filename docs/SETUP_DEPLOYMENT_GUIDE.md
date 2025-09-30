@@ -410,15 +410,15 @@ sudo apt install nginx
 sudo apt install postgresql postgresql-contrib
 
 # Create application user
-sudo adduser cochin-app
-sudo usermod -aG sudo cochin-app
+sudo adduser nlc-cms-app
+sudo usermod -aG sudo nlc-cms-app
 ```
 
 #### 2. Application Deployment
 
 ```bash
 # Switch to application user
-sudo su - cochin-app
+sudo su - nlc-cms-app
 
 # Clone repository
 git clone https://github.com/your-org/nlc-cms.git
@@ -450,7 +450,7 @@ module.exports = {
       name: "nlc-cms",
       script: "npm",
       args: "start",
-      cwd: "/home/cochin-app/nlc-cms",
+      cwd: "/home/nlc-cms-app/nlc-cms",
       instances: "max",
       exec_mode: "cluster",
       env: {
@@ -477,7 +477,7 @@ pm2 save
 
 # Setup PM2 to start on boot
 pm2 startup
-sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u cochin-app --hp /home/cochin-app
+sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u nlc-cms-app --hp /home/nlc-cms-app
 ```
 
 #### 4. Nginx Configuration
@@ -527,7 +527,7 @@ server {
 
     # Static files
     location / {
-        root /home/cochin-app/nlc-cms/dist/spa;
+        root /home/nlc-cms-app/nlc-cms/dist/spa;
         try_files $uri $uri/ /index.html;
 
         # Cache static assets
@@ -1095,7 +1095,7 @@ pm2 logs nlc-cms
 
 ```bash
 # Regular database backups
-0 2 * * * /home/cochin-app/scripts/backup-db.sh
+0 2 * * * /home/nlc-cms-app/scripts/backup-db.sh
 
 # Database optimization
 VACUUM ANALYZE; -- PostgreSQL
