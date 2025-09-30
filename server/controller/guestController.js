@@ -589,6 +589,9 @@ export const verifyOTPAndRegister = asyncHandler(async (req, res) => {
         size: file.size,
         url: `/api/uploads/${file.filename}`,
         complaintId: complaint.id,
+        entityType: "COMPLAINT",
+        entityId: complaint.id,
+        uploadedById: user.id,
       },
     });
   }
