@@ -61,7 +61,7 @@ The NLC-CMS Complaint Management System is a comprehensive full-stack web applic
 │  • Ward Officers                                           │
 │  • Maintenance Teams                                       │
 │  • System Administrators                                   │
-└─────────────────────────────────────��────────��──────────────┘
+└────────────���────────────────────────��────────��──────────────┘
 ```
 
 ---
@@ -346,7 +346,7 @@ The NLC-CMS Complaint Management System is a comprehensive full-stack web applic
                               │                              │
                               │submittedBy                   │
                               ▼                              │
-                      ┌─────────────┐       ┌─────────────┐  │
+                      ┌─────���───────┐       ┌─────────────┐  │
                       │ Complaint   │       │ StatusLog   │  │
                       ├─────────────┤       ├─────────────┤  │
                       │ id (PK)     │◄──────┤ complaintId │  │
@@ -700,7 +700,7 @@ router.use(authorize("ADMINISTRATOR")); // Role authorization
 ### Complete Project Structure
 
 ```
-cochin-smart-city/
+nlc-cms/
 ├── 📁 client/                          # Frontend application
 │   ├── 📁 components/                  # React components
 │   │   ├── 📁 ui/                     # Base UI components (Radix-based)

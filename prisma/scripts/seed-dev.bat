@@ -1,9 +1,9 @@
 @echo off
-REM Kochi Smart City - Development Seeding Script (Windows)
+REM NLC-CMS - Development Seeding Script (Windows)
 REM =======================================================
 
 echo.
-echo 🌱 Kochi Smart City - Development Database Seeding
+echo 🌱 NLC-CMS - Development Database Seeding
 echo ============================================
 echo.
 
