@@ -1099,7 +1099,7 @@ export const getComplaint = asyncHandler(async (req, res) => {
         },
       },
       complaintType: { select: { id: true, name: true } },
-      attachments: true,
+      attachments: { where: { entityType: "COMPLAINT" } },
       materials: true,
       photos: {
         orderBy: { uploadedAt: "desc" },
