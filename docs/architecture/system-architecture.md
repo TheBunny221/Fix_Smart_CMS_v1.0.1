@@ -364,7 +364,7 @@ The NLC-CMS Complaint Management System is a comprehensive full-stack web applic
                               ▼
                       ┌─────────────┐
                       │ Attachment  │
-                      ├─────────────┤
+                      ├────��────────┤
                       │ id (PK)     │
                       │ complaintId ���
                       │ fileName    │
@@ -631,7 +631,7 @@ router.use(authorize("ADMINISTRATOR")); // Role authorization
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                  DEVELOPMENT SETUP                     │
-├─────────────────────────────────────────────────────────┤
+├─────────────��───────────────────────────────────────────┤
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐ │
 │  │   Vite      │    │   Nodemon   │    │   SQLite    │ │
 │  │ (Frontend)  │    ��� (Backend)   │    │ (Database)  │ │
@@ -643,7 +643,7 @@ router.use(authorize("ADMINISTRATOR")); // Role authorization
 │  • TypeScript compilation                               │
 │  • Auto-restart on file changes                        │
 │  • Development-specific environment variables          │
-└─────────────────────────────────────────────────────────┘
+└───────────────────────────────────────────────────���─────┘
 ```
 
 ### Production Environment
@@ -700,7 +700,7 @@ router.use(authorize("ADMINISTRATOR")); // Role authorization
 ### Complete Project Structure
 
 ```
-cochin-smart-city/
+nlc-cms/
 ├── 📁 client/                          # Frontend application
 │   ├── 📁 components/                  # React components
 │   │   ├── 📁 ui/                     # Base UI components (Radix-based)
@@ -735,7 +735,7 @@ cochin-smart-city/
 │   ├── 📁 pages/                      # Route components
 │   │   ├── 📄 Index.tsx               # Home page (guest form)
 │   │   ├── 📄 Login.tsx               # Authentication page
-│   │   ├── 📄 Register.tsx            # User registration
+│   ���   ├── 📄 Register.tsx            # User registration
 │   │   ├── 📄 CitizenDashboard.tsx    # Citizen dashboard
 │   │   ├── 📄 AdminDashboard.tsx      # Admin dashboard
 │   │   ├── 📄 ComplaintsList.tsx      # Complaints management
@@ -772,7 +772,7 @@ cochin-smart-city/
 ├── 📁 server/                         # Backend application
 │   ├── 📁 controller/                 # Business logic controllers
 │   │   ├── 📄 authController.js       # Authentication logic
-│   │   ├── 📄 complaintController.js  # Complaint management
+│   ���   ├── 📄 complaintController.js  # Complaint management
 │   │   ├── 📄 guestController.js      # Guest operations
 │   │   ├── 📄 adminController.js      # Administrative functions
 │   │   ├── 📄 userController.js       # User management
@@ -790,7 +790,7 @@ cochin-smart-city/
 │   │   ├── 📄 reportRoutes.js         # Reports and analytics
 │   │   ├── 📄 wardRoutes.js           # Ward management
 │   │   ├── 📄 complaintTypeRoutes.js  # Complaint type management
-│   │   ├── 📄 systemConfigRoutes.js   # System configuration
+│   │   ├── �� systemConfigRoutes.js   # System configuration
 │   │   └── 📄 testRoutes.js           # Development test routes
 │   ├── 📁 middleware/                 # Express middleware
 │   │   ├── 📄 auth.js                 # Authentication middleware
