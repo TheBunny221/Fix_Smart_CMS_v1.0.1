@@ -71,7 +71,7 @@
     "preserver:dev": "node scripts/validate-db-env.js && npx prisma generate --schema=prisma/schema.dev.prisma"
   },
   "dependencies": {
-    "@prisma/client": "^5.7.1",
+    "@prisma/client": "^6.16.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-checkbox": "^1.0.4",
@@ -170,7 +170,7 @@
     "msw": "^2.11.3",
     "nodemon": "^3.0.2",
     "postcss": "^8.4.32",
-    "prisma": "^5.7.1",
+    "prisma": "^6.16.2",
     "start-server-and-test": "^2.0.3",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.2.2",
