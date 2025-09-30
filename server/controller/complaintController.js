@@ -412,12 +412,10 @@ export const createComplaint = asyncHandler(async (req, res) => {
     !Number.isFinite(resolvedSlaHours) ||
     resolvedSlaHours <= 0
   ) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "Invalid complaint type or missing SLA configuration",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "Invalid complaint type or missing SLA configuration",
+    });
   }
 
   const deadline = new Date(Date.now() + resolvedSlaHours * 60 * 60 * 1000);
@@ -982,7 +980,9 @@ export const getComplaints = asyncHandler(async (req, res) => {
             },
           },
           complaintType: { select: { id: true, name: true } },
-          attachments: true,
+          attachments: {
+            where: { entityType: "COMPLAINT" },
+          },
           statusLogs: {
             orderBy: { timestamp: "desc" },
             take: 1,
@@ -1097,7 +1097,7 @@ export const getComplaint = asyncHandler(async (req, res) => {
         },
       },
       complaintType: { select: { id: true, name: true } },
-      attachments: true,
+      attachments: { where: { entityType: "COMPLAINT" } },
       materials: true,
       photos: {
         orderBy: { uploadedAt: "desc" },
