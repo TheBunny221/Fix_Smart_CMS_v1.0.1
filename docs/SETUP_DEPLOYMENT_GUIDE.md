@@ -447,10 +447,10 @@ Create `ecosystem.config.js`:
 module.exports = {
   apps: [
     {
-      name: "cochin-smart-city",
+      name: "nlc-cms",
       script: "npm",
       args: "start",
-      cwd: "/home/cochin-app/cochin-smart-city",
+      cwd: "/home/cochin-app/nlc-cms",
       instances: "max",
       exec_mode: "cluster",
       env: {
@@ -482,7 +482,7 @@ sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u cochin-app --hp /home/cochin
 
 #### 4. Nginx Configuration
 
-Create `/etc/nginx/sites-available/cochin-smart-city`:
+Create `/etc/nginx/sites-available/nlc-cms`:
 
 ```nginx
 server {
@@ -527,7 +527,7 @@ server {
 
     # Static files
     location / {
-        root /home/cochin-app/cochin-smart-city/dist/spa;
+        root /home/cochin-app/nlc-cms/dist/spa;
         try_files $uri $uri/ /index.html;
 
         # Cache static assets
@@ -558,7 +558,7 @@ server {
 Enable site and restart Nginx:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/cochin-smart-city /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/nlc-cms /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -664,7 +664,7 @@ npm install -g heroku
 
 # Login and create app
 heroku login
-heroku create cochin-smart-city
+heroku create nlc-cms
 
 # Add PostgreSQL addon
 heroku addons:create heroku-postgresql:hobby-dev
@@ -715,12 +715,12 @@ heroku run npm run db:migrate
 
 ```yaml
 # .do/app.yaml
-name: cochin-smart-city
+name: nlc-cms
 services:
   - name: web
     source_dir: /
     github:
-      repo: your-org/cochin-smart-city
+      repo: your-org/nlc-cms
       branch: main
     run_command: npm start
     environment_slug: node-js
@@ -1088,7 +1088,7 @@ pm2 monit
 
 # Log monitoring
 tail -f logs/app.log
-pm2 logs cochin-smart-city
+pm2 logs nlc-cms
 ```
 
 ### Database Maintenance
@@ -1106,7 +1106,7 @@ PRAGMA optimize; -- SQLite
 
 ```bash
 # Rotate logs
-sudo logrotate -f /etc/logrotate.d/cochin-smart-city
+sudo logrotate -f /etc/logrotate.d/nlc-cms
 
 # Clean old logs
 find ./logs -name "*.log" -mtime +30 -delete
