@@ -24,6 +24,16 @@
             "date": 1758790361677,
             "name": "/home/debian/Harihar/Fix_Smart_CMS2/Fix_Smart_CMS/logs/error-2025-09-25.log",
             "hash": "78f5a6cbdb2fb4f6efb7e5cea5e9685ea5f9896e099096691c61ad7e09bf0470"
+        },
+        {
+            "date": 1758868972639,
+            "name": "/home/debian/Harihar/Fix_Smart_CMS2/Fix_Smart_CMS/logs/error-2025-09-26.log",
+            "hash": "1063356a43c1085bb95abc722fe7d9c3955a364a5ef6463416fcebb25e9e3367"
+        },
+        {
+            "date": 1759221088186,
+            "name": "/home/debian/Harihar/Fix_Smart_CMS2/Fix_Smart_CMS/logs/error-2025-09-30.log",
+            "hash": "a6f36ebdf0d30da5ca432224a457c7ae5fc08363f9d7900dd2e63f907dab7b1c"
         }
     ],
     "hashType": "sha256"
