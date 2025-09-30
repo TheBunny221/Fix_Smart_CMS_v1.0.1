@@ -9,18 +9,17 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication
-router.use(protect);
-
 // Complaint materials routes
 router.get(
   "/complaints/:id/materials",
+  protect,
   authorize("MAINTENANCE_TEAM", "WARD_OFFICER", "ADMINISTRATOR"),
   getComplaintMaterials
 );
 
 router.post(
   "/complaints/:id/materials",
+  protect,
   authorize("MAINTENANCE_TEAM"),
   addComplaintMaterial
 );
@@ -28,12 +27,14 @@ router.post(
 // Individual material routes
 router.put(
   "/materials/:id",
+  protect,
   authorize("MAINTENANCE_TEAM"),
   updateMaterial
 );
 
 router.delete(
   "/materials/:id",
+  protect,
   authorize("MAINTENANCE_TEAM"),
   deleteMaterial
 );
