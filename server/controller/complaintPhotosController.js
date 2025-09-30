@@ -92,7 +92,12 @@ export const getComplaintPhotos = asyncHandler(async (req, res) => {
 
   // Fetch attachments as photos (backward-compatible shape)
   const attachments = await prisma.attachment.findMany({
-    where: { complaintId },
+    where: {
+      OR: [
+        { entityType: "COMPLAINT", entityId: complaintId },
+        { complaintId }, // backward-compat for any legacy rows
+      ],
+    },
     orderBy: { createdAt: "desc" },
     include: {
       uploadedBy: {
