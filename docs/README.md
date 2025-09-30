@@ -90,7 +90,7 @@ cypress/                        # End-to-end testing
 ```bash
 # Clone and setup
 git clone <repository-url>
-cd cochin-smart-city
+cd nlc-cms
 npm install
 
 # Setup database
