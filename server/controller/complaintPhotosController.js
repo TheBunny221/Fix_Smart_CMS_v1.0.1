@@ -77,7 +77,8 @@ export const getComplaintPhotos = asyncHandler(async (req, res) => {
   // Check authorization
   const isAuthorized =
     req.user.role === "ADMINISTRATOR" ||
-    (req.user.role === "WARD_OFFICER" && complaint.wardId === req.user.wardId) ||
+    (req.user.role === "WARD_OFFICER" &&
+      complaint.wardId === req.user.wardId) ||
     (req.user.role === "MAINTENANCE_TEAM" &&
       (complaint.assignedToId === req.user.id ||
         complaint.maintenanceTeamId === req.user.id)) ||
@@ -121,7 +122,11 @@ export const getComplaintPhotos = asyncHandler(async (req, res) => {
     entityType: a.entityType,
     entityId: a.entityId,
     uploadedByTeam: a.uploadedBy
-      ? { id: a.uploadedBy.id, fullName: a.uploadedBy.fullName, role: a.uploadedBy.role }
+      ? {
+          id: a.uploadedBy.id,
+          fullName: a.uploadedBy.fullName,
+          role: a.uploadedBy.role,
+        }
       : null,
   }));
 
@@ -211,7 +216,11 @@ export const uploadComplaintPhotos = asyncHandler(async (req, res) => {
       entityType: a.entityType,
       entityId: a.entityId,
       uploadedByTeam: a.uploadedBy
-        ? { id: a.uploadedBy.id, fullName: a.uploadedBy.fullName, role: a.uploadedBy.role }
+        ? {
+            id: a.uploadedBy.id,
+            fullName: a.uploadedBy.fullName,
+            role: a.uploadedBy.role,
+          }
         : null,
     }));
 
@@ -238,17 +247,30 @@ export const uploadComplaintPhotos = asyncHandler(async (req, res) => {
 export const updatePhotoDescription = asyncHandler(async (req, res) => {
   const { id: photoId } = req.params;
 
-  const attachment = await prisma.attachment.findUnique({ where: { id: photoId } });
+  const attachment = await prisma.attachment.findUnique({
+    where: { id: photoId },
+  });
   if (!attachment) {
-    return res.status(404).json({ success: false, message: "Attachment not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Attachment not found" });
   }
-  if (attachment.uploadedById !== req.user.id && req.user.role !== "ADMINISTRATOR") {
-    return res.status(403).json({ success: false, message: "Not authorized to update this attachment" });
+  if (
+    attachment.uploadedById !== req.user.id &&
+    req.user.role !== "ADMINISTRATOR"
+  ) {
+    return res
+      .status(403)
+      .json({
+        success: false,
+        message: "Not authorized to update this attachment",
+      });
   }
 
   return res.status(400).json({
     success: false,
-    message: "Photo descriptions are not supported in the unified attachments schema",
+    message:
+      "Photo descriptions are not supported in the unified attachments schema",
   });
 });
 
@@ -259,7 +281,9 @@ export const deleteComplaintPhoto = asyncHandler(async (req, res) => {
   const { id: photoId } = req.params;
 
   // Check if attachment exists
-  const attachment = await prisma.attachment.findUnique({ where: { id: photoId } });
+  const attachment = await prisma.attachment.findUnique({
+    where: { id: photoId },
+  });
 
   if (!attachment) {
     return res.status(404).json({
@@ -269,7 +293,10 @@ export const deleteComplaintPhoto = asyncHandler(async (req, res) => {
   }
 
   // Check authorization - only the uploader or admin can delete
-  if (attachment.uploadedById !== req.user.id && req.user.role !== "ADMINISTRATOR") {
+  if (
+    attachment.uploadedById !== req.user.id &&
+    req.user.role !== "ADMINISTRATOR"
+  ) {
     return res.status(403).json({
       success: false,
       message: "Not authorized to delete this attachment",
@@ -278,7 +305,8 @@ export const deleteComplaintPhoto = asyncHandler(async (req, res) => {
 
   try {
     // Delete physical file (attempt across known paths)
-    const baseUploadDir = process.env.UPLOAD_PATH || path.join(__dirname, "../../uploads");
+    const baseUploadDir =
+      process.env.UPLOAD_PATH || path.join(__dirname, "../../uploads");
     const candidates = [
       path.join(baseUploadDir, attachment.fileName),
       path.join(baseUploadDir, "complaint-photos", attachment.fileName),
@@ -286,14 +314,18 @@ export const deleteComplaintPhoto = asyncHandler(async (req, res) => {
     ];
     for (const p of candidates) {
       if (fs.existsSync(p)) {
-        try { fs.unlinkSync(p); } catch {}
+        try {
+          fs.unlinkSync(p);
+        } catch {}
       }
     }
 
     // Delete database record
     await prisma.attachment.delete({ where: { id: photoId } });
 
-    res.status(200).json({ success: true, message: "Photo deleted successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "Photo deleted successfully" });
   } catch (error) {
     console.error("Error deleting attachment:", error);
     throw error;
@@ -316,7 +348,9 @@ export const getComplaintPhoto = asyncHandler(async (req, res) => {
   });
 
   if (!attachment) {
-    return res.status(404).json({ success: false, message: "Attachment not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "Attachment not found" });
   }
 
   const complaint = attachment.complaint;
@@ -324,13 +358,17 @@ export const getComplaintPhoto = asyncHandler(async (req, res) => {
   // Check authorization
   const isAuthorized =
     req.user.role === "ADMINISTRATOR" ||
-    (req.user.role === "WARD_OFFICER" && complaint?.wardId === req.user.wardId) ||
+    (req.user.role === "WARD_OFFICER" &&
+      complaint?.wardId === req.user.wardId) ||
     (req.user.role === "MAINTENANCE_TEAM" &&
-      (complaint?.assignedToId === req.user.id || complaint?.maintenanceTeamId === req.user.id)) ||
+      (complaint?.assignedToId === req.user.id ||
+        complaint?.maintenanceTeamId === req.user.id)) ||
     complaint?.submittedById === req.user.id;
 
   if (!isAuthorized) {
-    return res.status(403).json({ success: false, message: "Not authorized to view this photo" });
+    return res
+      .status(403)
+      .json({ success: false, message: "Not authorized to view this photo" });
   }
 
   // Backward-compatible payload
@@ -350,5 +388,11 @@ export const getComplaintPhoto = asyncHandler(async (req, res) => {
     uploadedByTeam: attachment.uploadedBy || null,
   };
 
-  res.status(200).json({ success: true, message: "Photo retrieved successfully", data: { photo } });
+  res
+    .status(200)
+    .json({
+      success: true,
+      message: "Photo retrieved successfully",
+      data: { photo },
+    });
 });
