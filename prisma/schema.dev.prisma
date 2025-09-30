@@ -212,17 +212,17 @@ enum AttachmentEntityType {
 }
 
 model Attachment {
-  id           String                @id @default(cuid())
-  entityType   AttachmentEntityType @default(COMPLAINT)
-  entityId     String
-  complaintId  String?
-  fileName     String
-  originalName String
-  mimeType     String
-  size         Int
-  url          String
-  createdAt    DateTime              @default(now())
-  uploadedById String?
+  id            String                @id @default(cuid())
+  entityType    AttachmentEntityType  @default(COMPLAINT) @map("entity_type")
+  entityId      String                @map("entity_id")
+  complaintId   String?               @map("complaint_id")
+  fileName      String                @map("file_name")
+  originalName  String                @map("original_name")
+  mimeType      String                @map("mime_type")
+  size          Int
+  url           String
+  createdAt     DateTime              @default(now())     @map("created_at")
+  uploadedById  String?               @map("uploaded_by_id")
 
   // Relations
   complaint   Complaint? @relation(fields: [complaintId], references: [id], onDelete: Cascade)
