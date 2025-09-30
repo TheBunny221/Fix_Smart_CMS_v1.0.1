@@ -79,6 +79,9 @@ export const uploadComplaintAttachment = asyncHandler(async (req, res) => {
       size: req.file.size,
       url: `/api/uploads/${req.file.filename}`,
       complaintId: complaintId,
+      entityType: "COMPLAINT",
+      entityId: complaintId,
+      uploadedById: req.user?.id ?? null,
     },
   });
 
@@ -92,6 +95,9 @@ export const uploadComplaintAttachment = asyncHandler(async (req, res) => {
       mimeType: attachment.mimeType,
       size: attachment.size,
       url: attachment.url,
+      entityType: attachment.entityType,
+      entityId: attachment.entityId,
+      createdAt: attachment.createdAt,
     },
   });
 });
@@ -273,7 +279,12 @@ export const deleteAttachment = asyncHandler(async (req, res) => {
   const attachment = await prisma.attachment.findUnique({
     where: { id },
     include: {
-      complaint: true,
+      complaint: {
+        select: {
+          id: true,
+          submittedById: true,
+        },
+      },
     },
   });
 
@@ -286,11 +297,14 @@ export const deleteAttachment = asyncHandler(async (req, res) => {
   }
 
   // Check permissions - only complaint owner or admin can delete
-  if (
-    req.user.role !== "ADMINISTRATOR" &&
-    attachment.complaint.submittedById !== req.user.id &&
-    attachment.uploadedBy !== req.user.id
-  ) {
+  const isAdmin = req.user.role === "ADMINISTRATOR";
+  const isComplaintOwner =
+    attachment.entityType === "COMPLAINT" &&
+    attachment.complaint &&
+    attachment.complaint.submittedById === req.user.id;
+  const isUploader = attachment.uploadedById === req.user.id;
+
+  if (!isAdmin && !isComplaintOwner && !isUploader) {
     return res.status(403).json({
       success: false,
       message: "Not authorized to delete this file",
@@ -299,16 +313,27 @@ export const deleteAttachment = asyncHandler(async (req, res) => {
   }
 
   // Construct file path
-  const filePath = path.join(
-    process.env.UPLOAD_PATH || "./uploads",
-    attachment.fileName,
-  );
+  const baseUploadPath = process.env.UPLOAD_PATH || "./uploads";
+  const possibleLocations = [
+    path.join(baseUploadPath, attachment.fileName),
+    path.join(baseUploadPath, "complaints", attachment.fileName),
+    path.join(baseUploadPath, "profiles", attachment.fileName),
+    path.join(baseUploadPath, "logos", attachment.fileName),
+  ];
 
-  // Delete file from disk
-  if (fs.existsSync(filePath)) {
+  let filePath = null;
+  for (const candidate of possibleLocations) {
+    if (fs.existsSync(candidate)) {
+      filePath = candidate;
+      break;
+    }
+  }
+
+  if (filePath && fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
   }
 
+  // Delete file from disk
   // Delete database record
   await prisma.attachment.delete({
     where: { id },

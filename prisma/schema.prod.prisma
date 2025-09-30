@@ -88,6 +88,7 @@ model User {
   otpSessions           OTPSession[]
 //   addedMaterials    Material[]
   uploadedPhotos    ComplaintPhoto[]
+  uploadedAttachments Attachment[]     @relation("AttachmentUploadedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -246,19 +247,33 @@ model StatusLog {
   @@map("status_logs")
 }
 
+enum AttachmentEntityType {
+  COMPLAINT
+  CITIZEN
+  USER
+  SERVICE_REQUEST
+  SYSTEM_CONFIG
+}
+
 model Attachment {
-  id          String    @id @default(cuid())
-  complaintId String
-  fileName    String
+  id           String                @id @default(cuid())
+  entityType   AttachmentEntityType @default(COMPLAINT)
+  entityId     String
+  complaintId  String?
+  fileName     String
   originalName String
-  mimeType    String
-  size        Int
-  url         String
-  uploadedAt  DateTime  @default(now())
-  
+  mimeType     String
+  size         Int
+  url          String
+  createdAt    DateTime              @default(now())
+  uploadedById String?
+
   // Relations
-  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  
+  complaint   Complaint? @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  uploadedBy  User?      @relation("AttachmentUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([fileName])
   @@index([complaintId])
   @@map("attachments")
 }
