@@ -16,7 +16,7 @@ router.get(
   "/complaints/:id/photos",
   protect,
   authorize("MAINTENANCE_TEAM", "WARD_OFFICER", "ADMINISTRATOR", "CITIZEN"),
-  getComplaintPhotos
+  getComplaintPhotos,
 );
 
 router.post(
@@ -24,7 +24,7 @@ router.post(
   protect,
   authorize("MAINTENANCE_TEAM"),
   uploadPhoto.array("photos", 10),
-  uploadComplaintPhotos
+  uploadComplaintPhotos,
 );
 
 // Individual photo routes
@@ -32,21 +32,21 @@ router.get(
   "/complaint-photos/:id",
   protect,
   authorize("MAINTENANCE_TEAM", "WARD_OFFICER", "ADMINISTRATOR", "CITIZEN"),
-  getComplaintPhoto
+  getComplaintPhoto,
 );
 
 router.put(
   "/complaint-photos/:id",
   protect,
   authorize("MAINTENANCE_TEAM"),
-  updatePhotoDescription
+  updatePhotoDescription,
 );
 
 router.delete(
   "/complaint-photos/:id",
   protect,
   authorize("MAINTENANCE_TEAM"),
-  deleteComplaintPhoto
+  deleteComplaintPhoto,
 );
 
 export default router;
