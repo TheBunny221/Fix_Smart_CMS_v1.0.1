@@ -331,13 +331,16 @@ async function exportData() {
     sqlStatements.push(
       ...generateInserts("attachments", attachments, [
         "id",
+        "entityType",
+        "entityId",
         "complaintId",
         "fileName",
         "originalName",
         "mimeType",
         "size",
         "url",
-        "uploadedAt",
+        "createdAt",
+        "uploadedById",
       ]),
     );
     sqlStatements.push("");
