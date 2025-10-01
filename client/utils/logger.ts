@@ -305,7 +305,7 @@ class FrontendLogger {
   }
 
   // React-specific logging helpers
-  componentError(componentName: string, error: Error, errorInfo?: any): void {
+  componentError(componentName: string, error: Error, errorInfo?: unknown): void {
     this.error(`Component error in ${componentName}`, {
       component: componentName,
       error,
