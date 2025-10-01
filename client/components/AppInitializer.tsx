@@ -41,8 +41,9 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
 
   // Check if Redux already has auth state
   const reduxAuth = useAppSelector((state) => state.auth);
-  const isAlreadyAuthenticated =
-    reduxAuth.isAuthenticated && reduxAuth.user && reduxAuth.token;
+  const isAlreadyAuthenticated = Boolean(
+    reduxAuth.isAuthenticated && reduxAuth.user && reduxAuth.token
+  );
 
   // Use RTK Query to get current user if we have a token but are not already authenticated
   const {
@@ -130,7 +131,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       return;
     }
     
-    if (userResponse?.data?.user) {
+    if (token && userResponse?.data?.user) {
       // Token is valid and we have user data - set credentials
       dispatch(
         setCredentials({
