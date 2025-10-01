@@ -278,11 +278,13 @@ const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
 
     try {
       setUploadError(null);
-      await uploadPhotos({
+      const payload: { complaintId: string; photos: File[]; description?: string } = {
         complaintId,
         photos: photos.map((p) => p.file),
-        description: description.trim() || undefined,
-      }).unwrap();
+      };
+      const trimmed = description.trim();
+      if (trimmed) payload.description = trimmed;
+      await uploadPhotos(payload).unwrap();
 
       // Clean up and close
       photos.forEach((photo) => URL.revokeObjectURL(photo.preview));
