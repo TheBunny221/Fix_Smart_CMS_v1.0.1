@@ -72,15 +72,21 @@ class FrontendLogger {
 
     // Handle React error boundaries (if needed)
     const originalConsoleError = console.error;
-    console.error = (...args) => {
+    console.error = (...args: unknown[]) => {
       // Check if this is a React error
-      if (args[0] && typeof args[0] === 'string' && args[0].includes('React')) {
+      if (typeof args[0] === 'string' && args[0].includes('React')) {
         this.error('React error', {
           module: 'react',
-          args: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)),
-        });
+          args: args.map((arg) => {
+            try {
+              return typeof arg === 'object' ? JSON.stringify(arg) : String(arg);
+            } catch {
+              return String(arg);
+            }
+          }),
+        } as unknown as LogMeta);
       }
-      originalConsoleError.apply(console, args);
+      (originalConsoleError as (...a: unknown[]) => void).apply(console, args as unknown as []);
     };
   }
 
