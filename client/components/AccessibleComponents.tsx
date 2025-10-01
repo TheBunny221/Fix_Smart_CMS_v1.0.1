@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useMemo, useCallback } from "react";
-import type { PointerDownOutsideEvent } from "@radix-ui/react-dialog";
 import { cn } from "../lib/utils";
 import {
   useFocusTrap,
@@ -80,17 +79,13 @@ export const AccessibleDialog: React.FC<AccessibleDialogProps> = ({
     [onClose],
   );
 
-  const handlePointerDownOutside = useMemo<
-    ((event: PointerDownOutsideEvent) => void) | undefined
-  >(
-    () =>
-      closeOnOverlayClick
-        ? undefined
-        : (event: PointerDownOutsideEvent) => {
-            event.preventDefault();
-          },
-    [closeOnOverlayClick],
-  );
+  const preventPointerDownOutside = useCallback<
+    NonNullable<
+      React.ComponentProps<typeof DialogContent>["onPointerDownOutside"]
+    >
+  >((event) => {
+    event.preventDefault();
+  }, []);
 
   const sizeClasses = {
     sm: "max-w-sm",
@@ -103,7 +98,9 @@ export const AccessibleDialog: React.FC<AccessibleDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(sizeClasses[size], className)}
-        onPointerDownOutside={handlePointerDownOutside}
+        {...(!closeOnOverlayClick && {
+          onPointerDownOutside: preventPointerDownOutside,
+        })}
         aria-labelledby="dialog-title"
         aria-describedby={description ? "dialog-description" : undefined}
       >
