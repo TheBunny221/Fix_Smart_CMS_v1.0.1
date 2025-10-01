@@ -94,15 +94,18 @@ class FrontendLogger {
     if (!stack) return {};
 
     const stackLines = stack.split('\n');
-    
+
     // Find the first line that's not in this logger file
     for (let i = 3; i < stackLines.length; i++) {
       const line = stackLines[i];
       if (line && !line.includes('logger.ts') && !line.includes('node_modules')) {
         // Try to extract component/module name from the stack trace
         const match = line.match(/at\s+(?:.*\.)?(\w+)/);
-        if (match && match[1]) {
-          return { component: match[1] };
+        if (match) {
+          const componentName = match[1];
+          if (componentName) {
+            return { component: componentName };
+          }
         }
       }
     }
@@ -250,15 +253,31 @@ class FrontendLogger {
   // Context-aware logging
   withUser(userId: string, sessionId?: string) {
     return {
-      error: (message: string, meta: LogMeta = {}) => 
-        this.error(message, { ...meta, userId, ...(sessionId ? { sessionId } : {}) }),
-      warn: (message: string, meta: LogMeta = {}) => 
-        this.warn(message, { ...meta, userId, ...(sessionId ? { sessionId } : {}) }),
-      info: (message: string, meta: LogMeta = {}) => 
-        this.info(message, { ...meta, userId, ...(sessionId ? { sessionId } : {}) }),
-      debug: (message: string, meta: LogMeta = {}) => 
-        this.debug(message, { ...meta, userId, ...(sessionId ? { sessionId } : {}) }),
+      error: (message: string, meta: LogMeta = {}) =>
+        this.error(message, this.withUserMeta(meta, userId, sessionId)),
+      warn: (message: string, meta: LogMeta = {}) =>
+        this.warn(message, this.withUserMeta(meta, userId, sessionId)),
+      info: (message: string, meta: LogMeta = {}) =>
+        this.info(message, this.withUserMeta(meta, userId, sessionId)),
+      debug: (message: string, meta: LogMeta = {}) =>
+        this.debug(message, this.withUserMeta(meta, userId, sessionId)),
     };
+  }
+
+  private withUserMeta(meta: LogMeta, userId: string, sessionId?: string): LogMeta {
+    const merged: LogMeta = { ...meta, userId };
+    if (sessionId !== undefined) {
+      merged.sessionId = sessionId;
+    }
+    return merged;
+  }
+
+  private withUserMeta(meta: LogMeta, userId: string, sessionId?: string): LogMeta {
+    const merged: LogMeta = { ...meta, userId };
+    if (sessionId !== undefined) {
+      merged.sessionId = sessionId;
+    }
+    return merged;
   }
 
   withComponent(componentName: string) {

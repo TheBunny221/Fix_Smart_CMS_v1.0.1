@@ -1,10 +1,32 @@
-import { useCallback, useMemo, useRef, useEffect, useState } from "react";
-import { useCallback, useMemo, useRef, useEffect, useState } from "react";
+import {
+  DependencyList,
+  RefCallback,
+  UIEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 // Lightweight debounce/throttle implementations to avoid extra deps
-type AnyFn = (...args: any[]) => any;
+type AnyFn = (...args: unknown[]) => unknown;
 
 type Cancelable<T extends AnyFn> = T & { cancel: () => void };
+
+interface VirtualItem<T> {
+  item: T;
+  index: number;
+  offsetTop: number;
+}
+
+interface VirtualScrollResult<T> {
+  visibleItems: Array<VirtualItem<T>>;
+  totalHeight: number;
+  onScroll: (event: UIEvent<HTMLDivElement>) => void;
+  startIndex: number;
+  endIndex: number;
+}
 
 function createDebounce<T extends AnyFn>(fn: T, wait: number): Cancelable<T> {
   let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -75,10 +97,10 @@ export function useDebounce<T>(value: T, delay: number): T {
 }
 
 // Hook for debounced callbacks
-export function useDebouncedCallback<T extends (...args: any[]) => any>(
+export function useDebouncedCallback<T extends AnyFn>(
   callback: T,
   delay: number,
-  deps: React.DependencyList = [],
+  deps: DependencyList = [],
 ): T {
   const debouncedCallback = useMemo(
     () => createDebounce(callback, delay),
@@ -95,10 +117,10 @@ export function useDebouncedCallback<T extends (...args: any[]) => any>(
 }
 
 // Hook for throttled callbacks
-export function useThrottledCallback<T extends (...args: any[]) => any>(
+export function useThrottledCallback<T extends AnyFn>(
   callback: T,
   delay: number,
-  deps: React.DependencyList = [],
+  deps: DependencyList = [],
 ): T {
   const throttledCallback = useMemo(
     () => createThrottle(callback, delay),
@@ -117,7 +139,7 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
 // Hook for memoized expensive calculations
 export function useMemoizedComputation<T>(
   computation: () => T,
-  deps: React.DependencyList,
+  deps: DependencyList,
 ): T {
   return useMemo(computation, deps);
 }
@@ -125,7 +147,7 @@ export function useMemoizedComputation<T>(
 // Hook for intersection observer (lazy loading)
 export function useIntersectionObserver(
   options: IntersectionObserverInit = {},
-): [React.RefCallback<Element>, boolean] {
+): [RefCallback<Element>, boolean] {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [element, setElement] = useState<Element | null>(null);
 
@@ -138,7 +160,9 @@ export function useIntersectionObserver(
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsIntersecting(entry.isIntersecting);
+        if (entry) {
+          setIsIntersecting(entry.isIntersecting);
+        }
       },
       {
         threshold: 0.1,
@@ -168,7 +192,7 @@ export function useVirtualScrolling<T>({
   itemHeight: number;
   containerHeight: number;
   overscan?: number;
-}) {
+}): VirtualScrollResult<T> {
   const [scrollTop, setScrollTop] = useState(0);
 
   const totalHeight = items.length * itemHeight;
@@ -186,7 +210,7 @@ export function useVirtualScrolling<T>({
     }));
   }, [items, startIndex, endIndex, itemHeight]);
 
-  const onScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+  const onScroll = useCallback((e: UIEvent<HTMLDivElement>) => {
     setScrollTop(e.currentTarget.scrollTop);
   }, []);
 
@@ -200,7 +224,15 @@ export function useVirtualScrolling<T>({
 }
 
 // Hook for image lazy loading
-export function useLazyImage(src: string, placeholder?: string) {
+interface LazyImageResult {
+  ref: RefCallback<Element>;
+  src: string;
+  isLoaded: boolean;
+  isError: boolean;
+  isIntersecting: boolean;
+}
+
+export function useLazyImage(src: string, placeholder?: string): LazyImageResult {
   const [imageSrc, setImageSrc] = useState(placeholder || "");
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -235,10 +267,10 @@ export function useLazyImage(src: string, placeholder?: string) {
 // Hook for prefetching data
 export function usePrefetch<T>(
   prefetchFn: () => Promise<T>,
-  deps: React.DependencyList = [],
+  deps: DependencyList = [],
   delay = 100,
-) {
-  const timeoutRef = useRef<NodeJS.Timeout>();
+): () => void {
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const prefetch = useCallback(() => {
     if (timeoutRef.current) {
@@ -250,7 +282,7 @@ export function usePrefetch<T>(
         // Silently ignore prefetch errors
       });
     }, delay);
-  }, [...deps, delay]);
+  }, [prefetchFn, delay, ...deps]);
 
   useEffect(() => {
     return () => {
@@ -265,14 +297,14 @@ export function usePrefetch<T>(
 
 // Hook for measuring component performance
 export function usePerformanceMeasurement(name: string) {
-  const startTimeRef = useRef<number>();
+  const startTimeRef = useRef<number | null>(null);
 
   const start = useCallback(() => {
     startTimeRef.current = performance.now();
   }, []);
 
   const end = useCallback(() => {
-    if (startTimeRef.current) {
+    if (startTimeRef.current !== null) {
       const duration = performance.now() - startTimeRef.current;
       console.log(`Performance [${name}]: ${duration.toFixed(2)}ms`);
 
@@ -284,7 +316,7 @@ export function usePerformanceMeasurement(name: string) {
         });
       }
 
-      startTimeRef.current = undefined;
+      startTimeRef.current = null;
       return duration;
     }
     return 0;
@@ -294,32 +326,43 @@ export function usePerformanceMeasurement(name: string) {
 }
 
 // Hook for batch state updates
-export function useBatchUpdates<T>(initialState: T, delay = 16) {
+export function useBatchUpdates<T>(
+  initialState: T,
+  delay = 16,
+): readonly [T, (update: Partial<T> | ((prev: T) => Partial<T>)) => void] {
   const [state, setState] = useState<T>(initialState);
-  const pendingUpdatesRef = useRef<Partial<T>[]>([]);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const pendingUpdatesRef = useRef<
+    Array<Partial<T> | ((prev: T) => Partial<T>)>
+  >([]);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const batchedSetState = useCallback(
     (update: Partial<T> | ((prev: T) => Partial<T>)) => {
-      const updateObject =
-        typeof update === "function" ? update(state) : update;
-      pendingUpdatesRef.current.push(updateObject);
+      pendingUpdatesRef.current.push(update);
 
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
 
       timeoutRef.current = setTimeout(() => {
-        const mergedUpdate = pendingUpdatesRef.current.reduce(
-          (acc, update) => ({ ...acc, ...update }),
-          {},
-        );
+        setState((prev) => {
+          const mergedUpdate = pendingUpdatesRef.current.reduce<Partial<T>>(
+            (acc, pendingUpdate) => {
+              const partial =
+                typeof pendingUpdate === "function"
+                  ? (pendingUpdate as (prevState: T) => Partial<T>)(prev)
+                  : pendingUpdate;
+              return { ...acc, ...partial };
+            },
+            {},
+          );
 
-        setState((prev) => ({ ...prev, ...mergedUpdate }));
-        pendingUpdatesRef.current = [];
+          pendingUpdatesRef.current = [];
+          return { ...prev, ...mergedUpdate };
+        });
       }, delay);
     },
-    [state, delay],
+    [delay],
   );
 
   useEffect(() => {
@@ -452,20 +495,27 @@ export function useResourcePreloader() {
 }
 
 // Hook for memory usage monitoring
-export function useMemoryMonitoring() {
-  const [memoryInfo, setMemoryInfo] = useState<any>(null);
+type MemoryInfo = {
+  jsHeapSizeLimit: number;
+  totalJSHeapSize: number;
+  usedJSHeapSize: number;
+};
+
+export function useMemoryMonitoring(): MemoryInfo | null {
+  const [memoryInfo, setMemoryInfo] = useState<MemoryInfo | null>(null);
 
   useEffect(() => {
     const updateMemoryInfo = () => {
-      if ("memory" in performance) {
-        setMemoryInfo((performance as any).memory);
+      const perf = performance as Performance & { memory?: MemoryInfo };
+      if (perf.memory) {
+        setMemoryInfo(perf.memory);
       }
     };
 
     updateMemoryInfo();
-    const interval = setInterval(updateMemoryInfo, 5000);
+    const interval = window.setInterval(updateMemoryInfo, 5000);
 
-    return () => clearInterval(interval);
+    return () => window.clearInterval(interval);
   }, []);
 
   return memoryInfo;

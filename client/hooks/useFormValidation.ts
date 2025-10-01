@@ -1,10 +1,12 @@
-import { useState, useCallback } from "react";
 import { useCallback, useState } from "react";
 import {
   useForm,
   UseFormReturn,
   FieldValues,
   DefaultValues,
+  Path,
+  PathValue,
+  Resolver,
 } from "react-hook-form";
 import { toast } from "@/hooks/use-toast";
 import { useAppSelector } from "../store/hooks";
@@ -13,7 +15,7 @@ import { selectTranslations } from "../store/slices/languageSlice";
 // Enhanced form configuration
 export interface FormConfig<T extends FieldValues> {
   schema?: unknown;
-  resolver?: any;
+  resolver?: Resolver<T>;
   defaultValues?: DefaultValues<T>;
   mode?: "onChange" | "onBlur" | "onSubmit" | "onTouched" | "all";
   reValidateMode?: "onChange" | "onBlur" | "onSubmit";
@@ -37,10 +39,59 @@ export interface FormSubmissionState {
   serverErrors: ServerError[];
 }
 
+interface ApiErrorResponse {
+  data?: {
+    errors?: ServerError | ServerError[];
+    message?: string;
+  };
+}
+
+interface ApiErrorLike {
+  response?: ApiErrorResponse;
+  message?: string;
+}
+
+const extractMessage = (value: unknown): string | undefined => {
+  if (typeof value === "string") {
+    return value;
+  }
+  if (value && typeof value === "object" && "message" in value) {
+    const message = (value as { message?: unknown }).message;
+    return typeof message === "string" ? message : undefined;
+  }
+  return undefined;
+};
+
 // Enhanced form hook with comprehensive error handling
+export interface UseFormValidationResult<T extends FieldValues> {
+  form: UseFormReturn<T>;
+  formState: UseFormReturn<T>["formState"];
+  submissionState: FormSubmissionState;
+  handleSubmit: (onSubmit: (data: T) => Promise<unknown>) => ReturnType<UseFormReturn<T>["handleSubmit"]>;
+  resetForm: (values?: DefaultValues<T>) => void;
+  clearErrors: () => void;
+  register: UseFormReturn<T>["register"];
+  control: UseFormReturn<T>["control"];
+  watch: UseFormReturn<T>["watch"];
+  watchField: (fieldName: Path<T>) => PathValue<T, Path<T>>;
+  setValue: UseFormReturn<T>["setValue"];
+  getValues: UseFormReturn<T>["getValues"];
+  trigger: UseFormReturn<T>["trigger"];
+  setServerErrors: (errors: ServerError | ServerError[] | string) => void;
+  clearServerError: (fieldName: Path<T>) => void;
+  getFieldError: (fieldName: Path<T>) => string | undefined;
+  hasFieldError: (fieldName: Path<T>) => boolean;
+  isValid: boolean;
+  isDirty: boolean;
+  isSubmitting: boolean;
+  hasSubmitted: boolean;
+  isSuccess: boolean;
+  globalError: string | null;
+}
+
 export function useFormValidation<T extends FieldValues>(
-  config: FormConfig<T>,
-) {
+  config: FormConfig<T> = {},
+): UseFormValidationResult<T> {
   const translations = useAppSelector(selectTranslations);
   const [submissionState, setSubmissionState] = useState<FormSubmissionState>({
     isSubmitting: false,
@@ -63,7 +114,7 @@ export function useFormValidation<T extends FieldValues>(
   });
 
   // Clear server errors when field changes
-  const clearServerError = useCallback((fieldName: string) => {
+  const clearServerError = useCallback((fieldName: Path<T>) => {
     setSubmissionState((prev) => ({
       ...prev,
       serverErrors: prev.serverErrors.filter(
@@ -74,7 +125,7 @@ export function useFormValidation<T extends FieldValues>(
 
   // Set server errors from API response
   const setServerErrors = useCallback(
-    (errors: ServerError[] | string) => {
+    (errors: ServerError | ServerError[] | string) => {
       if (typeof errors === "string") {
         setSubmissionState((prev) => ({
           ...prev,
@@ -86,8 +137,9 @@ export function useFormValidation<T extends FieldValues>(
 
         // Set field-specific errors
         serverErrors.forEach((error) => {
-          if (error.field && form.getValues(error.field as any) !== undefined) {
-            form.setError(error.field as any, {
+          const field = error.field as Path<T> | undefined;
+          if (field && form.getValues(field) !== undefined) {
+            form.setError(field, {
               type: "server",
               message: error.message,
             });
@@ -116,7 +168,7 @@ export function useFormValidation<T extends FieldValues>(
 
   // Handle form submission with comprehensive error handling
   const handleSubmit = useCallback(
-    (onSubmit: (data: T) => Promise<any>) => {
+    (onSubmit: (data: T) => Promise<unknown>) => {
       return form.handleSubmit(async (data) => {
         setSubmissionState((prev) => ({
           ...prev,
@@ -138,12 +190,14 @@ export function useFormValidation<T extends FieldValues>(
           // Show success toast
           toast({
             title: translations?.common?.success || "Success",
-            description: result?.message || "Operation completed successfully.",
+            description:
+              extractMessage(result) ||
+              "Operation completed successfully.",
             variant: "default",
           });
 
           return result;
-        } catch (error: any) {
+        } catch (error: unknown) {
           setSubmissionState((prev) => ({
             ...prev,
             isSubmitting: false,
@@ -152,18 +206,22 @@ export function useFormValidation<T extends FieldValues>(
           }));
 
           // Handle different error types
-          if (error?.response?.data) {
-            const { data } = error.response;
+          const apiError = error as ApiErrorLike;
+
+          if (apiError.response?.data) {
+            const { data } = apiError.response;
 
             if (data.errors && Array.isArray(data.errors)) {
               // Validation errors from server
+              setServerErrors(data.errors);
+            } else if (data.errors && !Array.isArray(data.errors)) {
               setServerErrors(data.errors);
             } else if (data.message) {
               // General error message
               setServerErrors(data.message);
             }
-          } else if (error?.message) {
-            setServerErrors(error.message);
+          } else if (apiError.message) {
+            setServerErrors(apiError.message);
           } else {
             setServerErrors(
               translations?.messages?.errorOccurred ||
@@ -176,7 +234,7 @@ export function useFormValidation<T extends FieldValues>(
           toast({
             title: translations?.common?.error || "Error",
             description:
-              error?.message ||
+              apiError.message ||
               translations?.messages?.errorOccurred ||
               translations?.common?.error ||
               "An error occurred",
@@ -207,11 +265,11 @@ export function useFormValidation<T extends FieldValues>(
 
   // Get field error (client or server)
   const getFieldError = useCallback(
-    (fieldName: keyof T) => {
+    (fieldName: Path<T>) => {
       // Check for react-hook-form errors first
-      const formError = form.formState.errors[fieldName];
-      if (formError) {
-        return formError.message as string;
+      const { error } = form.getFieldState(fieldName, form.formState);
+      if (error?.message) {
+        return String(error.message);
       }
 
       // Check for server errors
@@ -220,12 +278,12 @@ export function useFormValidation<T extends FieldValues>(
       );
       return serverError?.message;
     },
-    [form.formState.errors, submissionState.serverErrors],
+    [form, submissionState.serverErrors],
   );
 
   // Check if field has error
   const hasFieldError = useCallback(
-    (fieldName: keyof T) => {
+    (fieldName: Path<T>) => {
       return !!getFieldError(fieldName);
     },
     [getFieldError],
@@ -233,17 +291,17 @@ export function useFormValidation<T extends FieldValues>(
 
   // Watch field values with error clearing
   const watchField = useCallback(
-    (fieldName: keyof T) => {
-      const value = form.watch(fieldName as any);
+    (fieldName: Path<T>) => {
+      const value = form.watch(fieldName);
 
       // Clear server error when field changes
       if (
         submissionState.serverErrors.some((error) => error.field === fieldName)
       ) {
-        clearServerError(fieldName as string);
+        clearServerError(fieldName);
       }
 
-      return value;
+      return value as PathValue<T, Path<T>>;
     },
     [form, submissionState.serverErrors, clearServerError],
   );
@@ -290,8 +348,11 @@ export function useFormValidation<T extends FieldValues>(
 // Hook for dynamic form validation
 export function useDynamicValidation<T extends FieldValues>(
   schema: unknown,
-  dependencies: any[] = [],
-) {
+  dependencies: unknown[] = [],
+): {
+  schema: unknown;
+  updateSchema: (newSchema: unknown) => void;
+} {
   const [currentSchema, setCurrentSchema] = useState(schema);
 
   const updateSchema = useCallback((newSchema: unknown) => {
@@ -313,7 +374,11 @@ export function useDynamicValidation<T extends FieldValues>(
 export function useFormPersistence<T extends FieldValues>(
   key: string,
   form: UseFormReturn<T>,
-) {
+): {
+  saveFormData: () => void;
+  loadFormData: () => void;
+  clearSavedData: () => void;
+} {
   // Save form data to localStorage
   const saveFormData = useCallback(() => {
     const formData = form.getValues();
@@ -325,9 +390,10 @@ export function useFormPersistence<T extends FieldValues>(
     try {
       const savedData = localStorage.getItem(`form_${key}`);
       if (savedData) {
-        const parsedData = JSON.parse(savedData);
-        Object.keys(parsedData).forEach((fieldName) => {
-          form.setValue(fieldName as any, parsedData[fieldName]);
+        const parsedData = JSON.parse(savedData) as Partial<Record<keyof T, unknown>>;
+        (Object.keys(parsedData) as Array<keyof T>).forEach((fieldName) => {
+          const value = parsedData[fieldName];
+          form.setValue(fieldName as Path<T>, value as T[keyof T]);
         });
       }
     } catch (error) {

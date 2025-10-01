@@ -1,25 +1,25 @@
+import type { HeatmapData } from "../components/charts/HeatmapGrid";
 import type { AnalyticsData, FilterOptions } from "../types/reports";
-import { HeatmapData } from "../components/charts/HeatmapGrid";
-import type { FilterOptions, AnalyticsData } from "../types/reports";
+import type { ApiResponse, UserSummary } from "../types/common";
 
-interface User {
-  role?: string;
-  wardId?: string;
-}
+type UserContext = Pick<UserSummary, "role" | "wardId">;
 
 // Helper to construct query parameters
 const buildQueryParams = (
   filters: FilterOptions,
-  user?: User | null,
+  user?: UserContext | null,
 ): URLSearchParams => {
-  const queryParams = new URLSearchParams({
+  const params: Record<string, string> = {
     from: filters.dateRange.from,
     to: filters.dateRange.to,
-    ...(filters.ward !== "all" && { ward: filters.ward }),
-    ...(filters.complaintType !== "all" && { type: filters.complaintType }),
-    ...(filters.status !== "all" && { status: filters.status }),
-    ...(filters.priority !== "all" && { priority: filters.priority }),
-  });
+  };
+
+  if (filters.ward !== "all") params.ward = filters.ward;
+  if (filters.complaintType !== "all") params.type = filters.complaintType;
+  if (filters.status !== "all") params.status = filters.status;
+  if (filters.priority !== "all") params.priority = filters.priority;
+
+  const queryParams = new URLSearchParams(params);
 
   // Enforce ward scope for Ward Officers
   if (user?.role === "WARD_OFFICER" && user?.wardId) {
@@ -34,7 +34,7 @@ const buildQueryParams = (
  */
 export const getAnalyticsData = async (
   filters: FilterOptions,
-  user: User | null,
+  user: UserContext | null,
 ): Promise<AnalyticsData> => {
   const queryParams = buildQueryParams(filters, user);
 
@@ -55,29 +55,31 @@ export const getAnalyticsData = async (
     throw new Error(`Failed to fetch analytics data: ${response.statusText}`);
   }
 
-  const data = await response.json();
+  const data: ApiResponse<Partial<AnalyticsData> | undefined> =
+    await response.json();
+  const payload = data.data ?? {};
 
   // Transform the API response to match the expected format
   return {
     complaints: {
-      total: data.data?.complaints?.total || 0,
-      resolved: data.data?.complaints?.resolved || 0,
-      pending: data.data?.complaints?.pending || 0,
-      overdue: data.data?.complaints?.overdue || 0,
+      total: payload.complaints?.total ?? 0,
+      resolved: payload.complaints?.resolved ?? 0,
+      pending: payload.complaints?.pending ?? 0,
+      overdue: payload.complaints?.overdue ?? 0,
     },
     sla: {
-      compliance: data.data?.sla?.compliance || 0,
-      avgResolutionTime: data.data?.sla?.avgResolutionTime || 0,
-      target: data.data?.sla?.target || 3,
+      compliance: payload.sla?.compliance ?? 0,
+      avgResolutionTime: payload.sla?.avgResolutionTime ?? 0,
+      target: payload.sla?.target ?? 3,
     },
-    trends: data.data?.trends || [],
-    wards: data.data?.wards || [],
-    categories: data.data?.categories || [],
+    trends: payload.trends ?? [],
+    wards: payload.wards ?? [],
+    categories: payload.categories ?? [],
     performance: {
-      userSatisfaction: data.data?.performance?.userSatisfaction || 0,
-      escalationRate: data.data?.performance?.escalationRate || 0,
-      firstCallResolution: data.data?.performance?.firstCallResolution || 0,
-      repeatComplaints: data.data?.performance?.repeatComplaints || 0,
+      userSatisfaction: payload.performance?.userSatisfaction ?? 0,
+      escalationRate: payload.performance?.escalationRate ?? 0,
+      firstCallResolution: payload.performance?.firstCallResolution ?? 0,
+      repeatComplaints: payload.performance?.repeatComplaints ?? 0,
     },
   };
 };
@@ -87,15 +89,18 @@ export const getAnalyticsData = async (
  */
 export const getHeatmapData = async (
   filters: FilterOptions,
-  user: User | null,
+  user: UserContext | null,
 ): Promise<HeatmapData> => {
-  const queryParams = new URLSearchParams({
+  const params: Record<string, string> = {
     from: filters.dateRange.from,
     to: filters.dateRange.to,
-    ...(filters.complaintType !== "all" && { type: filters.complaintType }),
-    ...(filters.status !== "all" && { status: filters.status }),
-    ...(filters.priority !== "all" && { priority: filters.priority }),
-  } as Record<string, string>);
+  };
+
+  if (filters.complaintType !== "all") params.type = filters.complaintType;
+  if (filters.status !== "all") params.status = filters.status;
+  if (filters.priority !== "all") params.priority = filters.priority;
+
+  const queryParams = new URLSearchParams(params);
 
   // Enforce ward scope for Ward Officers; allow Admins to scope to a ward
   if (user?.role === "WARD_OFFICER" && user?.wardId) {
@@ -120,6 +125,10 @@ export const getHeatmapData = async (
     throw new Error(`Failed to fetch heatmap: ${resp.statusText}`);
   }
 
-  const json = await resp.json();
-  return json.data as HeatmapData;
+  const json: ApiResponse<HeatmapData | undefined> = await resp.json();
+  if (!json.data) {
+    throw new Error("Received empty heatmap response");
+  }
+
+  return json.data;
 };
