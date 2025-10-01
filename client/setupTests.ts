@@ -2,7 +2,6 @@ import "@testing-library/jest-dom";
 import { vi } from "vitest";
 
 // Mock IntersectionObserver
-// @ts-expect-error jsdom doesn't implement this
 globalThis.IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
@@ -11,7 +10,6 @@ globalThis.IntersectionObserver = class IntersectionObserver {
 } as unknown as typeof IntersectionObserver;
 
 // Mock ResizeObserver
-// @ts-expect-error jsdom doesn't implement this
 globalThis.ResizeObserver = class ResizeObserver {
   constructor() {}
   disconnect() {}
