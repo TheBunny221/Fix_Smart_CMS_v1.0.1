@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useMemo, useCallback } from "react";
-import type { PointerDownOutsideEvent } from "@radix-ui/react-dismissable-layer";
 import { cn } from "../lib/utils";
 import {
   useFocusTrap,
@@ -81,12 +80,12 @@ export const AccessibleDialog: React.FC<AccessibleDialogProps> = ({
   );
 
   const handlePointerDownOutside = useMemo<
-    ((event: PointerDownOutsideEvent) => void) | undefined
+    React.ComponentProps<typeof DialogContent>["onPointerDownOutside"]
   >(
     () =>
       closeOnOverlayClick
         ? undefined
-        : (event: PointerDownOutsideEvent) => {
+        : (event) => {
             event.preventDefault();
           },
     [closeOnOverlayClick],
