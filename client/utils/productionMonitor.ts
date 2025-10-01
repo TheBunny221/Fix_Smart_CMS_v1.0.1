@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * Production-Grade Monitoring Utility
  * Tracks context initialization, API calls, and performance metrics
