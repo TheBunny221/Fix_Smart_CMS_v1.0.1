@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../store/hooks";
 import {
   useGetComplaintsQuery,
   useUpdateComplaintStatusMutation,
 } from "../store/api/complaintsApi";
+import type { Complaint } from "@/types/common";
 import {
   Card,
   CardContent,
@@ -54,20 +55,20 @@ const MaintenanceDashboard: React.FC = () => {
 
   const complaints = useMemo(() => {
     if (Array.isArray(complaintsResponse?.data?.complaints)) {
-      return complaintsResponse!.data!.complaints;
+      return complaintsResponse.data.complaints as Complaint[];
     }
     if (Array.isArray((complaintsResponse as any)?.data)) {
-      return (complaintsResponse as any).data;
+      return (complaintsResponse as any).data as Complaint[];
     }
-    return [] as any[];
+    return [] as Complaint[];
   }, [complaintsResponse]);
 
   const [updateComplaintStatus] = useUpdateComplaintStatusMutation();
 
   const dashboardStats = useMemo(() => {
-    const assignedTasks = complaints.filter((c: any) => {
-      const assigneeId = c.assignedToId || c.assignedTo?.id || c.assignedTo;
-      const maintenanceTeamId = c.maintenanceTeamId || c.maintenanceTeam?.id;
+    const assignedTasks = complaints.filter((c: Complaint) => {
+      const assigneeId = c.assignedToId || (typeof c.assignedTo === 'object' ? c.assignedTo?.id : c.assignedTo);
+      const maintenanceTeamId = c.maintenanceTeamId || (typeof c.maintenanceTeam === 'object' ? c.maintenanceTeam?.id : c.maintenanceTeam);
       return (
         (assigneeId === user?.id || maintenanceTeamId === user?.id) &&
         c.status !== "REGISTERED"
@@ -85,27 +86,27 @@ const MaintenanceDashboard: React.FC = () => {
 
     const totalTasks = assignedTasks.length;
     const inProgress = assignedTasks.filter(
-      (c) => c.status === "IN_PROGRESS",
+      (c: Complaint) => c.status === "IN_PROGRESS",
     ).length;
     const completed = assignedTasks.filter(
-      (c) => c.status === "RESOLVED",
+      (c: Complaint) => c.status === "RESOLVED",
     ).length;
-    const pending = assignedTasks.filter((c) => c.status === "ASSIGNED").length;
+    const pending = assignedTasks.filter((c: Complaint) => c.status === "ASSIGNED").length;
 
     const today = new Date().toDateString();
     const todayTasks = assignedTasks.filter(
-      (c) => new Date(c.assignedOn || c.submittedOn).toDateString() === today,
+      (c: Complaint) => new Date(c.assignedOn || c.submittedOn || '').toDateString() === today,
     ).length;
 
     // Calculate average completion time for resolved tasks
     const resolvedTasks = assignedTasks.filter(
-      (c) => c.status === "RESOLVED" && c.resolvedOn && c.assignedOn,
+      (c: Complaint) => c.status === "RESOLVED" && c.resolvedOn && c.assignedOn,
     );
     const avgCompletionTime =
       resolvedTasks.length > 0
-        ? resolvedTasks.reduce((acc, task) => {
-            const assignedDate = new Date(task.assignedOn);
-            const resolvedDate = new Date(task.resolvedOn);
+        ? resolvedTasks.reduce((acc: number, task: Complaint) => {
+            const assignedDate = new Date(task.assignedOn || '');
+            const resolvedDate = new Date(task.resolvedOn || '');
             const diffInDays =
               (resolvedDate.getTime() - assignedDate.getTime()) /
               (1000 * 60 * 60 * 24);
@@ -114,12 +115,12 @@ const MaintenanceDashboard: React.FC = () => {
         : 0;
 
     // Calculate efficiency as percentage of tasks completed on time
-    const tasksWithDeadlines = assignedTasks.filter((c) => c.deadline);
-    const onTimeTasks = tasksWithDeadlines.filter((c) => {
+    const tasksWithDeadlines = assignedTasks.filter((c: Complaint) => c.slaDeadline);
+    const onTimeTasks = tasksWithDeadlines.filter((c: Complaint) => {
       if (c.status === "RESOLVED" && c.resolvedOn) {
-        return new Date(c.resolvedOn) <= new Date(c.deadline);
+        return new Date(c.resolvedOn) <= new Date(c.slaDeadline || '');
       }
-      return c.status !== "RESOLVED" && new Date() <= new Date(c.deadline);
+      return c.status !== "RESOLVED" && new Date() <= new Date(c.slaDeadline || '');
     });
     const efficiency =
       tasksWithDeadlines.length > 0
@@ -168,9 +169,9 @@ const MaintenanceDashboard: React.FC = () => {
   };
 
   const myTasks = useMemo(() => {
-    return complaints.filter((c: any) => {
-      const assigneeId = c.assignedToId || c.assignedTo?.id || c.assignedTo;
-      const maintenanceTeamId = c.maintenanceTeamId || c.maintenanceTeam?.id;
+    return complaints.filter((c: Complaint) => {
+      const assigneeId = c.assignedToId || (typeof c.assignedTo === 'object' ? c.assignedTo?.id : c.assignedTo);
+      const maintenanceTeamId = c.maintenanceTeamId || (typeof c.maintenanceTeam === 'object' ? c.maintenanceTeam?.id : c.maintenanceTeam);
       return (
         (assigneeId === user?.id || maintenanceTeamId === user?.id) &&
         c.status !== "REGISTERED"
@@ -181,7 +182,7 @@ const MaintenanceDashboard: React.FC = () => {
   const activeTasks = useMemo(
     () =>
       myTasks
-        .filter((c) => c.status === "ASSIGNED" || c.status === "IN_PROGRESS")
+        .filter((c: Complaint) => c.status === "ASSIGNED" || c.status === "IN_PROGRESS")
         .slice(0, 5),
     [myTasks],
   );
@@ -189,7 +190,7 @@ const MaintenanceDashboard: React.FC = () => {
   const urgentTasks = useMemo(
     () =>
       myTasks
-        .filter((c) => c.priority === "CRITICAL" || c.priority === "HIGH")
+        .filter((c: Complaint) => c.priority === "CRITICAL" || c.priority === "HIGH")
         .slice(0, 3),
     [myTasks],
   );

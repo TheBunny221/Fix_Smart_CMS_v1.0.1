@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import type { Notification } from "@/types/common";
 
 // Types
 export interface Toast {
@@ -19,21 +20,9 @@ export interface Modal {
   title: string;
   content: string | React.ReactNode;
   onConfirm?: () => void;
-  onCancel?: () => void;
   confirmText?: string;
   cancelText?: string;
   size?: "sm" | "md" | "lg" | "xl";
-}
-
-export interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  message?: string;
-  isRead?: boolean;
-  createdAt?: string;
-  complaintId?: string;
-  [key: string]: unknown;
 }
 
 export interface UIState {

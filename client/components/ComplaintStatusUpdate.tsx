@@ -141,21 +141,21 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
   const [updateComplaint] = useUpdateComplaintMutation();
 
   const [formData, setFormData] = useState<FormState>(() => ({
-    status: fromComplaintStatus(complaint.status),
+    status: fromComplaintStatus(complaint.status || ''),
     assignedTo:
-      complaint.wardOfficer?.id || complaint.assignedTo?.id || UNASSIGNED_ID,
+      complaint.wardOfficer?.id || (typeof complaint.assignedTo === 'object' ? complaint.assignedTo?.id : complaint.assignedTo) || UNASSIGNED_ID,
     remarks: "",
   }));
 
   useEffect(() => {
     setFormData({
-      status: fromComplaintStatus(complaint.status),
+      status: fromComplaintStatus(complaint.status || ''),
       assignedTo:
-        complaint.wardOfficer?.id || complaint.assignedTo?.id || UNASSIGNED_ID,
+        complaint.wardOfficer?.id || (typeof complaint.assignedTo === 'object' ? complaint.assignedTo?.id : complaint.assignedTo) || UNASSIGNED_ID,
       remarks: "",
     });
   }, [
-    complaint.assignedTo?.id,
+    typeof complaint.assignedTo === 'object' ? complaint.assignedTo?.id : complaint.assignedTo,
     complaint.status,
     complaint.wardOfficer?.id,
   ]);
@@ -187,7 +187,7 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
       const previousStatus = fromComplaintStatus(complaint.status);
       const previousAssigneeId =
         complaint.wardOfficer?.id ||
-        complaint.assignedTo?.id ||
+        (typeof complaint.assignedTo === 'object' ? complaint.assignedTo?.id : complaint.assignedTo) ||
         UNASSIGNED_ID;
 
       const isStatusUpdateAllowed =

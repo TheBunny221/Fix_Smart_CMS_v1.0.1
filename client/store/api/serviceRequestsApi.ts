@@ -1,7 +1,7 @@
 import { baseApi } from "./baseApi";
 import type { ApiResponse } from "@/types/common";
 
-// Types
+// Service Request Types - keeping local definitions to avoid conflicts
 export interface ServiceRequest {
   id: string;
   title: string;
@@ -76,6 +76,17 @@ export interface ServiceType {
   requiredDocuments?: string[];
   fees?: number;
   isActive: boolean;
+}
+
+export interface ServiceRequestStats {
+  total: number;
+  pending: number;
+  inProgress: number;
+  completed: number;
+  cancelled: number;
+  byType?: Record<string, number>;
+  byStatus?: Record<string, number>;
+  byPriority?: Record<string, number>;
 }
 
 export interface ServiceRequestCreateData {

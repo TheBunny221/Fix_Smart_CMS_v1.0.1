@@ -199,13 +199,13 @@ const WardOfficerDashboard: React.FC = () => {
   };
 
   // Handle navigation to complaints page with filters
-  const navigateToComplaints = (filterParams: any) => {
+  const navigateToComplaints = (filterParams: Record<string, unknown>) => {
     const searchParams = new URLSearchParams();
     Object.entries(filterParams).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         searchParams.append(key, value.join(","));
-      } else {
-        searchParams.append(key, value.toString());
+      } else if (value != null) {
+        searchParams.append(key, String(value));
       }
     });
     navigate(`/complaints?${searchParams.toString()}`);
@@ -393,7 +393,7 @@ const WardOfficerDashboard: React.FC = () => {
             title="Filtered Results"
             maxHeight="500px"
             showActions={true}
-            userRole={user?.role}
+            userRole={user?.role || "GUEST"}
             user={user}
           />
         </div>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../store/hooks";
 import { useGetComplaintsQuery } from "../store/api/complaintsApi";
+import type { Complaint } from "@/types/common";
 import {
   Card,
   CardContent,
@@ -67,20 +68,20 @@ const WardManagement: React.FC = () => {
   const wardStats = {
     totalComplaints: complaints.length,
     resolved: complaints.filter(
-      (c) => c.status === "RESOLVED" || c.status === "CLOSED",
+      (c: Complaint) => c.status === "RESOLVED" || c.status === "CLOSED",
     ).length,
     pending: complaints.filter(
-      (c) =>
+      (c: Complaint) =>
         c.status === "REGISTERED" ||
         c.status === "ASSIGNED" ||
         c.status === "IN_PROGRESS",
     ).length,
-    inProgress: complaints.filter((c) => c.status === "IN_PROGRESS").length,
+    inProgress: complaints.filter((c: Complaint) => c.status === "IN_PROGRESS").length,
     resolutionRate:
       complaints.length > 0
         ? Math.round(
             (complaints.filter(
-              (c) => c.status === "RESOLVED" || c.status === "CLOSED",
+              (c: Complaint) => c.status === "RESOLVED" || c.status === "CLOSED",
             ).length /
               complaints.length) *
               100,
@@ -89,7 +90,14 @@ const WardManagement: React.FC = () => {
   };
 
   // Group complaints by sub-zone if available
-  const complaintsByArea = complaints.reduce((acc: any, complaint) => {
+  interface AreaStats {
+    name: string;
+    complaints: number;
+    resolved: number;
+    pending: number;
+  }
+  
+  const complaintsByArea = complaints.reduce((acc: Record<string, AreaStats>, complaint: Complaint) => {
     const area = complaint.area || "Unknown Area";
     if (!acc[area]) {
       acc[area] = {
@@ -113,7 +121,7 @@ const WardManagement: React.FC = () => {
   // Priority complaints that need attention
   const priorityComplaints = complaints
     .filter(
-      (c) =>
+      (c: Complaint) =>
         c.priority === "HIGH" ||
         c.priority === "CRITICAL" ||
         c.status === "REGISTERED",
@@ -326,7 +334,7 @@ const WardManagement: React.FC = () => {
                       <AlertTriangle className="h-4 w-4 mr-2" />
                       New Complaints (
                       {
-                        complaints.filter((c) => c.status === "REGISTERED")
+                        complaints.filter((c: Complaint) => c.status === "REGISTERED")
                           .length
                       }
                       )
@@ -393,7 +401,7 @@ const WardManagement: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {priorityComplaints.map((complaint) => (
+                    {priorityComplaints.map((complaint: Complaint) => (
                       <TableRow key={complaint.id}>
                         <TableCell className="font-medium">
                           #{complaint.complaintId || complaint.id.slice(-6)}
@@ -478,7 +486,7 @@ const WardManagement: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {subZones.map((zone: any, index) => (
+                  {subZones.map((zone: AreaStats, index: number) => (
                     <div key={index} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h3 className="font-medium">{zone.name}</h3>

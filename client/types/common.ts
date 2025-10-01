@@ -116,3 +116,88 @@ export interface PaginatedResponse<T> extends ApiResponse<T> {
     pageCount: number;
   };
 }
+
+// Service Request Types
+export interface ServiceType {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ServiceRequestStats {
+  total: number;
+  pending: number;
+  inProgress: number;
+  completed: number;
+  cancelled: number;
+  byType?: Record<string, number>;
+  byStatus?: Record<string, number>;
+  byPriority?: Record<string, number>;
+}
+
+export interface ServiceRequestStatusLog {
+  id?: string;
+  fromStatus?: string;
+  toStatus: string;
+  timestamp?: string;
+  comment?: string;
+  updatedBy?: UserSummary | null;
+}
+
+export interface ServiceRequest {
+  id: string;
+  title?: string;
+  description?: string;
+  type?: string;
+  priority?: string;
+  status?: string;
+  submittedBy?: string;
+  submittedOn?: string;
+  assignedTo?: UserSummary | string | null;
+  assignedToId?: string;
+  completedOn?: string;
+  statusLogs?: ServiceRequestStatusLog[];
+  [key: string]: unknown;
+}
+
+// Status and Filter Types
+export type StatusId = 
+  | "registered" 
+  | "assigned" 
+  | "resolved" 
+  | "closed" 
+  | "reopened" 
+  | "inProgress"
+  | "total"
+  | "none";
+
+export interface Filters {
+  mainFilter: StatusId;
+  [key: string]: unknown;
+}
+
+export interface Stats {
+  total: number;
+  registered: number;
+  assigned: number;
+  inProgress: number;
+  resolved: number;
+  closed: number;
+  reopened: number;
+}
+
+// Notification Types
+export interface Notification {
+  id: string;
+  type: string;
+  title: string;
+  message?: string;
+  timestamp?: string;
+  isRead?: boolean;
+  userId?: string;
+  data?: Record<string, unknown>;
+}

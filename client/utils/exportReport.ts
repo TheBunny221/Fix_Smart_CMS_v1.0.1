@@ -225,8 +225,12 @@ export async function exportComplaintReport(
       kv("Ward Officer", complaint.wardOfficer.fullName);
     if (complaint.maintenanceTeam?.fullName)
       kv("Maintenance Team", complaint.maintenanceTeam.fullName);
-    if (complaint.assignedTo?.fullName)
-      kv("Assigned To", complaint.assignedTo.fullName);
+    if (complaint.assignedTo) {
+      const assignedToName = typeof complaint.assignedTo === 'string' 
+        ? complaint.assignedTo 
+        : complaint.assignedTo.fullName;
+      kv("Assigned To", assignedToName);
+    }
     if (complaint.assignedOn)
       kv("Assigned On", formatDate(complaint.assignedOn));
   }

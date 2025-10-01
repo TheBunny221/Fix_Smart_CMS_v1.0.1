@@ -18,7 +18,10 @@
     "paths": {
       "@/*": ["./client/*"],
       "@shared/*": ["./shared/*"]
-    }
+    },
+    "outDir": "./tsbuild",           // 🔥 all compiled output goes here
+    "rootDir": ".",                  // keep folder structure inside tsbuild
+    "noEmit": false                  // ensure tsc actually emits output
   },
   "include": [
     "client",
@@ -32,6 +35,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "**/__tests__/**"
+    "**/__tests__/**",
+    "tsbuild"                        // don’t recompile build output
   ]
 }

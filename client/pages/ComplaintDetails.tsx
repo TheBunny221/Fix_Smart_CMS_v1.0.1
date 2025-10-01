@@ -903,8 +903,7 @@ const ComplaintDetails: React.FC = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
                     <div className="bg-blue-50 rounded-lg p-3">
-                      {console.log("Ward Officer:", complaint)}
-                      <p className="text-sm font-medium mb-1">Ward Officer</p>
+                    <p className="text-sm font-medium mb-1">Ward Officer</p>
                       {complaint.wardOfficer ? (
                         <>
                           <p className="text-blue-800 font-medium">

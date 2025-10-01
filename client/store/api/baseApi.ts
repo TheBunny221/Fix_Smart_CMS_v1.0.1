@@ -306,6 +306,7 @@ export const baseApi = createApi({
     "Material",
     "Photo",
     "ServiceRequest",
+    "ServiceType",
   ],
   endpoints: () => ({}),
 });
