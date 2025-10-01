@@ -1,4 +1,5 @@
 import React, { Component, ReactNode } from 'react';
+import React, { Component, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -23,20 +24,17 @@ export class ContextErrorBoundary extends Component<Props, State> {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static override getDerivedStateFromError(error: Error): State {
     // Check if this is a context-related error
-    const isContextError = 
+    const isContextError =
       error.message.includes('must be used within') ||
       error.message.includes('Context') ||
       error.message.includes('Provider');
-    
-    return {
-      hasError: isContextError,
-      error: isContextError ? error : undefined,
-    };
+
+    return isContextError ? { hasError: true, error } : { hasError: false };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     // Log context errors for debugging
     if (this.state.hasError) {
       console.group('🔴 Context Error Boundary');
@@ -48,7 +46,7 @@ export class ContextErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: undefined });
+    this.setState({ hasError: false });
   };
 
   render() {
@@ -115,7 +113,10 @@ export function withContextErrorBoundary<P extends object>(
   fallback?: ReactNode
 ) {
   const WrappedComponent = (props: P) => (
-    <ContextErrorBoundary contextName={contextName} fallback={fallback}>
+    <ContextErrorBoundary
+      {...(contextName !== undefined ? { contextName } : {})}
+      {...(fallback !== undefined ? { fallback } : {})}
+    >
       <Component {...props} />
     </ContextErrorBoundary>
   );
