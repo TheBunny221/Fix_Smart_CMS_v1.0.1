@@ -31,7 +31,9 @@ const GlobalMessageHandler: React.FC = () => {
         title: toastItem.title,
         description: toastItem.message,
         variant: toastItem.type === "error" ? "destructive" : "default",
-        duration: toastItem.duration,
+        ...(toastItem.duration !== undefined
+          ? { duration: toastItem.duration }
+          : {}),
       });
 
       // Remove from store after showing

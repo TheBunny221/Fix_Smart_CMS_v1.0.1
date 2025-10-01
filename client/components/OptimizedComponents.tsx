@@ -1,8 +1,10 @@
 import React, { memo, forwardRef, useMemo, useCallback, useState } from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import {
   FixedSizeList as List,
-  VariableSizeList,
   areEqual,
+  type ListChildComponentProps,
+  type ListOnScrollProps,
 } from "react-window";
 import { cn } from "../lib/utils";
 import {
@@ -31,7 +33,7 @@ interface VirtualListProps {
   }) => React.ReactElement;
   className?: string;
   overscanCount?: number;
-  onScroll?: (scrollTop: number) => void;
+  onScroll?: (scrollOffset: number) => void;
 }
 
 const VirtualListItem = memo(
@@ -39,16 +41,10 @@ const VirtualListItem = memo(
     index,
     style,
     data,
-    renderItem,
-  }: {
-    index: number;
-    style: React.CSSProperties;
-    data: {
-      items: VirtualListItem[];
-      renderItem: VirtualListProps["renderItem"];
-    };
+  }: ListChildComponentProps<{
+    items: VirtualListItem[];
     renderItem: VirtualListProps["renderItem"];
-  }) => {
+  }>) => {
     const item = data.items[index];
     if (!item) return null;
 
@@ -78,8 +74,8 @@ export const VirtualList: React.FC<VirtualListProps> = memo(
     );
 
     const handleScroll = useCallback(
-      ({ scrollTop }: { scrollTop: number }) => {
-        onScroll?.(scrollTop);
+      (props: ListOnScrollProps) => {
+        onScroll?.(props.scrollOffset);
       },
       [onScroll],
     );
@@ -272,7 +268,8 @@ export const OptimizedCardGrid = memo(
   },
 ) as <T>(props: OptimizedCardGridProps<T>) => React.ReactElement;
 
-OptimizedCardGrid.displayName = "OptimizedCardGrid";
+(OptimizedCardGrid as unknown as { displayName?: string }).displayName =
+  "OptimizedCardGrid";
 
 // Lazy Section Component
 interface LazySectionProps {
@@ -461,7 +458,8 @@ export const MemoizedList = memo(
   },
 ) as <T>(props: MemoizedListProps<T>) => React.ReactElement;
 
-MemoizedList.displayName = "MemoizedList";
+(MemoizedList as unknown as { displayName?: string }).displayName =
+  "MemoizedList";
 
 // Progressive Enhancement Component
 interface ProgressiveEnhancementProps {
@@ -539,6 +537,7 @@ export const OptimizedSelect: React.FC<OptimizedSelectProps> = memo(
         data: typeof options;
       }) => {
         const option = data[index];
+        if (!option) return null;
         return (
           <div
             key={option.value}
