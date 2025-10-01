@@ -161,7 +161,7 @@ function PdfViewer({ url }: { url: string }) {
         canvas.style.height = viewport.height + "px";
         canvas.className = "bg-white shadow rounded";
         wrapper.appendChild(canvas);
-        await page.render({ canvasContext: ctx, viewport }).promise;
+        await page.render({ canvasContext: ctx, viewport, canvas }).promise;
       }
     })();
     return () => {
@@ -376,7 +376,7 @@ export default function AttachmentPreview({
         onOpenChange(o);
       }}
     >
-      <DialogContent hideClose className="max-w-[92vw] w-[92vw] h-[86vh] p-0">
+      <DialogContent className="max-w-[92vw] w-[92vw] h-[86vh] p-0">
         <DialogHeader className="px-4 pt-4 pb-2 border-b bg-background/60">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
