@@ -41,27 +41,32 @@ export default async function seedCommon(prisma, options = {}) {
   // If destructive, clear tables in order
   if (destructive) {
     console.log("🧹 Clearing ALL existing data...");
-    
-    // Clear tables that exist in both dev and prod schemas
-    if (hasModel('attachment')) await prisma.attachment.deleteMany({});
-    if (hasModel('oTPSession')) await prisma.oTPSession.deleteMany({});
-    if (hasModel('statusLog')) await prisma.statusLog.deleteMany({});
-    if (hasModel('complaint')) await prisma.complaint.deleteMany({});
-    if (hasModel('complaintType')) await prisma.complaintType.deleteMany({});
-    if (hasModel('user')) await prisma.user.deleteMany({});
-    if (hasModel('subZone')) await prisma.subZone.deleteMany({});
-    if (hasModel('ward')) await prisma.ward.deleteMany({});
-    if (hasModel('systemConfig')) await prisma.systemConfig.deleteMany({});
 
-    // Clear tables that might only exist in dev schema
-    if (hasModel('material')) await prisma.material.deleteMany({});
-    if (hasModel('complaintPhoto')) await prisma.complaintPhoto.deleteMany({});
-    if (hasModel('serviceRequestStatusLog')) await prisma.serviceRequestStatusLog.deleteMany({});
-    if (hasModel('notification')) await prisma.notification.deleteMany({});
-    if (hasModel('message')) await prisma.message.deleteMany({});
-    if (hasModel('serviceRequest')) await prisma.serviceRequest.deleteMany({});
-    if (hasModel('department')) await prisma.department.deleteMany({});
-    if (hasModel('report')) await prisma.report.deleteMany({});
+    const destructiveDeleteOrder = [
+      'attachment',
+      'complaintPhoto',
+      'material',
+      'notification',
+      'message',
+      'serviceRequestStatusLog',
+      'statusLog',
+      'oTPSession',
+      'serviceRequest',
+      'complaint',
+      'complaintType',
+      'subZone',
+      'user',
+      'ward',
+      'systemConfig',
+      'department',
+      'report',
+    ];
+
+    for (const modelName of destructiveDeleteOrder) {
+      if (hasModel(modelName)) {
+        await prisma[modelName].deleteMany({});
+      }
+    }
   } else {
     console.log(
       "ℹ️ Non-destructive mode: will only create missing data to reach targets",
