@@ -305,6 +305,7 @@ export const baseApi = createApi({
     "SystemConfig",
     "Material",
     "Photo",
+    "ServiceRequest",
   ],
   endpoints: () => ({}),
 });

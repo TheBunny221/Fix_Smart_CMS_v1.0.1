@@ -27,23 +27,13 @@ export interface Modal {
 
 export interface Notification {
   id: string;
-  type:
-    | "complaint_submitted"
-    | "complaint_assigned"
-    | "complaint_updated"
-    | "complaint_resolved"
-    | "complaint_closed"
-    | "sla_warning"
-    | "sla_breach"
-    | "success"
-    | "error"
-    | "warning"
-    | "info";
+  type: string;
   title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
+  message?: string;
+  isRead?: boolean;
+  createdAt?: string;
   complaintId?: string;
+  [key: string]: unknown;
 }
 
 export interface UIState {

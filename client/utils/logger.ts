@@ -307,14 +307,6 @@ class FrontendLogger {
     return merged;
   }
 
-  private withUserMeta(meta: LogMeta, userId: string, sessionId?: string): LogMeta {
-    const merged: LogMeta = { ...meta, userId };
-    if (sessionId !== undefined) {
-      merged.sessionId = sessionId;
-    }
-    return merged;
-  }
-
   withComponent(componentName: string) {
     return {
       error: (message: string, meta: LogMeta = {}) =>

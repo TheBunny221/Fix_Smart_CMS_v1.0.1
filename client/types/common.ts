@@ -64,17 +64,41 @@ export interface Complaint {
   description?: string;
   type?: string;
   priority?: string;
-  status?: ComplaintStatus;
+  status?: ComplaintStatus | Lowercase<ComplaintStatus> | string;
+  submittedBy?: string;
   submittedOn?: string;
+  submittedDate?: string;
   assignedOn?: string;
-  remarks?: string;
-  ward?: WardSummary | null;
+  lastUpdated?: string;
+  resolvedOn?: string;
+  resolvedDate?: string;
+  closedOn?: string;
+  slaDeadline?: string;
+  slaStatus?: string;
+  timeElapsed?: number;
+  escalationLevel?: number;
+  ward?: WardSummary | string | null;
+  wardId?: string;
   wardOfficer?: UserSummary | null;
   maintenanceTeam?: UserSummary | null;
-  assignedTo?: UserSummary | null;
+  maintenanceTeamId?: string;
+  assignedTo?: UserSummary | string | null;
+  assignedToId?: string;
+  area?: string;
+  location?: string;
+  address?: string;
+  landmark?: string;
+  contactInfo?: string;
+  mobile?: string;
+  phone?: string;
+  email?: string;
+  remarks?: string;
+  feedback?: string;
+  rating?: number;
   attachments?: ComplaintAttachment[];
   photos?: ComplaintPhoto[];
   statusLogs?: ComplaintStatusLog[];
+  [key: string]: unknown;
 }
 
 export interface ApiResponse<T> {
