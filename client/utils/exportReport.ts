@@ -1,4 +1,5 @@
 import { jsPDF as _jsPDF } from "jspdf";
+import type { Complaint, ComplaintStatusLog, Role } from "../types/common";
 
 // Helper: convert image URL to data URL (robust against fetch instrumentation)
 async function fetchImageDataURL(url: string): Promise<string | null> {
@@ -70,10 +71,10 @@ function formatDate(dt?: string | number | Date) {
 }
 
 export async function exportComplaintReport(
-  complaint: any,
-  role: string,
+  complaint: Complaint,
+  role: Role,
   options: ExportOptions = {},
-) {
+): Promise<void> {
   const jsPDF = _jsPDF as unknown as typeof _jsPDF;
   const orientation = options.orientation || "p";
   const doc = new jsPDF({ orientation, unit: "pt", format: "a4" });
@@ -83,9 +84,8 @@ export async function exportComplaintReport(
   const margin = 40;
   let y = margin;
 
-  const gray = [245, 247, 250];
-  const primary = [28, 100, 242];
-  const muted = [100, 116, 139];
+  const gray: [number, number, number] = [245, 247, 250];
+  const primary: [number, number, number] = [28, 100, 242];
 
   const ensureSpace = (needed = 24) => {
     if (y + needed > pageHeight - margin) {
@@ -101,12 +101,20 @@ export async function exportComplaintReport(
     ? await fetchImageDataURL(options.appLogoUrl)
     : null;
 
+  const applyFill = (color: [number, number, number]) => {
+    doc.setFillColor(color[0], color[1], color[2]);
+  };
+
+  const applyTextColor = (color: [number, number, number]) => {
+    doc.setTextColor(color[0], color[1], color[2]);
+  };
+
   const drawHeaderFooter = () => {
     const total = doc.getNumberOfPages();
     for (let i = 1; i <= total; i++) {
       doc.setPage(i);
       // Header bar
-      doc.setFillColor(...(gray as any));
+      applyFill(gray);
       doc.rect(0, 0, pageWidth, 64, "F");
 
       // Logo (left)
@@ -117,7 +125,7 @@ export async function exportComplaintReport(
       }
 
       // Title (center)
-      doc.setTextColor(primary[0], primary[1], primary[2]);
+      applyTextColor(primary);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       const titleX = pageWidth / 2 - doc.getTextWidth(headerTitle) / 2;
@@ -150,7 +158,7 @@ export async function exportComplaintReport(
 
   const section = (title: string) => {
     ensureSpace(36);
-    doc.setFillColor(...(gray as any));
+    applyFill(gray);
     doc.roundedRect(margin, y, pageWidth - margin * 2, 28, 6, 6, "F");
     doc.setTextColor(30);
     doc.setFont("helvetica", "bold");
@@ -159,19 +167,23 @@ export async function exportComplaintReport(
     y += 36;
   };
 
-  const kv = (k: string, v: string) => {
+  const kv = (key: string, value: string | number | null | undefined) => {
     ensureSpace(18);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(40);
     doc.setFontSize(10);
-    const keyText = `${k}:`;
+    const keyText = `${key}:`;
     doc.text(keyText, margin, y);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(70);
     const maxWidth = pageWidth - margin * 2 - doc.getTextWidth(keyText) - 8;
-    const lines = doc.splitTextToSize(v || "-", maxWidth);
+    const split = doc.splitTextToSize(
+      value !== undefined && value !== null ? String(value) : "-",
+      maxWidth,
+    );
+    const lines = Array.isArray(split) ? split : [split];
     doc.text(lines, margin + doc.getTextWidth(keyText) + 8, y);
-    y += (Array.isArray(lines) ? lines.length : 1) * 14;
+    y += lines.length * 14;
   };
 
   const paragraph = (text: string) => {
@@ -180,8 +192,9 @@ export async function exportComplaintReport(
     doc.setTextColor(60);
     doc.setFontSize(10);
     const maxWidth = pageWidth - margin * 2;
-    const lines = doc.splitTextToSize(text || "-", maxWidth);
-    lines.forEach((line: string) => {
+    const split = doc.splitTextToSize(text || "-", maxWidth);
+    const lines = Array.isArray(split) ? split : [split];
+    lines.forEach((line) => {
       ensureSpace(14);
       doc.text(line, margin, y);
       y += 14;
@@ -230,10 +243,10 @@ export async function exportComplaintReport(
   if (showStatus) {
     section(role === "CITIZEN" ? "Status History" : "Status & Progress Logs");
     if (complaint.statusLogs && complaint.statusLogs.length > 0) {
-      complaint.statusLogs.forEach((log: any, idx: number) => {
+      complaint.statusLogs.forEach((log: ComplaintStatusLog, idx: number) => {
         ensureSpace(28);
         // Timeline bullet
-        doc.setFillColor(primary[0], primary[1], primary[2]);
+        applyFill(primary);
         doc.circle(margin + 4, y - 6, 3, "F");
         // Status label
         doc.setFont("helvetica", "bold");
@@ -263,10 +276,10 @@ export async function exportComplaintReport(
   }
 
   // Attachments
-  const compImages: { name: string; dataUrl: string }[] = [];
-  const compDocs: { name: string; type: string; url: string }[] = [];
-  const teamImages: { name: string; dataUrl: string }[] = [];
-  const teamDocs: { name: string; type: string; url: string }[] = [];
+  const compImages: Array<{ name: string; dataUrl: string }> = [];
+  const compDocs: Array<{ name: string; type: string; url: string }> = [];
+  const teamImages: Array<{ name: string; dataUrl: string }> = [];
+  const teamDocs: Array<{ name: string; type: string; url: string }> = [];
 
   const pushAttachment = async (
     bucket: "comp" | "team",
@@ -291,7 +304,7 @@ export async function exportComplaintReport(
     for (const a of complaint.attachments) {
       await pushAttachment(
         "comp",
-        a.originalName || a.fileName,
+        a.originalName || a.fileName || "Attachment",
         a.url,
         a.mimeType,
       );
@@ -301,7 +314,7 @@ export async function exportComplaintReport(
     for (const p of complaint.photos) {
       await pushAttachment(
         "team",
-        p.originalName || p.fileName,
+        p.originalName || p.fileName || "Photo",
         p.photoUrl,
         "image/*",
       );
@@ -311,8 +324,8 @@ export async function exportComplaintReport(
   section("Attachments");
   const renderAttachmentGroup = (
     title: string,
-    images: typeof compImages,
-    docs: typeof compDocs,
+    images: Array<{ name: string; dataUrl: string }>,
+    docs: Array<{ name: string; type: string; url: string }>,
   ) => {
     ensureSpace(18);
     doc.setFont("helvetica", "bold");
@@ -361,15 +374,16 @@ export async function exportComplaintReport(
         ensureSpace(14);
         const icon = d.type?.includes("pdf") ? "📄" : "📄";
         const label = `${icon} ${d.name} (${d.type || "file"})`;
-        try {
-          // @ts-ignore
-          if (doc.textWithLink) {
-            // @ts-ignore
-            doc.textWithLink(label, margin, y, { url: d.url });
-          } else {
-            doc.text(label, margin, y);
-          }
-        } catch {
+        const docWithLink = doc as typeof doc & {
+          textWithLink?: (
+            text: string,
+            x: number,
+            y: number,
+            options: { url: string },
+          ) => void;
+        };
+        docWithLink.textWithLink?.(label, margin, y, { url: d.url });
+        if (!docWithLink.textWithLink) {
           doc.text(label, margin, y);
         }
         y += 14;
