@@ -80,7 +80,9 @@ export const AccessibleDialog: React.FC<AccessibleDialogProps> = ({
   );
 
   const preventPointerDownOutside = useCallback<
-    NonNullable<React.ComponentProps<typeof DialogContent>["onPointerDownOutside"]>
+    NonNullable<
+      React.ComponentProps<typeof DialogContent>["onPointerDownOutside"]
+    >
   >((event) => {
     event.preventDefault();
   }, []);

@@ -15,7 +15,7 @@ export default async function seedCommon(prisma, options = {}) {
     adminEmail = null,
     adminPassword = null,
     target = {},
-    environment = 'dev', // 'dev' or 'prod' to handle schema differences
+    environment = "dev", // 'dev' or 'prod' to handle schema differences
   } = options;
 
   const targets = {
@@ -43,23 +43,23 @@ export default async function seedCommon(prisma, options = {}) {
     console.log("🧹 Clearing ALL existing data...");
 
     const destructiveDeleteOrder = [
-      'attachment',
-      'complaintPhoto',
-      'material',
-      'notification',
-      'message',
-      'serviceRequestStatusLog',
-      'statusLog',
-      'oTPSession',
-      'serviceRequest',
-      'complaint',
-      'complaintType',
-      'subZone',
-      'user',
-      'ward',
-      'systemConfig',
-      'department',
-      'report',
+      "attachment",
+      "complaintPhoto",
+      "material",
+      "notification",
+      "message",
+      "serviceRequestStatusLog",
+      "statusLog",
+      "oTPSession",
+      "serviceRequest",
+      "complaint",
+      "complaintType",
+      "subZone",
+      "user",
+      "ward",
+      "systemConfig",
+      "department",
+      "report",
     ];
 
     for (const modelName of destructiveDeleteOrder) {
@@ -598,7 +598,7 @@ export default async function seedCommon(prisma, options = {}) {
       let parsed = {};
       try {
         parsed = JSON.parse(cfg.value || "{}");
-      } catch { }
+      } catch {}
       const name =
         parsed.name ||
         cfg.key
@@ -824,7 +824,7 @@ export default async function seedCommon(prisma, options = {}) {
             timestamp: complaintDate,
           },
         })
-        .catch(() => { });
+        .catch(() => {});
 
       if (status === "REGISTERED") continue;
 
@@ -840,7 +840,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: assignedDate,
             },
           })
-          .catch(() => { });
+          .catch(() => {});
       }
 
       if (["IN_PROGRESS", "RESOLVED", "CLOSED", "REOPENED"].includes(status)) {
@@ -855,7 +855,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: inProgressDate,
             },
           })
-          .catch(() => { });
+          .catch(() => {});
         // Add extra progress notes
         const reached = new Date(inProgressDate.getTime() + 45 * 60 * 1000);
         await prisma.statusLog
@@ -869,7 +869,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: reached,
             },
           })
-          .catch(() => { });
+          .catch(() => {});
         const materialsProcured = new Date(reached.getTime() + 60 * 60 * 1000);
         await prisma.statusLog
           .create({
@@ -882,7 +882,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: materialsProcured,
             },
           })
-          .catch(() => { });
+          .catch(() => {});
       }
 
       if (status === "RESOLVED" || status === "CLOSED") {
@@ -897,7 +897,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: resolvedDate,
             },
           })
-          .catch(() => { });
+          .catch(() => {});
         if (status === "CLOSED") {
           await prisma.statusLog
             .create({
@@ -910,7 +910,7 @@ export default async function seedCommon(prisma, options = {}) {
                 timestamp: closedDate,
               },
             })
-            .catch(() => { });
+            .catch(() => {});
         }
       }
 
@@ -918,10 +918,10 @@ export default async function seedCommon(prisma, options = {}) {
       try {
         const addImage = Math.random() > 0.4;
         const addPdf = Math.random() > 0.6;
-        
-        if (addImage && hasModel('attachment')) {
+
+        if (addImage && hasModel("attachment")) {
           const imgUrl = `https://images.unsplash.com/photo-1509395176047-4a66953fd231?w=800&q=80&sig=${complaintIndex}`;
-          
+
           // Handle different attachment field mappings between schemas
           const attachmentData = {
             complaintId: complaint.id,
@@ -932,20 +932,20 @@ export default async function seedCommon(prisma, options = {}) {
             size: Math.floor(120000 + Math.random() * 800000),
             url: imgUrl,
           };
-          
+
           // Handle field name differences between schemas
-          if (environment === 'prod') {
+          if (environment === "prod") {
             attachmentData.fileName = `photo_${complaintIndex}.jpg`;
             attachmentData.originalName = `site-photo-${complaintIndex}.jpg`;
           } else {
             attachmentData.fileName = `photo_${complaintIndex}.jpg`;
             attachmentData.originalName = `site-photo-${complaintIndex}.jpg`;
           }
-          
+
           await prisma.attachment.create({ data: attachmentData });
         }
-        
-        if (addPdf && hasModel('attachment')) {
+
+        if (addPdf && hasModel("attachment")) {
           const attachmentData = {
             complaintId: complaint.id,
             entityType: "COMPLAINT",
@@ -955,29 +955,29 @@ export default async function seedCommon(prisma, options = {}) {
             size: Math.floor(50000 + Math.random() * 200000),
             url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
           };
-          
+
           // Handle field name differences between schemas
-          if (environment === 'prod') {
+          if (environment === "prod") {
             attachmentData.fileName = `report_${complaintIndex}.pdf`;
             attachmentData.originalName = `inspection-report-${complaintIndex}.pdf`;
           } else {
             attachmentData.fileName = `report_${complaintIndex}.pdf`;
             attachmentData.originalName = `inspection-report-${complaintIndex}.pdf`;
           }
-          
+
           await prisma.attachment.create({ data: attachmentData });
         }
 
         // Complaint photos captured by maintenance (only if model exists)
         if (
-          hasModel('complaintPhoto') &&
+          hasModel("complaintPhoto") &&
           ["IN_PROGRESS", "RESOLVED", "CLOSED", "REOPENED"].includes(status) &&
           assignedTeamMember?.id
         ) {
           const photosCount = 1 + Math.floor(Math.random() * 2);
           for (let p = 0; p < photosCount; p++) {
             const photoUrl = `https://images.unsplash.com/photo-1541726260-e6b6a87b8026?w=1200&q=80&sig=${complaintIndex}-${p}`;
-            
+
             // Handle different field names between schemas
             const photoData = {
               complaintId: complaint.id,
@@ -988,20 +988,20 @@ export default async function seedCommon(prisma, options = {}) {
               size: Math.floor(100000 + Math.random() * 600000),
               description: p === 0 ? "Initial condition" : "Work in progress",
             };
-            
+
             // Handle field name differences between schemas
-            if (environment === 'prod') {
+            if (environment === "prod") {
               photoData.userId = assignedTeamMember.id; // prod schema uses userId
             } else {
               photoData.uploadedByTeamId = assignedTeamMember.id; // dev schema uses uploadedByTeamId
             }
-            
+
             await prisma.complaintPhoto.create({ data: photoData });
           }
         }
 
         // Materials used sample (only if model exists)
-        if (hasModel('material')) {
+        if (hasModel("material")) {
           const materialCatalog = [
             { name: "PVC Pipe", unit: "meter" },
             { name: "LED Bulb", unit: "piece" },
@@ -1025,7 +1025,9 @@ export default async function seedCommon(prisma, options = {}) {
                   quantity: 1 + Math.floor(Math.random() * 5),
                   unit: mat.unit,
                   notes:
-                    Math.random() > 0.5 ? `Used during fix step ${m + 1}` : null,
+                    Math.random() > 0.5
+                      ? `Used during fix step ${m + 1}`
+                      : null,
                   addedById: assignedTeamMember.id,
                 },
               });
@@ -1051,7 +1053,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: reopenedTimestamp,
             },
           })
-          .catch(() => { });
+          .catch(() => {});
         const reopenAssigned = new Date(
           reopenedTimestamp.getTime() + 2 * 60 * 60 * 1000,
         );
@@ -1066,7 +1068,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: reopenAssigned,
             },
           })
-          .catch(() => { });
+          .catch(() => {});
         const reopenInProgress = new Date(
           reopenAssigned.getTime() + 3 * 60 * 60 * 1000,
         );
@@ -1081,7 +1083,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: reopenInProgress,
             },
           })
-          .catch(() => { });
+          .catch(() => {});
       }
     }
   }
