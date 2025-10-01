@@ -28,6 +28,7 @@ async function main() {
     destructive: false,
     adminEmail,
     adminPassword,
+    environment: 'prod',
     target: {
       wards: 0,
       subZonesPerWard: 0,

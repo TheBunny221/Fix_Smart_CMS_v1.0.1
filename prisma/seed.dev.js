@@ -8,6 +8,7 @@ async function main() {
     destructive: true,
     adminEmail: "admin@cochinsmartcity.dev",
     adminPassword: "admin123",
+    environment: 'dev',
     target: {
       wards: 8,
       subZonesPerWard: 3,

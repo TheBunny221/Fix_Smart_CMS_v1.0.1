@@ -15,6 +15,7 @@ export default async function seedCommon(prisma, options = {}) {
     adminEmail = null,
     adminPassword = null,
     target = {},
+    environment = 'dev', // 'dev' or 'prod' to handle schema differences
   } = options;
 
   const targets = {
@@ -28,23 +29,39 @@ export default async function seedCommon(prisma, options = {}) {
 
   console.log(`🌱 Seeder started (destructive=${destructive})`);
 
+  // Helper function to check if a model exists in the current schema
+  const hasModel = (modelName) => {
+    try {
+      return prisma[modelName] !== undefined;
+    } catch {
+      return false;
+    }
+  };
+
   // If destructive, clear tables in order
   if (destructive) {
     console.log("🧹 Clearing ALL existing data...");
-    await prisma.oTPSession.deleteMany({});
-    await prisma.serviceRequestStatusLog.deleteMany({});
-    await prisma.statusLog.deleteMany({});
-    await prisma.notification.deleteMany({});
-    await prisma.message.deleteMany({});
-    await prisma.attachment.deleteMany({});
-    await prisma.serviceRequest.deleteMany({});
-    await prisma.complaint.deleteMany({});
-    await prisma.user.deleteMany({});
-    await prisma.subZone.deleteMany({});
-    await prisma.ward.deleteMany({});
-    await prisma.department.deleteMany({});
-    await prisma.systemConfig.deleteMany({});
-    await prisma.report.deleteMany({});
+    
+    // Clear tables that exist in both dev and prod schemas
+    if (hasModel('attachment')) await prisma.attachment.deleteMany({});
+    if (hasModel('oTPSession')) await prisma.oTPSession.deleteMany({});
+    if (hasModel('statusLog')) await prisma.statusLog.deleteMany({});
+    if (hasModel('complaint')) await prisma.complaint.deleteMany({});
+    if (hasModel('complaintType')) await prisma.complaintType.deleteMany({});
+    if (hasModel('user')) await prisma.user.deleteMany({});
+    if (hasModel('subZone')) await prisma.subZone.deleteMany({});
+    if (hasModel('ward')) await prisma.ward.deleteMany({});
+    if (hasModel('systemConfig')) await prisma.systemConfig.deleteMany({});
+
+    // Clear tables that might only exist in dev schema
+    if (hasModel('material')) await prisma.material.deleteMany({});
+    if (hasModel('complaintPhoto')) await prisma.complaintPhoto.deleteMany({});
+    if (hasModel('serviceRequestStatusLog')) await prisma.serviceRequestStatusLog.deleteMany({});
+    if (hasModel('notification')) await prisma.notification.deleteMany({});
+    if (hasModel('message')) await prisma.message.deleteMany({});
+    if (hasModel('serviceRequest')) await prisma.serviceRequest.deleteMany({});
+    if (hasModel('department')) await prisma.department.deleteMany({});
+    if (hasModel('report')) await prisma.report.deleteMany({});
   } else {
     console.log(
       "ℹ️ Non-destructive mode: will only create missing data to reach targets",
@@ -190,22 +207,22 @@ export default async function seedCommon(prisma, options = {}) {
     });
   }
 
-  // 2. Departments
-  console.log("🏢 Ensuring departments...");
-  const departments = [
-    { name: "Public Works", description: "Roads and infrastructure" },
-    { name: "Water Supply", description: "Water distribution" },
-    { name: "Electricity", description: "Power and lighting" },
-    { name: "Waste Management", description: "Sanitation and waste" },
-    { name: "IT Services", description: "Digital services" },
-  ];
-  for (const d of departments) {
-    await prisma.department.upsert({
-      where: { name: d.name },
-      update: { description: d.description },
-      create: d,
-    });
-  }
+  // // 2. Departments
+  // console.log("🏢 Ensuring departments...");
+  // const departments = [
+  //   { name: "Public Works", description: "Roads and infrastructure" },
+  //   { name: "Water Supply", description: "Water distribution" },
+  //   { name: "Electricity", description: "Power and lighting" },
+  //   { name: "Waste Management", description: "Sanitation and waste" },
+  //   { name: "IT Services", description: "Digital services" },
+  // ];
+  // for (const d of departments) {
+  //   await prisma.department.upsert({
+  //     where: { name: d.name },
+  //     update: { description: d.description },
+  //     create: d,
+  //   });
+  // }
 
   // 3. Wards
   console.log("🏘️ Ensuring wards...");
@@ -220,24 +237,22 @@ export default async function seedCommon(prisma, options = {}) {
     { name: "Ward 8 - Thevara", description: "Thevara" },
   ];
 
-  let existingWards = await prisma.ward.findMany();
-  if (destructive || existingWards.length === 0) {
-    // Create wards from canonical list if none or destructive
-    const created = [];
-    for (const w of wardsData) {
-      const ward = await prisma.ward.create({ data: w });
-      created.push(ward);
-    }
-    existingWards = created;
-  } else {
-    // Ensure canonical wards exist, create missing ones
-    const names = existingWards.map((w) => w.name);
-    for (const w of wardsData) {
-      if (!names.includes(w.name)) {
-        const ward = await prisma.ward.create({ data: w });
-        existingWards.push(ward);
-      }
-    }
+  // Use upsert for idempotent ward creation
+  const existingWards = [];
+  for (const w of wardsData) {
+    const ward = await prisma.ward.upsert({
+      where: { name: w.name },
+      update: {
+        description: w.description,
+        isActive: true,
+      },
+      create: {
+        name: w.name,
+        description: w.description,
+        isActive: true,
+      },
+    });
+    existingWards.push(ward);
   }
 
   // 4. Subzones
@@ -277,6 +292,7 @@ export default async function seedCommon(prisma, options = {}) {
             name: z,
             wardId: ward.id,
             description: `${z} in ${ward.name}`,
+            isActive: true,
           },
         });
       }
@@ -577,7 +593,7 @@ export default async function seedCommon(prisma, options = {}) {
       let parsed = {};
       try {
         parsed = JSON.parse(cfg.value || "{}");
-      } catch {}
+      } catch { }
       const name =
         parsed.name ||
         cfg.key
@@ -803,7 +819,7 @@ export default async function seedCommon(prisma, options = {}) {
             timestamp: complaintDate,
           },
         })
-        .catch(() => {});
+        .catch(() => { });
 
       if (status === "REGISTERED") continue;
 
@@ -819,7 +835,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: assignedDate,
             },
           })
-          .catch(() => {});
+          .catch(() => { });
       }
 
       if (["IN_PROGRESS", "RESOLVED", "CLOSED", "REOPENED"].includes(status)) {
@@ -834,7 +850,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: inProgressDate,
             },
           })
-          .catch(() => {});
+          .catch(() => { });
         // Add extra progress notes
         const reached = new Date(inProgressDate.getTime() + 45 * 60 * 1000);
         await prisma.statusLog
@@ -848,7 +864,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: reached,
             },
           })
-          .catch(() => {});
+          .catch(() => { });
         const materialsProcured = new Date(reached.getTime() + 60 * 60 * 1000);
         await prisma.statusLog
           .create({
@@ -861,7 +877,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: materialsProcured,
             },
           })
-          .catch(() => {});
+          .catch(() => { });
       }
 
       if (status === "RESOLVED" || status === "CLOSED") {
@@ -876,7 +892,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: resolvedDate,
             },
           })
-          .catch(() => {});
+          .catch(() => { });
         if (status === "CLOSED") {
           await prisma.statusLog
             .create({
@@ -889,7 +905,7 @@ export default async function seedCommon(prisma, options = {}) {
                 timestamp: closedDate,
               },
             })
-            .catch(() => {});
+            .catch(() => { });
         }
       }
 
@@ -897,89 +913,118 @@ export default async function seedCommon(prisma, options = {}) {
       try {
         const addImage = Math.random() > 0.4;
         const addPdf = Math.random() > 0.6;
-        if (addImage) {
+        
+        if (addImage && hasModel('attachment')) {
           const imgUrl = `https://images.unsplash.com/photo-1509395176047-4a66953fd231?w=800&q=80&sig=${complaintIndex}`;
-          await prisma.attachment.create({
-            data: {
-              complaintId: complaint.id,
-              entityType: "COMPLAINT",
-              entityId: complaint.id,
-              uploadedById: complaint.submittedById,
-              fileName: `photo_${complaintIndex}.jpg`,
-              originalName: `site-photo-${complaintIndex}.jpg`,
-              mimeType: "image/jpeg",
-              size: Math.floor(120000 + Math.random() * 800000),
-              url: imgUrl,
-            },
-          });
+          
+          // Handle different attachment field mappings between schemas
+          const attachmentData = {
+            complaintId: complaint.id,
+            entityType: "COMPLAINT",
+            entityId: complaint.id,
+            uploadedById: complaint.submittedById,
+            mimeType: "image/jpeg",
+            size: Math.floor(120000 + Math.random() * 800000),
+            url: imgUrl,
+          };
+          
+          // Handle field name differences between schemas
+          if (environment === 'prod') {
+            attachmentData.fileName = `photo_${complaintIndex}.jpg`;
+            attachmentData.originalName = `site-photo-${complaintIndex}.jpg`;
+          } else {
+            attachmentData.fileName = `photo_${complaintIndex}.jpg`;
+            attachmentData.originalName = `site-photo-${complaintIndex}.jpg`;
+          }
+          
+          await prisma.attachment.create({ data: attachmentData });
         }
-        if (addPdf) {
-          await prisma.attachment.create({
-            data: {
-              complaintId: complaint.id,
-              entityType: "COMPLAINT",
-              entityId: complaint.id,
-              uploadedById: complaint.submittedById,
-              fileName: `report_${complaintIndex}.pdf`,
-              originalName: `inspection-report-${complaintIndex}.pdf`,
-              mimeType: "application/pdf",
-              size: Math.floor(50000 + Math.random() * 200000),
-              url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-            },
-          });
+        
+        if (addPdf && hasModel('attachment')) {
+          const attachmentData = {
+            complaintId: complaint.id,
+            entityType: "COMPLAINT",
+            entityId: complaint.id,
+            uploadedById: complaint.submittedById,
+            mimeType: "application/pdf",
+            size: Math.floor(50000 + Math.random() * 200000),
+            url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+          };
+          
+          // Handle field name differences between schemas
+          if (environment === 'prod') {
+            attachmentData.fileName = `report_${complaintIndex}.pdf`;
+            attachmentData.originalName = `inspection-report-${complaintIndex}.pdf`;
+          } else {
+            attachmentData.fileName = `report_${complaintIndex}.pdf`;
+            attachmentData.originalName = `inspection-report-${complaintIndex}.pdf`;
+          }
+          
+          await prisma.attachment.create({ data: attachmentData });
         }
 
-        // Complaint photos captured by maintenance
+        // Complaint photos captured by maintenance (only if model exists)
         if (
+          hasModel('complaintPhoto') &&
           ["IN_PROGRESS", "RESOLVED", "CLOSED", "REOPENED"].includes(status) &&
           assignedTeamMember?.id
         ) {
           const photosCount = 1 + Math.floor(Math.random() * 2);
           for (let p = 0; p < photosCount; p++) {
             const photoUrl = `https://images.unsplash.com/photo-1541726260-e6b6a87b8026?w=1200&q=80&sig=${complaintIndex}-${p}`;
-            await prisma.complaintPhoto.create({
-              data: {
-                complaintId: complaint.id,
-                uploadedByTeamId: assignedTeamMember.id,
-                photoUrl,
-                fileName: `progress_${complaintIndex}_${p}.jpg`,
-                originalName: `progress_${complaintIndex}_${p}.jpg`,
-                mimeType: "image/jpeg",
-                size: Math.floor(100000 + Math.random() * 600000),
-                description: p === 0 ? "Initial condition" : "Work in progress",
-              },
-            });
+            
+            // Handle different field names between schemas
+            const photoData = {
+              complaintId: complaint.id,
+              photoUrl,
+              fileName: `progress_${complaintIndex}_${p}.jpg`,
+              originalName: `progress_${complaintIndex}_${p}.jpg`,
+              mimeType: "image/jpeg",
+              size: Math.floor(100000 + Math.random() * 600000),
+              description: p === 0 ? "Initial condition" : "Work in progress",
+            };
+            
+            // Handle field name differences between schemas
+            if (environment === 'prod') {
+              photoData.userId = assignedTeamMember.id; // prod schema uses userId
+            } else {
+              photoData.uploadedByTeamId = assignedTeamMember.id; // dev schema uses uploadedByTeamId
+            }
+            
+            await prisma.complaintPhoto.create({ data: photoData });
           }
         }
 
-        // Materials used sample
-        const materialCatalog = [
-          { name: "PVC Pipe", unit: "meter" },
-          { name: "LED Bulb", unit: "piece" },
-          { name: "Copper Wire", unit: "meter" },
-          { name: "Cement", unit: "kg" },
-          { name: "Drain Cleaner", unit: "liter" },
-          { name: "Fuse", unit: "piece" },
-        ];
-        if (
-          ["IN_PROGRESS", "RESOLVED", "CLOSED"].includes(status) &&
-          assignedTeamMember?.id &&
-          Math.random() > 0.3
-        ) {
-          const usedCount = 1 + Math.floor(Math.random() * 3);
-          for (let m = 0; m < usedCount; m++) {
-            const mat = randomFrom(materialCatalog);
-            await prisma.material.create({
-              data: {
-                complaintId: complaint.id,
-                materialName: mat.name,
-                quantity: 1 + Math.floor(Math.random() * 5),
-                unit: mat.unit,
-                notes:
-                  Math.random() > 0.5 ? `Used during fix step ${m + 1}` : null,
-                addedById: assignedTeamMember.id,
-              },
-            });
+        // Materials used sample (only if model exists)
+        if (hasModel('material')) {
+          const materialCatalog = [
+            { name: "PVC Pipe", unit: "meter" },
+            { name: "LED Bulb", unit: "piece" },
+            { name: "Copper Wire", unit: "meter" },
+            { name: "Cement", unit: "kg" },
+            { name: "Drain Cleaner", unit: "liter" },
+            { name: "Fuse", unit: "piece" },
+          ];
+          if (
+            ["IN_PROGRESS", "RESOLVED", "CLOSED"].includes(status) &&
+            assignedTeamMember?.id &&
+            Math.random() > 0.3
+          ) {
+            const usedCount = 1 + Math.floor(Math.random() * 3);
+            for (let m = 0; m < usedCount; m++) {
+              const mat = randomFrom(materialCatalog);
+              await prisma.material.create({
+                data: {
+                  complaintId: complaint.id,
+                  materialName: mat.name,
+                  quantity: 1 + Math.floor(Math.random() * 5),
+                  unit: mat.unit,
+                  notes:
+                    Math.random() > 0.5 ? `Used during fix step ${m + 1}` : null,
+                  addedById: assignedTeamMember.id,
+                },
+              });
+            }
           }
         }
       } catch (e) {
@@ -1001,7 +1046,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: reopenedTimestamp,
             },
           })
-          .catch(() => {});
+          .catch(() => { });
         const reopenAssigned = new Date(
           reopenedTimestamp.getTime() + 2 * 60 * 60 * 1000,
         );
@@ -1016,7 +1061,7 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: reopenAssigned,
             },
           })
-          .catch(() => {});
+          .catch(() => { });
         const reopenInProgress = new Date(
           reopenAssigned.getTime() + 3 * 60 * 60 * 1000,
         );
@@ -1031,90 +1076,98 @@ export default async function seedCommon(prisma, options = {}) {
               timestamp: reopenInProgress,
             },
           })
-          .catch(() => {});
+          .catch(() => { });
       }
     }
   }
 
-  // 8. Service Requests
-  console.log(
-    `🔧 Ensuring sample service requests (target ${targets.serviceRequests})...`,
-  );
-  const existingSRCount = await prisma.serviceRequest.count();
-  const srNeeded = Math.max(0, targets.serviceRequests - existingSRCount);
-  if (srNeeded === 0) {
-    console.log(
-      `ℹ�� Service requests already meet target (${existingSRCount})`,
-    );
-  } else {
-    const serviceTypes = [
-      "BIRTH_CERTIFICATE",
-      "DEATH_CERTIFICATE",
-      "TRADE_LICENSE",
-      "BUILDING_PERMIT",
-      "WATER_CONNECTION",
-      "ELECTRICITY_CONNECTION",
-    ];
-    for (let i = 0; i < srNeeded; i++) {
-      const randomWard = randomFrom(existingWards);
-      const randomCitizen = randomFrom(citizens);
-      const serviceType = randomFrom(serviceTypes);
-      const statuses = [
-        "SUBMITTED",
-        "VERIFIED",
-        "PROCESSING",
-        "APPROVED",
-        "COMPLETED",
-      ];
-      const status = randomFrom(statuses);
-      await prisma.serviceRequest.create({
-        data: {
-          title: `${serviceType.replace(/_/g, " ")} Application`,
-          serviceType,
-          description: `Application for ${serviceType.toLowerCase().replace(/_/g, " ")}`,
-          status,
-          priority: "MEDIUM",
-          wardId: randomWard.id,
-          area: randomWard.name.split(" - ")[1] || randomWard.name,
-          address: `Sample address in ${randomWard.name}`,
-          contactName: randomCitizen.fullName,
-          contactEmail: randomCitizen.email,
-          contactPhone: randomCitizen.phoneNumber,
-          submittedById: randomCitizen.id,
-          submittedOn: new Date(
-            Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000,
-          ),
-          expectedCompletion: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-        },
-      });
-    }
-  }
+  // // 8. Service Requests (only if model exists)
+  // if (hasModel('serviceRequest')) {
+  //   console.log(
+  //     `🔧 Ensuring sample service requests (target ${targets.serviceRequests})...`,
+  //   );
+  //   const existingSRCount = await prisma.serviceRequest.count();
+  //   const srNeeded = Math.max(0, targets.serviceRequests - existingSRCount);
+  //   if (srNeeded === 0) {
+  //     console.log(
+  //       `ℹ️ Service requests already meet target (${existingSRCount})`,
+  //     );
+  //   } else {
+  //     const serviceTypes = [
+  //       "BIRTH_CERTIFICATE",
+  //       "DEATH_CERTIFICATE",
+  //       "TRADE_LICENSE",
+  //       "BUILDING_PERMIT",
+  //       "WATER_CONNECTION",
+  //       "ELECTRICITY_CONNECTION",
+  //     ];
+  //     for (let i = 0; i < srNeeded; i++) {
+  //       const randomWard = randomFrom(existingWards);
+  //       const randomCitizen = randomFrom(citizens);
+  //       const serviceType = randomFrom(serviceTypes);
+  //       const statuses = [
+  //         "SUBMITTED",
+  //         "VERIFIED",
+  //         "PROCESSING",
+  //         "APPROVED",
+  //         "COMPLETED",
+  //       ];
+  //       const status = randomFrom(statuses);
+  //       await prisma.serviceRequest.create({
+  //         data: {
+  //           title: `${serviceType.replace(/_/g, " ")} Application`,
+  //           serviceType,
+  //           description: `Application for ${serviceType.toLowerCase().replace(/_/g, " ")}`,
+  //           status,
+  //           priority: "MEDIUM",
+  //           wardId: randomWard.id,
+  //           area: randomWard.name.split(" - ")[1] || randomWard.name,
+  //           address: `Sample address in ${randomWard.name}`,
+  //           contactName: randomCitizen.fullName,
+  //           contactEmail: randomCitizen.email,
+  //           contactPhone: randomCitizen.phoneNumber,
+  //           submittedById: randomCitizen.id,
+  //           submittedOn: new Date(
+  //             Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000,
+  //           ),
+  //           expectedCompletion: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+  //         },
+  //       });
+  //     }
+  //   }
+  // } else {
+  //   console.log("ℹ️ ServiceRequest model not available in current schema, skipping...");
+  // }
 
-  // 9. Notifications: ensure some for first 3 citizens
-  console.log("🔔 Ensuring notifications for sample citizens...");
-  const allCitizens = await prisma.user.findMany({
-    where: { role: "CITIZEN" },
-    take: 3,
-  });
-  for (const c of allCitizens) {
-    const exists = await prisma.notification.findFirst({
-      where: {
-        userId: c.id,
-        title: { contains: "Welcome to NLC-CMS" },
-      },
-    });
-    if (!exists) {
-      await prisma.notification.create({
-        data: {
-          userId: c.id,
-          type: "IN_APP",
-          title: "Welcome to NLC-CMS",
-          message: "Thank you for registering with our platform.",
-          sentAt: new Date(),
-        },
-      });
-    }
-  }
+  // // 9. Notifications: ensure some for first 3 citizens (only if model exists)
+  // if (hasModel('notification')) {
+  //   console.log("🔔 Ensuring notifications for sample citizens...");
+  //   const allCitizens = await prisma.user.findMany({
+  //     where: { role: "CITIZEN" },
+  //     take: 3,
+  //   });
+  //   for (const c of allCitizens) {
+  //     const exists = await prisma.notification.findFirst({
+  //       where: {
+  //         userId: c.id,
+  //         title: { contains: "Welcome to NLC-CMS" },
+  //       },
+  //     });
+  //     if (!exists) {
+  //       await prisma.notification.create({
+  //         data: {
+  //           userId: c.id,
+  //           type: "IN_APP",
+  //           title: "Welcome to NLC-CMS",
+  //           message: "Thank you for registering with our platform.",
+  //           sentAt: new Date(),
+  //         },
+  //       });
+  //     }
+  //   }
+  // } else {
+  //   console.log("ℹ️ Notification model not available in current schema, skipping...");
+  // }
 
   // 10. Dedicated demo complaints for maintenance1 (for dashboard validation)
   try {
