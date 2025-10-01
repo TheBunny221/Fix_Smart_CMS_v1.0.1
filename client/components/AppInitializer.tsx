@@ -11,7 +11,7 @@ import { useGetCurrentUserQuery } from "../store/api/authApi";
 // Error logging utility - avoid accessing error.data to prevent response body issues
 const logAuthError = (context: string, error: any) => {
   console.error(`Auth Error - ${context}`, {
-    error: error?.message || 'Unknown error',
+    error: error?.message || "Unknown error",
     status: error?.status,
     context,
   });
@@ -25,7 +25,7 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
   const dispatch = useAppDispatch();
   const [isInitialized, setIsInitialized] = useState(false);
   const { appName } = useSystemConfig();
-  
+
   // Use ref to track if initialization has already run
   const hasInitializedRef = useRef(false);
   const cleanupFunctionsRef = useRef<(() => void)[]>([]);
@@ -36,13 +36,13 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
   // Get token from localStorage and check Redux state
   const token = localStorage.getItem("token");
   const hasValidToken = Boolean(
-    token && token !== "null" && token !== "undefined"
+    token && token !== "null" && token !== "undefined",
   );
 
   // Check if Redux already has auth state
   const reduxAuth = useAppSelector((state) => state.auth);
   const isAlreadyAuthenticated = Boolean(
-    reduxAuth.isAuthenticated && reduxAuth.user && reduxAuth.token
+    reduxAuth.isAuthenticated && reduxAuth.user && reduxAuth.token,
   );
 
   // Use RTK Query to get current user if we have a token but are not already authenticated
@@ -59,12 +59,12 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     if (hasInitializedRef.current) {
       return;
     }
-    
+
     const initializeApp = async () => {
       try {
         // Mark as initialized immediately to prevent race conditions
         hasInitializedRef.current = true;
-        
+
         // Initialize theme
         try {
           dispatch(initializeTheme());
@@ -78,7 +78,6 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
         } catch (langError) {
           console.warn("Language initialization failed:", langError);
         }
-
 
         // Setup online/offline listeners with error handling
         const handleOnline = () => {
@@ -102,14 +101,17 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
         try {
           window.addEventListener("online", handleOnline);
           window.addEventListener("offline", handleOffline);
-          
+
           // Store cleanup function
           cleanupFunctionsRef.current.push(() => {
             window.removeEventListener("online", handleOnline);
             window.removeEventListener("offline", handleOffline);
           });
         } catch (listenerError) {
-          console.warn("Failed to add online/offline listeners:", listenerError);
+          console.warn(
+            "Failed to add online/offline listeners:",
+            listenerError,
+          );
         }
       } finally {
         // Mark as initialized
@@ -118,19 +120,19 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
     };
 
     initializeApp();
-    
+
     // Cleanup function
     return () => {
-      cleanupFunctionsRef.current.forEach(cleanup => cleanup());
+      cleanupFunctionsRef.current.forEach((cleanup) => cleanup());
     };
   }, []); // Empty dependency array - initialization should only run once
-  
+
   // Separate effect for handling auth state changes
   useEffect(() => {
     if (!hasValidToken || isAlreadyAuthenticated) {
       return;
     }
-    
+
     if (token && userResponse?.data?.user) {
       // Token is valid and we have user data - set credentials
       dispatch(
@@ -143,16 +145,23 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
       // Handle auth errors
       const error = userError as any;
       logAuthError("User Query Failed", error);
-      
+
       const isServerError = error.status >= 500;
       const isUnauthorized = error.status === 401;
-      
+
       if (!isServerError && (isUnauthorized || error.status < 500)) {
         dispatch(clearCredentials());
         localStorage.removeItem("token");
       }
     }
-  }, [userResponse, userError, hasValidToken, isAlreadyAuthenticated, token, dispatch]);
+  }, [
+    userResponse,
+    userError,
+    hasValidToken,
+    isAlreadyAuthenticated,
+    token,
+    dispatch,
+  ]);
 
   // Show loading screen while initializing or checking user (but not if already authenticated)
   if (
