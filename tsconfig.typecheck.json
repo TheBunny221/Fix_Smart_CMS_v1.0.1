@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "typeRoots": ["./types", "./node_modules/@types"]
+  },
+  "include": [
+    "server",
+    "shared",
+    "prisma",
+    "vite.config.ts",
+    "vite.config.server.ts",
+    "vitest.config.ts",
+    "types"
+  ],
+  "exclude": [
+    "client",
+    "node_modules",
+    "dist"
+  ]
+}

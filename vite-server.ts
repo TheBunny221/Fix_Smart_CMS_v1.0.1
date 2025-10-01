@@ -1,3 +1,5 @@
+/// <reference path="./types/server-js-modules.d.ts" />
+
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";

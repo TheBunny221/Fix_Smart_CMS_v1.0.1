@@ -28,3 +28,9 @@ dist-ssr
 uploads/*
 
 .env
+
+# Ignore compiled JS artifacts in source folders
+client/components/**/*.js
+client/components/**/*.js.map
+client/**/*.js
+client/**/*.js.map

@@ -5,7 +5,14 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { logout } from "../store/slices/authSlice";
 import { setLanguage } from "../store/slices/languageSlice";
-import { toggleSidebar, setSidebarOpen } from "../store/slices/uiSlice";
+import {
+  toggleSidebar,
+  setSidebarOpen,
+  markNotificationAsRead,
+  removeNotification,
+  markAllNotificationsAsRead,
+  clearNotifications,
+} from "../store/slices/uiSlice";
 import {
   DropdownMenu,
   DropdownMenuContent,
