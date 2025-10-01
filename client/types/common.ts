@@ -40,10 +40,18 @@ export interface ComplaintPhoto {
   originalName?: string;
 }
 
+export type ComplaintStatus =
+  | "REGISTERED"
+  | "ASSIGNED"
+  | "IN_PROGRESS"
+  | "RESOLVED"
+  | "CLOSED"
+  | "REOPENED";
+
 export interface ComplaintStatusLog {
   id?: string;
-  fromStatus?: string;
-  toStatus: string;
+  fromStatus?: ComplaintStatus;
+  toStatus: ComplaintStatus;
   timestamp?: string;
   comment?: string;
   updatedBy?: UserSummary | null;
@@ -56,7 +64,7 @@ export interface Complaint {
   description?: string;
   type?: string;
   priority?: string;
-  status?: string;
+  status?: ComplaintStatus;
   submittedOn?: string;
   assignedOn?: string;
   remarks?: string;
