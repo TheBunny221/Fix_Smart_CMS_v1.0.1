@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useMemo, useCallback } from "react";
-import type { PointerDownOutsideEvent } from "@radix-ui/react-dialog";
+import type { PointerDownOutsideEvent } from "@radix-ui/react-dismissable-layer";
 import { cn } from "../lib/utils";
 import {
   useFocusTrap,
