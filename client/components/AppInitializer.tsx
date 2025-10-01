@@ -35,7 +35,9 @@ const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
 
   // Get token from localStorage and check Redux state
   const token = localStorage.getItem("token");
-  const hasValidToken = token && token !== "null" && token !== "undefined";
+  const hasValidToken = Boolean(
+    token && token !== "null" && token !== "undefined"
+  );
 
   // Check if Redux already has auth state
   const reduxAuth = useAppSelector((state) => state.auth);
