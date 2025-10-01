@@ -1,0 +1,12 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useAppSelector } from "../store/hooks";
+import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+import { Phone, Mail, Clock, MapPin } from "lucide-react";
+const ContactInfoCard = ({ title }) => {
+    const { translations } = useAppSelector((s) => s.language);
+    const { getConfig } = useSystemConfig();
+    const headerTitle = title || translations?.guest?.supportContact || "Need Help? Contact Us";
+    return (_jsxs(Card, { children: [_jsx(CardHeader, { children: _jsxs(CardTitle, { className: "flex items-center space-x-2", children: [_jsx(Phone, { className: "h-5 w-5 text-green-500" }), _jsx("span", { children: headerTitle })] }) }), _jsx(CardContent, { children: _jsxs("div", { className: "space-y-4", children: [_jsxs("div", { className: "flex items-center space-x-3", children: [_jsx(Phone, { className: "h-5 w-5 text-green-500 flex-shrink-0" }), _jsxs("div", { children: [_jsx("div", { className: "font-medium", children: translations?.guest?.supportContact || "Helpline" }), _jsx("div", { className: "text-sm text-gray-600", children: getConfig("CONTACT_HELPLINE", "1800-XXX-XXXX") })] })] }), _jsxs("div", { className: "flex items-center space-x-3", children: [_jsx(Mail, { className: "h-5 w-5 text-blue-500 flex-shrink-0" }), _jsxs("div", { children: [_jsx("div", { className: "font-medium", children: translations?.auth?.email || "Email Support" }), _jsx("div", { className: "text-sm text-gray-600", children: getConfig("CONTACT_EMAIL", "support@cochinsmartcity.in") })] })] }), _jsxs("div", { className: "flex items-center space-x-3", children: [_jsx(Clock, { className: "h-5 w-5 text-orange-500 flex-shrink-0" }), _jsxs("div", { children: [_jsx("div", { className: "font-medium", children: translations?.common?.time || "Office Hours" }), _jsx("div", { className: "text-sm text-gray-600", children: getConfig("CONTACT_OFFICE_HOURS", "Monday - Friday: 9 AM - 6 PM") })] })] }), _jsxs("div", { className: "flex items-center space-x-3", children: [_jsx(MapPin, { className: "h-5 w-5 text-purple-500 flex-shrink-0" }), _jsxs("div", { children: [_jsx("div", { className: "font-medium", children: translations?.complaints?.location || "Office Location" }), _jsx("div", { className: "text-sm text-gray-600", children: getConfig("CONTACT_OFFICE_ADDRESS", "Cochin Corporation Office") })] })] })] }) })] }));
+};
+export default ContactInfoCard;
