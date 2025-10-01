@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../store/hooks";
 import { useGetComplaintsQuery } from "../store/api/complaintsApi";
+import type { Complaint, ApiResponse } from "@/types/common";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -76,12 +77,10 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
     refetch,
   } = useGetComplaintsQuery(queryParams);
 
-  // Handle different response structures
-  const complaints = Array.isArray(complaintsResponse?.data?.complaints)
-    ? complaintsResponse.data.complaints
-    : Array.isArray(complaintsResponse?.data)
-      ? complaintsResponse.data
-      : [];
+  // Normalize response to array of complaints
+  const complaints: Complaint[] = Array.isArray(complaintsResponse?.data)
+    ? (complaintsResponse!.data as Complaint[])
+    : [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -147,10 +146,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center">
             <FileText className="h-5 w-5 mr-2" />
-            {title} (
-            {complaintsResponse?.data?.pagination?.totalItems ??
-              complaints.length}
-            )
+            {title} ({complaintsResponse?.meta?.total ?? complaints.length})
           </span>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-1" />
@@ -217,7 +213,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {complaints.map((complaint) => (
+                {complaints.map((complaint: Complaint) => (
                   <TableRow key={complaint.id}>
                     <TableCell className="font-medium">
                       #{complaint.complaintId || complaint.id.slice(-6)}
