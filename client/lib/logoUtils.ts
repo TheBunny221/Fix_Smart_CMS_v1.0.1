@@ -159,5 +159,6 @@ export interface LogoProps {
   context?: "nav" | "auth" | "footer" | "mobile";
   className?: string;
   showText?: boolean;
-  fallbackIcon?: React.ComponentType<{ className?: string }>;
+  // With exactOptionalPropertyTypes, ensure compatibility with lucide-react icons
+  fallbackIcon?: React.ComponentType<{ className?: string | undefined }>;
 }
