@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo, useCallback } from "react";
 import { cn } from "../lib/utils";
 import {
   useFocusTrap,
@@ -15,6 +15,10 @@ import {
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { X, AlertTriangle, CheckCircle, Info, XCircle } from "lucide-react";
+
+const isHTMLElement = <T extends HTMLElement>(
+  element: T | null,
+): element is T => element !== null;
 
 // Accessible Modal/Dialog Component
 interface AccessibleDialogProps {
@@ -66,6 +70,23 @@ export const AccessibleDialog: React.FC<AccessibleDialogProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, onClose, closeOnEscape]);
 
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (!open) {
+        onClose();
+      }
+    },
+    [onClose],
+  );
+
+  const preventPointerDownOutside = useCallback<
+    NonNullable<
+      React.ComponentProps<typeof DialogContent>["onPointerDownOutside"]
+    >
+  >((event) => {
+    event.preventDefault();
+  }, []);
+
   const sizeClasses = {
     sm: "max-w-sm",
     md: "max-w-md",
@@ -74,15 +95,12 @@ export const AccessibleDialog: React.FC<AccessibleDialogProps> = ({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={closeOnOverlayClick ? onClose : undefined}
-    >
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(sizeClasses[size], className)}
-        onPointerDownOutside={
-          closeOnOverlayClick ? undefined : (e) => e.preventDefault()
-        }
+        {...(!closeOnOverlayClick && {
+          onPointerDownOutside: preventPointerDownOutside,
+        })}
         aria-labelledby="dialog-title"
         aria-describedby={description ? "dialog-description" : undefined}
       >
@@ -283,7 +301,7 @@ export const AccessibleTabs: React.FC<AccessibleTabsProps> = ({
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const enabledTabs = tabs.filter((tab) => !tab.disabled);
-  const enabledTabElements = tabRefs.current.filter(Boolean);
+  const enabledTabElements = tabRefs.current.filter(isHTMLElement);
 
   useKeyboardNavigation(enabledTabElements, {
     orientation,
@@ -385,7 +403,6 @@ export const AccessibleMenu: React.FC<AccessibleMenuProps> = ({
   placement = "bottom-start",
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const menuRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const { saveFocus, restoreFocus } = useFocusManagement();
@@ -393,18 +410,29 @@ export const AccessibleMenu: React.FC<AccessibleMenuProps> = ({
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
   const enabledItems = items.filter((item) => !item.disabled);
+  const itemElements = itemRefs.current.filter(isHTMLElement);
 
-  useKeyboardNavigation(itemRefs.current.filter(Boolean), {
-    orientation: "vertical",
-    onSelect: (index) => {
-      const item = enabledItems[index];
-      if (item) {
-        item.onClick();
-        setIsOpen(false);
-      }
+  const { currentIndex, setCurrentIndex } = useKeyboardNavigation(
+    itemElements,
+    {
+      orientation: "vertical",
+      onSelect: (index) => {
+        const item = enabledItems[index];
+        if (item) {
+          item.onClick();
+          setIsOpen(false);
+          setCurrentIndex(-1);
+        }
+      },
+      onEscape: () => setIsOpen(false),
     },
-    onEscape: () => setIsOpen(false),
-  });
+  );
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentIndex(-1);
+    }
+  }, [isOpen, setCurrentIndex]);
 
   useEffect(() => {
     if (isOpen) {
@@ -415,12 +443,17 @@ export const AccessibleMenu: React.FC<AccessibleMenuProps> = ({
   }, [isOpen, saveFocus, restoreFocus]);
 
   const handleTriggerClick = () => {
-    setIsOpen(!isOpen);
+    const nextIsOpen = !isOpen;
+    setIsOpen(nextIsOpen);
+    if (nextIsOpen) {
+      setCurrentIndex(enabledItems.length > 0 ? 0 : -1);
+    }
   };
 
   const handleItemClick = (item: MenuItem) => {
     item.onClick();
     setIsOpen(false);
+    setCurrentIndex(-1);
   };
 
   const placementClasses = {
@@ -470,8 +503,18 @@ export const AccessibleMenu: React.FC<AccessibleMenuProps> = ({
                     "flex w-full items-center px-3 py-2 text-sm text-left",
                     "hover:bg-gray-100 focus:bg-gray-100 focus:outline-none",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
-                    focusedIndex === enabledIndex && "bg-gray-100",
+                    currentIndex === enabledIndex && "bg-gray-100",
                   )}
+                  onFocus={() =>
+                    enabledIndex >= 0
+                      ? setCurrentIndex(enabledIndex)
+                      : undefined
+                  }
+                  onMouseEnter={() =>
+                    enabledIndex >= 0
+                      ? setCurrentIndex(enabledIndex)
+                      : undefined
+                  }
                 >
                   {item.icon && (
                     <span className="mr-3 flex-shrink-0" aria-hidden="true">
