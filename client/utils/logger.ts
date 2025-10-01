@@ -6,7 +6,7 @@ interface LogMeta {
   component?: string;
   action?: string;
   error?: Error;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface LogEntry {
