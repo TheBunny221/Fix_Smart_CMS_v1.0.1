@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState, AppDispatch } from "@/store/store";
+import { RootState, AppDispatch } from "@/store";
 import { fetchWardDashboardStats } from "@/store/slices/complaintsSlice";
 
 const AllComplaintCard = ({ wardId }: { wardId: string }) => {
