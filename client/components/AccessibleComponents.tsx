@@ -509,10 +509,14 @@ export const AccessibleMenu: React.FC<AccessibleMenuProps> = ({
                     currentIndex === enabledIndex && "bg-gray-100",
                   )}
                   onFocus={() =>
-                    enabledIndex >= 0 ? setCurrentIndex(enabledIndex) : undefined
+                    enabledIndex >= 0
+                      ? setCurrentIndex(enabledIndex)
+                      : undefined
                   }
                   onMouseEnter={() =>
-                    enabledIndex >= 0 ? setCurrentIndex(enabledIndex) : undefined
+                    enabledIndex >= 0
+                      ? setCurrentIndex(enabledIndex)
+                      : undefined
                   }
                 >
                   {item.icon && (
