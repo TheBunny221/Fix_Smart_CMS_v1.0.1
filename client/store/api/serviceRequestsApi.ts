@@ -7,7 +7,13 @@ export interface ServiceRequest {
   title: string;
   serviceType: string;
   description: string;
-  status: "SUBMITTED" | "VERIFIED" | "PROCESSING" | "APPROVED" | "REJECTED" | "COMPLETED";
+  status:
+    | "SUBMITTED"
+    | "VERIFIED"
+    | "PROCESSING"
+    | "APPROVED"
+    | "REJECTED"
+    | "COMPLETED";
   priority: "NORMAL" | "URGENT" | "EMERGENCY";
   wardId: string;
   area: string;
@@ -116,7 +122,10 @@ export interface ServiceRequestFilters {
 export const serviceRequestsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get all service requests with filters
-    getServiceRequests: builder.query<ApiResponse<ServiceRequest[]>, ServiceRequestFilters>({
+    getServiceRequests: builder.query<
+      ApiResponse<ServiceRequest[]>,
+      ServiceRequestFilters
+    >({
       query: (filters = {}) => {
         const params = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
@@ -136,7 +145,10 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
     }),
 
     // Create new service request
-    createServiceRequest: builder.mutation<ApiResponse<ServiceRequest>, ServiceRequestCreateData>({
+    createServiceRequest: builder.mutation<
+      ApiResponse<ServiceRequest>,
+      ServiceRequestCreateData
+    >({
       query: (data) => ({
         url: "service-requests",
         method: "POST",
@@ -146,7 +158,10 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
     }),
 
     // Update service request
-    updateServiceRequest: builder.mutation<ApiResponse<ServiceRequest>, { id: string; data: ServiceRequestUpdateData }>({
+    updateServiceRequest: builder.mutation<
+      ApiResponse<ServiceRequest>,
+      { id: string; data: ServiceRequestUpdateData }
+    >({
       query: ({ id, data }) => ({
         url: `service-requests/${id}`,
         method: "PUT",
@@ -177,7 +192,10 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
     }),
 
     // Get service request statistics
-    getServiceRequestStats: builder.query<ApiResponse<ServiceRequestStats>, { userId?: string; wardId?: string }>({
+    getServiceRequestStats: builder.query<
+      ApiResponse<ServiceRequestStats>,
+      { userId?: string; wardId?: string }
+    >({
       query: (params = {}) => {
         const searchParams = new URLSearchParams();
         Object.entries(params).forEach(([key, value]) => {
@@ -189,7 +207,10 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
     }),
 
     // Assign service request to user
-    assignServiceRequest: builder.mutation<ApiResponse<ServiceRequest>, { id: string; assignedToId: string; comment?: string }>({
+    assignServiceRequest: builder.mutation<
+      ApiResponse<ServiceRequest>,
+      { id: string; assignedToId: string; comment?: string }
+    >({
       query: ({ id, assignedToId, comment }) => ({
         url: `service-requests/${id}/assign`,
         method: "POST",
@@ -202,7 +223,10 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
     }),
 
     // Update service request status
-    updateServiceRequestStatus: builder.mutation<ApiResponse<ServiceRequest>, { id: string; status: ServiceRequest["status"]; comment?: string }>({
+    updateServiceRequestStatus: builder.mutation<
+      ApiResponse<ServiceRequest>,
+      { id: string; status: ServiceRequest["status"]; comment?: string }
+    >({
       query: ({ id, status, comment }) => ({
         url: `service-requests/${id}/status`,
         method: "POST",
@@ -215,7 +239,10 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
     }),
 
     // Submit feedback for completed service request
-    submitServiceRequestFeedback: builder.mutation<ApiResponse<ServiceRequest>, { id: string; rating: number; feedback?: string }>({
+    submitServiceRequestFeedback: builder.mutation<
+      ApiResponse<ServiceRequest>,
+      { id: string; rating: number; feedback?: string }
+    >({
       query: ({ id, rating, feedback }) => ({
         url: `service-requests/${id}/feedback`,
         method: "POST",
@@ -228,13 +255,24 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
     }),
 
     // Get service request status logs
-    getServiceRequestStatusLogs: builder.query<ApiResponse<ServiceRequestStatusLog[]>, string>({
+    getServiceRequestStatusLogs: builder.query<
+      ApiResponse<ServiceRequestStatusLog[]>,
+      string
+    >({
       query: (id) => `service-requests/${id}/status-logs`,
       providesTags: (result, error, id) => [{ type: "ServiceRequest", id }],
     }),
 
     // Guest service request submission
-    submitGuestServiceRequest: builder.mutation<ApiResponse<{ serviceRequestId: string; trackingNumber: string; email: string; expiresAt: string }>, ServiceRequestCreateData>({
+    submitGuestServiceRequest: builder.mutation<
+      ApiResponse<{
+        serviceRequestId: string;
+        trackingNumber: string;
+        email: string;
+        expiresAt: string;
+      }>,
+      ServiceRequestCreateData
+    >({
       query: (data) => ({
         url: "guest/service-request",
         method: "POST",
@@ -243,7 +281,10 @@ export const serviceRequestsApi = baseApi.injectEndpoints({
     }),
 
     // Track guest service request
-    trackGuestServiceRequest: builder.query<ApiResponse<{ serviceRequest: ServiceRequest }>, { requestId: string; email?: string; phoneNumber?: string }>({
+    trackGuestServiceRequest: builder.query<
+      ApiResponse<{ serviceRequest: ServiceRequest }>,
+      { requestId: string; email?: string; phoneNumber?: string }
+    >({
       query: ({ requestId, email, phoneNumber }) => {
         const params = new URLSearchParams();
         if (email) params.append("email", email);

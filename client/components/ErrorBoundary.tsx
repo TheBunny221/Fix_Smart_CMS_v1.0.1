@@ -19,7 +19,9 @@ class ErrorBoundary extends React.Component<
     this.state = { hasError: false, error: null, errorInfo: null };
   }
 
-  static override getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+  static override getDerivedStateFromError(
+    error: Error,
+  ): Partial<ErrorBoundaryState> {
     return { hasError: true };
   }
 

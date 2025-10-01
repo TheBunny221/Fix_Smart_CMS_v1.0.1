@@ -278,7 +278,11 @@ const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
 
     try {
       setUploadError(null);
-      const payload: { complaintId: string; photos: File[]; description?: string } = {
+      const payload: {
+        complaintId: string;
+        photos: File[];
+        description?: string;
+      } = {
         complaintId,
         photos: photos.map((p) => p.file),
       };

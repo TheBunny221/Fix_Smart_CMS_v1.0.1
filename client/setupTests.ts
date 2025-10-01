@@ -44,14 +44,20 @@ const localStorageMock = {
   key: vi.fn(),
 } as unknown as Storage;
 // Ensure property is writable in jsdom
-Object.defineProperty(window, "localStorage", { value: localStorageMock, writable: true });
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+  writable: true,
+});
 
 // Mock fetch
 globalThis.fetch = vi.fn() as unknown as typeof fetch;
 
 // Mock react-router-dom
 vi.mock("react-router-dom", async () => {
-  const actual = await vi.importActual<typeof import("react-router-dom")>("react-router-dom");
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom",
+    );
   return {
     ...actual,
     useNavigate: () => vi.fn(),

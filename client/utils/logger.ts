@@ -18,7 +18,7 @@ interface LogEntry {
   userAgent?: string;
 }
 
-type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+type LogLevel = "error" | "warn" | "info" | "debug";
 
 class FrontendLogger {
   private isDevelopment: boolean;
@@ -29,22 +29,24 @@ class FrontendLogger {
 
   constructor() {
     this.isDevelopment = import.meta.env.DEV;
-    this.logLevel = (import.meta.env.VITE_LOG_LEVEL as LogLevel) || 
-                   (this.isDevelopment ? 'debug' : 'info');
-    this.sendToBackend = import.meta.env.VITE_SEND_LOGS_TO_BACKEND === 'true' || 
-                        import.meta.env.PROD;
-    
+    this.logLevel =
+      (import.meta.env.VITE_LOG_LEVEL as LogLevel) ||
+      (this.isDevelopment ? "debug" : "info");
+    this.sendToBackend =
+      import.meta.env.VITE_SEND_LOGS_TO_BACKEND === "true" ||
+      import.meta.env.PROD;
+
     // Initialize error handlers
     this.setupGlobalErrorHandlers();
-    
+
     // Periodically send logs to backend in production
     if (this.sendToBackend) {
       setInterval(() => this.flushLogs(), 30000); // Every 30 seconds
     }
-    
-    this.info('Frontend logger initialized', {
-      module: 'logger',
-      environment: this.isDevelopment ? 'development' : 'production',
+
+    this.info("Frontend logger initialized", {
+      module: "logger",
+      environment: this.isDevelopment ? "development" : "production",
       logLevel: this.logLevel,
       sendToBackend: this.sendToBackend,
     });
@@ -52,9 +54,9 @@ class FrontendLogger {
 
   private setupGlobalErrorHandlers(): void {
     // Handle uncaught errors
-    window.addEventListener('error', (event) => {
-      this.error('Uncaught error', {
-        module: 'global',
+    window.addEventListener("error", (event) => {
+      this.error("Uncaught error", {
+        module: "global",
         error: event.error,
         filename: event.filename,
         lineno: event.lineno,
@@ -63,9 +65,9 @@ class FrontendLogger {
     });
 
     // Handle unhandled promise rejections
-    window.addEventListener('unhandledrejection', (event) => {
-      this.error('Unhandled promise rejection', {
-        module: 'global',
+    window.addEventListener("unhandledrejection", (event) => {
+      this.error("Unhandled promise rejection", {
+        module: "global",
         reason: event.reason,
       });
     });
@@ -74,19 +76,24 @@ class FrontendLogger {
     const originalConsoleError = console.error;
     console.error = (...args: unknown[]) => {
       // Check if this is a React error
-      if (typeof args[0] === 'string' && args[0].includes('React')) {
-        this.error('React error', {
-          module: 'react',
+      if (typeof args[0] === "string" && args[0].includes("React")) {
+        this.error("React error", {
+          module: "react",
           args: args.map((arg) => {
             try {
-              return typeof arg === 'object' ? JSON.stringify(arg) : String(arg);
+              return typeof arg === "object"
+                ? JSON.stringify(arg)
+                : String(arg);
             } catch {
               return String(arg);
             }
           }),
         } as unknown as LogMeta);
       }
-      (originalConsoleError as (...a: unknown[]) => void).apply(console, args as unknown as []);
+      (originalConsoleError as (...a: unknown[]) => void).apply(
+        console,
+        args as unknown as [],
+      );
     };
   }
 
@@ -99,12 +106,16 @@ class FrontendLogger {
     const stack = new Error().stack;
     if (!stack) return {};
 
-    const stackLines = stack.split('\n');
+    const stackLines = stack.split("\n");
 
     // Find the first line that's not in this logger file
     for (let i = 3; i < stackLines.length; i++) {
       const line = stackLines[i];
-      if (line && !line.includes('logger.ts') && !line.includes('node_modules')) {
+      if (
+        line &&
+        !line.includes("logger.ts") &&
+        !line.includes("node_modules")
+      ) {
         // Try to extract component/module name from the stack trace
         const match = line.match(/at\s+(?:.*\.)?(\w+)/);
         if (match) {
@@ -118,29 +129,37 @@ class FrontendLogger {
     return {};
   }
 
-  private formatMessage(level: LogLevel, message: string, meta: LogMeta): string {
+  private formatMessage(
+    level: LogLevel,
+    message: string,
+    meta: LogMeta,
+  ): string {
     const timestamp = new Date().toISOString();
     const callerInfo = this.getCallerInfo();
-    const module = meta.module || callerInfo.component || 'unknown';
-    
+    const module = meta.module || callerInfo.component || "unknown";
+
     let formattedMessage = `${timestamp} [${level.toUpperCase()}] [${module}]`;
-    
+
     if (meta.userId) {
       formattedMessage += ` [User:${meta.userId}]`;
     }
-    
+
     if (meta.component && meta.component !== module) {
       formattedMessage += ` [${meta.component}]`;
     }
-    
+
     formattedMessage += `: ${message}`;
-    
+
     return formattedMessage;
   }
 
-  private createLogEntry(level: LogLevel, message: string, meta: LogMeta): LogEntry {
+  private createLogEntry(
+    level: LogLevel,
+    message: string,
+    meta: LogMeta,
+  ): LogEntry {
     const callerInfo = this.getCallerInfo();
-    
+
     return {
       timestamp: new Date().toISOString(),
       level,
@@ -161,11 +180,15 @@ class FrontendLogger {
     const formattedMessage = this.formatMessage(level, message, meta);
 
     // Always log to console in development, or for errors in production
-    if (this.isDevelopment || level === 'error') {
-      const consoleMethod = level === 'error' ? console.error :
-                           level === 'warn' ? console.warn :
-                           level === 'info' ? console.info :
-                           console.debug;
+    if (this.isDevelopment || level === "error") {
+      const consoleMethod =
+        level === "error"
+          ? console.error
+          : level === "warn"
+            ? console.warn
+            : level === "info"
+              ? console.info
+              : console.debug;
 
       if (meta.error) {
         consoleMethod(formattedMessage, meta.error);
@@ -179,14 +202,14 @@ class FrontendLogger {
     // Queue for backend sending
     if (this.sendToBackend) {
       this.logQueue.push(logEntry);
-      
+
       // Limit queue size
       if (this.logQueue.length > this.maxQueueSize) {
         this.logQueue = this.logQueue.slice(-this.maxQueueSize);
       }
 
       // Send immediately for errors
-      if (level === 'error') {
+      if (level === "error") {
         this.flushLogs();
       }
     }
@@ -199,58 +222,60 @@ class FrontendLogger {
     this.logQueue = [];
 
     try {
-      await fetch('/api/logs', {
-        method: 'POST',
+      await fetch("/api/logs", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ logs: logsToSend }),
       });
     } catch (error) {
       // If sending fails, put logs back in queue (but don't create infinite loop)
       if (this.logQueue.length < this.maxQueueSize) {
-        this.logQueue.unshift(...logsToSend.slice(0, this.maxQueueSize - this.logQueue.length));
+        this.logQueue.unshift(
+          ...logsToSend.slice(0, this.maxQueueSize - this.logQueue.length),
+        );
       }
-      
+
       // Only log to console to avoid infinite recursion
-      console.error('Failed to send logs to backend:', error);
+      console.error("Failed to send logs to backend:", error);
     }
   }
 
   // Main logging methods
   error(message: string, meta: LogMeta = {}): void {
-    this.log('error', message, meta);
+    this.log("error", message, meta);
   }
 
   warn(message: string, meta: LogMeta = {}): void {
-    this.log('warn', message, meta);
+    this.log("warn", message, meta);
   }
 
   info(message: string, meta: LogMeta = {}): void {
-    this.log('info', message, meta);
+    this.log("info", message, meta);
   }
 
   debug(message: string, meta: LogMeta = {}): void {
-    this.log('debug', message, meta);
+    this.log("debug", message, meta);
   }
 
   // Convenience methods for common scenarios
   auth(message: string, meta: LogMeta = {}): void {
-    this.info(message, { ...meta, module: 'auth' });
+    this.info(message, { ...meta, module: "auth" });
   }
 
   api(message: string, meta: LogMeta = {}): void {
-    this.debug(message, { ...meta, module: 'api' });
+    this.debug(message, { ...meta, module: "api" });
   }
 
   ui(message: string, meta: LogMeta = {}): void {
-    this.debug(message, { ...meta, module: 'ui' });
+    this.debug(message, { ...meta, module: "ui" });
   }
 
   performance(operation: string, duration: number, meta: LogMeta = {}): void {
     this.info(`Performance: ${operation} completed in ${duration}ms`, {
       ...meta,
-      module: 'performance',
+      module: "performance",
       operation,
       duration,
     });
@@ -270,7 +295,11 @@ class FrontendLogger {
     };
   }
 
-  private withUserMeta(meta: LogMeta, userId: string, sessionId?: string): LogMeta {
+  private withUserMeta(
+    meta: LogMeta,
+    userId: string,
+    sessionId?: string,
+  ): LogMeta {
     const merged: LogMeta = { ...meta, userId };
     if (sessionId !== undefined) {
       merged.sessionId = sessionId;
@@ -280,37 +309,41 @@ class FrontendLogger {
 
   withComponent(componentName: string) {
     return {
-      error: (message: string, meta: LogMeta = {}) => 
+      error: (message: string, meta: LogMeta = {}) =>
         this.error(message, { ...meta, component: componentName }),
-      warn: (message: string, meta: LogMeta = {}) => 
+      warn: (message: string, meta: LogMeta = {}) =>
         this.warn(message, { ...meta, component: componentName }),
-      info: (message: string, meta: LogMeta = {}) => 
+      info: (message: string, meta: LogMeta = {}) =>
         this.info(message, { ...meta, component: componentName }),
-      debug: (message: string, meta: LogMeta = {}) => 
+      debug: (message: string, meta: LogMeta = {}) =>
         this.debug(message, { ...meta, component: componentName }),
     };
   }
 
   withModule(moduleName: string) {
     return {
-      error: (message: string, meta: LogMeta = {}) => 
+      error: (message: string, meta: LogMeta = {}) =>
         this.error(message, { ...meta, module: moduleName }),
-      warn: (message: string, meta: LogMeta = {}) => 
+      warn: (message: string, meta: LogMeta = {}) =>
         this.warn(message, { ...meta, module: moduleName }),
-      info: (message: string, meta: LogMeta = {}) => 
+      info: (message: string, meta: LogMeta = {}) =>
         this.info(message, { ...meta, module: moduleName }),
-      debug: (message: string, meta: LogMeta = {}) => 
+      debug: (message: string, meta: LogMeta = {}) =>
         this.debug(message, { ...meta, module: moduleName }),
     };
   }
 
   // React-specific logging helpers
-  componentError(componentName: string, error: Error, errorInfo?: unknown): void {
+  componentError(
+    componentName: string,
+    error: Error,
+    errorInfo?: unknown,
+  ): void {
     this.error(`Component error in ${componentName}`, {
       component: componentName,
       error,
       errorInfo,
-      module: 'react',
+      module: "react",
     });
   }
 
@@ -319,24 +352,30 @@ class FrontendLogger {
       ...meta,
       hook: hookName,
       error,
-      module: 'react-hooks',
+      module: "react-hooks",
     });
   }
 
   routeChange(from: string, to: string, meta: LogMeta = {}): void {
     this.debug(`Route change: ${from} -> ${to}`, {
       ...meta,
-      module: 'router',
+      module: "router",
       from,
       to,
     });
   }
 
-  apiCall(method: string, url: string, status: number, duration: number, meta: LogMeta = {}): void {
-    const level = status >= 400 ? 'error' : status >= 300 ? 'warn' : 'debug';
+  apiCall(
+    method: string,
+    url: string,
+    status: number,
+    duration: number,
+    meta: LogMeta = {},
+  ): void {
+    const level = status >= 400 ? "error" : status >= 300 ? "warn" : "debug";
     this.log(level, `API ${method} ${url} ${status} - ${duration}ms`, {
       ...meta,
-      module: 'api',
+      module: "api",
       method,
       url,
       status,

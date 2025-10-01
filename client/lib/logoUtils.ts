@@ -22,7 +22,7 @@ export function getLogoClasses(
     small: {
       nav: {
         container: "flex items-center space-x-1",
-        image: "h-2 w-10",   // ratio kept
+        image: "h-2 w-10", // ratio kept
         fallback: "h-2 w-2",
       },
       "nav-mobile": {
@@ -49,7 +49,7 @@ export function getLogoClasses(
     medium: {
       nav: {
         container: "flex items-center space-x-2",
-        image: "h-4 w-20",   // 1:5 ratio
+        image: "h-4 w-20", // 1:5 ratio
         fallback: "h-4 w-4",
       },
       "nav-mobile": {
@@ -76,7 +76,7 @@ export function getLogoClasses(
     large: {
       nav: {
         container: "flex items-center space-x-3",
-        image: "h-10 w-50",   // your base ratio (h10:w50)
+        image: "h-10 w-50", // your base ratio (h10:w50)
         fallback: "h-10 w-10",
       },
       "nav-mobile": {
@@ -101,7 +101,6 @@ export function getLogoClasses(
       },
     },
   };
-
 
   const normalizedSize = size.toLowerCase() as keyof typeof sizeMap;
   const normalizedContext = context === "mobile" ? "nav-mobile" : context;

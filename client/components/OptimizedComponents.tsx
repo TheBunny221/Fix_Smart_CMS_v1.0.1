@@ -37,7 +37,14 @@ interface VirtualListProps {
 }
 
 const VirtualListItem = memo(
-  ({ index, style, data }: ListChildComponentProps<{ items: VirtualListItem[]; renderItem: VirtualListProps["renderItem"]; }>) => {
+  ({
+    index,
+    style,
+    data,
+  }: ListChildComponentProps<{
+    items: VirtualListItem[];
+    renderItem: VirtualListProps["renderItem"];
+  }>) => {
     const item = data.items[index];
     if (!item) return null;
 
@@ -261,7 +268,8 @@ export const OptimizedCardGrid = memo(
   },
 ) as <T>(props: OptimizedCardGridProps<T>) => React.ReactElement;
 
-(OptimizedCardGrid as unknown as { displayName?: string }).displayName = "OptimizedCardGrid";
+(OptimizedCardGrid as unknown as { displayName?: string }).displayName =
+  "OptimizedCardGrid";
 
 // Lazy Section Component
 interface LazySectionProps {
@@ -450,7 +458,8 @@ export const MemoizedList = memo(
   },
 ) as <T>(props: MemoizedListProps<T>) => React.ReactElement;
 
-(MemoizedList as unknown as { displayName?: string }).displayName = "MemoizedList";
+(MemoizedList as unknown as { displayName?: string }).displayName =
+  "MemoizedList";
 
 // Progressive Enhancement Component
 interface ProgressiveEnhancementProps {
