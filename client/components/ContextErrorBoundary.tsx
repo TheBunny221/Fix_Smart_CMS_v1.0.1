@@ -23,7 +23,7 @@ export class ContextErrorBoundary extends Component<Props, State> {
     this.state = { hasError: false };
   }
 
-  static override getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): State {
     // Check if this is a context-related error
     const isContextError =
       error.message.includes("must be used within") ||
@@ -48,7 +48,7 @@ export class ContextErrorBoundary extends Component<Props, State> {
     this.setState({ hasError: false });
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       // Custom fallback UI
       if (this.props.fallback) {

@@ -110,7 +110,7 @@ type FormState = {
 };
 
 const fromComplaintStatus = (
-  status?: ComplaintStatus | ApiComplaintStatus | null,
+  status?: ComplaintStatus | ApiComplaintStatus | string | null,
 ): ComplaintStatus => {
   if (typeof status === "string") {
     const normalized = status.toUpperCase() as ComplaintStatus;
@@ -201,14 +201,14 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
       if (isStatusUpdateAllowed) {
         const statusPayload = formData.remarks
           ? {
-              id: complaint.id,
-              status: toApiComplaintStatus(formData.status),
-              remarks: formData.remarks,
-            }
+            id: complaint.id,
+            status: toApiComplaintStatus(formData.status),
+            remarks: formData.remarks,
+          }
           : {
-              id: complaint.id,
-              status: toApiComplaintStatus(formData.status),
-            };
+            id: complaint.id,
+            status: toApiComplaintStatus(formData.status),
+          };
 
         await updateComplaintStatus(statusPayload).unwrap();
       }
@@ -219,14 +219,14 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
         if (user?.role === "WARD_OFFICER") {
           const assignmentPayload = formData.remarks
             ? {
-                id: complaint.id,
-                assignedTo: isUnassignedSelection ? "" : formData.assignedTo,
-                remarks: formData.remarks,
-              }
+              id: complaint.id,
+              assignedTo: isUnassignedSelection ? "" : formData.assignedTo,
+              remarks: formData.remarks,
+            }
             : {
-                id: complaint.id,
-                assignedTo: isUnassignedSelection ? "" : formData.assignedTo,
-              };
+              id: complaint.id,
+              assignedTo: isUnassignedSelection ? "" : formData.assignedTo,
+            };
 
           await assignComplaint(assignmentPayload).unwrap();
         } else if (user?.role === "ADMINISTRATOR") {
@@ -309,7 +309,7 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
                 {(complaint.wardOfficer || complaint.assignedTo) && (
                   <Badge variant="outline" className="flex items-center gap-1">
                     <UserCheck className="h-3 w-3" />
-                    {(complaint.wardOfficer || complaint.assignedTo)?.fullName}
+                    {complaint.wardOfficer?.fullName || (typeof complaint.assignedTo === 'object' ? complaint.assignedTo?.fullName : complaint.assignedTo)}
                   </Badge>
                 )}
               </div>

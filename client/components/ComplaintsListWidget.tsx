@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../store/hooks";
 import { useGetComplaintsQuery } from "../store/api/complaintsApi";
-import type { Complaint, ApiResponse } from "@/types/common";
+import type { Complaint } from "../store/api/complaintsApi";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -79,7 +79,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
 
   // Normalize response to array of complaints
   const complaints: Complaint[] = Array.isArray(complaintsResponse?.data)
-    ? (complaintsResponse!.data as Complaint[])
+    ? complaintsResponse.data
     : [];
 
   const getStatusColor = (status: string) => {
@@ -235,12 +235,12 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getStatusColor(complaint.status)}>
+                      <Badge className={getStatusColor(complaint.status || '')}>
                         {complaint.status?.replace("_", " ") || "Unknown"}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getPriorityColor(complaint.priority)}>
+                      <Badge className={getPriorityColor(complaint.priority || '')}>
                         {complaint.priority || "N/A"}
                       </Badge>
                     </TableCell>
@@ -291,11 +291,11 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                         <TableCell>
                           <Badge
                             className={
-                              (complaint.slaStatus === "OVERDUE" &&
+                              (complaint.slaStatus === "overdue" &&
                                 "bg-red-100 text-red-800") ||
-                              (complaint.slaStatus === "WARNING" &&
+                              (complaint.slaStatus === "warning" &&
                                 "bg-yellow-100 text-yellow-800") ||
-                              (complaint.slaStatus === "ON_TIME" &&
+                              (complaint.slaStatus === "ontime" &&
                                 "bg-green-100 text-green-800") ||
                               "bg-gray-100 text-gray-800"
                             }
@@ -304,10 +304,10 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {complaint.closedOn ? (
+                          {complaint.resolvedDate ? (
                             <span className="text-sm">
                               {new Date(
-                                complaint.closedOn,
+                                complaint.resolvedDate,
                               ).toLocaleDateString()}
                             </span>
                           ) : (
@@ -317,9 +317,9 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                       </>
                     )}
                     <TableCell>
-                      {complaint.updatedAt ? (
+                      {complaint.lastUpdated ? (
                         <span className="text-sm">
-                          {new Date(complaint.updatedAt).toLocaleDateString()}
+                          {new Date(complaint.lastUpdated).toLocaleDateString()}
                         </span>
                       ) : (
                         <span className="text-xs text-gray-500">-</span>
@@ -328,8 +328,8 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                     <TableCell>
                       <div className="flex items-center text-sm">
                         <Calendar className="h-3 w-3 mr-1" />
-                        {complaint.submittedOn
-                          ? new Date(complaint.submittedOn).toLocaleDateString()
+                        {complaint.submittedDate
+                          ? new Date(complaint.submittedDate).toLocaleDateString()
                           : "N/A"}
                       </div>
                     </TableCell>
@@ -345,7 +345,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                               type: complaint.type,
                               description: complaint.description,
                               area: complaint.area,
-                              assignedTo: complaint.assignedTo,
+                              assignedTo: typeof complaint.assignedTo === 'object' ? complaint.assignedTo : null,
                             }}
                             userRole={effectiveUserRole || "WARD_OFFICER"}
                             showDetails={false}
