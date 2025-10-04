@@ -249,7 +249,8 @@ const UnifiedComplaintForm: React.FC = () => {
     const lng = parseFloat(getConfig("MAP_DEFAULT_LNG", "76.2673")) || 76.2673;
     prewarmMapAssets(lat, lng, 13);
   }, [getConfig]);
-  c; // Get current location
+  
+  // Get current location
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -305,7 +306,7 @@ const UnifiedComplaintForm: React.FC = () => {
         updateGuestFormData({
           landmark: location.landmark || location.address || "",
           area: location.area || formData.area,
-          address: location.address || formData.address,
+          ...(location.address || formData.address ? { address: location.address || formData.address } : {}),
           coordinates: {
             latitude: location.latitude,
             longitude: location.longitude,
@@ -471,10 +472,10 @@ const UnifiedComplaintForm: React.FC = () => {
           type: formData.type as any,
           priority: formData.priority as any,
           wardId: formData.wardId,
-          subZoneId: formData.subZoneId,
+          ...(formData.subZoneId && { subZoneId: formData.subZoneId }),
           area: formData.area,
-          landmark: formData.landmark,
-          address: formData.address,
+          ...(formData.landmark && { landmark: formData.landmark }),
+          ...(formData.address && { address: formData.address }),
           coordinates: formData.coordinates,
           contactName: formData.fullName,
           contactEmail: formData.email,
@@ -486,7 +487,7 @@ const UnifiedComplaintForm: React.FC = () => {
 
         toast({
           title: "Complaint Submitted Successfully!",
-          description: `Your complaint has been registered with ID: ${result.complaintId}. You can track its progress from your dashboard.`,
+          description: `Your complaint has been registered with ID: ${result.data?.complaintId || result.data?.id || 'N/A'}. You can track its progress from your dashboard.`,
         });
 
         // Clear form and navigate to dashboard
@@ -961,7 +962,7 @@ const UnifiedComplaintForm: React.FC = () => {
                     <div className="space-y-2">
                       <Label>Priority</Label>
                       <Select
-                        value={formData.priority}
+                        value={formData.priority || ""}
                         onValueChange={(value) =>
                           handleSelectChange("priority", value)
                         }
@@ -1087,7 +1088,7 @@ const UnifiedComplaintForm: React.FC = () => {
                     <div className="space-y-2">
                       <Label>Sub-Zone (Optional)</Label>
                       <Select
-                        value={formData.subZoneId}
+                        value={formData.subZoneId || ""}
                         onValueChange={(value) =>
                           handleSelectChange("subZoneId", value)
                         }
@@ -1751,7 +1752,10 @@ const UnifiedComplaintForm: React.FC = () => {
           <Dialog
             open={imagePreview.show}
             onOpenChange={(open) =>
-              dispatch(setImagePreview({ show: open, url: imagePreview.url }))
+              dispatch(setImagePreview({ 
+                show: open, 
+                ...(imagePreview.url && { url: imagePreview.url })
+              }))
             }
           >
             <DialogContent className="max-w-3xl">
@@ -1770,22 +1774,26 @@ const UnifiedComplaintForm: React.FC = () => {
         )}
 
         {/* Location Map Dialog */}
-        <SimpleLocationMapDialog
-          isOpen={isMapDialogOpen}
-          onClose={() => setIsMapDialogOpen(false)}
-          onLocationSelect={handleLocationSelect}
-          initialLocation={
-            formData.coordinates
-              ? {
-                  latitude: formData.coordinates.latitude,
-                  longitude: formData.coordinates.longitude,
-                  address: formData.address,
-                  area: formData.area,
-                  landmark: formData.landmark,
-                }
-              : undefined
-          }
-        />
+        {formData.coordinates ? (
+          <SimpleLocationMapDialog
+            isOpen={isMapDialogOpen}
+            onClose={() => setIsMapDialogOpen(false)}
+            onLocationSelect={handleLocationSelect}
+            initialLocation={{
+              latitude: formData.coordinates.latitude,
+              longitude: formData.coordinates.longitude,
+              ...(formData.address && { address: formData.address }),
+              area: formData.area,
+              ...(formData.landmark && { landmark: formData.landmark }),
+            }}
+          />
+        ) : (
+          <SimpleLocationMapDialog
+            isOpen={isMapDialogOpen}
+            onClose={() => setIsMapDialogOpen(false)}
+            onLocationSelect={handleLocationSelect}
+          />
+        )}
       </div>
     </div>
   );

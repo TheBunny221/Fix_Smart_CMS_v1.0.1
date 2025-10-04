@@ -187,7 +187,7 @@ const CitizenComplaintForm: React.FC = () => {
     Math.max(currentStep - 1, 0),
     steps.length - 1,
   );
-  const activeStep = steps[activeStepIndex];
+  const activeStep = steps[activeStepIndex]!;
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -245,10 +245,18 @@ const CitizenComplaintForm: React.FC = () => {
           next.area = value;
           break;
         case "landmark":
-          next.landmark = value ? value : undefined;
+          if (value.trim() === "") {
+            delete next.landmark;
+          } else {
+            next.landmark = value;
+          }
           break;
         case "address":
-          next.address = value ? value : undefined;
+          if (value.trim() === "") {
+            delete next.address;
+          } else {
+            next.address = value;
+          }
           break;
         default:
           return prev;
@@ -566,22 +574,20 @@ const CitizenComplaintForm: React.FC = () => {
                   return (
                     <div
                       key={step.id}
-                      className={`flex flex-col items-center space-y-2 p-2 rounded-lg transition-colors ${
-                        step.id === currentStep
+                      className={`flex flex-col items-center space-y-2 p-2 rounded-lg transition-colors ${step.id === currentStep
                           ? "bg-blue-100 text-blue-800"
                           : step.id < currentStep
                             ? "bg-green-100 text-green-800"
                             : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                          step.id === currentStep
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step.id === currentStep
                             ? "bg-blue-600 text-white"
                             : step.id < currentStep
                               ? "bg-green-600 text-white"
                               : "bg-gray-300 text-gray-600"
-                        }`}
+                          }`}
                       >
                         {step.id < currentStep ? (
                           <CheckCircle className="h-4 w-4" />
@@ -764,9 +770,8 @@ const CitizenComplaintForm: React.FC = () => {
                       <div className="mt-3 grid grid-cols-2 gap-4">
                         <div className="flex items-center gap-2">
                           <div
-                            className={`w-2 h-2 rounded-full ${
-                              priorityMeta?.color ?? "bg-gray-500"
-                            }`}
+                            className={`w-2 h-2 rounded-full ${priorityMeta?.color ?? "bg-gray-500"
+                              }`}
                           />
                           <span className="text-sm font-medium">
                             Priority:{" "}
@@ -1176,7 +1181,7 @@ const CitizenComplaintForm: React.FC = () => {
                     </CardHeader>
                     <CardContent>
                       {formData.attachments &&
-                      formData.attachments.length > 0 ? (
+                        formData.attachments.length > 0 ? (
                         <div className="space-y-2">
                           <p className="text-sm text-gray-600 mb-3">
                             {formData.attachments.length} file(s) will be

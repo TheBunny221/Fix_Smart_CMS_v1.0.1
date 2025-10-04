@@ -64,7 +64,7 @@ const TaskDetails: React.FC = () => {
     size?: number | null;
   } | null>(null);
 
-  const raw = complaintResponse?.data?.complaint;
+  const raw = complaintResponse?.data as any;
 
   const addWorkUpdate = async () => {
     if (!task) return;
@@ -73,7 +73,7 @@ const TaskDetails: React.FC = () => {
       setIsAddingLog(true);
       await updateComplaintStatus({
         id: task.id,
-        status: "IN_PROGRESS",
+        status: "in_progress",
         remarks: workNote.trim(),
       }).unwrap();
       setWorkNote("");
@@ -313,7 +313,7 @@ const TaskDetails: React.FC = () => {
 
           {/* Work Log - visible only to Admin, Ward Officer, Maintenance Team */}
           {["ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"].includes(
-            user?.role,
+            user?.role || "",
           ) && (
             <Card>
               <CardHeader>
@@ -324,7 +324,7 @@ const TaskDetails: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {task.workLog.map((log, index) => (
+                  {task.workLog.map((log: any, index: number) => (
                     <div
                       key={`log-${index}`}
                       className="border-l-4 border-blue-500 pl-4 py-2"
@@ -332,9 +332,7 @@ const TaskDetails: React.FC = () => {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-medium">
-                            {new Date(log.time).toLocaleString
-                              ? new Date(log.time).toLocaleString()
-                              : log.time}
+                            {new Date(log.time).toLocaleString()}
                           </p>
                           <p className="text-sm text-gray-600">{log.note}</p>
                           {log.photo && (
@@ -395,7 +393,7 @@ const TaskDetails: React.FC = () => {
                                 </div>
                                 <div className="mt-2 flex items-center gap-2">
                                   <Button
-                                    size="xs"
+                                    size="sm"
                                     variant="outline"
                                     onClick={() => {
                                       setPreviewItem({
@@ -414,7 +412,7 @@ const TaskDetails: React.FC = () => {
                                     download
                                     className="inline-flex items-center"
                                   >
-                                    <Button size="xs">Download</Button>
+                                    <Button size="sm">Download</Button>
                                   </a>
                                 </div>
                               </div>
@@ -463,13 +461,13 @@ const TaskDetails: React.FC = () => {
                     Attachments
                   </h3>
                   <div className="space-y-3">
-                    {task.attachments.map((att) => {
+                    {task.attachments.map((att: any) => {
                       const isImage = att.mimeType?.startsWith("image/");
                       const canDownload = [
                         "ADMINISTRATOR",
                         "WARD_OFFICER",
                         "MAINTENANCE_TEAM",
-                      ].includes(user?.role);
+                      ].includes(user?.role || "");
                       return (
                         <div
                           key={att.id}
@@ -564,7 +562,7 @@ const TaskDetails: React.FC = () => {
               "ADMINISTRATOR",
               "WARD_OFFICER",
               "MAINTENANCE_TEAM",
-            ].includes(user?.role)}
+            ].includes(user?.role || "")}
           />
           {task.status === "IN_PROGRESS" && (
             <Card>
@@ -652,7 +650,7 @@ const TaskDetails: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {task.materials.map((material, index) => (
+                  {task.materials.map((material: any, index: number) => (
                     <div
                       key={index}
                       className="flex items-center justify-between"
@@ -674,7 +672,7 @@ const TaskDetails: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {task.tools.map((tool, index) => (
+                  {task.tools.map((tool: any, index: number) => (
                     <div
                       key={index}
                       className="flex items-center justify-between"

@@ -6,6 +6,7 @@ import { useComplaintTypes } from "../hooks/useComplaintTypes";
 import {
   useGetComplaintsQuery,
   useGetComplaintStatisticsQuery,
+  type Complaint,
 } from "../store/api/complaintsApi";
 import { formatDate } from "../lib/dateUtils";
 import {
@@ -91,23 +92,24 @@ const CitizenDashboard: React.FC = () => {
 
   // Debug: Log raw API responses
   console.log("Raw API responses:", {
-    complaintsResponse,
-    statsResponse,
-    complaintsResponseKeys: complaintsResponse
-      ? Object.keys(complaintsResponse)
-      : null,
-    statsResponseKeys: statsResponse ? Object.keys(statsResponse) : null,
+    hasComplaintsResponse: !!complaintsResponse,
+    hasStatsResponse: !!statsResponse,
   });
 
   // Extract complaints from the actual API response structure
   // Backend returns: { success: true, data: { complaints: [...], pagination: {...} } }
-  const complaints = Array.isArray(complaintsResponse?.data?.complaints)
-    ? complaintsResponse.data.complaints
+  const complaintsData = complaintsResponse?.data as any;
+  const complaints: Complaint[] = Array.isArray(complaintsData?.complaints)
+    ? complaintsData.complaints
+    : Array.isArray(complaintsData)
+    ? complaintsData
+    : Array.isArray(complaintsResponse)
+    ? complaintsResponse as any
     : [];
 
   console.log("Extracted complaints:", complaints);
   console.log("Complaints count:", complaints.length);
-  const pagination = complaintsResponse?.data?.pagination || {
+  const pagination = complaintsData?.pagination || {
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
@@ -179,14 +181,14 @@ const CitizenDashboard: React.FC = () => {
     console.log("Dashboard data debug:", {
       statsResponse: statsResponse?.data,
       complaintsCount: complaints.length,
-      complaintStatuses: complaints.map((c) => c.status),
+      complaintStatuses: complaints.map((c: Complaint) => c.status),
       complaintsData: complaints.slice(0, 2), // Log first 2 complaints for inspection
     });
 
     // Calculate dashboard statistics from complaints or use stats API
-    if (statsResponse?.data?.stats) {
+    if (statsResponse?.data) {
       // Use API stats if available
-      const stats = statsResponse.data.stats;
+      const stats = statsResponse.data;
       const total = stats.total || 0;
       const pending =
         stats.byStatus?.REGISTERED || stats.byStatus?.registered || 0;
@@ -211,7 +213,7 @@ const CitizenDashboard: React.FC = () => {
         pending,
         inProgress,
         resolved,
-        avgResolutionTime: stats.avgResolutionTimeHours || 0,
+        avgResolutionTime: stats.avgResolutionTime || 0,
         resolutionRate,
       });
     } else {
@@ -220,7 +222,7 @@ const CitizenDashboard: React.FC = () => {
 
       console.log(
         "Fallback calculation - analyzing complaints:",
-        complaints.map((c) => ({
+        complaints.map((c: Complaint) => ({
           id: c.id,
           status: c.status,
           type: typeof c.status,
@@ -228,17 +230,15 @@ const CitizenDashboard: React.FC = () => {
       );
 
       const pending = complaints.filter(
-        (c) => c.status === "registered" || c.status === "REGISTERED",
+        (c: Complaint) => c.status === "registered" || c.status === "assigned",
       ).length;
       const inProgress = complaints.filter(
-        (c) => c.status === "in_progress" || c.status === "IN_PROGRESS",
+        (c: Complaint) => c.status === "in_progress",
       ).length;
       const resolved = complaints.filter(
-        (c) =>
+        (c: Complaint) =>
           c.status === "resolved" ||
-          c.status === "RESOLVED" ||
-          c.status === "closed" ||
-          c.status === "CLOSED",
+          c.status === "closed",
       ).length;
       const resolutionRate =
         total > 0 ? Math.round((resolved / total) * 100) : 0;
@@ -525,8 +525,8 @@ const CitizenDashboard: React.FC = () => {
                 value={`${sortBy}-${sortOrder}`}
                 onValueChange={(value) => {
                   const [newSortBy, newSortOrder] = value.split("-");
-                  setSortBy(newSortBy);
-                  setSortOrder(newSortOrder);
+                  setSortBy(newSortBy || "submittedOn");
+                  setSortOrder(newSortOrder || "desc");
                 }}
               >
                 <SelectTrigger className="w-48">
@@ -579,13 +579,13 @@ const CitizenDashboard: React.FC = () => {
             <div className="space-y-4">
               {/* Mobile View */}
               <div className="md:hidden space-y-4">
-                {complaints.map((complaint) => (
+                {complaints.map((complaint: Complaint) => (
                   <Card key={complaint.id} className="p-4">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h4 className="font-medium text-sm">
-                            {complaint.title}
+                            {complaint.description.slice(0, 50)}...
                           </h4>
                           <p className="text-xs text-gray-500 mt-1">
                             ID: {complaint.complaintId || complaint.id}
@@ -598,7 +598,7 @@ const CitizenDashboard: React.FC = () => {
 
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <span>{getComplaintTypeLabel(complaint.type)}</span>
-                        <span>{formatDate(complaint.submittedOn)}</span>
+                        <span>{formatDate(complaint.submittedDate)}</span>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -611,7 +611,7 @@ const CitizenDashboard: React.FC = () => {
                         {complaint.ward && (
                           <div className="flex items-center text-xs text-gray-500">
                             <MapPin className="h-3 w-3 mr-1" />
-                            {complaint.ward.name}
+                            {complaint.ward}
                           </div>
                         )}
                       </div>
@@ -632,13 +632,13 @@ const CitizenDashboard: React.FC = () => {
                         {isResolved(complaint.status) && (
                           <FeedbackDialog
                             complaintId={complaint.id}
-                            complaintTitle={complaint.title}
+                            complaintTitle={complaint.description.slice(0, 50)}
                             isResolved={isResolved(complaint.status)}
                             existingFeedback={
                               complaint.rating
                                 ? {
                                     rating: complaint.rating,
-                                    comment: complaint.citizenFeedback || "",
+                                    comment: complaint.feedback || "",
                                   }
                                 : null
                             }
@@ -672,7 +672,7 @@ const CitizenDashboard: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {complaints.map((complaint) => (
+                    {complaints.map((complaint: Complaint) => (
                       <TableRow key={complaint.id}>
                         <TableCell className="font-mono text-xs">
                           {(complaint.complaintId ?? complaint.id)
@@ -682,7 +682,7 @@ const CitizenDashboard: React.FC = () => {
                         <TableCell>
                           <div className="max-w-48">
                             <div className="font-medium text-sm truncate">
-                              {complaint.title}
+                              {complaint.description.slice(0, 50)}...
                             </div>
                             {complaint.description && (
                               <div className="text-xs text-gray-500 truncate">
@@ -713,14 +713,14 @@ const CitizenDashboard: React.FC = () => {
                           {complaint.ward && (
                             <div className="flex items-center text-sm">
                               <MapPin className="h-3 w-3 mr-1" />
-                              {complaint.ward.name}
+                              {complaint.ward}
                             </div>
                           )}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center text-sm">
                             <Calendar className="h-3 w-3 mr-1" />
-                            {formatDate(complaint.submittedOn)}
+                            {formatDate(complaint.submittedDate)}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -754,14 +754,14 @@ const CitizenDashboard: React.FC = () => {
                             {isResolved(complaint.status) && (
                               <FeedbackDialog
                                 complaintId={complaint.id}
-                                complaintTitle={complaint.title}
+                                complaintTitle={complaint.description.slice(0, 50)}
                                 isResolved={isResolved(complaint.status)}
                                 existingFeedback={
                                   complaint.rating
                                     ? {
                                         rating: complaint.rating,
                                         comment:
-                                          complaint.citizenFeedback || "",
+                                          complaint.feedback || "",
                                       }
                                     : null
                                 }

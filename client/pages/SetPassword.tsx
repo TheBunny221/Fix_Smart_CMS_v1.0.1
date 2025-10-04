@@ -168,10 +168,10 @@ const SetPassword: React.FC = () => {
         // Fallback: refresh profile from backend to get updated hasPassword
         try {
           const me = await refetchCurrentUser().unwrap();
-          if (me?.data?.user && me?.data?.token) {
+          if (me?.data?.user && (me.data as any)?.token) {
             dispatch(
               setCredentials({
-                token: me.data.token,
+                token: (me.data as any).token,
                 user: me.data.user,
               }),
             );

@@ -7,6 +7,7 @@ import {
   useRequestComplaintOtpMutation,
   useVerifyComplaintOtpMutation,
 } from "../store/api/guestApi";
+import { getApiErrorMessage } from "../store/api/baseApi";
 import {
   Card,
   CardContent,
@@ -559,7 +560,7 @@ const GuestTrackComplaint: React.FC = () => {
         complaintId={complaintId}
         maskedEmail={maskedEmail}
         isVerifying={isVerifyingOtp}
-        error={verifyError?.data?.message || null}
+        error={verifyError ? getApiErrorMessage(verifyError) : null}
         onResendOtp={handleResendOtp}
         isResending={isRequestingOtp}
       />

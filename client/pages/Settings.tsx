@@ -99,7 +99,7 @@ const Settings: React.FC = () => {
     const data = {
       profile: user,
       complaints: [], // Would be fetched from API
-      preferences: user?.preferences,
+      preferences: (user as any)?.preferences || {},
       exportDate: new Date().toISOString(),
     };
 
@@ -296,7 +296,7 @@ const Settings: React.FC = () => {
                     </p>
                   </div>
                   <Switch
-                    checked={user?.preferences.emailAlerts || false}
+                    checked={(user as any)?.preferences?.emailAlerts || false}
                     onCheckedChange={(checked) =>
                       handleNotificationChange("emailAlerts", checked)
                     }
@@ -327,7 +327,7 @@ const Settings: React.FC = () => {
                     </p>
                   </div>
                   <Switch
-                    checked={user?.preferences.notifications || false}
+                    checked={(user as any)?.preferences?.notifications || false}
                     onCheckedChange={(checked) =>
                       handleNotificationChange("notifications", checked)
                     }

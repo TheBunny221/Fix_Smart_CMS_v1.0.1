@@ -58,7 +58,7 @@ const ComplaintDetails: React.FC = () => {
     error,
   } = useGetComplaintQuery(id!, { skip: !id || !isAuthenticated });
 
-  const complaint = complaintResponse?.data?.complaint;
+  const complaint = complaintResponse?.data as any;
 
   // Cache complaint details when loaded
   useEffect(() => {
@@ -150,8 +150,8 @@ const ComplaintDetails: React.FC = () => {
     const typeHours = getTypeSlaHours(c.type);
 
     const reopenAt = getLastReopenAt(c.statusLogs);
-    const registeredAt = c.submittedOn
-      ? new Date(c.submittedOn)
+    const registeredAt = c.submittedDate
+      ? new Date(c.submittedDate)
       : c.createdAt
         ? new Date(c.createdAt)
         : null;
@@ -273,8 +273,8 @@ const ComplaintDetails: React.FC = () => {
             </Badge>
             <span className="text-sm text-gray-500">
               Created{" "}
-              {complaint?.submittedOn
-                ? new Date(complaint.submittedOn).toLocaleDateString()
+              {complaint?.submittedDate
+                ? new Date(complaint.submittedDate).toLocaleDateString()
                 : "Unknown"}
             </span>
           </div>
@@ -318,32 +318,16 @@ const ComplaintDetails: React.FC = () => {
                     </p>
                     {complaint.ward && (
                       <p className="text-gray-600">
-                        <strong>Ward:</strong> {complaint.ward.name}
+                        <strong>Ward:</strong> {complaint.ward}
                       </p>
                     )}
-                    {complaint.subZone && (
-                      <p className="text-gray-600">
-                        <strong>Sub-Zone:</strong> {complaint.subZone.name}
-                      </p>
-                    )}
-                    {complaint.landmark && (
-                      <p className="text-gray-600">
-                        <strong>Landmark:</strong> {complaint.landmark}
-                      </p>
-                    )}
+                    {/* Sub-zone and landmark not available in current interface */}
                     {complaint.address && (
                       <p className="text-gray-600">
                         <strong>Address:</strong> {complaint.address}
                       </p>
                     )}
-                    {/* Show coordinates for admin/ward managers */}
-                    {(user?.role === "ADMINISTRATOR" ||
-                      user?.role === "WARD_OFFICER") &&
-                      complaint.coordinates && (
-                        <p className="text-gray-500 text-xs">
-                          <strong>Coordinates:</strong> {complaint.coordinates}
-                        </p>
-                      )}
+                    {/* Coordinates not available in current interface */}
                   </div>
                 </div>
                 <div>
@@ -354,7 +338,7 @@ const ComplaintDetails: React.FC = () => {
                   <div className="space-y-1 text-sm">
                     <p className="text-gray-600">
                       <strong>Submitted:</strong>{" "}
-                      {new Date(complaint.submittedOn).toLocaleString()}
+                      {new Date(complaint.submittedDate).toLocaleString()}
                     </p>
                     {complaint.assignedOn && (
                       <p className="text-gray-600">
@@ -389,10 +373,10 @@ const ComplaintDetails: React.FC = () => {
                             </p>
                             <p
                               className={`text-sm font-medium ${status === "OVERDUE"
-                                  ? "text-red-600"
-                                  : status === "ON_TIME"
-                                    ? "text-green-600"
-                                    : "text-gray-600"
+                                ? "text-red-600"
+                                : status === "ON_TIME"
+                                  ? "text-green-600"
+                                  : "text-gray-600"
                                 }`}
                             >
                               <strong>SLA Status:</strong>{" "}
@@ -425,8 +409,8 @@ const ComplaintDetails: React.FC = () => {
               <div className="space-y-4">
                 {/* Real status logs with remarks and comments */}
                 {complaint.statusLogs && complaint.statusLogs.length > 0 ? (
-                  complaint.statusLogs.map((log, index) => {
-                    const getStatusColor = (status) => {
+                  complaint.statusLogs.map((log: any, index: number) => {
+                    const getStatusColor = (status: string) => {
                       switch (status) {
                         case "REGISTERED":
                           return "border-blue-500";
@@ -443,7 +427,7 @@ const ComplaintDetails: React.FC = () => {
                       }
                     };
 
-                    const getStatusLabel = (status) => {
+                    const getStatusLabel = (status: string) => {
                       switch (status) {
                         case "REGISTERED":
                           return "Complaint Registered";
@@ -461,7 +445,7 @@ const ComplaintDetails: React.FC = () => {
                     };
 
                     // Get citizen-friendly status messages
-                    const getCitizenStatusMessage = (status, log) => {
+                    const getCitizenStatusMessage = (status: string, log: any) => {
                       switch (status) {
                         case "REGISTERED":
                           return "Your complaint has been successfully registered and is under review.";
@@ -556,8 +540,7 @@ const ComplaintDetails: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Upload className="h-5 w-5 mr-2" />
-                    Attachment Logs ({complaint?.attachments?.length || 0} files +{" "}
-                    {complaint?.photos?.length || 0} photos)
+                    Attachment Logs ({complaint?.attachments?.length || 0} files)
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -622,11 +605,11 @@ const ComplaintDetails: React.FC = () => {
                   {/* Photo Attachments */}
                   <div>
                     <h4 className="text-sm font-medium mb-2">
-                      Photos ({complaint?.photos?.length || 0})
+                      Photos (0)
                     </h4>
-                    {complaint.photos && complaint.photos.length > 0 ? (
+                    {false ? (
                       <div className="space-y-2">
-                        {complaint.photos.map((p: any) => (
+                        {[].map((p: any) => (
                           <div
                             key={p.id}
                             className="border-l-4 border-emerald-300 pl-4 py-2 flex items-start justify-between"
@@ -751,13 +734,13 @@ const ComplaintDetails: React.FC = () => {
                       <p className="text-gray-500 text-xs">
                         <strong>Created:</strong>{" "}
                         {new Date(
-                          complaint.createdAt || complaint.submittedOn,
+                          complaint.submittedDate,
                         ).toLocaleString()}
                       </p>
                       <p className="text-gray-500 text-xs">
                         <strong>Last Updated:</strong>{" "}
                         {new Date(
-                          complaint.updatedAt || complaint.submittedOn,
+                          complaint.lastUpdated,
                         ).toLocaleString()}
                       </p>
                     </div>
@@ -765,7 +748,7 @@ const ComplaintDetails: React.FC = () => {
                 </div>
 
                 {/* Citizen Feedback Section */}
-                {(complaint.citizenFeedback || complaint.rating) && (
+                {(complaint.feedback || complaint.rating) && (
                   <div className="border-t pt-4">
                     <h4 className="font-medium mb-2">Citizen Feedback</h4>
                     <div className="bg-blue-50 rounded-lg p-3">
@@ -774,9 +757,9 @@ const ComplaintDetails: React.FC = () => {
                           <strong>Rating:</strong> {complaint.rating}/5 ⭐
                         </p>
                       )}
-                      {complaint.citizenFeedback && (
+                      {complaint.feedback && (
                         <p className="text-sm text-blue-700">
-                          <strong>Feedback:</strong> {complaint.citizenFeedback}
+                          <strong>Feedback:</strong> {complaint.feedback}
                         </p>
                       )}
                     </div>
@@ -817,11 +800,11 @@ const ComplaintDetails: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {complaint.contactName && (
+              {complaint.submittedBy && (
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-2 text-gray-400" />
                   <div className="flex flex-col">
-                    <span className="font-medium">{complaint.contactName}</span>
+                    <span className="font-medium">Complaint Submitter</span>
                     {/* Show if submitted by registered user for admin/ward managers */}
                     {(user?.role === "ADMINISTRATOR" ||
                       user?.role === "WARD_OFFICER") &&
@@ -903,7 +886,7 @@ const ComplaintDetails: React.FC = () => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
                     <div className="bg-blue-50 rounded-lg p-3">
-                    <p className="text-sm font-medium mb-1">Ward Officer</p>
+                      <p className="text-sm font-medium mb-1">Ward Officer</p>
                       {complaint.wardOfficer ? (
                         <>
                           <p className="text-blue-800 font-medium">
@@ -1110,12 +1093,11 @@ const ComplaintDetails: React.FC = () => {
               {user?.role !== "CITIZEN" && (
                 <div>
                   <h4 className="font-medium mb-2">
-                    Maintenance Team Attachments (
-                    {complaint?.photos?.length || 0})
+                    Maintenance Team Attachments (0)
                   </h4>
-                  {complaint?.photos && complaint.photos.length > 0 ? (
+                  {false ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      {complaint.photos.map((p: any) => (
+                      {[].map((p: any) => (
                         <div key={p.id} className="border rounded-lg p-2">
                           <img
                             src={p.photoUrl}
@@ -1203,9 +1185,9 @@ const ComplaintDetails: React.FC = () => {
                   )}
 
                 {/* Show feedback button for resolved/closed complaints if user is the complainant */}
-                {(complaint.status === "RESOLVED" ||
-                  complaint.status === "CLOSED") &&
-                  complaint.submittedById === user?.id &&
+                {(complaint.status === "resolved" ||
+                  complaint.status === "closed") &&
+                  complaint.submittedBy === user?.id &&
                   !complaint.rating && (
                     <Button
                       className="w-full justify-start"

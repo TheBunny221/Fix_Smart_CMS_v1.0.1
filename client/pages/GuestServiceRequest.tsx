@@ -283,22 +283,20 @@ const GuestServiceRequest: React.FC = () => {
                   return (
                     <div
                       key={step.id}
-                      className={`flex flex-col items-center space-y-2 p-2 rounded-lg transition-colors ${
-                        step.id === currentStep
-                          ? "bg-blue-100 text-blue-800"
-                          : step.id < currentStep
-                            ? "bg-green-100 text-green-800"
-                            : "text-gray-400"
-                      }`}
+                      className={`flex flex-col items-center space-y-2 p-2 rounded-lg transition-colors ${step.id === currentStep
+                        ? "bg-blue-100 text-blue-800"
+                        : step.id < currentStep
+                          ? "bg-green-100 text-green-800"
+                          : "text-gray-400"
+                        }`}
                     >
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                          step.id === currentStep
-                            ? "bg-blue-600 text-white"
-                            : step.id < currentStep
-                              ? "bg-green-600 text-white"
-                              : "bg-gray-300 text-gray-600"
-                        }`}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${step.id === currentStep
+                          ? "bg-blue-600 text-white"
+                          : step.id < currentStep
+                            ? "bg-green-600 text-white"
+                            : "bg-gray-300 text-gray-600"
+                          }`}
                       >
                         {step.id < currentStep ? (
                           <CheckCircle className="h-4 w-4" />
@@ -319,10 +317,10 @@ const GuestServiceRequest: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {React.createElement(steps[currentStep - 1].icon, {
+              {React.createElement(steps[currentStep - 1]?.icon || FileText, {
                 className: "h-5 w-5",
               })}
-              {steps[currentStep - 1].title}
+              {steps[currentStep - 1]?.title || "Step"}
             </CardTitle>
             <CardDescription>
               {currentStep === 1 &&

@@ -415,13 +415,12 @@ const GuestComplaintForm: React.FC = () => {
       const response = await submitComplaintMutation(submissionData).unwrap();
       const result = response.data;
 
-      if (result.complaintId && result.trackingNumber) {
+      if (result.sessionId) {
         // Open unified OTP dialog
         openOtpFlow({
           context: "guestComplaint",
           email: formData.email,
-          complaintId: result.complaintId,
-          trackingNumber: result.trackingNumber,
+          complaintId: result.sessionId,
           title: "Verify Your Complaint",
           description:
             "Enter the verification code sent to your email to complete your complaint submission",
@@ -436,7 +435,7 @@ const GuestComplaintForm: React.FC = () => {
 
         toast({
           title: "Complaint Submitted",
-          description: `Tracking number: ${result.trackingNumber}. Please check your email for the verification code.`,
+          description: `Session ID: ${result.sessionId}. Please check your email for the verification code.`,
         });
       }
     } catch (error: any) {
@@ -780,7 +779,7 @@ const GuestComplaintForm: React.FC = () => {
                     <div className="space-y-2">
                       <Label>Priority</Label>
                       <Select
-                        value={formData.priority}
+                        value={formData.priority || ""}
                         onValueChange={(value) =>
                           handleSelectChange("priority", value)
                         }
@@ -908,7 +907,7 @@ const GuestComplaintForm: React.FC = () => {
                         Sub-Zone <span className="text-red-500">*</span>
                       </Label>
                       <Select
-                        value={formData.subZoneId}
+                        value={formData.subZoneId || ""}
                         onValueChange={(value) =>
                           handleSelectChange("subZoneId", value)
                         }
@@ -1265,7 +1264,10 @@ const GuestComplaintForm: React.FC = () => {
           <Dialog
             open={imagePreview.show}
             onOpenChange={(open) =>
-              dispatch(setImagePreview({ show: open, url: imagePreview.url }))
+              dispatch(setImagePreview({ 
+                show: open, 
+                ...(imagePreview.url && { url: imagePreview.url })
+              }))
             }
           >
             <DialogContent className="max-w-3xl">

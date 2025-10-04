@@ -125,17 +125,16 @@ const CreateComplaint: React.FC = () => {
 
     try {
       const result = await createComplaint({
-        title: formData.title || `${formData.type} complaint`,
         description: formData.description,
         complaintTypeId: formData.type,
         type: formData.type,
-        priority: formData.priority,
+        priority: formData.priority.toLowerCase() as "low" | "medium" | "high" | "critical",
         wardId: user?.wardId || "default-ward", // This should be determined by area/location
         area: formData.area,
-        landmark: formData.landmark || undefined,
-        address: formData.address || undefined,
-        contactName: formData.isAnonymous ? undefined : formData.contactName,
-        contactEmail: formData.isAnonymous ? undefined : formData.contactEmail,
+
+        ...(formData.address && { address: formData.address }),
+        ...(formData.isAnonymous ? {} : { contactName: formData.contactName }),
+        ...(formData.isAnonymous ? {} : { contactEmail: formData.contactEmail }),
         contactPhone: formData.contactPhone,
         isAnonymous: formData.isAnonymous,
       }).unwrap();

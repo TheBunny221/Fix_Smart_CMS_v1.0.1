@@ -80,7 +80,7 @@ const MaintenanceTasks: React.FC = () => {
     error,
     refetch: refetchComplaints,
   } = useGetComplaintsQuery({
-    maintenanceTeamId: user?.id,
+    ...(user?.id && { maintenanceTeamId: user.id }),
     page: 1,
     limit: 100,
   });
@@ -138,7 +138,7 @@ const MaintenanceTasks: React.FC = () => {
         : null,
       isOverdue: complaint.deadline
         ? new Date(complaint.deadline) < new Date() &&
-          !["RESOLVED", "CLOSED"].includes(complaint.status)
+        !["RESOLVED", "CLOSED"].includes(complaint.status)
         : false,
       description: complaint.description,
       assignedAt: complaint.assignedOn || complaint.submittedOn,
@@ -152,9 +152,12 @@ const MaintenanceTasks: React.FC = () => {
   }
 
   const tasks = useMemo(() => {
-    const data =
-      complaintsResponse?.data?.complaints ??
-      (Array.isArray(complaintsResponse?.data) ? complaintsResponse.data : []);
+    const complaintsData = complaintsResponse?.data as any;
+    const data = Array.isArray(complaintsData?.complaints)
+      ? complaintsData.complaints
+      : Array.isArray(complaintsData)
+        ? complaintsData
+        : [];
 
     return Array.isArray(data) ? data.map(mapComplaintToTask) : [];
   }, [complaintsResponse]);
@@ -214,7 +217,7 @@ const MaintenanceTasks: React.FC = () => {
     try {
       await updateComplaintStatus({
         id: taskId,
-        status: "IN_PROGRESS",
+        status: "in_progress",
       }).unwrap();
       refetchComplaints();
     } catch (error) {
@@ -233,7 +236,7 @@ const MaintenanceTasks: React.FC = () => {
       try {
         await updateComplaintStatus({
           id: selectedTask.id,
-          status: "RESOLVED",
+          status: "resolved",
           remarks: resolveComment,
         }).unwrap();
 
@@ -265,9 +268,9 @@ const MaintenanceTasks: React.FC = () => {
       if ((!lat || !lng) && task.id) {
         const res = await triggerGetComplaint(task.id).unwrap();
         const c = res?.data || res;
-        const comp = c?.complaint || c;
-        lat = comp?.latitude ?? comp?.lat ?? lat;
-        lng = comp?.longitude ?? comp?.lng ?? lng;
+        const comp = c;
+        lat = (comp as any)?.latitude ?? (comp as any)?.lat ?? lat;
+        lng = (comp as any)?.longitude ?? (comp as any)?.lng ?? lng;
       }
 
       if (lat && lng) {
@@ -324,7 +327,11 @@ const MaintenanceTasks: React.FC = () => {
 
     // Combine photos and status logs into a timeline
     const timelineItems = useMemo(() => {
-      const items = [];
+      const items: Array<{
+        type: string;
+        timestamp: string;
+        content: any;
+      }> = [];
 
       // Add status logs
       statusLogs.forEach((log: any) => {
@@ -1119,15 +1126,15 @@ const MaintenanceTasks: React.FC = () => {
                       )}
                       {(task.status === "IN_PROGRESS" ||
                         task.status === "REOPENED") && (
-                        <Button
-                          size="sm"
-                          className="h-11 md:h-9"
-                          onClick={() => handleMarkResolved(task)}
-                        >
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Mark as Resolved
-                        </Button>
-                      )}
+                          <Button
+                            size="sm"
+                            className="h-11 md:h-9"
+                            onClick={() => handleMarkResolved(task)}
+                          >
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Mark as Resolved
+                          </Button>
+                        )}
                       <Link to={`/tasks/${task.id}`}>
                         <Button
                           variant="outline"

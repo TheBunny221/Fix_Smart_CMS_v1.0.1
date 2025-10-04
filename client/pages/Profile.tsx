@@ -123,8 +123,8 @@ const Profile: React.FC = () => {
       );
 
       // In development, show the token for testing
-      if (process.env.NODE_ENV === "development" && response?.data?.resetUrl) {
-        const token = response.data.resetUrl.split("/").pop();
+      if (process.env.NODE_ENV === "development" && (response?.data as any)?.resetUrl) {
+        const token = (response.data as any).resetUrl.split("/").pop();
         if (token) {
           setSetupToken(token);
           dispatch(
@@ -150,7 +150,10 @@ const Profile: React.FC = () => {
 
   const handleSaveProfile = async () => {
     try {
-      await dispatch(updateProfile(formData)).unwrap();
+      await dispatch(updateProfile({
+        ...formData,
+        ward: user?.ward // Keep the original ward object
+      } as any)).unwrap();
       dispatch(
         addNotification({
           type: "success",
@@ -481,7 +484,7 @@ const Profile: React.FC = () => {
                       onChange={(e) =>
                         handleInputChange("ward", e.target.value)
                       }
-                      disabled={!isEditing || user.role !== "ward-officer"}
+                      disabled={!isEditing || user.role !== "WARD_OFFICER"}
                     />
                   </div>
                 )}
@@ -495,7 +498,7 @@ const Profile: React.FC = () => {
                       onChange={(e) =>
                         handleInputChange("department", e.target.value)
                       }
-                      disabled={!isEditing || user.role !== "maintenance"}
+                      disabled={!isEditing || user.role !== "MAINTENANCE_TEAM"}
                     />
                   </div>
                 )}

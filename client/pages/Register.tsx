@@ -103,7 +103,7 @@ const Register: React.FC = () => {
         wardId: formData.wardId,
       }).unwrap();
 
-      if (result.data?.requiresOtpVerification) {
+      if ((result.data as any)?.requiresOtpVerification) {
         // OTP verification required - open unified dialog
         openOtpFlow({
           context: "register",

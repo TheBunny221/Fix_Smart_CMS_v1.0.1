@@ -40,14 +40,14 @@ import HeatmapGrid, { HeatmapData } from "../components/charts/HeatmapGrid";
 
 interface FilterState {
   mainFilter:
-    | "none"
-    | "registered"
-    | "assigned"
-    | "inProgress"
-    | "resolved"
-    | "reopened"
-    | "closed"
-    | "total";
+  | "none"
+  | "registered"
+  | "assigned"
+  | "inProgress"
+  | "resolved"
+  | "reopened"
+  | "closed"
+  | "total";
   overdue: boolean;
   urgent: boolean;
 }
@@ -270,11 +270,10 @@ const WardOfficerDashboard: React.FC = () => {
           </p>
         </div>
         <Card
-          className={`w-40 p-1.5 cursor-pointer rounded-xl transition-all duration-300 ${
-            filters.mainFilter === "total"
-              ? "ring-2 ring-primary bg-primary/10 scale-105"
-              : "bg-white/10 hover:bg-white/20"
-          }`}
+          className={`w-40 p-1.5 cursor-pointer rounded-xl transition-all duration-300 ${filters.mainFilter === "total"
+            ? "ring-2 ring-primary bg-primary/10 scale-105"
+            : "bg-white/10 hover:bg-white/20"
+            }`}
           onClick={() =>
             handleMainFilterChange(
               filters.mainFilter === "total" ? "none" : "total",
@@ -317,8 +316,13 @@ const WardOfficerDashboard: React.FC = () => {
         onValueChange={handleMainFilterChange}
       >
         <StatusOverviewGrid
-          stats={stats}
-          filters={filters}
+          {...(stats && { stats })}
+          filters={{
+            ...filters,
+            mainFilter: filters.mainFilter === "total" || filters.mainFilter === "inProgress"
+              ? "none"
+              : filters.mainFilter as any
+          }}
           onMainFilterChange={handleMainFilterChange}
         />
       </RadioGroup>
@@ -486,8 +490,8 @@ const WardOfficerDashboard: React.FC = () => {
               value={
                 stats?.summary.totalComplaints
                   ? (stats.summary.completedWork /
-                      stats.summary.totalComplaints) *
-                    100
+                    stats.summary.totalComplaints) *
+                  100
                   : 0
               }
               className="h-2"

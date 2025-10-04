@@ -57,11 +57,14 @@ const WardManagement: React.FC = () => {
   } = useGetComplaintsQuery({
     page: 1,
     limit: 100,
-    officerId: user?.id,
+    ...(user?.id && { officerId: user.id }),
   });
 
-  const complaints = Array.isArray(complaintsResponse?.data?.complaints)
-    ? complaintsResponse.data.complaints
+  const complaintsData = complaintsResponse?.data as any;
+  const complaints = Array.isArray(complaintsData?.complaints)
+    ? complaintsData.complaints
+    : Array.isArray(complaintsData)
+    ? complaintsData
     : [];
 
   // Calculate real stats from complaint data
@@ -116,7 +119,7 @@ const WardManagement: React.FC = () => {
     return acc;
   }, {});
 
-  const subZones = Object.values(complaintsByArea);
+  const subZones: AreaStats[] = Object.values(complaintsByArea);
 
   // Priority complaints that need attention
   const priorityComplaints = complaints
@@ -352,7 +355,7 @@ const WardManagement: React.FC = () => {
                       High Priority (
                       {
                         complaints.filter(
-                          (c) =>
+                          (c: any) =>
                             c.priority === "HIGH" || c.priority === "CRITICAL",
                         ).length
                       }
@@ -407,7 +410,7 @@ const WardManagement: React.FC = () => {
                           #{complaint.complaintId || complaint.id.slice(-6)}
                         </TableCell>
                         <TableCell>
-                          {complaint.type.replace("_", " ")}
+                          {(complaint.type || "").replace("_", " ")}
                         </TableCell>
                         <TableCell>{complaint.area}</TableCell>
                         <TableCell>
@@ -418,7 +421,7 @@ const WardManagement: React.FC = () => {
                                 : "bg-blue-100 text-blue-800"
                             }
                           >
-                            {complaint.status.replace("_", " ")}
+                            {(complaint.status || "").replace("_", " ")}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -435,22 +438,24 @@ const WardManagement: React.FC = () => {
                         <TableCell>
                           <div className="flex items-center text-sm">
                             <Calendar className="h-3 w-3 mr-1" />
-                            {new Date(
-                              complaint.submittedOn,
-                            ).toLocaleDateString()}
+                            {complaint.submittedOn
+                              ? new Date(complaint.submittedOn).toLocaleDateString()
+                              : "N/A"}
                           </div>
                         </TableCell>
                         <TableCell>
                           <ComplaintQuickActions
                             complaint={{
                               id: complaint.id,
-                              complaintId: complaint.complaintId,
-                              status: complaint.status,
-                              priority: complaint.priority,
-                              type: complaint.type,
-                              description: complaint.description,
-                              area: complaint.area,
-                              assignedTo: complaint.assignedTo,
+                              ...(complaint.complaintId && { complaintId: complaint.complaintId }),
+                              status: complaint.status || "",
+                              priority: complaint.priority || "",
+                              type: complaint.type || "",
+                              description: complaint.description || "",
+                              area: complaint.area || "",
+                              assignedTo: complaint.assignedTo && typeof complaint.assignedTo === 'object' 
+                                ? complaint.assignedTo 
+                                : null,
                             }}
                             userRole={user?.role || ""}
                             showDetails={false}

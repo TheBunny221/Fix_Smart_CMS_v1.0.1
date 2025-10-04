@@ -93,21 +93,21 @@ const UnifiedReports: React.FC = () => {
       // Load recharts
       if (!rechartsLoaded) {
         const recharts = await import("recharts");
-        setDynamicLibraries((prev) => ({ ...prev, recharts }));
+        setDynamicLibraries((prev: any) => ({ ...prev, recharts }));
         setRechartsLoaded(true);
       }
 
       // Load date-fns
       if (!dateFnsLoaded) {
         const dateFns = await import("date-fns");
-        setDynamicLibraries((prev) => ({ ...prev, dateFns }));
+        setDynamicLibraries((prev: any) => ({ ...prev, dateFns }));
         setDateFnsLoaded(true);
       }
 
       // Load export utilities
       if (!exportUtilsLoaded) {
         const exportUtils = await import("../utils/exportUtils");
-        setDynamicLibraries((prev) => ({ ...prev, exportUtils }));
+        setDynamicLibraries((prev: any) => ({ ...prev, exportUtils }));
         setExportUtilsLoaded(true);
       }
     } catch (error) {
@@ -132,10 +132,10 @@ const UnifiedReports: React.FC = () => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
       .toISOString()
-      .split("T")[0];
+      .split("T")[0] || "";
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
       .toISOString()
-      .split("T")[0];
+      .split("T")[0] || "";
     return {
       dateRange: { from: firstDay, to: lastDay },
       ward: "all",
@@ -215,9 +215,9 @@ const UnifiedReports: React.FC = () => {
   // Apply role-based filter restrictions
   useEffect(() => {
     if (permissions.defaultWard !== "all") {
-      setFilters((prev) => ({
+      setFilters((prev: FilterOptions) => ({
         ...prev,
-        ward: permissions.defaultWard,
+        ward: permissions.defaultWard || "",
       }));
     }
   }, [permissions.defaultWard]);
@@ -422,15 +422,15 @@ const UnifiedReports: React.FC = () => {
     const abortController = new AbortController();
     setReportAbortController(abortController);
 
-    try {
-      // Start countdown timer - more realistic progression
-      let progress = 0;
-      const timer = setInterval(() => {
+    // Start countdown timer - more realistic progression
+    let progress = 0;
+    const timer = setInterval(() => {
         progress += Math.random() * 3 + 1; // Random increment between 1-4
         if (progress > 95) progress = 95; // Cap at 95% until API responds
         setReportProgress(progress);
       }, 200); // Update every 200ms
 
+    try {
       // Prepare query parameters
       const queryParams = new URLSearchParams({
         from: filters.dateRange.from,
@@ -487,14 +487,14 @@ const UnifiedReports: React.FC = () => {
           `Report generated successfully! Found ${reportData.data?.complaints?.total || 0} records based on applied filters.`,
         );
       }, 500);
-    } catch (error) {
+    } catch (error: any) {
       clearInterval(timer);
 
-      if (error.name === "AbortError") {
+      if (error?.name === "AbortError") {
         console.log("Report generation cancelled by user");
       } else {
         console.error("Report generation error:", error);
-        alert(`Failed to generate report: ${error.message}`);
+        alert(`Failed to generate report: ${error?.message || "Unknown error"}`);
       }
 
       setShowReportModal(false);
@@ -567,7 +567,7 @@ const UnifiedReports: React.FC = () => {
 
     console.log("Processing chart data:", analyticsData);
 
-    let trendsData = [];
+    let trendsData: any[] = [];
     if (analyticsData.trends) {
       if (dateFnsLoaded && dynamicLibraries.dateFns) {
         try {
@@ -1081,17 +1081,16 @@ const UnifiedReports: React.FC = () => {
                     .map((t) => new Date(t.date))
                     .sort((a, b) => a.getTime() - b.getTime());
                   // Use fallback date formatting
-                  const earliestDate = dates[0].toISOString().split("T")[0];
+                  const earliestDate = dates[0]?.toISOString().split("T")[0] || "";
                   const latestDate = dates[dates.length - 1]
-                    .toISOString()
-                    .split("T")[0];
+                    ?.toISOString().split("T")[0] || "";
 
                   setFilters({
                     dateRange: {
                       from: earliestDate,
                       to: latestDate,
                     },
-                    ward: permissions.defaultWard,
+                    ward: permissions.defaultWard || "all",
                     complaintType: "all",
                     status: "all",
                     priority: "all",
@@ -1112,10 +1111,10 @@ const UnifiedReports: React.FC = () => {
 
                   setFilters({
                     dateRange: {
-                      from: firstDay.toISOString().split("T")[0],
-                      to: lastDay.toISOString().split("T")[0],
+                      from: firstDay.toISOString().split("T")[0] || "",
+                      to: lastDay.toISOString().split("T")[0] || "",
                     },
-                    ward: permissions.defaultWard,
+                    ward: permissions.defaultWard || "all",
                     complaintType: "all",
                     status: "all",
                     priority: "all",
@@ -1313,9 +1312,9 @@ const UnifiedReports: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div id="trends-chart">
-                    {processedChartData?.trendsData?.length > 0 ? (
+                    {processedChartData?.trendsData?.length && processedChartData.trendsData.length > 0 ? (
                       renderChart("area", {
-                        data: processedChartData.trendsData,
+                        data: processedChartData?.trendsData || [],
                         xAxis: {
                           dataKey: "date",
                           tick: { fontSize: 12 },
@@ -1382,9 +1381,9 @@ const UnifiedReports: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div id="categories-chart">
-                    {processedChartData?.categoriesWithColors?.length > 0 ? (
+                    {processedChartData?.categoriesWithColors?.length && processedChartData.categoriesWithColors.length > 0 ? (
                       renderChart("pie", {
-                        data: processedChartData.categoriesWithColors,
+                        data: processedChartData?.categoriesWithColors || [],
                         pie: {
                           cx: "50%",
                           cy: "50%",

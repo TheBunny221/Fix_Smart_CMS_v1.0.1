@@ -54,11 +54,12 @@ const MaintenanceDashboard: React.FC = () => {
   });
 
   const complaints = useMemo(() => {
-    if (Array.isArray(complaintsResponse?.data?.complaints)) {
-      return complaintsResponse.data.complaints as Complaint[];
+    const complaintsData = complaintsResponse?.data as any;
+    if (Array.isArray(complaintsData?.complaints)) {
+      return complaintsData.complaints as Complaint[];
     }
-    if (Array.isArray((complaintsResponse as any)?.data)) {
-      return (complaintsResponse as any).data as Complaint[];
+    if (Array.isArray(complaintsData)) {
+      return complaintsData as Complaint[];
     }
     return [] as Complaint[];
   }, [complaintsResponse]);
@@ -105,13 +106,13 @@ const MaintenanceDashboard: React.FC = () => {
     const avgCompletionTime =
       resolvedTasks.length > 0
         ? resolvedTasks.reduce((acc: number, task: Complaint) => {
-            const assignedDate = new Date(task.assignedOn || '');
-            const resolvedDate = new Date(task.resolvedOn || '');
-            const diffInDays =
-              (resolvedDate.getTime() - assignedDate.getTime()) /
-              (1000 * 60 * 60 * 24);
-            return acc + diffInDays;
-          }, 0) / resolvedTasks.length
+          const assignedDate = new Date(task.assignedOn || '');
+          const resolvedDate = new Date(task.resolvedOn || '');
+          const diffInDays =
+            (resolvedDate.getTime() - assignedDate.getTime()) /
+            (1000 * 60 * 60 * 24);
+          return acc + diffInDays;
+        }, 0) / resolvedTasks.length
         : 0;
 
     // Calculate efficiency as percentage of tasks completed on time
@@ -195,7 +196,7 @@ const MaintenanceDashboard: React.FC = () => {
     [myTasks],
   );
 
-  const handleStatusUpdate = async (complaintId: string, newStatus: string) => {
+  const handleStatusUpdate = async (complaintId: string, newStatus: "registered" | "assigned" | "in_progress" | "resolved" | "closed" | "reopened") => {
     try {
       await updateComplaintStatus({
         id: complaintId,
@@ -406,11 +407,11 @@ const MaintenanceDashboard: React.FC = () => {
                             {task.title || `Task #${task.id.slice(-6)}`}
                           </h3>
                           <div className="flex space-x-2">
-                            <Badge className={getStatusColor(task.status)}>
-                              {task.status.replace("_", " ")}
+                            <Badge className={getStatusColor(task.status || "")}>
+                              {(task.status || "").replace("_", " ")}
                             </Badge>
-                            <Badge className={getPriorityColor(task.priority)}>
-                              {task.priority}
+                            <Badge className={getPriorityColor(task.priority || "")}>
+                              {task.priority || ""}
                             </Badge>
                           </div>
                         </div>
@@ -422,7 +423,7 @@ const MaintenanceDashboard: React.FC = () => {
                           {task.area}, {task.landmark}
                           <Calendar className="h-3 w-3 ml-3 mr-1" />
                           Due:{" "}
-                          {task.deadline
+                          {task.deadline && typeof task.deadline === 'string'
                             ? new Date(task.deadline).toLocaleDateString()
                             : "No deadline"}
                         </div>
@@ -438,21 +439,21 @@ const MaintenanceDashboard: React.FC = () => {
                             </Button>
                           </div>
                           <div className="flex space-x-2">
-                            {task.status === "ASSIGNED" && (
+                            {task.status === "assigned" && (
                               <Button
                                 size="sm"
                                 onClick={() =>
-                                  handleStatusUpdate(task.id, "IN_PROGRESS")
+                                  handleStatusUpdate(task.id, "in_progress")
                                 }
                               >
                                 Start Work
                               </Button>
                             )}
-                            {task.status === "IN_PROGRESS" && (
+                            {task.status === "in_progress" && (
                               <Button
                                 size="sm"
                                 onClick={() =>
-                                  handleStatusUpdate(task.id, "RESOLVED")
+                                  handleStatusUpdate(task.id, "resolved")
                                 }
                               >
                                 Mark Complete
@@ -511,10 +512,10 @@ const MaintenanceDashboard: React.FC = () => {
                       <span>
                         {dashboardStats.totalTasks > 0
                           ? Math.round(
-                              (dashboardStats.completed /
-                                dashboardStats.totalTasks) *
-                                100,
-                            )
+                            (dashboardStats.completed /
+                              dashboardStats.totalTasks) *
+                            100,
+                          )
                           : 0}
                         %
                       </span>
@@ -523,8 +524,8 @@ const MaintenanceDashboard: React.FC = () => {
                       value={
                         dashboardStats.totalTasks > 0
                           ? (dashboardStats.completed /
-                              dashboardStats.totalTasks) *
-                            100
+                            dashboardStats.totalTasks) *
+                          100
                           : 0
                       }
                       className="h-2"
@@ -581,8 +582,8 @@ const MaintenanceDashboard: React.FC = () => {
                           <Badge className="bg-red-100 text-red-800">
                             {task.priority}
                           </Badge>
-                          <Badge className={getStatusColor(task.status)}>
-                            {task.status.replace("_", " ")}
+                          <Badge className={getStatusColor(task.status || "")}>
+                            {(task.status || "").replace("_", " ")}
                           </Badge>
                         </div>
                       </div>
@@ -594,7 +595,7 @@ const MaintenanceDashboard: React.FC = () => {
                         {task.area}
                         <Clock className="h-3 w-3 ml-3 mr-1" />
                         Due:{" "}
-                        {task.deadline
+                        {task.deadline && typeof task.deadline === 'string'
                           ? new Date(task.deadline).toLocaleDateString()
                           : "ASAP"}
                       </div>
@@ -636,7 +637,7 @@ const MaintenanceDashboard: React.FC = () => {
             <CardContent>
               <div className="space-y-4">
                 {myTasks
-                  .filter((task) => task.status === "RESOLVED")
+                  .filter((task) => task.status === "resolved")
                   .slice(0, 10)
                   .map((task) => (
                     <div

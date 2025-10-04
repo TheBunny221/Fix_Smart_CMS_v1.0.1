@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useAppSelector } from "../store/hooks";
-import { useGetComplaintsQuery } from "../store/api/complaintsApi";
+import { useGetComplaintsQuery, type Complaint } from "../store/api/complaintsApi";
 import { getApiErrorMessage } from "../store/api/baseApi";
 import { useGetWardsForFilteringQuery } from "../store/api/adminApi";
 import { useDataManager } from "../hooks/useDataManager";
@@ -238,8 +238,11 @@ const ComplaintsList: React.FC = () => {
     refetch,
   } = useGetComplaintsQuery(queryParams, { skip: !isAuthenticated || !user });
 
-  const complaints = Array.isArray(complaintsResponse?.data?.complaints)
-    ? complaintsResponse!.data!.complaints
+  const complaintsData = complaintsResponse?.data as any;
+  const complaints: Complaint[] = Array.isArray(complaintsData?.complaints)
+    ? complaintsData.complaints
+    : Array.isArray(complaintsData)
+    ? complaintsData
     : [];
 
   // Cache complaints data when loaded
@@ -320,10 +323,10 @@ const ComplaintsList: React.FC = () => {
   };
 
   // Pagination helpers
-  const totalItems = complaintsResponse?.data?.pagination?.totalItems ?? 0;
+  const totalItems = complaintsData?.pagination?.totalItems ?? 0;
   const totalPages = Math.max(
     1,
-    complaintsResponse?.data?.pagination?.totalPages ??
+    complaintsData?.pagination?.totalPages ??
       Math.ceil((totalItems || 0) / recordsPerPage || 1),
   );
 
@@ -505,7 +508,7 @@ const ComplaintsList: React.FC = () => {
                 <Checkbox
                   id="needsMaintenanceAssignment"
                   checked={needsMaintenanceAssignment}
-                  onCheckedChange={setNeedsMaintenanceAssignment}
+                  onCheckedChange={(checked) => setNeedsMaintenanceAssignment(checked === true)}
                 />
                 <label
                   htmlFor="needsMaintenanceAssignment"
@@ -529,7 +532,7 @@ const ComplaintsList: React.FC = () => {
           <CardTitle className="flex items-center">
             <FileText className="h-5 w-5 mr-2" />
             Complaints (
-            {complaintsResponse?.data?.pagination?.totalItems ??
+            {complaintsData?.pagination?.totalItems ??
               filteredComplaints.length}
             )
           </CardTitle>
@@ -611,7 +614,7 @@ const ComplaintsList: React.FC = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredComplaints.map((complaint) => (
+                  {filteredComplaints.map((complaint: any) => (
                     <TableRow key={complaint.id}>
                       <TableCell className="font-medium">
                         #{complaint.complaintId || complaint.id.slice(-6)}

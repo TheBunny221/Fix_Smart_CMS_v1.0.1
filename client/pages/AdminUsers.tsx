@@ -127,7 +127,7 @@ const AdminUsers: React.FC = () => {
         getAllUsers({
           page,
           limit,
-          role: roleFilter !== "all" ? roleFilter : undefined,
+          ...(roleFilter !== "all" && { role: roleFilter }),
           status: statusFilter,
         });
       } catch (error) {
@@ -147,7 +147,7 @@ const AdminUsers: React.FC = () => {
         getAllUsers({
           page,
           limit,
-          role: roleFilter !== "all" ? roleFilter : undefined,
+          ...(roleFilter !== "all" && { role: roleFilter }),
           status: statusFilter,
         });
       } catch (error) {
@@ -425,10 +425,10 @@ const AdminUsers: React.FC = () => {
 
       const searched = searchTerm
         ? allUsers.filter(
-            (u) =>
-              u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              u.email.toLowerCase().includes(searchTerm.toLowerCase()),
-          )
+          (u) =>
+            u.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.email.toLowerCase().includes(searchTerm.toLowerCase()),
+        )
         : allUsers;
 
       const blob = new Blob([JSON.stringify(searched, null, 2)], {

@@ -455,11 +455,10 @@ const ReportsAnalytics: React.FC = () => {
                           <TrendingDown className="h-3 w-3 text-red-600" />
                         )}
                         <span
-                          className={`text-xs ${
-                            metric.change > 0
+                          className={`text-xs ${metric.change > 0
                               ? "text-green-600"
                               : "text-red-600"
-                          }`}
+                            }`}
                         >
                           {Math.abs(metric.change)}%
                         </span>
@@ -553,7 +552,7 @@ const ReportsAnalytics: React.FC = () => {
                       dataKey="day"
                       domain={[0, 6]}
                       tickFormatter={(value) =>
-                        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][value]
+                        ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][value] || ""
                       }
                     />
                     <Tooltip
