@@ -8,6 +8,9 @@ import {
   useUploadComplaintAttachmentMutation,
   useCreateComplaintMutation,
 } from "../store/api/complaintsApi";
+import type { CreateComplaintRequest } from "../store/api/complaintsApi";
+
+type ApiPriority = Exclude<CreateComplaintRequest["priority"], undefined>;
 import {
   Card,
   CardContent,
@@ -53,7 +56,7 @@ interface CitizenComplaintData {
   phoneNumber: string;
   type: string;
   description: string;
-  priority: string;
+  priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   slaHours?: number; // Auto-assigned internally
 
   // Step 2: Location
@@ -68,7 +71,7 @@ interface CitizenComplaintData {
   };
 
   // Step 3: Attachments
-  attachments?: any[];
+  attachments?: File[];
 }
 
 const PRIORITIES = [
@@ -159,7 +162,6 @@ const CitizenComplaintForm: React.FC = () => {
     area: "",
     landmark: "",
     address: "",
-    coordinates: undefined,
     attachments: [],
   });
 
@@ -181,6 +183,11 @@ const CitizenComplaintForm: React.FC = () => {
   ];
 
   const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
+  const activeStepIndex = Math.min(
+    Math.max(currentStep - 1, 0),
+    steps.length - 1,
+  );
+  const activeStep = steps[activeStepIndex];
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -228,23 +235,60 @@ const CitizenComplaintForm: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const next: CitizenComplaintData = { ...prev };
+      switch (name) {
+        case "description":
+          next.description = value;
+          break;
+        case "area":
+          next.area = value;
+          break;
+        case "landmark":
+          next.landmark = value ? value : undefined;
+          break;
+        case "address":
+          next.address = value ? value : undefined;
+          break;
+        default:
+          return prev;
+      }
+      return next;
+    });
     if (validationErrors[name]) {
       setValidationErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
-  const handleSelectChange = (name: string, value: string) => {
+  const handleSelectChange = (
+    name: keyof CitizenComplaintData,
+    value: string,
+  ) => {
     setFormData((prev) => {
-      const updatedData = { ...prev, [name]: value };
+      const updatedData: CitizenComplaintData = { ...prev };
+
+      if (name === "subZoneId") {
+        if (value) updatedData.subZoneId = value;
+        else delete updatedData.subZoneId;
+      } else if (name === "wardId") {
+        updatedData.wardId = value;
+        delete updatedData.subZoneId;
+      } else if (name === "priority") {
+        updatedData.priority = value as CitizenComplaintData["priority"];
+      } else if (name === "type") {
+        updatedData.type = value;
+      } else {
+        return prev;
+      }
 
       // Auto-assign priority and SLA hours when complaint type changes
       if (name === "type") {
         const selectedType = complaintTypeOptions.find(
-          (type) => type.value === value,
+          (typeOption) => typeOption.value === value,
         );
         if (selectedType) {
-          updatedData.priority = selectedType.priority || "MEDIUM";
+          const priorityValue = (selectedType.priority || "MEDIUM").toUpperCase() as CitizenComplaintData["priority"];
+          updatedData.priority = priorityValue;
           updatedData.slaHours = selectedType.slaHours || 48;
         }
       }
@@ -314,28 +358,39 @@ const CitizenComplaintForm: React.FC = () => {
     setIsSubmitting(true);
     try {
       // Create complaint
-      const complaintData = {
-        title: `${formData.type} complaint`,
+      const apiPriority: ApiPriority = formData.priority
+        .toLowerCase() as ApiPriority;
+
+      const complaintData: CreateComplaintRequest = {
         description: formData.description,
-        // Send both during transition; backend prefers complaintTypeId
         complaintTypeId: formData.type,
         type: formData.type,
-        priority: formData.priority,
-        slaHours: formData.slaHours,
+        priority: apiPriority,
         wardId: formData.wardId,
-        subZoneId: formData.subZoneId,
         area: formData.area,
-        landmark: formData.landmark,
-        address: formData.address,
-        coordinates: formData.coordinates,
         contactName: formData.fullName,
         contactEmail: formData.email,
         contactPhone: formData.phoneNumber,
         isAnonymous: false,
       };
 
+      if (formData.subZoneId) complaintData.subZoneId = formData.subZoneId;
+
+      let addressValue = formData.address?.trim() || "";
+      if (formData.landmark) {
+        const landmarkText = `Landmark: ${formData.landmark}`;
+        addressValue = addressValue
+          ? `${addressValue} (${landmarkText})`
+          : landmarkText;
+      }
+      if (addressValue) complaintData.address = addressValue;
+
+      if (formData.slaHours != null) complaintData.slaHours = formData.slaHours;
+      if (formData.coordinates)
+        complaintData.location = JSON.stringify(formData.coordinates);
+
       const complaintResponse = await createComplaint(complaintData).unwrap();
-      const complaint = complaintResponse.data.complaint;
+      const complaint = complaintResponse.data;
       const complaintId = complaint.id;
       const displayId =
         complaint.complaintId || complaintId.slice(-6).toUpperCase();
@@ -343,7 +398,7 @@ const CitizenComplaintForm: React.FC = () => {
       // Upload attachments if any
       if (formData.attachments && formData.attachments.length > 0) {
         setUploadingFiles(true);
-        for (const file of formData.attachments) {
+        for (const file of formData.attachments ?? []) {
           try {
             await uploadAttachment({ complaintId, file }).unwrap();
           } catch (uploadError) {
@@ -393,11 +448,12 @@ const CitizenComplaintForm: React.FC = () => {
       return;
     }
 
-    const validFiles = [];
-    const errors = [];
+    const validFiles: File[] = [];
+    const errors: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+      const file = files.item(i);
+      if (!file) continue;
 
       // Validate file size (10MB max)
       if (file.size > 10 * 1024 * 1024) {
@@ -432,7 +488,7 @@ const CitizenComplaintForm: React.FC = () => {
     if (validFiles.length > 0) {
       setFormData((prev) => ({
         ...prev,
-        attachments: [...(prev.attachments || []), ...validFiles],
+        attachments: [...(prev.attachments ?? []), ...validFiles],
       }));
       setFileUploadErrors([]);
     }
@@ -453,6 +509,7 @@ const CitizenComplaintForm: React.FC = () => {
   );
   const selectedWard = WARDS.find((w) => w.id === formData.wardId);
   const availableSubZones = selectedWard?.subZones || [];
+  const priorityMeta = PRIORITIES.find((p) => p.value === formData.priority);
 
   if (!isAuthenticated || !user) {
     return null; // Will redirect in useEffect
@@ -545,10 +602,10 @@ const CitizenComplaintForm: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              {React.createElement(steps[currentStep - 1].icon, {
+              {React.createElement(activeStep.icon, {
                 className: "h-5 w-5",
               })}
-              {steps[currentStep - 1].title}
+              {activeStep.title}
             </CardTitle>
             <CardDescription>
               {currentStep === 1 && "Describe your complaint and set priority"}
@@ -677,13 +734,13 @@ const CitizenComplaintForm: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <Info className="h-4 w-4 text-blue-600" />
                           <span className="text-sm text-blue-600">
-                            Priority: {selectedComplaintType.priority}
+                            Priority: {(selectedComplaintType.priority ?? "MEDIUM").toUpperCase()}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Info className="h-4 w-4 text-blue-600" />
                           <span className="text-sm text-blue-600">
-                            SLA: {selectedComplaintType.slaHours}h
+                            SLA: {selectedComplaintType.slaHours ?? 48}h
                           </span>
                         </div>
                       </div>
@@ -708,16 +765,12 @@ const CitizenComplaintForm: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <div
                             className={`w-2 h-2 rounded-full ${
-                              PRIORITIES.find(
-                                (p) => p.value === formData.priority,
-                              )?.color || "bg-gray-500"
+                              priorityMeta?.color ?? "bg-gray-500"
                             }`}
                           />
                           <span className="text-sm font-medium">
                             Priority:{" "}
-                            {PRIORITIES.find(
-                              (p) => p.value === formData.priority,
-                            )?.label || formData.priority}
+                            {priorityMeta?.label ?? formData.priority}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -799,7 +852,7 @@ const CitizenComplaintForm: React.FC = () => {
                     <div className="space-y-2">
                       <Label>Sub-Zone *</Label>
                       <Select
-                        value={formData.subZoneId}
+                        value={formData.subZoneId ?? ""}
                         onValueChange={(value) =>
                           handleSelectChange("subZoneId", value)
                         }
@@ -813,8 +866,11 @@ const CitizenComplaintForm: React.FC = () => {
                           <SelectValue placeholder="Select sub-zone" />
                         </SelectTrigger>
                         <SelectContent>
-                          {availableSubZones.map((subZone, index) => (
-                            <SelectItem key={index} value={subZone}>
+                          <SelectItem value="" disabled>
+                            Select sub-zone
+                          </SelectItem>
+                          {availableSubZones.map((subZone) => (
+                            <SelectItem key={subZone} value={subZone}>
                               {subZone}
                             </SelectItem>
                           ))}
@@ -1063,13 +1119,9 @@ const CitizenComplaintForm: React.FC = () => {
                       <p>
                         <strong>Priority:</strong>
                         <Badge
-                          className={`ml-2 ${PRIORITIES.find((p) => p.value === formData.priority)?.color}`}
+                          className={`ml-2 ${priorityMeta?.color ?? ""}`}
                         >
-                          {
-                            PRIORITIES.find(
-                              (p) => p.value === formData.priority,
-                            )?.label
-                          }
+                          {priorityMeta?.label ?? formData.priority}
                         </Badge>
                       </p>
                       <p>

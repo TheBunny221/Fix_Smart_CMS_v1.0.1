@@ -49,7 +49,7 @@ interface WardBoundaryManagerProps {
   onClose: () => void;
   ward: Ward;
   subZones?: SubZone[];
-  onSave: (wardData: Ward, subZoneData?: SubZone[]) => void;
+  onSave: (wardData: Ward, subZoneData?: SubZone[]) => void | Promise<void>;
 }
 
 const WardBoundaryManager: React.FC<WardBoundaryManagerProps> = ({
