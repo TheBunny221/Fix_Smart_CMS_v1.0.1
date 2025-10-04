@@ -5,7 +5,7 @@
   "description": "NLC-CMS Complaint Management System",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run server:dev2\" \"npm run client:dev\"",
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
     "dev:start": "npm run dev:setup && npm run dev",
     "dev:setup": "node scripts/setup-dev-environment.js setup",
     "dev:reset": "node scripts/setup-dev-environment.js reset",

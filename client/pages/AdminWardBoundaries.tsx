@@ -3,6 +3,7 @@ import {
   useGetWardsWithBoundariesQuery,
   useUpdateWardBoundariesMutation,
 } from "../store/api/wardApi";
+import type { UpdateBoundariesRequest } from "../store/api/wardApi";
 import {
   Card,
   CardContent,
@@ -25,7 +26,7 @@ interface Ward {
   centerLng?: number;
   boundingBox?: string;
   subZones?: SubZone[];
-  isActive: boolean;
+  isActive?: boolean;
 }
 
 interface SubZone {
@@ -37,8 +38,10 @@ interface SubZone {
   centerLat?: number;
   centerLng?: number;
   boundingBox?: string;
-  isActive: boolean;
+  isActive?: boolean;
 }
+
+type SubZoneUpdatePayload = NonNullable<UpdateBoundariesRequest["subZones"]>[number];
 
 const AdminWardBoundaries: React.FC = () => {
   const [selectedWard, setSelectedWard] = useState<Ward | null>(null);
@@ -69,25 +72,39 @@ const AdminWardBoundaries: React.FC = () => {
   const handleSaveBoundaries = async (
     wardData: Ward,
     subZoneData?: SubZone[],
-  ) => {
+  ): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      await updateBoundaries({
+      const wardPayload: UpdateBoundariesRequest = {
         wardId: wardData.id,
-        boundaries: wardData.boundaries,
-        centerLat: wardData.centerLat,
-        centerLng: wardData.centerLng,
-        boundingBox: wardData.boundingBox,
-        subZones: subZoneData?.map((sz) => ({
+      };
+
+      if (wardData.boundaries) wardPayload.boundaries = wardData.boundaries;
+      if (typeof wardData.centerLat === "number")
+        wardPayload.centerLat = wardData.centerLat;
+      if (typeof wardData.centerLng === "number")
+        wardPayload.centerLng = wardData.centerLng;
+      if (wardData.boundingBox) wardPayload.boundingBox = wardData.boundingBox;
+
+      const formattedSubZones = subZoneData?.map((sz) => {
+        const payload: SubZoneUpdatePayload = {
           id: sz.id,
-          boundaries: sz.boundaries,
-          centerLat: sz.centerLat,
-          centerLng: sz.centerLng,
-          boundingBox: sz.boundingBox,
-        })),
-      }).unwrap();
+        };
+
+        if (sz.boundaries) payload.boundaries = sz.boundaries;
+        if (typeof sz.centerLat === "number") payload.centerLat = sz.centerLat;
+        if (typeof sz.centerLng === "number") payload.centerLng = sz.centerLng;
+        if (sz.boundingBox) payload.boundingBox = sz.boundingBox;
+
+        return payload;
+      });
+
+      if (formattedSubZones && formattedSubZones.length > 0)
+        wardPayload.subZones = formattedSubZones;
+
+      await updateBoundaries(wardPayload).unwrap();
 
       await refetch();
       setIsBoundaryManagerOpen(false);

@@ -168,6 +168,7 @@ export interface DashboardAnalyticsResponse {
     slaCompliance: number;
     citizenSatisfaction: number;
     resolutionRate: number;
+    slaBreaches?: number;
   };
 }
 

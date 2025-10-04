@@ -366,9 +366,7 @@ const LocationMapDialog: React.FC<LocationMapDialogProps> = ({
                 zoom={13}
                 style={{ height: "100%", width: "100%" }}
                 scrollWheelZoom={true}
-                whenCreated={(mapInstance) => {
-                  mapRef.current = mapInstance;
-                }}
+                ref={mapRef}
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

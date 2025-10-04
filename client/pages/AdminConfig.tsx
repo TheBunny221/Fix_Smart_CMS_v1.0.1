@@ -114,6 +114,12 @@ interface SystemSetting {
   type: "string" | "number" | "boolean" | "json";
 }
 
+interface ApiResponse<T> {
+  success?: boolean;
+  message?: string;
+  data: T;
+}
+
 const AdminConfig: React.FC = () => {
   const dispatch = useAppDispatch();
   const { translations } = useAppSelector((state) => state.language);
@@ -160,6 +166,31 @@ const AdminConfig: React.FC = () => {
     useState<Ward | null>(null);
   const [isBoundaryManagerOpen, setIsBoundaryManagerOpen] = useState(false);
 
+  const complaintIdPrefix =
+    systemSettings.find((s) => s.key === "COMPLAINT_ID_PREFIX")?.value ??
+    "KSC";
+  const complaintIdStartNumberRaw =
+    systemSettings.find((s) => s.key === "COMPLAINT_ID_START_NUMBER")?.value ??
+    "1";
+  const complaintIdLengthRaw =
+    systemSettings.find((s) => s.key === "COMPLAINT_ID_LENGTH")?.value ??
+    "4";
+
+  const parsedStartNumber = Number.parseInt(complaintIdStartNumberRaw, 10);
+  const parsedLength = Number.parseInt(complaintIdLengthRaw, 10);
+
+  const complaintIdStartNumber = Number.isNaN(parsedStartNumber)
+    ? 1
+    : parsedStartNumber;
+
+  const complaintIdLength = Number.isNaN(parsedLength)
+    ? 4
+    : Math.max(parsedLength, 0);
+
+  const complaintIdPreview = `${complaintIdPrefix}${complaintIdStartNumber
+    .toString()
+    .padStart(complaintIdLength || 4, "0")}`;
+
   // Reset logo upload state
   const resetLogoUploadState = () => {
     setLogoFile(null);
@@ -168,11 +199,11 @@ const AdminConfig: React.FC = () => {
   };
 
   // API calls with retry logic for rate limiting
-  const apiCall = async (
+  const apiCall = async <T,>(
     url: string,
     options: RequestInit = {},
     retryCount = 0,
-  ): Promise<any> => {
+  ): Promise<T> => {
     const token = localStorage.getItem("token");
     const maxRetries = 3;
     const baseDelay = 1000; // 1 second
@@ -209,7 +240,7 @@ const AdminConfig: React.FC = () => {
         const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
         console.log(`[AdminConfig] Rate limited, retrying in ${delay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
-        return apiCall(url, options, retryCount + 1);
+        return apiCall<T>(url, options, retryCount + 1);
       }
 
       if (isJson) {
@@ -258,7 +289,7 @@ const AdminConfig: React.FC = () => {
         : typeof data?.data,
     });
 
-    return data;
+    return data as T;
   };
 
   // Load data on component mount
@@ -294,9 +325,11 @@ const AdminConfig: React.FC = () => {
 
     try {
       // Load wards (admin endpoint with flags to include isActive and subZones)
-      let wardsResponse;
+      let wardsResponse: ApiResponse<{ wards: Ward[] }>;
       try {
-        wardsResponse = await apiCall("/users/wards?all=true&include=subzones");
+        wardsResponse = await apiCall<ApiResponse<{ wards: Ward[] }>>(
+          "/users/wards?all=true&include=subzones",
+        );
         const wardsData = wardsResponse?.data?.wards || [];
         setWards(wardsData);
       } catch (error: any) {
@@ -318,9 +351,11 @@ const AdminConfig: React.FC = () => {
       // Complaint types are loaded via RTK Query hooks
 
       // Load system settings (admin-only endpoint)
-      let settingsResponse;
+      let settingsResponse: ApiResponse<SystemSetting[]>;
       try {
-        settingsResponse = await apiCall("/system-config");
+        settingsResponse = await apiCall<ApiResponse<SystemSetting[]>>(
+          "/system-config",
+        );
         setSystemSettings(settingsResponse.data || []);
       } catch (error: any) {
         console.error("Failed to load system settings:", error);
@@ -371,10 +406,10 @@ const AdminConfig: React.FC = () => {
         isActive: ward.isActive,
       };
 
-      let response:any;
+      let response: ApiResponse<Ward>;
       if (ward.id && ward.id !== "") {
         // Update existing ward
-        response = await apiCall(`/users/wards/${ward.id}`, {
+        response = await apiCall<ApiResponse<Ward>>(`/users/wards/${ward.id}`, {
           method: "PUT",
           body: JSON.stringify(wardData),
         });
@@ -385,7 +420,7 @@ const AdminConfig: React.FC = () => {
         );
       } else {
         // Create new ward
-        response = await apiCall("/users/wards", {
+        response = await apiCall<ApiResponse<Ward>>("/users/wards", {
           method: "POST",
           body: JSON.stringify(wardData),
         });
@@ -417,7 +452,7 @@ const AdminConfig: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await apiCall(`/users/wards/${wardId}`, { method: "DELETE" });
+      await apiCall<unknown>(`/users/wards/${wardId}`, { method: "DELETE" });
       setWards((prev) => prev.filter((w) => w.id !== wardId));
 
       dispatch(
@@ -440,10 +475,13 @@ const AdminConfig: React.FC = () => {
     setIsLoading(true);
     try {
       // Update ward boundaries
-      const response = await apiCall(`/wards/${wardData.wardId}/boundaries`, {
-        method: "PUT",
-        body: JSON.stringify(wardData),
-      });
+      const response = await apiCall<ApiResponse<Ward>>(
+        `/wards/${wardData.wardId}/boundaries`,
+        {
+          method: "PUT",
+          body: JSON.stringify(wardData),
+        },
+      );
 
       // Update the ward in local state if needed
       setWards((prev) =>
@@ -483,10 +521,10 @@ const AdminConfig: React.FC = () => {
         isActive: subZone.isActive,
       };
 
-      let response;
+      let response: ApiResponse<SubZone>;
       if (subZone.id && subZone.id !== "") {
         // Update existing sub-zone
-        response = await apiCall(
+        response = await apiCall<ApiResponse<SubZone>>(
           `/users/wards/${subZone.wardId}/subzones/${subZone.id}`,
           {
             method: "PUT",
@@ -495,10 +533,13 @@ const AdminConfig: React.FC = () => {
         );
       } else {
         // Create new sub-zone
-        response = await apiCall(`/users/wards/${subZone.wardId}/subzones`, {
-          method: "POST",
-          body: JSON.stringify(subZoneData),
-        });
+        response = await apiCall<ApiResponse<SubZone>>(
+          `/users/wards/${subZone.wardId}/subzones`,
+          {
+            method: "POST",
+            body: JSON.stringify(subZoneData),
+          },
+        );
       }
 
       // Update wards state to include the new/updated sub-zone
@@ -541,7 +582,7 @@ const AdminConfig: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await apiCall(`/users/wards/${wardId}/subzones/${subZoneId}`, {
+      await apiCall<unknown>(`/users/wards/${wardId}/subzones/${subZoneId}`, {
         method: "DELETE",
       });
 
@@ -705,7 +746,7 @@ const AdminConfig: React.FC = () => {
   const handleUpdateSystemSetting = async (key: string, value: string) => {
     setIsLoading(true);
     try {
-      const response = await apiCall(`/system-config/${key}`, {
+      await apiCall<ApiResponse<SystemSetting>>(`/system-config/${key}`, {
         method: "PUT",
         body: JSON.stringify({ value }),
       });
@@ -777,18 +818,21 @@ const AdminConfig: React.FC = () => {
         type: setting.type,
       };
 
-      let response;
+      let response: ApiResponse<SystemSetting>;
       const existingSetting = systemSettings.find((s) => s.key === setting.key);
 
       if (existingSetting) {
         // Update existing setting
-        response = await apiCall(`/system-config/${setting.key}`, {
-          method: "PUT",
-          body: JSON.stringify({
-            value: setting.value,
-            description: setting.description,
-          }),
-        });
+        response = await apiCall<ApiResponse<SystemSetting>>(
+          `/system-config/${setting.key}`,
+          {
+            method: "PUT",
+            body: JSON.stringify({
+              value: setting.value,
+              description: setting.description,
+            }),
+          },
+        );
         setSystemSettings((prev) =>
           prev.map((s) =>
             s.key === setting.key ? { ...setting, ...response.data } : s,
@@ -796,10 +840,13 @@ const AdminConfig: React.FC = () => {
         );
       } else {
         // Create new setting
-        response = await apiCall("/system-config", {
-          method: "POST",
-          body: JSON.stringify(settingData),
-        });
+        response = await apiCall<ApiResponse<SystemSetting>>(
+          "/system-config",
+          {
+            method: "POST",
+            body: JSON.stringify(settingData),
+          },
+        );
         setSystemSettings((prev) => [...prev, response.data]);
       }
 
@@ -829,7 +876,7 @@ const AdminConfig: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await apiCall(`/system-config/${key}`, { method: "DELETE" });
+      await apiCall<unknown>(`/system-config/${key}`, { method: "DELETE" });
       setSystemSettings((prev) => prev.filter((s) => s.key !== key));
 
       dispatch(
@@ -1584,26 +1631,7 @@ const AdminConfig: React.FC = () => {
                             With current settings, new complaint IDs will look
                             like:
                             <span className="font-mono bg-white px-2 py-1 rounded border ml-2">
-                              {systemSettings.find(
-                                (s) => s.key === "COMPLAINT_ID_PREFIX",
-                              )?.value || "KSC"}
-                              {(
-                                parseInt(
-                                  systemSettings.find(
-                                    (s) =>
-                                      s.key === "COMPLAINT_ID_START_NUMBER",
-                                  )?.value,
-                                ) || 1
-                              )
-                                .toString()
-                                .padStart(
-                                  parseInt(
-                                    systemSettings.find(
-                                      (s) => s.key === "COMPLAINT_ID_LENGTH",
-                                    )?.value,
-                                  ) || 4,
-                                  "0",
-                                )}
+                              {complaintIdPreview}
                             </span>
                           </p>
                         </div>

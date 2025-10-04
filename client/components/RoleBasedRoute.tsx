@@ -56,7 +56,9 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
     const handleTokenExpiration = () => {
       if (token && isAuthenticated) {
         try {
-          const tokenPayload = JSON.parse(atob(token.split(".")[1]));
+          const tokenParts = token.split(".");
+          if (tokenParts.length < 2 || !tokenParts[1]) return;
+          const tokenPayload = JSON.parse(atob(tokenParts[1]));
           const currentTime = Date.now() / 1000;
 
           if (tokenPayload.exp && tokenPayload.exp < currentTime) {
@@ -155,9 +157,9 @@ export function withRoleBasedAccess<P extends object>(
     return (
       <RoleBasedRoute
         allowedRoles={allowedRoles}
-        fallbackPath={options?.fallbackPath}
-        unauthorizedPath={options?.unauthorizedPath}
-        checkPermissions={options?.checkPermissions}
+        {...(options?.fallbackPath && { fallbackPath: options.fallbackPath })}
+        {...(options?.unauthorizedPath && { unauthorizedPath: options.unauthorizedPath })}
+        {...(options?.checkPermissions && { checkPermissions: options.checkPermissions })}
       >
         <Component {...props} />
       </RoleBasedRoute>

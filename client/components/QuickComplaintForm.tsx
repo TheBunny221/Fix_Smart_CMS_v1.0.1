@@ -365,16 +365,16 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
             type: formData.problemType as ComplaintType,
             priority: "MEDIUM" as Priority,
             wardId: formData.ward,
-            subZoneId: formData.subZoneId || undefined,
+            ...(formData.subZoneId && { subZoneId: formData.subZoneId }),
             area: formData.area,
-            landmark: formData.location,
-            address: formData.address,
-            coordinates: formData.coordinates,
-            captchaText: captcha,
-            captchaId: captchaId,
-            contactName: user?.fullName || "",
-            contactEmail: formData.email,
-            contactPhone: formData.mobile,
+            ...(formData.location && { landmark: formData.location }),
+            ...(formData.address && { address: formData.address }),
+            ...(formData.coordinates && { coordinates: formData.coordinates }),
+            ...(captcha && { captchaText: captcha }),
+            ...(captchaId && { captchaId: captchaId }),
+            ...(user?.fullName && { contactName: user.fullName }),
+            ...(formData.email && { contactEmail: formData.email }),
+            ...(formData.mobile && { contactPhone: formData.mobile }),
             isAnonymous: false,
           };
 
@@ -1020,7 +1020,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                     <div className="flex space-x-2">
                       <Button
                         type="button"
-                        onClick={handleVerifyOtp}
+                        onClick={() => handleVerifyOtp()}
                         className="flex-1"
                         disabled={isLoading || otpCode.length !== 6}
                       >
@@ -1116,17 +1116,15 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
         isOpen={isMapDialogOpen}
         onClose={() => setIsMapDialogOpen(false)}
         onLocationSelect={handleLocationSelect}
-        initialLocation={
-          formData.coordinates
-            ? {
-                latitude: formData.coordinates.latitude,
-                longitude: formData.coordinates.longitude,
-                address: formData.address,
-                area: formData.area,
-                landmark: formData.location,
-              }
-            : undefined
-        }
+        {...(formData.coordinates && {
+          initialLocation: {
+            latitude: formData.coordinates.latitude,
+            longitude: formData.coordinates.longitude,
+            address: formData.address,
+            area: formData.area,
+            landmark: formData.location,
+          },
+        })}
       />
     </div>
   );

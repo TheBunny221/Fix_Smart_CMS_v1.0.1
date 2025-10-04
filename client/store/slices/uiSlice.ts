@@ -20,6 +20,7 @@ export interface Modal {
   title: string;
   content: string | React.ReactNode;
   onConfirm?: () => void;
+  onCancel?: () => void;
   confirmText?: string;
   cancelText?: string;
   size?: "sm" | "md" | "lg" | "xl";

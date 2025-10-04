@@ -547,37 +547,50 @@ const WardBoundaryManager: React.FC<WardBoundaryManagerProps> = ({
       return;
     }
 
+    const { boundaries: _wardBoundaries, boundingBox: _wardBox, ...restWard } =
+      ward;
+
     const updatedWard: Ward = {
-      ...ward,
-      boundaries: hasWard ? JSON.stringify(wardBoundary) : undefined,
+      ...restWard,
       centerLat: centerCoordinates.lat,
       centerLng: centerCoordinates.lng,
-      boundingBox: hasWard
-        ? JSON.stringify(calculateBoundingBox(wardBoundary))
-        : undefined,
+      ...(hasWard
+        ? {
+            boundaries: JSON.stringify(wardBoundary),
+            boundingBox: JSON.stringify(calculateBoundingBox(wardBoundary)),
+          }
+        : {}),
     };
 
     const updatedSubZones: SubZone[] = subZones.map((subZone) => {
       const boundaries = subZoneBoundaries[subZone.id];
+      const hasBoundaries = Boolean(boundaries && boundaries.length > 0);
+      const center = hasBoundaries
+        ? calculatePolygonCenter(boundaries as any[])
+        : null;
+      const box = hasBoundaries
+        ? calculateBoundingBox(boundaries as any[])
+        : null;
+
+      const {
+        boundaries: _existingBoundaries,
+        centerLat: _existingCenterLat,
+        centerLng: _existingCenterLng,
+        boundingBox: _existingBoundingBox,
+        ...restSubZone
+      } = subZone;
+
       return {
-        ...subZone,
-        boundaries:
-          boundaries && boundaries.length > 0
-            ? JSON.stringify(boundaries)
-            : undefined,
-        centerLat:
-          boundaries && boundaries.length > 0
-            ? calculatePolygonCenter(boundaries).lat
-            : undefined,
-        centerLng:
-          boundaries && boundaries.length > 0
-            ? calculatePolygonCenter(boundaries).lng
-            : undefined,
-        boundingBox:
-          boundaries && boundaries.length > 0
-            ? JSON.stringify(calculateBoundingBox(boundaries))
-            : undefined,
-      };
+        ...restSubZone,
+        ...(hasBoundaries
+          ? {
+              boundaries: JSON.stringify(boundaries),
+              centerLat: center?.lat,
+              centerLng: center?.lng,
+              boundingBox: box ? JSON.stringify(box) : undefined,
+            }
+          : {}),
+      } as SubZone;
     });
 
     onSave(updatedWard, updatedSubZones);
@@ -719,7 +732,7 @@ const WardBoundaryManager: React.FC<WardBoundaryManagerProps> = ({
 
                     {subZoneBoundaries[subZone.id] && (
                       <div className="text-xs text-gray-600 bg-white p-2 rounded">
-                        Points: {subZoneBoundaries[subZone.id].length}
+                        Points: {subZoneBoundaries[subZone.id]?.length ?? 0}
                       </div>
                     )}
 

@@ -102,12 +102,13 @@ const MaterialsModal: React.FC<MaterialsModalProps> = ({
 
     try {
       setAddError(null);
+      const trimmedNotes = newMaterial.notes.trim();
       await addMaterial({
         complaintId,
         materialName: newMaterial.materialName.trim(),
         quantity: newMaterial.quantity,
         unit: newMaterial.unit,
-        notes: newMaterial.notes.trim() || undefined,
+        ...(trimmedNotes && { notes: trimmedNotes }),
       }).unwrap();
 
       // Reset form

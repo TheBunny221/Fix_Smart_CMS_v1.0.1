@@ -1267,6 +1267,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
         }
 
         // create map with custom panes for proper z-index layering
+        if (!mapRef.current) return;
         leafletMapRef.current = new L.Map(mapRef.current, {
           center: [effectiveCenter.lat, effectiveCenter.lng],
           zoom: 13,
@@ -1290,12 +1291,10 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
         tileLayer.on("tileerror", (e: any) => {
           console.warn("Tile error", e);
         });
-
         tileLayer.addTo(leafletMapRef.current);
 
         // add boundary polygon for Kochi
-        const boundaryCoords = [
-          [bboxSouth, bboxWest],
+        const boundaryCoords: [number, number][] = [
           [bboxNorth, bboxWest],
           [bboxNorth, bboxEast],
           [bboxSouth, bboxEast],

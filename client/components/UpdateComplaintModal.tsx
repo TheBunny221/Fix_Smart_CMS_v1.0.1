@@ -5,6 +5,10 @@ import {
   useUpdateComplaintMutation,
   useGetWardUsersQuery,
 } from "../store/api/complaintsApi";
+import type {
+  Complaint as StoreComplaint,
+  User as BaseComplaintUser,
+} from "../store/slices/complaintsSlice";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +18,6 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import {
@@ -27,7 +30,6 @@ import {
 import { Badge } from "./ui/badge";
 import { toast } from "./ui/use-toast";
 import {
-  Search,
   User,
   AlertTriangle,
   CheckCircle,
@@ -38,22 +40,25 @@ import {
   RotateCcw,
 } from "lucide-react";
 
-interface Complaint {
+type AssignmentUser = BaseComplaintUser & {
+  ward?: { name: string } | null;
+};
+
+type AssignmentRelation = AssignmentUser | string | null;
+
+type ComplaintWithAssignments = Partial<StoreComplaint> & {
   id: string;
   complaintId?: string;
-  status: string;
-  priority: string;
-  type: string;
-  description: string;
-  area: string;
-  assignedTo?: any;
-  wardOfficer?: any;
-  maintenanceTeam?: any;
+  assignedTo?: AssignmentRelation;
+  wardOfficer?: AssignmentRelation;
+  maintenanceTeam?: AssignmentRelation;
   needsTeamAssignment?: boolean;
-}
+  status?: StoreComplaint["status"] | string;
+  priority?: StoreComplaint["priority"] | string;
+};
 
 interface UpdateComplaintModalProps {
-  complaint: Complaint | null;
+  complaint: ComplaintWithAssignments | null;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -116,31 +121,53 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
       u.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  const resolveAssignmentId = (assignment: unknown): string => {
+    if (!assignment) return "none";
+    if (typeof assignment === "string") return assignment;
+    if (
+      typeof assignment === "object" &&
+      assignment !== null &&
+      "id" in assignment &&
+      typeof (assignment as { id?: unknown }).id === "string"
+    ) {
+      return (assignment as { id: string }).id;
+    }
+    return "none";
+  };
+
+  const resolveAssignmentName = (assignment: unknown): string | null => {
+    if (!assignment) return null;
+    if (typeof assignment === "string") {
+      const trimmed = assignment.trim();
+      if (!trimmed || trimmed.toLowerCase() === "none") return null;
+      return trimmed;
+    }
+    if (typeof assignment === "object" && assignment !== null) {
+      const { fullName, email, id } = assignment as {
+        fullName?: string;
+        email?: string;
+        id?: string;
+      };
+      return fullName || email || id || null;
+    }
+    return null;
+  };
+
   useEffect(() => {
     if (complaint && isOpen) {
       // Extract IDs from complaint (prefer new wardOfficer field but keep legacy support)
-      const wardOfficerId =
-        typeof complaint.wardOfficer === "object" && complaint.wardOfficer?.id
-          ? complaint.wardOfficer.id
-          : complaint.wardOfficer || "none";
+      const wardOfficerId = resolveAssignmentId(complaint.wardOfficer);
 
-      const assignedToId =
-        typeof complaint.assignedTo === "object" && complaint.assignedTo?.id
-          ? complaint.assignedTo.id
-          : complaint.assignedTo || "none";
+      const assignedToId = resolveAssignmentId(complaint.assignedTo);
 
-      const maintenanceTeamId =
-        typeof complaint.maintenanceTeam === "object" &&
-        complaint.maintenanceTeam?.id
-          ? complaint.maintenanceTeam.id
-          : complaint.maintenanceTeam || "none";
+      const maintenanceTeamId = resolveAssignmentId(complaint.maintenanceTeam);
 
       setFormData({
-        status: complaint.status,
-        priority: complaint.priority,
-        wardOfficerId,
-        assignedToId,
-        maintenanceTeamId,
+        status: complaint.status ?? "REGISTERED",
+        priority: complaint.priority ?? "MEDIUM",
+        wardOfficerId: wardOfficerId ?? "none",
+        assignedToId: assignedToId ?? "none",
+        maintenanceTeamId: maintenanceTeamId ?? "none",
         remarks: "",
       });
 
@@ -211,7 +238,10 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
         RESOLVED: ["RESOLVED"],
         REOPENED: ["REOPENED", "IN_PROGRESS"],
       };
-      return statusFlow[currentStatus] || ["IN_PROGRESS", "RESOLVED"];
+      if (currentStatus && statusFlow[currentStatus]) {
+        return statusFlow[currentStatus];
+      }
+      return ["IN_PROGRESS", "RESOLVED"];
     }
 
     if (user?.role === "WARD_OFFICER") {
@@ -235,6 +265,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
   const validateForm = () => {
     const errors: string[] = [];
     const availableStatuses = getAvailableStatusOptions();
+    const complaintStatus = complaint?.status ?? "REGISTERED";
+    const complaintPriority = complaint?.priority ?? "MEDIUM";
     if (formData.status && !availableStatuses.includes(formData.status)) {
       errors.push(
         `You don't have permission to set status to '${formData.status}'. Available options: ${availableStatuses.join(", ")}`,
@@ -248,7 +280,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
       if (formData.status === "REGISTERED") {
         errors.push("Maintenance team cannot set status to 'Registered'.");
       }
-      if (formData.priority !== complaint?.priority) {
+      if (complaintPriority && formData.priority !== complaintPriority) {
         errors.push(
           "Maintenance team cannot change complaint priority. Contact your supervisor if needed.",
         );
@@ -269,7 +301,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
         );
       }
       if (
-        complaint?.status === "REGISTERED" &&
+        complaintStatus === "REGISTERED" &&
         formData.status === "ASSIGNED" &&
         (!formData.maintenanceTeamId || formData.maintenanceTeamId === "none")
       ) {
@@ -281,7 +313,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
         (complaint as any)?.needsTeamAssignment &&
         !formData.maintenanceTeamId &&
         formData.status !== "REGISTERED" &&
-        !["RESOLVED", "CLOSED"].includes(complaint.status)
+        complaintStatus &&
+        !["RESOLVED", "CLOSED"].includes(complaintStatus)
       ) {
         errors.push(
           "This complaint needs a maintenance team assignment. Please select a team member.",
@@ -356,29 +389,20 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
       });
 
       if (updatedComplaintResponse?.data) {
-        const updatedComplaint = updatedComplaintResponse.data;
-        const wardOfficerId =
-          typeof updatedComplaint.wardOfficer === "object" &&
-          (updatedComplaint.wardOfficer as any)?.id
-            ? (updatedComplaint.wardOfficer as any).id
-            : (updatedComplaint as any).wardOfficer || "none";
-        const assignedToId =
-          typeof updatedComplaint.assignedTo === "object" &&
-          (updatedComplaint.assignedTo as any)?.id
-            ? (updatedComplaint.assignedTo as any).id
-            : (updatedComplaint as any).assignedTo || "none";
-        const maintenanceTeamId =
-          typeof updatedComplaint.maintenanceTeam === "object" &&
-          (updatedComplaint.maintenanceTeam as any)?.id
-            ? (updatedComplaint.maintenanceTeam as any).id
-            : (updatedComplaint as any).maintenanceTeam || "none";
+        const updatedComplaint = updatedComplaintResponse
+          .data as unknown as ComplaintWithAssignments;
+        const wardOfficerId = resolveAssignmentId(updatedComplaint.wardOfficer);
+        const assignedToId = resolveAssignmentId(updatedComplaint.assignedTo);
+        const maintenanceTeamId = resolveAssignmentId(
+          updatedComplaint.maintenanceTeam,
+        );
 
         setFormData({
-          status: updatedComplaint.status,
-          priority: updatedComplaint.priority,
-          wardOfficerId,
-          assignedToId,
-          maintenanceTeamId,
+          status: updatedComplaint.status ?? "REGISTERED",
+          priority: updatedComplaint.priority ?? "MEDIUM",
+          wardOfficerId: wardOfficerId ?? "none",
+          assignedToId: assignedToId ?? "none",
+          maintenanceTeamId: maintenanceTeamId ?? "none",
           remarks: "",
         });
       }
@@ -406,6 +430,13 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
     setValidationErrors([]);
     onClose();
   };
+
+  const wardOfficerName = complaint
+    ? resolveAssignmentName(complaint.wardOfficer)
+    : null;
+  const maintenanceTeamName = complaint
+    ? resolveAssignmentName(complaint.maintenanceTeam)
+    : null;
 
   if (!complaint) return null;
 
@@ -453,23 +484,25 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-600">Type:</span>{" "}
-                {complaint.type.replace("_", " ")}
+                {(complaint.type ?? "UNKNOWN").replace("_", " ")}
               </div>
               <div>
                 <span className="text-gray-600">Area:</span> {complaint.area}
               </div>
               <div>
                 <span className="text-gray-600">Current Status:</span>{" "}
-                <Badge className={`ml-2 ${getStatusColor(complaint.status)}`}>
-                  {complaint.status.replace("_", " ")}
+                <Badge
+                  className={`ml-2 ${getStatusColor(complaint.status ?? "REGISTERED")}`}
+                >
+                  {(complaint.status ?? "REGISTERED").replace("_", " ")}
                 </Badge>
               </div>
               <div>
                 <span className="text-gray-600">Current Priority:</span>{" "}
                 <Badge
-                  className={`ml-2 ${getPriorityColor(complaint.priority)}`}
+                  className={`ml-2 ${getPriorityColor(complaint.priority ?? "MEDIUM")}`}
                 >
-                  {complaint.priority}
+                  {complaint.priority ?? "MEDIUM"}
                 </Badge>
               </div>
             </div>
@@ -500,10 +533,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                   <span className="text-gray-600">Ward Officer:</span>
                   <div className="flex items-center">
                     <User className="h-4 w-4 mr-1" />
-                    {complaint.wardOfficer ? (
-                      <span className="text-blue-600">
-                        {complaint.wardOfficer.fullName}
-                      </span>
+                    {wardOfficerName ? (
+                      <span className="text-blue-600">{wardOfficerName}</span>
                     ) : (
                       <span className="text-gray-400">Not assigned</span>
                     )}
@@ -514,10 +545,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                   <span className="text-gray-600">Maintenance Team:</span>
                   <div className="flex items-center">
                     <Settings className="h-4 w-4 mr-1" />
-                    {complaint.maintenanceTeam ? (
-                      <span className="text-green-600">
-                        {complaint.maintenanceTeam.fullName}
-                      </span>
+                    {maintenanceTeamName ? (
+                      <span className="text-green-600">{maintenanceTeamName}</span>
                     ) : (complaint as any).needsTeamAssignment ? (
                       <Badge className="bg-orange-100 text-orange-800 text-xs">
                         Needs Assignment
@@ -624,194 +653,198 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
 
           {(user?.role === "WARD_OFFICER" ||
             user?.role === "ADMINISTRATOR") && (
-            <div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="assignedTo">{getDropdownLabel()}</Label>
+              <div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="assignedTo">{getDropdownLabel()}</Label>
+                  {user?.role === "WARD_OFFICER" &&
+                    (complaint as any)?.needsTeamAssignment &&
+                    !["RESOLVED", "CLOSED"].includes(
+                      complaint.status ?? "REGISTERED",
+                    ) && (
+                      <Badge className="bg-blue-100 text-blue-800 text-xs">
+                        Assignment Required
+                      </Badge>
+                    )}
+                </div>
+
                 {user?.role === "WARD_OFFICER" &&
                   (complaint as any)?.needsTeamAssignment &&
-                  !["RESOLVED", "CLOSED"].includes(complaint.status) && (
-                    <Badge className="bg-blue-100 text-blue-800 text-xs">
-                      Assignment Required
-                    </Badge>
-                  )}
-              </div>
-
-              {user?.role === "WARD_OFFICER" &&
-                (complaint as any)?.needsTeamAssignment &&
-                !["RESOLVED", "CLOSED"].includes(complaint.status) && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                    <div className="flex items-center">
-                      <AlertTriangle className="h-4 w-4 text-blue-500 mr-2" />
-                      <span className="text-sm text-blue-700">
-                        This complaint needs to be assigned to a maintenance
-                        team member to proceed.
-                      </span>
+                  !["RESOLVED", "CLOSED"].includes(
+                    complaint.status ?? "REGISTERED",
+                  ) && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                      <div className="flex items-center">
+                        <AlertTriangle className="h-4 w-4 text-blue-500 mr-2" />
+                        <span className="text-sm text-blue-700">
+                          This complaint needs to be assigned to a maintenance
+                          team member to proceed.
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-              <div className="space-y-2">
-                {/* Admin: show two columns - Ward Officer + Maintenance Team; Others: single select */}
-                {user?.role === "ADMINISTRATOR" ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label>Ward Officer</Label>
-                      <Select
-                        value={formData.wardOfficerId}
-                        onValueChange={(value) => {
-                          setFormData((prev) => ({
-                            ...prev,
-                            wardOfficerId: value,
-                          }));
-                          setValidationErrors([]);
-                        }}
-                        disabled={
-                          isLoadingWardOfficers || wardOfficerUsers.length === 0
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Ward Officer" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No Assignment</SelectItem>
-                          {wardOfficerUsers.map((u: any) => (
-                            <SelectItem key={u.id} value={u.id}>
-                              <div className="flex items-center justify-between w-full gap-2">
-                                <div className="flex items-center">
-                                  {getUserRoleIcon(u.role)}
-                                  <div className="ml-2 text-left">
-                                    <div className="font-medium">
-                                      {u.fullName}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      {u.email}
+                <div className="space-y-2">
+                  {/* Admin: show two columns - Ward Officer + Maintenance Team; Others: single select */}
+                  {user?.role === "ADMINISTRATOR" ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Ward Officer</Label>
+                        <Select
+                          value={formData.wardOfficerId}
+                          onValueChange={(value) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              wardOfficerId: value,
+                            }));
+                            setValidationErrors([]);
+                          }}
+                          disabled={
+                            isLoadingWardOfficers || wardOfficerUsers.length === 0
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Ward Officer" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No Assignment</SelectItem>
+                            {wardOfficerUsers.map((u: any) => (
+                              <SelectItem key={u.id} value={u.id}>
+                                <div className="flex items-center justify-between w-full gap-2">
+                                  <div className="flex items-center">
+                                    {getUserRoleIcon(u.role ?? "WARD_OFFICER")}
+                                    <div className="ml-2 text-left">
+                                      <div className="font-medium">
+                                        {u.fullName}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {u.email}
+                                      </div>
                                     </div>
                                   </div>
+                                  <Badge variant="outline" className="text-xs">
+                                    {(u.role ?? "WARD_OFFICER").replace("_", " ")}
+                                  </Badge>
                                 </div>
-                                <Badge variant="outline" className="text-xs">
-                                  {u.role.replace("_", " ")}
-                                </Badge>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                    <div>
-                      <Label>Maintenance Team</Label>
-                      <Select
-                        value={formData.maintenanceTeamId}
-                        onValueChange={(value) => {
+                      <div>
+                        <Label>Maintenance Team</Label>
+                        <Select
+                          value={formData.maintenanceTeamId}
+                          onValueChange={(value) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              maintenanceTeamId: value,
+                            }));
+                            setValidationErrors([]);
+                          }}
+                          disabled={
+                            isLoadingMaintenance || maintenanceUsers.length === 0
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Maintenance Team" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">No Assignment</SelectItem>
+                            {maintenanceUsers.map((u: any) => (
+                              <SelectItem key={u.id} value={u.id}>
+                                <div className="flex items-center justify-between w-full gap-2">
+                                  <div className="flex items-center">
+                                    {getUserRoleIcon(u.role ?? "MAINTENANCE_TEAM")}
+                                    <div className="ml-2 text-left">
+                                      <div className="font-medium">
+                                        {u.fullName}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {u.email}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Badge variant="outline" className="text-xs">
+                                    {(u.role ?? "MAINTENANCE_TEAM").replace("_", " ")}
+                                  </Badge>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  ) : (
+                    <Select
+                      value={
+                        user?.role === "WARD_OFFICER"
+                          ? formData.maintenanceTeamId
+                          : formData.wardOfficerId
+                      }
+                      onValueChange={(value) => {
+                        if (user?.role === "WARD_OFFICER")
                           setFormData((prev) => ({
                             ...prev,
                             maintenanceTeamId: value,
                           }));
-                          setValidationErrors([]);
-                        }}
-                        disabled={
-                          isLoadingMaintenance || maintenanceUsers.length === 0
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Maintenance Team" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No Assignment</SelectItem>
-                          {maintenanceUsers.map((u: any) => (
-                            <SelectItem key={u.id} value={u.id}>
-                              <div className="flex items-center justify-between w-full gap-2">
-                                <div className="flex items-center">
-                                  {getUserRoleIcon(u.role)}
-                                  <div className="ml-2 text-left">
-                                    <div className="font-medium">
-                                      {u.fullName}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      {u.email}
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs">
-                                  {u.role.replace("_", " ")}
-                                </Badge>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                ) : (
-                  <Select
-                    value={
-                      user?.role === "WARD_OFFICER"
-                        ? formData.maintenanceTeamId
-                        : formData.wardOfficerId
-                    }
-                    onValueChange={(value) => {
-                      if (user?.role === "WARD_OFFICER")
-                        setFormData((prev) => ({
-                          ...prev,
-                          maintenanceTeamId: value,
-                        }));
-                      else
-                        setFormData((prev) => ({
-                          ...prev,
-                          wardOfficerId: value,
-                        }));
-                      setValidationErrors([]);
-                    }}
-                    disabled={availableUsers.length === 0}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={getDropdownLabel()} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">
-                        <div className="flex items-center">
-                          <User className="h-4 w-4 mr-2" />
-                          No Assignment
-                        </div>
-                      </SelectItem>
-                      {filteredUsers.map((u: any) => (
-                        <SelectItem key={u.id} value={u.id}>
-                          <div className="flex items-center justify-between w-full gap-2">
-                            <div className="flex items-center">
-                              {getUserRoleIcon(u.role)}
-                              <div className="ml-2 text-left">
-                                <div className="font-medium">{u.fullName}</div>
-                                <div className="text-xs text-gray-500">
-                                  {u.email}
-                                </div>
-                              </div>
-                            </div>
-                            <Badge variant="outline" className="text-xs">
-                              {u.role.replace("_", " ")}
-                            </Badge>
-                            {u.ward && (
-                              <div className="text-xs text-blue-600">
-                                {u.ward.name}
-                              </div>
-                            )}
+                        else
+                          setFormData((prev) => ({
+                            ...prev,
+                            wardOfficerId: value,
+                          }));
+                        setValidationErrors([]);
+                      }}
+                      disabled={availableUsers.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={getDropdownLabel()} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">
+                          <div className="flex items-center">
+                            <User className="h-4 w-4 mr-2" />
+                            No Assignment
                           </div>
                         </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                        {filteredUsers.map((u: any) => (
+                          <SelectItem key={u.id} value={u.id}>
+                            <div className="flex items-center justify-between w-full gap-2">
+                              <div className="flex items-center">
+                                {getUserRoleIcon(u.role ?? "WARD_OFFICER")}
+                                <div className="ml-2 text-left">
+                                  <div className="font-medium">{u.fullName}</div>
+                                  <div className="text-xs text-gray-500">
+                                    {u.email}
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-xs">
+                                {(u.role ?? "WARD_OFFICER").replace("_", " ")}
+                              </Badge>
+                              {u.ward && (
+                                <div className="text-xs text-blue-600">
+                                  {u.ward.name}
+                                </div>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
 
-                {(isLoadingWardOfficers || isLoadingMaintenance) && (
-                  <div className="text-sm text-gray-500">Loading users...</div>
-                )}
-                {(wardOfficersError || maintenanceError) && (
-                  <div className="text-sm text-red-500">
-                    Error loading users. Please try again.
-                  </div>
-                )}
+                  {(isLoadingWardOfficers || isLoadingMaintenance) && (
+                    <div className="text-sm text-gray-500">Loading users...</div>
+                  )}
+                  {(wardOfficersError || maintenanceError) && (
+                    <div className="text-sm text-red-500">
+                      Error loading users. Please try again.
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div>
             <Label htmlFor="remarks">

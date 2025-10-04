@@ -38,7 +38,7 @@ interface LocationDetection {
   };
 }
 
-interface UpdateBoundariesRequest {
+export interface UpdateBoundariesRequest {
   wardId: string;
   boundaries?: string;
   centerLat?: number;

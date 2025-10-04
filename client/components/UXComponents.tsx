@@ -242,15 +242,13 @@ export const NoDataEmpty: React.FC<{
     icon={<Inbox />}
     title={`No ${entityName} Found`}
     description={`You haven't created any ${entityName.toLowerCase()} yet. Get started by creating your first one.`}
-    action={
-      onAdd
-        ? {
-            label: `Create ${entityName}`,
-            onClick: onAdd,
-          }
-        : undefined
-    }
-    className={className}
+    {...(onAdd && {
+      action: {
+        label: `Create ${entityName}`,
+        onClick: onAdd,
+      }
+    })}
+    {...(className && { className })}
   />
 );
 
@@ -268,7 +266,7 @@ export const NoSearchResultsEmpty: React.FC<{
       onClick: onClear,
       variant: "outline",
     }}
-    className={className}
+    {...(className && { className })}
   />
 );
 
@@ -287,16 +285,14 @@ export const ErrorEmpty: React.FC<{
     icon={<AlertCircle />}
     title={title}
     description={description}
-    action={
-      onRetry
-        ? {
-            label: "Try Again",
-            onClick: onRetry,
-            variant: "outline",
-          }
-        : undefined
-    }
-    className={className}
+    {...(onRetry && {
+      action: {
+        label: "Try Again",
+        onClick: onRetry,
+        variant: "outline",
+      }
+    })}
+    {...(className && { className })}
   />
 );
 
@@ -307,7 +303,7 @@ export const NoPermissionEmpty: React.FC<{ className?: string }> = ({
     icon={<XCircle />}
     title="Access Denied"
     description="You don't have permission to view this content. Contact your administrator if you believe this is an error."
-    className={className}
+    {...(className && { className })}
   />
 );
 

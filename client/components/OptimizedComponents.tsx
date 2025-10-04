@@ -536,7 +536,7 @@ export const OptimizedSelect: React.FC<OptimizedSelectProps> = memo(
         data: typeof options;
       }) => {
         const option = data[index];
-        if (!option) return null;
+        if (!option) return <></>;
         return (
           <div
             key={option.value}

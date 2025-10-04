@@ -12,6 +12,7 @@ import {
   useGetUserActivityQuery,
   useGetSystemHealthQuery,
 } from "../store/api/adminApi";
+import type { DashboardAnalyticsResponse } from "../store/api/adminApi";
 import {
   Card,
   CardContent,
@@ -129,12 +130,17 @@ const AdminDashboard: React.FC = () => {
   const complaintTrends = analytics?.complaintTrends || [];
   const complaintsByType = analytics?.complaintsByType || [];
   const wardPerformance = analytics?.wardPerformance || [];
-  const metrics = analytics?.metrics || {
+
+  const defaultMetrics: DashboardAnalyticsResponse["metrics"] = {
     avgResolutionTime: 0,
     slaCompliance: 0,
     citizenSatisfaction: 0,
     resolutionRate: 0,
+    slaBreaches: 0,
   };
+
+  const metrics: DashboardAnalyticsResponse["metrics"] =
+    analytics?.metrics ?? defaultMetrics;
 
   // Development debugging
   if (process.env.NODE_ENV === "development") {
@@ -416,7 +422,7 @@ const AdminDashboard: React.FC = () => {
                 Open past deadline
               </p>
               <p className="text-[11px] text-gray-500 mt-1">
-                SLA breaches (open + resolved late): {metrics?.slaBreaches || 0}
+                SLA breaches (open + resolved late): {metrics.slaBreaches ?? 0}
               </p>
             </CardContent>
           </Card>
