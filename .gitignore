@@ -30,6 +30,19 @@ uploads/*
 
 .env
 
+# SSL Certificates (keep placeholders, ignore actual certificates)
+config/ssl/*.key
+config/ssl/*.crt
+config/ssl/*.pem
+config/ssl/*.p12
+config/ssl/*.pfx
+!config/ssl/README.md
+
+# Build artifacts
+build/
+dist/
+tsbuild/
+
 # Ignore compiled JS artifacts in source folders
 client/components/**/*.js
 client/components/**/*.js.map

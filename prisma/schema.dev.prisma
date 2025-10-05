@@ -1,5 +1,6 @@
-// Production Prisma schema file for PostgreSQL
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Development Prisma schema file for SQLite
+// NLC-CMS Complaint Management System
+// Version: 1.0.0 - Finalized Schema (SQLite)
 
 generator client {
   provider = "prisma-client-js"
@@ -7,10 +8,13 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
-// Enums for PostgreSQL production deployment
+// ============================================================================
+// ENUMS - Type-safe status and role definitions
+// ============================================================================
+
 enum UserRole {
   CITIZEN
   WARD_OFFICER
@@ -57,7 +61,19 @@ enum NotificationType {
   IN_APP
 }
 
-// Models
+enum AttachmentEntityType {
+  COMPLAINT
+  CITIZEN
+  USER
+  SERVICE_REQUEST
+  SYSTEM_CONFIG
+  MAINTENANCE_PHOTO
+}
+
+// ============================================================================
+// CORE MODELS - Main entities of the system
+// ============================================================================
+
 model User {
   id          String   @id @default(cuid())
   email       String   @unique
@@ -74,28 +90,25 @@ model User {
   joinedOn    DateTime @default(now())
 
   // Relations
-  ward              Ward?              @relation(fields: [wardId], references: [id])
-  submittedComplaints Complaint[]      @relation("SubmittedBy")
-  assignedComplaints  Complaint[]      @relation("AssignedTo")
-  wardOfficerComplaints Complaint[]    @relation("WardOfficer")
-  maintenanceTeamComplaints Complaint[] @relation("MaintenanceTeam")
-  submittedServiceRequests ServiceRequest[] @relation("ServiceSubmittedBy")
-  assignedServiceRequests  ServiceRequest[] @relation("ServiceAssignedTo")
-  statusLogs        StatusLog[]
-  serviceStatusLogs ServiceRequestStatusLog[]
-  notifications     Notification[]
-  sentMessages      Message[]          @relation("SentBy")
-  receivedMessages  Message[]          @relation("ReceivedBy")
-  otpSessions       OTPSession[]
-  addedMaterials    Material[]
-  uploadedPhotos    ComplaintPhoto[]
-  uploadedAttachments Attachment[]     @relation("AttachmentUploadedBy")
+  ward                      Ward?              @relation(fields: [wardId], references: [id])
+  submittedComplaints       Complaint[]        @relation("SubmittedBy")
+  assignedComplaints        Complaint[]        @relation("AssignedTo")
+  wardOfficerComplaints     Complaint[]        @relation("WardOfficer")
+  maintenanceTeamComplaints Complaint[]        @relation("MaintenanceTeam")
+  submittedServiceRequests  ServiceRequest[]   @relation("ServiceSubmittedBy")
+  assignedServiceRequests   ServiceRequest[]   @relation("ServiceAssignedTo")
+  statusLogs                StatusLog[]
+  serviceStatusLogs         ServiceRequestStatusLog[]
+  notifications             Notification[]
+  sentMessages              Message[]          @relation("SentBy")
+  receivedMessages          Message[]          @relation("ReceivedBy")
+  otpSessions               OTPSession[]
+  addedMaterials            Material[]
+  uploadedAttachments       Attachment[]       @relation("AttachmentUploadedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([role, isActive])
-  @@index([wardId])
   @@map("users")
 }
 
@@ -106,10 +119,10 @@ model Ward {
   isActive    Boolean @default(true)
 
   // Relations
-  users       User[]
-  complaints  Complaint[]
+  users           User[]
+  complaints      Complaint[]
   serviceRequests ServiceRequest[]
-  subZones    SubZone[]
+  subZones        SubZone[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -125,13 +138,12 @@ model SubZone {
   isActive    Boolean @default(true)
 
   // Relations
-  ward        Ward        @relation(fields: [wardId], references: [id], onDelete: Cascade)
-  complaints  Complaint[]
+  ward       Ward        @relation(fields: [wardId], references: [id], onDelete: Cascade)
+  complaints Complaint[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([wardId])
   @@map("sub_zones")
 }
 
@@ -143,11 +155,16 @@ model ComplaintType {
   slaHours    Int       @default(48)
   isActive    Boolean   @default(true)
   complaints  Complaint[]
+  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@map("complaint_types")
 }
+
+// ============================================================================
+// COMPLAINT MANAGEMENT - Core complaint handling
+// ============================================================================
 
 model Complaint {
   id              String            @id @default(cuid())
@@ -195,7 +212,7 @@ model Complaint {
   remarks         String?
   citizenFeedback String?
   rating          Int?              // 1-5 rating
-  assignToTeam    Boolean   @default(false)  // added field for team assignment in ward dashboard
+  assignToTeam    Boolean           @default(false)  // Team assignment flag
   tags            String?           // JSON array of tags
   
   // Relations
@@ -211,22 +228,10 @@ model Complaint {
   notifications   Notification[]
   messages        Message[]
   materials       Material[]
-  photos          ComplaintPhoto[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Indexes for performance
-  @@index([submittedById, createdAt])
-  @@index([wardId, status])
-  @@index([assignedToId, status])
-  @@index([maintenanceTeamId, status])
-  @@index([type, status])
-  @@index([complaintTypeId, status])
-  @@index([priority, status])
-  @@index([submittedOn])
-  @@index([status, createdAt])
-  @@index([type, createdAt])
   @@map("complaints")
 }
 
@@ -240,87 +245,82 @@ model StatusLog {
   timestamp   DateTime @default(now())
   
   // Relations
-  complaint   Complaint       @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  user        User            @relation(fields: [userId], references: [id])
+  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id])
 
-  @@index([complaintId, timestamp])
-  @@index([userId])
   @@map("status_logs")
 }
 
-enum AttachmentEntityType {
-  COMPLAINT
-  CITIZEN
-  USER
-  SERVICE_REQUEST
-  SYSTEM_CONFIG
-}
+// ============================================================================
+// UNIFIED ATTACHMENTS - Single table for all file attachments
+// ============================================================================
 
 model Attachment {
-  id            String                @id @default(cuid())
-  entityType    AttachmentEntityType  @default(COMPLAINT) @map("entity_type")
-  entityId      String                @map("entity_id")
-  complaintId   String?               @map("complaint_id")
-  fileName      String                @map("file_name")
-  originalName  String                @map("original_name")
-  mimeType      String                @map("mime_type")
-  size          Int
-  url           String
-  createdAt     DateTime              @default(now())     @map("created_at")
-  uploadedById  String?               @map("uploaded_by_id")
+  id           String                @id @default(cuid())
+  entityType   AttachmentEntityType  @default(COMPLAINT)
+  entityId     String                // Generic entity ID (complaint, user, etc.)
+  complaintId  String?               // Specific complaint reference for backward compatibility
+  fileName     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  description  String?               // Optional description of the attachment
+  createdAt    DateTime              @default(now())
+  uploadedById String?
 
   // Relations
   complaint   Complaint? @relation(fields: [complaintId], references: [id], onDelete: Cascade)
   uploadedBy  User?      @relation("AttachmentUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
 
-  @@index([entityType, entityId])
-  @@index([fileName])
-  @@index([complaintId])
   @@map("attachments")
 }
 
+// ============================================================================
+// COMMUNICATION & NOTIFICATIONS
+// ============================================================================
+
 model Notification {
-  id          String   @id @default(cuid())
-  userId      String
-  complaintId String?
+  id               String   @id @default(cuid())
+  userId           String
+  complaintId      String?
   serviceRequestId String?
-  type        NotificationType
-  title       String
-  message     String
-  isRead      Boolean  @default(false)
-  sentAt      DateTime @default(now())
-  readAt      DateTime?
+  type             NotificationType
+  title            String
+  message          String
+  isRead           Boolean  @default(false)
+  sentAt           DateTime @default(now())
+  readAt           DateTime?
 
   // Relations
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  complaint   Complaint?       @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  complaint      Complaint?     @relation(fields: [complaintId], references: [id], onDelete: Cascade)
   serviceRequest ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
 
-  @@index([userId, isRead])
-  @@index([complaintId])
-  @@index([serviceRequestId])
   @@map("notifications")
 }
 
 model Message {
-  id          String    @id @default(cuid())
-  complaintId String
-  sentById    String
+  id           String    @id @default(cuid())
+  complaintId  String
+  sentById     String
   receivedById String?
-  content     String
-  isInternal  Boolean   @default(true)  // Internal communication between officers
-  sentAt      DateTime  @default(now())
-  readAt      DateTime?
+  content      String
+  isInternal   Boolean   @default(true)  // Internal communication between officers
+  sentAt       DateTime  @default(now())
+  readAt       DateTime?
   
   // Relations
   complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
   sentBy      User      @relation("SentBy", fields: [sentById], references: [id])
   receivedBy  User?     @relation("ReceivedBy", fields: [receivedById], references: [id])
   
-  @@index([complaintId])
-  @@index([sentById])
   @@map("messages")
 }
+
+// ============================================================================
+// AUTHENTICATION & SECURITY
+// ============================================================================
 
 model OTPSession {
   id          String    @id @default(cuid())
@@ -337,11 +337,80 @@ model OTPSession {
   // Relations
   user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([email, purpose, isVerified])
-  @@index([expiresAt])
-  @@index([userId])
   @@map("otp_sessions")
 }
+
+// ============================================================================
+// SERVICE REQUESTS - Additional service management
+// ============================================================================
+
+model ServiceRequest {
+  id                 String               @id @default(cuid())
+  title              String?
+  serviceType        String               // Service type identifier
+  description        String
+  status             ServiceRequestStatus @default(SUBMITTED)
+  priority           Priority             @default(MEDIUM)
+
+  // Location Information
+  wardId             String
+  area               String
+  address            String
+  landmark           String?
+
+  // Contact Information
+  contactName        String
+  contactEmail       String
+  contactPhone       String
+
+  // Assignment and Tracking
+  submittedById      String?
+  assignedToId       String?
+
+  // Timestamps
+  submittedOn        DateTime  @default(now())
+  preferredDateTime  DateTime?
+  assignedOn         DateTime?
+  expectedCompletion DateTime?
+  completedOn        DateTime?
+
+  // Additional Information
+  remarks            String?
+  citizenFeedback    String?
+  rating             Int?      // 1-5 rating
+
+  // Relations
+  ward         Ward                        @relation(fields: [wardId], references: [id])
+  submittedBy  User?                       @relation("ServiceSubmittedBy", fields: [submittedById], references: [id])
+  assignedTo   User?                       @relation("ServiceAssignedTo", fields: [assignedToId], references: [id])
+  statusLogs   ServiceRequestStatusLog[]
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("service_requests")
+}
+
+model ServiceRequestStatusLog {
+  id               String        @id @default(cuid())
+  serviceRequestId String
+  userId           String
+  fromStatus       String?       // Previous status
+  toStatus         String        // New status
+  comment          String?
+  timestamp        DateTime      @default(now())
+
+  // Relations
+  serviceRequest  ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id])
+
+  @@map("service_request_status_logs")
+}
+
+// ============================================================================
+// SYSTEM CONFIGURATION & ADMINISTRATION
+// ============================================================================
 
 model Department {
   id          String  @id @default(cuid())
@@ -352,7 +421,7 @@ model Department {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@map("departments")
 }
 
@@ -365,81 +434,12 @@ model SystemConfig {
   isActive    Boolean   @default(true)
   updatedAt   DateTime  @updatedAt
 
-  @@index([key, isActive])
   @@map("system_config")
 }
 
-model ServiceRequest {
-  id              String    @id @default(cuid())
-  title           String?
-  serviceType     String    // Service type identifier
-  description     String
-  status          ServiceRequestStatus @default(SUBMITTED)
-  priority        Priority  @default(MEDIUM)
-
-  // Location Information
-  wardId          String
-  area            String
-  address         String
-  landmark        String?
-
-  // Contact Information
-  contactName     String
-  contactEmail    String
-  contactPhone    String
-
-  // Assignment and Tracking
-  submittedById   String?
-  assignedToId    String?
-
-  // Timestamps
-  submittedOn     DateTime  @default(now())
-  preferredDateTime DateTime?
-  assignedOn      DateTime?
-  expectedCompletion DateTime?
-  completedOn     DateTime?
-
-  // Additional Information
-  remarks         String?
-  citizenFeedback String?
-  rating          Int?      // 1-5 rating
-
-  // Relations
-  ward            Ward      @relation(fields: [wardId], references: [id])
-  submittedBy     User?     @relation("ServiceSubmittedBy", fields: [submittedById], references: [id])
-  assignedTo      User?     @relation("ServiceAssignedTo", fields: [assignedToId], references: [id])
-  statusLogs      ServiceRequestStatusLog[]
-  notifications   Notification[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Indexes for performance
-  @@index([submittedById, createdAt])
-  @@index([wardId, status])
-  @@index([assignedToId, status])
-  @@index([serviceType, status])
-  @@index([submittedOn])
-  @@map("service_requests")
-}
-
-model ServiceRequestStatusLog {
-  id              String        @id @default(cuid())
-  serviceRequestId String
-  userId          String
-  fromStatus      String?       // Previous status
-  toStatus        String        // New status
-  comment         String?
-  timestamp       DateTime      @default(now())
-
-  // Relations
-  serviceRequest  ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  user            User          @relation(fields: [userId], references: [id])
-
-  @@index([serviceRequestId, timestamp])
-  @@index([userId])
-  @@map("service_request_status_logs")
-}
+// ============================================================================
+// REPORTING & ANALYTICS
+// ============================================================================
 
 model Report {
   id          String   @id @default(cuid())
@@ -450,20 +450,22 @@ model Report {
   generatedBy String
   generatedAt DateTime @default(now())
 
-  @@index([type, generatedAt])
-  @@index([generatedBy])
   @@map("reports")
 }
 
+// ============================================================================
+// MAINTENANCE & MATERIALS TRACKING
+// ============================================================================
+
 model Material {
-  id          String    @id @default(cuid())
-  complaintId String
+  id           String    @id @default(cuid())
+  complaintId  String
   materialName String
-  quantity    Int
-  unit        String    // e.g., kg, meter, piece
-  usedAt      DateTime  @default(now())
-  addedById   String    // maintenance team member who added this
-  notes       String?
+  quantity     Int
+  unit         String    // e.g., kg, meter, piece
+  usedAt       DateTime  @default(now())
+  addedById    String    // maintenance team member who added this
+  notes        String?
 
   // Relations
   complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
@@ -472,28 +474,19 @@ model Material {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([complaintId])
-  @@index([addedById])
   @@map("materials")
 }
 
-model ComplaintPhoto {
-  id              String   @id @default(cuid())
-  complaintId     String
-  uploadedByTeamId String  // maintenance team member who uploaded this
-  photoUrl        String
-  fileName        String
-  originalName    String
-  mimeType        String
-  size            Int
-  uploadedAt      DateTime @default(now())
-  description     String?  // optional description of what the photo shows
+// ============================================================================
+// SCHEMA METADATA
+// ============================================================================
 
-  // Relations
-  complaint       Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  uploadedByTeam  User      @relation(fields: [uploadedByTeamId], references: [id])
+// Schema version tracking for migrations and updates
+model SchemaVersion {
+  id        String   @id @default(cuid())
+  version   String   @unique
+  appliedAt DateTime @default(now())
+  notes     String?
 
-  @@index([complaintId])
-  @@index([uploadedByTeamId])
-  @@map("complaint_photos")
+  @@map("schema_versions")
 }

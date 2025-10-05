@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-10-05T13:04:49.698Z",
+  "buildType": "server-only-typescript",
+  "totalFiles": 187,
+  "totalSizeMB": 1.7,
+  "fileTypes": {
+    ".js": 184,
+    ".json": 3
+  },
+  "outputDirectory": "tsbuild/",
+  "status": "success"
+}

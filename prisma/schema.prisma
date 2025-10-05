@@ -1,5 +1,6 @@
-// Production Prisma schema file for PostgreSQL
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Final Production Prisma schema file for PostgreSQL
+// NLC-CMS Complaint Management System
+// Version: 1.0.0 - Finalized Schema
 
 generator client {
   provider = "prisma-client-js"
@@ -10,7 +11,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enums for PostgreSQL production deployment
+// ============================================================================
+// ENUMS - Type-safe status and role definitions
+// ============================================================================
+
 enum UserRole {
   CITIZEN
   WARD_OFFICER
@@ -57,7 +61,19 @@ enum NotificationType {
   IN_APP
 }
 
-// Models
+enum AttachmentEntityType {
+  COMPLAINT
+  CITIZEN
+  USER
+  SERVICE_REQUEST
+  SYSTEM_CONFIG
+  MAINTENANCE_PHOTO
+}
+
+// ============================================================================
+// CORE MODELS - Main entities of the system
+// ============================================================================
+
 model User {
   id          String   @id @default(cuid())
   email       String   @unique
@@ -74,28 +90,28 @@ model User {
   joinedOn    DateTime @default(now())
 
   // Relations
-  ward              Ward?              @relation(fields: [wardId], references: [id])
-  submittedComplaints Complaint[]      @relation("SubmittedBy")
-  assignedComplaints  Complaint[]      @relation("AssignedTo")
-  wardOfficerComplaints Complaint[]    @relation("WardOfficer")
-  maintenanceTeamComplaints Complaint[] @relation("MaintenanceTeam")
-  submittedServiceRequests ServiceRequest[] @relation("ServiceSubmittedBy")
-  assignedServiceRequests  ServiceRequest[] @relation("ServiceAssignedTo")
-  statusLogs        StatusLog[]
-  serviceStatusLogs ServiceRequestStatusLog[]
-  notifications     Notification[]
-  sentMessages      Message[]          @relation("SentBy")
-  receivedMessages  Message[]          @relation("ReceivedBy")
-  otpSessions       OTPSession[]
-  addedMaterials    Material[]
-  uploadedPhotos    ComplaintPhoto[]
-  uploadedAttachments Attachment[]     @relation("AttachmentUploadedBy")
+  ward                      Ward?              @relation(fields: [wardId], references: [id])
+  submittedComplaints       Complaint[]        @relation("SubmittedBy")
+  assignedComplaints        Complaint[]        @relation("AssignedTo")
+  wardOfficerComplaints     Complaint[]        @relation("WardOfficer")
+  maintenanceTeamComplaints Complaint[]        @relation("MaintenanceTeam")
+  submittedServiceRequests  ServiceRequest[]   @relation("ServiceSubmittedBy")
+  assignedServiceRequests   ServiceRequest[]   @relation("ServiceAssignedTo")
+  statusLogs                StatusLog[]
+  serviceStatusLogs         ServiceRequestStatusLog[]
+  notifications             Notification[]
+  sentMessages              Message[]          @relation("SentBy")
+  receivedMessages          Message[]          @relation("ReceivedBy")
+  otpSessions               OTPSession[]
+  addedMaterials            Material[]
+  uploadedAttachments       Attachment[]       @relation("AttachmentUploadedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([role, isActive])
   @@index([wardId])
+  @@index([email])
   @@map("users")
 }
 
@@ -106,14 +122,16 @@ model Ward {
   isActive    Boolean @default(true)
 
   // Relations
-  users       User[]
-  complaints  Complaint[]
+  users           User[]
+  complaints      Complaint[]
   serviceRequests ServiceRequest[]
-  subZones    SubZone[]
+  subZones        SubZone[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([name])
+  @@index([isActive])
   @@map("wards")
 }
 
@@ -125,13 +143,14 @@ model SubZone {
   isActive    Boolean @default(true)
 
   // Relations
-  ward        Ward        @relation(fields: [wardId], references: [id], onDelete: Cascade)
-  complaints  Complaint[]
+  ward       Ward        @relation(fields: [wardId], references: [id], onDelete: Cascade)
+  complaints Complaint[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([wardId])
+  @@index([name])
   @@map("sub_zones")
 }
 
@@ -143,11 +162,18 @@ model ComplaintType {
   slaHours    Int       @default(48)
   isActive    Boolean   @default(true)
   complaints  Complaint[]
+  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
+  @@index([name])
+  @@index([isActive])
   @@map("complaint_types")
 }
+
+// ============================================================================
+// COMPLAINT MANAGEMENT - Core complaint handling
+// ============================================================================
 
 model Complaint {
   id              String            @id @default(cuid())
@@ -195,7 +221,7 @@ model Complaint {
   remarks         String?
   citizenFeedback String?
   rating          Int?              // 1-5 rating
-  assignToTeam    Boolean   @default(false)  // added field for team assignment in ward dashboard
+  assignToTeam    Boolean           @default(false)  // Team assignment flag
   tags            String?           // JSON array of tags
   
   // Relations
@@ -211,12 +237,11 @@ model Complaint {
   notifications   Notification[]
   messages        Message[]
   materials       Material[]
-  photos          ComplaintPhoto[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Indexes for performance
+  // Performance indexes
   @@index([submittedById, createdAt])
   @@index([wardId, status])
   @@index([assignedToId, status])
@@ -226,7 +251,7 @@ model Complaint {
   @@index([priority, status])
   @@index([submittedOn])
   @@index([status, createdAt])
-  @@index([type, createdAt])
+  @@index([complaintId])
   @@map("complaints")
 }
 
@@ -240,32 +265,30 @@ model StatusLog {
   timestamp   DateTime @default(now())
   
   // Relations
-  complaint   Complaint       @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  user        User            @relation(fields: [userId], references: [id])
+  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id])
 
   @@index([complaintId, timestamp])
   @@index([userId])
+  @@index([timestamp])
   @@map("status_logs")
 }
 
-enum AttachmentEntityType {
-  COMPLAINT
-  CITIZEN
-  USER
-  SERVICE_REQUEST
-  SYSTEM_CONFIG
-}
+// ============================================================================
+// UNIFIED ATTACHMENTS - Single table for all file attachments
+// ============================================================================
 
 model Attachment {
   id           String                @id @default(cuid())
-  entityType   AttachmentEntityType @default(COMPLAINT)
-  entityId     String
-  complaintId  String?
+  entityType   AttachmentEntityType  @default(COMPLAINT)
+  entityId     String                // Generic entity ID (complaint, user, etc.)
+  complaintId  String?               // Specific complaint reference for backward compatibility
   fileName     String
   originalName String
   mimeType     String
   size         Int
   url          String
+  description  String?               // Optional description of the attachment
   createdAt    DateTime              @default(now())
   uploadedById String?
 
@@ -276,41 +299,48 @@ model Attachment {
   @@index([entityType, entityId])
   @@index([fileName])
   @@index([complaintId])
+  @@index([uploadedById])
+  @@index([createdAt])
   @@map("attachments")
 }
 
+// ============================================================================
+// COMMUNICATION & NOTIFICATIONS
+// ============================================================================
+
 model Notification {
-  id          String   @id @default(cuid())
-  userId      String
-  complaintId String?
+  id               String   @id @default(cuid())
+  userId           String
+  complaintId      String?
   serviceRequestId String?
-  type        NotificationType
-  title       String
-  message     String
-  isRead      Boolean  @default(false)
-  sentAt      DateTime @default(now())
-  readAt      DateTime?
+  type             NotificationType
+  title            String
+  message          String
+  isRead           Boolean  @default(false)
+  sentAt           DateTime @default(now())
+  readAt           DateTime?
 
   // Relations
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  complaint   Complaint?       @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  complaint      Complaint?     @relation(fields: [complaintId], references: [id], onDelete: Cascade)
   serviceRequest ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
   @@index([complaintId])
   @@index([serviceRequestId])
+  @@index([sentAt])
   @@map("notifications")
 }
 
 model Message {
-  id          String    @id @default(cuid())
-  complaintId String
-  sentById    String
+  id           String    @id @default(cuid())
+  complaintId  String
+  sentById     String
   receivedById String?
-  content     String
-  isInternal  Boolean   @default(true)  // Internal communication between officers
-  sentAt      DateTime  @default(now())
-  readAt      DateTime?
+  content      String
+  isInternal   Boolean   @default(true)  // Internal communication between officers
+  sentAt       DateTime  @default(now())
+  readAt       DateTime?
   
   // Relations
   complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
@@ -319,8 +349,13 @@ model Message {
   
   @@index([complaintId])
   @@index([sentById])
+  @@index([sentAt])
   @@map("messages")
 }
+
+// ============================================================================
+// AUTHENTICATION & SECURITY
+// ============================================================================
 
 model OTPSession {
   id          String    @id @default(cuid())
@@ -340,8 +375,90 @@ model OTPSession {
   @@index([email, purpose, isVerified])
   @@index([expiresAt])
   @@index([userId])
+  @@index([otpCode])
   @@map("otp_sessions")
 }
+
+// ============================================================================
+// SERVICE REQUESTS - Additional service management
+// ============================================================================
+
+model ServiceRequest {
+  id                 String               @id @default(cuid())
+  title              String?
+  serviceType        String               // Service type identifier
+  description        String
+  status             ServiceRequestStatus @default(SUBMITTED)
+  priority           Priority             @default(MEDIUM)
+
+  // Location Information
+  wardId             String
+  area               String
+  address            String
+  landmark           String?
+
+  // Contact Information
+  contactName        String
+  contactEmail       String
+  contactPhone       String
+
+  // Assignment and Tracking
+  submittedById      String?
+  assignedToId       String?
+
+  // Timestamps
+  submittedOn        DateTime  @default(now())
+  preferredDateTime  DateTime?
+  assignedOn         DateTime?
+  expectedCompletion DateTime?
+  completedOn        DateTime?
+
+  // Additional Information
+  remarks            String?
+  citizenFeedback    String?
+  rating             Int?      // 1-5 rating
+
+  // Relations
+  ward         Ward                        @relation(fields: [wardId], references: [id])
+  submittedBy  User?                       @relation("ServiceSubmittedBy", fields: [submittedById], references: [id])
+  assignedTo   User?                       @relation("ServiceAssignedTo", fields: [assignedToId], references: [id])
+  statusLogs   ServiceRequestStatusLog[]
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Performance indexes
+  @@index([submittedById, createdAt])
+  @@index([wardId, status])
+  @@index([assignedToId, status])
+  @@index([serviceType, status])
+  @@index([submittedOn])
+  @@map("service_requests")
+}
+
+model ServiceRequestStatusLog {
+  id               String        @id @default(cuid())
+  serviceRequestId String
+  userId           String
+  fromStatus       String?       // Previous status
+  toStatus         String        // New status
+  comment          String?
+  timestamp        DateTime      @default(now())
+
+  // Relations
+  serviceRequest  ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  user            User          @relation(fields: [userId], references: [id])
+
+  @@index([serviceRequestId, timestamp])
+  @@index([userId])
+  @@index([timestamp])
+  @@map("service_request_status_logs")
+}
+
+// ============================================================================
+// SYSTEM CONFIGURATION & ADMINISTRATION
+// ============================================================================
 
 model Department {
   id          String  @id @default(cuid())
@@ -352,7 +469,9 @@ model Department {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
+  @@index([name])
+  @@index([isActive])
   @@map("departments")
 }
 
@@ -366,80 +485,13 @@ model SystemConfig {
   updatedAt   DateTime  @updatedAt
 
   @@index([key, isActive])
+  @@index([type])
   @@map("system_config")
 }
 
-model ServiceRequest {
-  id              String    @id @default(cuid())
-  title           String?
-  serviceType     String    // Service type identifier
-  description     String
-  status          ServiceRequestStatus @default(SUBMITTED)
-  priority        Priority  @default(MEDIUM)
-
-  // Location Information
-  wardId          String
-  area            String
-  address         String
-  landmark        String?
-
-  // Contact Information
-  contactName     String
-  contactEmail    String
-  contactPhone    String
-
-  // Assignment and Tracking
-  submittedById   String?
-  assignedToId    String?
-
-  // Timestamps
-  submittedOn     DateTime  @default(now())
-  preferredDateTime DateTime?
-  assignedOn      DateTime?
-  expectedCompletion DateTime?
-  completedOn     DateTime?
-
-  // Additional Information
-  remarks         String?
-  citizenFeedback String?
-  rating          Int?      // 1-5 rating
-
-  // Relations
-  ward            Ward      @relation(fields: [wardId], references: [id])
-  submittedBy     User?     @relation("ServiceSubmittedBy", fields: [submittedById], references: [id])
-  assignedTo      User?     @relation("ServiceAssignedTo", fields: [assignedToId], references: [id])
-  statusLogs      ServiceRequestStatusLog[]
-  notifications   Notification[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Indexes for performance
-  @@index([submittedById, createdAt])
-  @@index([wardId, status])
-  @@index([assignedToId, status])
-  @@index([serviceType, status])
-  @@index([submittedOn])
-  @@map("service_requests")
-}
-
-model ServiceRequestStatusLog {
-  id              String        @id @default(cuid())
-  serviceRequestId String
-  userId          String
-  fromStatus      String?       // Previous status
-  toStatus        String        // New status
-  comment         String?
-  timestamp       DateTime      @default(now())
-
-  // Relations
-  serviceRequest  ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  user            User          @relation(fields: [userId], references: [id])
-
-  @@index([serviceRequestId, timestamp])
-  @@index([userId])
-  @@map("service_request_status_logs")
-}
+// ============================================================================
+// REPORTING & ANALYTICS
+// ============================================================================
 
 model Report {
   id          String   @id @default(cuid())
@@ -452,18 +504,23 @@ model Report {
 
   @@index([type, generatedAt])
   @@index([generatedBy])
+  @@index([generatedAt])
   @@map("reports")
 }
 
+// ============================================================================
+// MAINTENANCE & MATERIALS TRACKING
+// ============================================================================
+
 model Material {
-  id          String    @id @default(cuid())
-  complaintId String
+  id           String    @id @default(cuid())
+  complaintId  String
   materialName String
-  quantity    Int
-  unit        String    // e.g., kg, meter, piece
-  usedAt      DateTime  @default(now())
-  addedById   String    // maintenance team member who added this
-  notes       String?
+  quantity     Int
+  unit         String    // e.g., kg, meter, piece
+  usedAt       DateTime  @default(now())
+  addedById    String    // maintenance team member who added this
+  notes        String?
 
   // Relations
   complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
@@ -474,26 +531,20 @@ model Material {
 
   @@index([complaintId])
   @@index([addedById])
+  @@index([usedAt])
   @@map("materials")
 }
 
-model ComplaintPhoto {
-  id              String   @id @default(cuid())
-  complaintId     String
-  uploadedByTeamId String  // maintenance team member who uploaded this
-  photoUrl        String
-  fileName        String
-  originalName    String
-  mimeType        String
-  size            Int
-  uploadedAt      DateTime @default(now())
-  description     String?  // optional description of what the photo shows
+// ============================================================================
+// SCHEMA METADATA
+// ============================================================================
 
-  // Relations
-  complaint       Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  uploadedByTeam  User      @relation(fields: [uploadedByTeamId], references: [id])
+// Schema version tracking for migrations and updates
+model SchemaVersion {
+  id        String   @id @default(cuid())
+  version   String   @unique
+  appliedAt DateTime @default(now())
+  notes     String?
 
-  @@index([complaintId])
-  @@index([uploadedByTeamId])
-  @@map("complaint_photos")
+  @@map("schema_versions")
 }
