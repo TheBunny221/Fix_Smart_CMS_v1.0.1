@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-A comprehensive full-stack complaint management system built for NLC-CMS initiative, enabling citizens to register and track civic complaints while providing administrators and ward officers with tools to manage and resolve issues efficiently.
+A comprehensive, production-ready complaint management system built for the NLC-CMS initiative. This modern web application enables citizens to register and track civic complaints while providing municipal authorities with powerful tools to manage and resolve issues efficiently.
 
 ### Key Features
 
@@ -19,32 +19,33 @@ A comprehensive full-stack complaint management system built for NLC-CMS initiat
 
 ### Frontend
 
-- **Framework**: React 18 with TypeScript
-- **Routing**: React Router 6 (SPA mode)
-- **State Management**: Redux Toolkit
-- **UI Components**: Radix UI primitives
-- **Styling**: TailwindCSS 3 with custom design system
-- **Build Tool**: Vite 6
-- **Icons**: Lucide React
-- **Form Handling**: React Hook Form with Zod validation
+- **Framework**: React 18.3.1 with TypeScript 5.5.3
+- **Routing**: React Router 6.26.2 (SPA mode)
+- **State Management**: Redux Toolkit 2.8.2 with RTK Query
+- **UI Components**: Radix UI primitives with custom design system
+- **Styling**: TailwindCSS 3.4.11 with utility-first approach
+- **Build Tool**: Vite 6.2.2 with Hot Module Replacement
+- **Icons**: Lucide React 0.462.0
+- **Form Handling**: React Hook Form 7.53.0 with Zod 3.23.8 validation
 
 ### Backend
 
-- **Runtime**: Node.js
-- **Framework**: Express.js
-- **Database**: SQLite (development) / PostgreSQL (production) via Prisma ORM
-- **Authentication**: JWT-based with OTP support
-- **File Uploads**: Multer middleware
-- **Security**: Helmet, CORS, rate limiting
-- **Documentation**: Swagger/OpenAPI 3.0
+- **Runtime**: Node.js 18+ with ES modules
+- **Framework**: Express.js 4.18.2
+- **Database**: SQLite (development) / PostgreSQL 13+ (production) via Prisma ORM 5.7.1
+- **Authentication**: JWT-based with OTP support and refresh tokens
+- **File Uploads**: Multer 1.4.5 middleware with validation
+- **Security**: Helmet 8.1.0, CORS, Express Rate Limit, input validation
+- **Documentation**: Swagger/OpenAPI 3.0 with interactive UI
 
 ### Development Tools
 
-- **Testing**: Vitest for unit tests, Cypress for E2E
-- **Type Checking**: TypeScript with strict mode
-- **Code Quality**: Prettier for formatting
-- **Dev Server**: Concurrent frontend/backend development
-- **Hot Reload**: Both client and server code
+- **Testing**: Vitest 3.1.4 for unit tests, Cypress for E2E testing
+- **Type Checking**: TypeScript 5.5.3 with strict mode enabled
+- **Code Quality**: ESLint and Prettier for code quality and formatting
+- **Dev Server**: Concurrent frontend/backend development with HMR
+- **Build System**: Vite for fast builds and development server
+- **Process Management**: PM2 for production process management
 
 ## Project Structure
 

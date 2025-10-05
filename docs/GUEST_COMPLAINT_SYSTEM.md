@@ -2,7 +2,7 @@
 
 ## ✅ Implementation Complete
 
-Your CitizenConnect application now supports **guest complaint submissions** with **OTP email verification**! This enables anonymous users to submit complaints while maintaining authenticity and traceability.
+The NLC-CMS application now supports **guest complaint submissions** with **OTP email verification**! This enables anonymous users to submit complaints while maintaining authenticity and traceability.
 
 ## 🚀 Features Implemented
 
@@ -40,10 +40,10 @@ Your CitizenConnect application now supports **guest complaint submissions** wit
 
 ### **Frontend Components**
 
-- `src/pages/GuestComplaintForm.tsx` - Main guest submission form
-- `src/pages/GuestTrackComplaint.tsx` - Guest complaint tracking
-- `src/components/OtpVerificationModal.tsx` - OTP verification modal
-- `src/store/slices/guestSlice.ts` - Redux state management
+- `client/pages/GuestComplaintForm.tsx` - Main guest submission form
+- `client/pages/GuestTrackComplaint.tsx` - Guest complaint tracking
+- `client/components/OtpVerificationModal.tsx` - OTP verification modal
+- `client/store/slices/guestSlice.ts` - Redux state management
 
 ### **Backend Implementation**
 
@@ -54,10 +54,10 @@ Your CitizenConnect application now supports **guest complaint submissions** wit
 
 ### **Configuration Updates**
 
-- `src/store/index.ts` - Added guest slice to store
-- `src/App.tsx` - Updated routes for guest pages
-- `server/server.js` - Registered guest routes
-- Language translations for EN/HI/ML
+- `client/store/index.ts` - Added guest slice to store
+- `client/App.tsx` - Updated routes for guest pages
+- `server/app.js` - Registered guest routes
+- Language translations for EN/HI/ML in `client/store/resources/translations.ts`
 
 ## 🔧 API Endpoints
 
