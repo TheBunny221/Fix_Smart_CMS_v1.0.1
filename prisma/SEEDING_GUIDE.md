@@ -5,6 +5,7 @@ This document explains the new JSON-based auto-seeding system that replaces the 
 ## Overview
 
 The new seeding system:
+
 - ✅ Reads seed data from `prisma/seed.json`
 - ✅ Automatically maps JSON keys to Prisma models
 - ✅ Provides error handling and logging for each model
@@ -15,16 +16,19 @@ The new seeding system:
 ## Quick Start
 
 ### 1. Basic Seeding
+
 ```bash
 npx prisma db seed
 ```
 
 ### 2. With Admin User Creation
+
 ```bash
 ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=securepassword npx prisma db seed
 ```
 
 ### 3. Destructive Mode (clears existing data)
+
 ```bash
 DESTRUCTIVE_SEED=true ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=securepassword npx prisma db seed
 ```
@@ -33,11 +37,11 @@ DESTRUCTIVE_SEED=true ADMIN_EMAIL=admin@example.com ADMIN_PASSWORD=securepasswor
 
 ### Environment Variables
 
-| Variable | Description | Default | Example |
-|----------|-------------|---------|---------|
-| `ADMIN_EMAIL` | Admin user email | - | `admin@example.com` |
-| `ADMIN_PASSWORD` | Admin user password | - | `securepassword` |
-| `DESTRUCTIVE_SEED` | Clear existing data before seeding | `false` | `true` |
+| Variable           | Description                        | Default | Example             |
+| ------------------ | ---------------------------------- | ------- | ------------------- |
+| `ADMIN_EMAIL`      | Admin user email                   | -       | `admin@example.com` |
+| `ADMIN_PASSWORD`   | Admin user password                | -       | `securepassword`    |
+| `DESTRUCTIVE_SEED` | Clear existing data before seeding | `false` | `true`              |
 
 ### Seed Data File
 
@@ -59,16 +63,19 @@ Edit `prisma/seed.json` to customize the default data. The file structure:
 The seeding system automatically detects and seeds the following models:
 
 ### System Configuration
+
 - **Model**: `systemConfig`
 - **Unique Field**: `key`
 - **Purpose**: Application settings and configuration
 
 ### Wards
+
 - **Model**: `ward`
 - **Unique Field**: `name`
 - **Purpose**: Administrative divisions
 
 ### Complaint Types
+
 - **Model**: `complaintType`
 - **Unique Field**: `name`
 - **Purpose**: Categories of complaints with SLA settings
@@ -78,6 +85,7 @@ The seeding system automatically detects and seeds the following models:
 To add a new model to the seeding system:
 
 1. **Add data to `prisma/seed.json`**:
+
    ```json
    {
      "yourModel": [
@@ -98,12 +106,12 @@ To add a new model to the seeding system:
 
 ### What Changed
 
-| Old System | New System |
-|------------|------------|
-| Hardcoded data in `seed.common.js` | JSON data in `seed.json` |
-| Manual seeding logic | Automatic model detection |
-| Environment-specific seed files | Single seed script with env vars |
-| Complex JavaScript functions | Simple JSON configuration |
+| Old System                         | New System                       |
+| ---------------------------------- | -------------------------------- |
+| Hardcoded data in `seed.common.js` | JSON data in `seed.json`         |
+| Manual seeding logic               | Automatic model detection        |
+| Environment-specific seed files    | Single seed script with env vars |
+| Complex JavaScript functions       | Simple JSON configuration        |
 
 ### Migration Steps
 
@@ -123,16 +131,19 @@ To add a new model to the seeding system:
 The seeding system provides comprehensive error handling:
 
 ### Model Detection
+
 ```
 ⚠️ Model 'unknownModel' not found in Prisma schema, skipping...
 ```
 
 ### Data Validation
+
 ```
 ⚠️ Data for 'modelName' is not an array, skipping...
 ```
 
 ### Record Insertion
+
 ```
 ❌ Error inserting record: [specific error message]
 ✅ modelName: 5 successful, 1 errors
@@ -158,10 +169,12 @@ The system provides detailed logging:
 ### Common Issues
 
 1. **Model not found**
+
    - Check that the model exists in your Prisma schema
    - Verify the JSON key matches the model name (case-sensitive)
 
 2. **Unique constraint violations**
+
    - The system uses upsert operations to handle existing records
    - Ensure your JSON data has appropriate unique fields
 
@@ -183,7 +196,7 @@ NODE_DEBUG=* npx prisma db seed
 The new system is optimized for performance:
 
 - **Upsert operations** prevent duplicate insertions
-- **Batch processing** handles multiple records efficiently  
+- **Batch processing** handles multiple records efficiently
 - **Model detection** caches results to avoid repeated checks
 - **Error isolation** continues seeding even if individual records fail
 
