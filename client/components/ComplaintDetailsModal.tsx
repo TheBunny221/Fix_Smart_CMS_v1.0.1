@@ -168,7 +168,7 @@ Phone: ${user.phone || "N/A"}
                     className={`${getStatusColor(complaint.status)} border flex items-center space-x-1`}
                   >
                     {getStatusIcon(complaint.status)}
-                    <span>{complaint.status.replace("_", " ")}</span>
+                    <span>{complaint.status?.replace("_", " ") || "Unknown"}</span>
                   </Badge>
                   <Badge
                     className={`${getPriorityColor(complaint.priority)} border`}

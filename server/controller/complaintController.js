@@ -765,9 +765,15 @@ export const getComplaints = asyncHandler(async (req, res) => {
     filters.submittedById = req.user.id;
     enforced.submittedById = req.user.id;
   } else if (req.user.role === "WARD_OFFICER") {
-    // Prefer officer-based scoping to match new requirement
-    filters.wardOfficerId = req.user.id;
-    enforced.wardOfficerId = req.user.id;
+    // Ward officers can see all complaints in their ward
+    if (req.user.wardId) {
+      filters.wardId = req.user.wardId;
+      enforced.wardId = req.user.wardId;
+    } else {
+      // Fallback to officer-based scoping if no wardId
+      filters.wardOfficerId = req.user.id;
+      enforced.wardOfficerId = req.user.id;
+    }
   } else if (req.user.role === "MAINTENANCE_TEAM") {
     roleOr = [
       { assignedToId: req.user.id },
@@ -1097,12 +1103,10 @@ export const getComplaint = asyncHandler(async (req, res) => {
         },
       },
       complaintType: { select: { id: true, name: true } },
-      attachments: { where: { entityType: "COMPLAINT" } },
-      materials: true,
-      photos: {
-        orderBy: { uploadedAt: "desc" },
+      attachments: { 
+        where: { entityType: "COMPLAINT" },
         include: {
-          uploadedByTeam: {
+          uploadedBy: {
             select: {
               id: true,
               fullName: true,
@@ -1115,27 +1119,6 @@ export const getComplaint = asyncHandler(async (req, res) => {
         orderBy: { timestamp: "desc" },
         include: {
           user: {
-            select: {
-              fullName: true,
-              role: true,
-            },
-          },
-        },
-      },
-      notifications: {
-        where: { userId: req.user.id },
-        orderBy: { sentAt: "desc" },
-      },
-      messages: {
-        orderBy: { sentAt: "asc" },
-        include: {
-          sentBy: {
-            select: {
-              fullName: true,
-              role: true,
-            },
-          },
-          receivedBy: {
             select: {
               fullName: true,
               role: true,
@@ -1188,7 +1171,7 @@ export const getComplaint = asyncHandler(async (req, res) => {
 // @access  Private (Ward Officer, Maintenance Team, Admin)
 export const updateComplaintStatus = asyncHandler(async (req, res) => {
   const {
-    status,
+    status: rawStatus,
     priority,
     remarks,
     assignedToId,
@@ -1196,6 +1179,9 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
     wardOfficerId,
   } = req.body;
   const complaintId = req.params.id;
+
+  // Normalize status to uppercase for consistency with enum values
+  const status = rawStatus ? rawStatus.toUpperCase() : rawStatus;
 
   const complaint = await prisma.complaint.findUnique({
     where: { id: complaintId },

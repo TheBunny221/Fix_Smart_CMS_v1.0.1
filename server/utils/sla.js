@@ -1,32 +1,59 @@
 import { getPrisma } from "../db/connection.js";
 
-// Build a map of complaint type -> SLA hours from system config
-// Ensure the keys in the returned map match the complaint.type stored in DB (usually the suffix of the config key, e.g. 'WATER_SUPPLY')
+// Build a map of complaint type -> SLA hours from ComplaintType table with fallback to system config
 export async function getTypeSlaMap(prisma) {
   const client = prisma || getPrisma();
-  const typeConfigs = await client.systemConfig.findMany({
-    where: { key: { startsWith: "COMPLAINT_TYPE_" }, isActive: true },
-  });
   const map = new Map();
-  for (const cfg of typeConfigs) {
-    try {
-      const v = JSON.parse(cfg.value || "{}");
-      const id = (cfg.key || "").replace("COMPLAINT_TYPE_", "");
-      const slaHours = Number(v.slaHours);
-      if (!id || !Number.isFinite(slaHours) || slaHours <= 0) continue;
-      // Primary key: the config suffix (e.g. WATER_SUPPLY) which matches complaint.type
-      map.set(id, slaHours);
-      // Also set uppercase/lowercase variants and the human-readable name (if present) for resilience
-      if (v.name && typeof v.name === "string") {
-        map.set(v.name.toUpperCase(), slaHours);
-        map.set(v.name.toLowerCase(), slaHours);
+  
+  // First try to get from ComplaintType table
+  const complaintTypes = await client.complaintType.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, slaHours: true }
+  });
+  
+  if (complaintTypes.length > 0) {
+    for (const ct of complaintTypes) {
+      const slaHours = Number(ct.slaHours);
+      if (!Number.isFinite(slaHours) || slaHours <= 0) continue;
+      
+      // Map by ID (for new complaintTypeId references)
+      map.set(String(ct.id), slaHours);
+      
+      // Map by name (for legacy type string references)
+      if (ct.name) {
+        map.set(ct.name, slaHours);
+        map.set(ct.name.toUpperCase(), slaHours);
+        map.set(ct.name.toLowerCase(), slaHours);
       }
-      map.set(id.toUpperCase(), slaHours);
-      map.set(id.toLowerCase(), slaHours);
-    } catch (e) {
-      // ignore parse errors
+    }
+  } else {
+    // Fallback to legacy system config
+    const typeConfigs = await client.systemConfig.findMany({
+      where: { key: { startsWith: "COMPLAINT_TYPE_" }, isActive: true },
+    });
+    
+    for (const cfg of typeConfigs) {
+      try {
+        const v = JSON.parse(cfg.value || "{}");
+        const id = (cfg.key || "").replace("COMPLAINT_TYPE_", "");
+        const slaHours = Number(v.slaHours);
+        if (!id || !Number.isFinite(slaHours) || slaHours <= 0) continue;
+        
+        // Primary key: the config suffix (e.g. WATER_SUPPLY) which matches complaint.type
+        map.set(id, slaHours);
+        // Also set uppercase/lowercase variants and the human-readable name (if present) for resilience
+        if (v.name && typeof v.name === "string") {
+          map.set(v.name.toUpperCase(), slaHours);
+          map.set(v.name.toLowerCase(), slaHours);
+        }
+        map.set(id.toUpperCase(), slaHours);
+        map.set(id.toLowerCase(), slaHours);
+      } catch (e) {
+        // ignore parse errors
+      }
     }
   }
+  
   return map;
 }
 

@@ -1,16 +1,31 @@
 # Schema Reference
 
-Complete documentation of the NLC-CMS database schema, including all models, relationships, and field descriptions.
+Complete documentation of the Fix_Smart_CMS v1.0.3 database schema, including all active models, relationships, and field descriptions.
 
 ## Database Overview
 
 - **Production Database**: PostgreSQL
-- **Development Database**: SQLite
+- **Development Database**: SQLite (for local development)
 - **ORM**: Prisma 6.16.3
-- **Schema Files**: 
-  - `prisma/schema.prisma` (Main production schema)
-  - `prisma/schema.dev.prisma` (Development schema)
-  - `prisma/schema.prod.prisma` (Production schema)
+- **Schema Version**: v1.0.3 (Production-ready, active models only)
+- **Schema File**: `prisma/schema.prisma` (Unified production schema)
+
+## Schema Evolution (v1.0.3)
+
+### Active Models
+The current schema includes only production-ready, actively used models:
+- User, Ward, SubZone, ComplaintType, Complaint, StatusLog
+- Attachment (unified), OTPSession, Notification, SystemConfig
+
+### Removed Models
+The following models were deprecated and removed in v1.0.3:
+- **Message**: Replaced by unified notification system
+- **Material**: Simplified to string-based tracking in complaints
+- **Tool**: Simplified to string-based tracking in complaints  
+- **Department**: Integrated into User model as string field
+- **Photo**: Merged into unified Attachment model
+- **ServiceRequest**: Removed from core schema
+- **Report**: Moved to application-level reporting
 
 ## Core Enums
 
@@ -57,26 +72,7 @@ enum SLAStatus {
 }
 ```
 
-### ServiceRequestStatus
-```prisma
-enum ServiceRequestStatus {
-  SUBMITTED        // Initial submission
-  VERIFIED         // Verified by staff
-  PROCESSING       // Being processed
-  APPROVED         // Approved for execution
-  REJECTED         // Rejected with reason
-  COMPLETED        // Service completed
-}
-```
 
-### NotificationType
-```prisma
-enum NotificationType {
-  EMAIL            // Email notifications
-  SMS              // SMS notifications (future implementation)
-  IN_APP           // In-application notifications
-}
-```
 
 ### AttachmentEntityType
 ```prisma
@@ -84,8 +80,6 @@ enum AttachmentEntityType {
   COMPLAINT        // Complaint-related attachments
   CITIZEN          // Citizen profile attachments
   USER             // User profile attachments
-  SERVICE_REQUEST  // Service request attachments
-  SYSTEM_CONFIG    // System configuration files
   MAINTENANCE_PHOTO // Maintenance work photos
 }
 ```
@@ -109,22 +103,16 @@ model User {
   lastLogin   DateTime?
   joinedOn    DateTime @default(now())
 
-  // Relations
-  ward                      Ward?              @relation(fields: [wardId], references: [id])
-  submittedComplaints       Complaint[]        @relation("SubmittedBy")
-  assignedComplaints        Complaint[]        @relation("AssignedTo")
-  wardOfficerComplaints     Complaint[]        @relation("WardOfficer")
-  maintenanceTeamComplaints Complaint[]        @relation("MaintenanceTeam")
-  submittedServiceRequests  ServiceRequest[]   @relation("ServiceSubmittedBy")
-  assignedServiceRequests   ServiceRequest[]   @relation("ServiceAssignedTo")
+  // Relations - Only active models
+  ward                      Ward?          @relation(fields: [wardId], references: [id])
+  submittedComplaints       Complaint[]    @relation("SubmittedBy")
+  assignedComplaints        Complaint[]    @relation("AssignedTo")
+  wardOfficerComplaints     Complaint[]    @relation("WardOfficer")
+  maintenanceTeamComplaints Complaint[]    @relation("MaintenanceTeam")
   statusLogs                StatusLog[]
-  serviceStatusLogs         ServiceRequestStatusLog[]
-  notifications             Notification[]
-  sentMessages              Message[]          @relation("SentBy")
-  receivedMessages          Message[]          @relation("ReceivedBy")
   otpSessions               OTPSession[]
-  addedMaterials            Material[]
-  uploadedAttachments       Attachment[]       @relation("AttachmentUploadedBy")
+  uploadedAttachments       Attachment[]   @relation("AttachmentUploadedBy")
+  notifications             Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -160,10 +148,9 @@ model Ward {
   isActive    Boolean @default(true)
 
   // Relations
-  users           User[]
-  complaints      Complaint[]
-  serviceRequests ServiceRequest[]
-  subZones        SubZone[]
+  users      User[]
+  complaints Complaint[]
+  subZones   SubZone[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -280,19 +267,17 @@ model Complaint {
   assignToTeam    Boolean           @default(false)
   tags            String?           // JSON array of tags
   
-  // Relations
-  ward            Ward              @relation(fields: [wardId], references: [id])
-  subZone         SubZone?          @relation(fields: [subZoneId], references: [id])
-  submittedBy     User?             @relation("SubmittedBy", fields: [submittedById], references: [id])
-  assignedTo      User?             @relation("AssignedTo", fields: [assignedToId], references: [id])
-  wardOfficer     User?             @relation("WardOfficer", fields: [wardOfficerId], references: [id])
-  maintenanceTeam User?             @relation("MaintenanceTeam", fields: [maintenanceTeamId], references: [id])
-  complaintType   ComplaintType?    @relation(fields: [complaintTypeId], references: [id])
+  // Relations - Only active models
+  ward            Ward           @relation(fields: [wardId], references: [id])
+  subZone         SubZone?       @relation(fields: [subZoneId], references: [id])
+  submittedBy     User?          @relation("SubmittedBy", fields: [submittedById], references: [id])
+  assignedTo      User?          @relation("AssignedTo", fields: [assignedToId], references: [id])
+  wardOfficer     User?          @relation("WardOfficer", fields: [wardOfficerId], references: [id])
+  maintenanceTeam User?          @relation("MaintenanceTeam", fields: [maintenanceTeamId], references: [id])
+  complaintType   ComplaintType? @relation(fields: [complaintTypeId], references: [id])
   statusLogs      StatusLog[]
   attachments     Attachment[]
   notifications   Notification[]
-  messages        Message[]
-  materials       Material[]
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -384,58 +369,39 @@ model Attachment {
 - `url`: Accessible URL path
 - `description`: Optional file description
 
-## Communication Models
+## Notification Model
 
 ### Notification Model
 ```prisma
 model Notification {
-  id               String   @id @default(cuid())
-  userId           String
-  complaintId      String?
-  serviceRequestId String?
-  type             NotificationType
-  title            String
-  message          String
-  isRead           Boolean  @default(false)
-  sentAt           DateTime @default(now())
-  readAt           DateTime?
+  id          String   @id @default(cuid())
+  userId      String
+  complaintId String?
+  type        String   @default("IN_APP") // IN_APP, EMAIL, SMS
+  title       String
+  message     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relations
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  complaint      Complaint?     @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  serviceRequest ServiceRequest? @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  complaint Complaint? @relation(fields: [complaintId], references: [id], onDelete: SetNull)
 
   @@index([userId, isRead])
+  @@index([createdAt])
   @@index([complaintId])
-  @@index([serviceRequestId])
-  @@index([sentAt])
   @@map("notifications")
 }
 ```
 
-### Message Model
-```prisma
-model Message {
-  id           String    @id @default(cuid())
-  complaintId  String
-  sentById     String
-  receivedById String?
-  content      String
-  isInternal   Boolean   @default(true)  // Internal communication
-  sentAt       DateTime  @default(now())
-  readAt       DateTime?
-  
-  // Relations
-  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  sentBy      User      @relation("SentBy", fields: [sentById], references: [id])
-  receivedBy  User?     @relation("ReceivedBy", fields: [receivedById], references: [id])
-  
-  @@index([complaintId])
-  @@index([sentById])
-  @@index([sentAt])
-  @@map("messages")
-}
-```
+**Field Descriptions:**
+- `type`: Notification channel (IN_APP, EMAIL, SMS)
+- `title`: Notification title/subject
+- `message`: Notification content
+- `isRead`: Whether user has read the notification
+- `createdAt`: When notification was created
+- `updatedAt`: Last update timestamp
 
 ## Authentication Models
 
@@ -471,105 +437,9 @@ model OTPSession {
 - `isVerified`: Whether OTP has been verified
 - `verifiedAt`: Verification timestamp
 
-## Service Request Models
 
-### ServiceRequest Model
-```prisma
-model ServiceRequest {
-  id                 String               @id @default(cuid())
-  title              String?
-  serviceType        String
-  description        String
-  status             ServiceRequestStatus @default(SUBMITTED)
-  priority           Priority             @default(MEDIUM)
 
-  // Location Information
-  wardId             String
-  area               String
-  address            String
-  landmark           String?
-
-  // Contact Information
-  contactName        String
-  contactEmail       String
-  contactPhone       String
-
-  // Assignment and Tracking
-  submittedById      String?
-  assignedToId       String?
-
-  // Timestamps
-  submittedOn        DateTime  @default(now())
-  preferredDateTime  DateTime?
-  assignedOn         DateTime?
-  expectedCompletion DateTime?
-  completedOn        DateTime?
-
-  // Additional Information
-  remarks            String?
-  citizenFeedback    String?
-  rating             Int?
-
-  // Relations
-  ward         Ward                        @relation(fields: [wardId], references: [id])
-  submittedBy  User?                       @relation("ServiceSubmittedBy", fields: [submittedById], references: [id])
-  assignedTo   User?                       @relation("ServiceAssignedTo", fields: [assignedToId], references: [id])
-  statusLogs   ServiceRequestStatusLog[]
-  notifications Notification[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([submittedById, createdAt])
-  @@index([wardId, status])
-  @@index([assignedToId, status])
-  @@index([serviceType, status])
-  @@index([submittedOn])
-  @@map("service_requests")
-}
-```
-
-### ServiceRequestStatusLog Model
-```prisma
-model ServiceRequestStatusLog {
-  id               String        @id @default(cuid())
-  serviceRequestId String
-  userId           String
-  fromStatus       String?
-  toStatus         String
-  comment          String?
-  timestamp        DateTime      @default(now())
-
-  // Relations
-  serviceRequest  ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-  user            User          @relation(fields: [userId], references: [id])
-
-  @@index([serviceRequestId, timestamp])
-  @@index([userId])
-  @@index([timestamp])
-  @@map("service_request_status_logs")
-}
-```
-
-## System Configuration Models
-
-### Department Model
-```prisma
-model Department {
-  id          String  @id @default(cuid())
-  name        String  @unique
-  description String?
-  headUserId  String?
-  isActive    Boolean @default(true)
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([name])
-  @@index([isActive])
-  @@map("departments")
-}
-```
+## System Configuration Model
 
 ### SystemConfig Model
 ```prisma
@@ -598,67 +468,7 @@ model SystemConfig {
 - `sla_default_hours`: Default SLA hours
 - `email_notifications_enabled`: Email notification toggle
 
-## Reporting Models
 
-### Report Model
-```prisma
-model Report {
-  id          String   @id @default(cuid())
-  name        String
-  type        String   // COMPLAINT_SUMMARY, SLA_COMPLIANCE, PERFORMANCE
-  filters     String   // JSON string of applied filters
-  data        String   // JSON string of report data
-  generatedBy String
-  generatedAt DateTime @default(now())
-
-  @@index([type, generatedAt])
-  @@index([generatedBy])
-  @@index([generatedAt])
-  @@map("reports")
-}
-```
-
-## Maintenance Models
-
-### Material Model
-```prisma
-model Material {
-  id           String    @id @default(cuid())
-  complaintId  String
-  materialName String
-  quantity     Int
-  unit         String    // kg, meter, piece, etc.
-  usedAt       DateTime  @default(now())
-  addedById    String
-  notes        String?
-
-  // Relations
-  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  addedBy     User      @relation(fields: [addedById], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([complaintId])
-  @@index([addedById])
-  @@index([usedAt])
-  @@map("materials")
-}
-```
-
-## Schema Metadata
-
-### SchemaVersion Model
-```prisma
-model SchemaVersion {
-  id        String   @id @default(cuid())
-  version   String   @unique
-  appliedAt DateTime @default(now())
-  notes     String?
-
-  @@map("schema_versions")
-}
-```
 
 ## Database Relationships
 

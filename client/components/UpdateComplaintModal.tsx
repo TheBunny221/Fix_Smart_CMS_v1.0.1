@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
+import { SafeRenderer, safeRenderValue } from "./SafeRenderer";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import {
@@ -453,11 +454,20 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                 : "Update Complaint"}
           </DialogTitle>
           <DialogDescription>
-            {user?.role === "MAINTENANCE_TEAM"
-              ? `Update your work status for complaint #${complaint.complaintId || complaint.id.slice(-6)}`
-              : user?.role === "WARD_OFFICER"
-                ? `Assign and manage complaint #${complaint.complaintId || complaint.id.slice(-6)}`
-                : `Update the status and assignment of complaint #${complaint.complaintId || complaint.id.slice(-6)}`}
+            <SafeRenderer fallback="Update complaint status">
+              {(() => {
+                const complaintId = safeRenderValue(complaint.complaintId) || 
+                  (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : 'Unknown');
+                
+                if (user?.role === "MAINTENANCE_TEAM") {
+                  return `Update your work status for complaint #${complaintId}`;
+                } else if (user?.role === "WARD_OFFICER") {
+                  return `Assign and manage complaint #${complaintId}`;
+                } else {
+                  return `Update the status and assignment of complaint #${complaintId}`;
+                }
+              })()}
+            </SafeRenderer>
           </DialogDescription>
         </DialogHeader>
 
@@ -484,17 +494,24 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-gray-600">Type:</span>{" "}
-                {(complaint.type ?? "UNKNOWN").replace("_", " ")}
+                <SafeRenderer fallback="UNKNOWN">
+                  {(complaint.type ?? "UNKNOWN").replace("_", " ")}
+                </SafeRenderer>
               </div>
               <div>
-                <span className="text-gray-600">Area:</span> {complaint.area}
+                <span className="text-gray-600">Area:</span>{" "}
+                <SafeRenderer fallback="Unknown Area">
+                  {safeRenderValue(complaint.area, "Unknown Area")}
+                </SafeRenderer>
               </div>
               <div>
                 <span className="text-gray-600">Current Status:</span>{" "}
                 <Badge
                   className={`ml-2 ${getStatusColor(complaint.status ?? "REGISTERED")}`}
                 >
-                  {(complaint.status ?? "REGISTERED").replace("_", " ")}
+                  <SafeRenderer fallback="REGISTERED">
+                    {(complaint.status ?? "REGISTERED").replace("_", " ")}
+                  </SafeRenderer>
                 </Badge>
               </div>
               <div>
@@ -502,13 +519,19 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                 <Badge
                   className={`ml-2 ${getPriorityColor(complaint.priority ?? "MEDIUM")}`}
                 >
-                  {complaint.priority ?? "MEDIUM"}
+                  <SafeRenderer fallback="MEDIUM">
+                    {safeRenderValue(complaint.priority, "MEDIUM")}
+                  </SafeRenderer>
                 </Badge>
               </div>
             </div>
             <div className="mt-2">
               <span className="text-gray-600">Description:</span>
-              <p className="text-sm mt-1">{complaint.description}</p>
+              <p className="text-sm mt-1">
+                <SafeRenderer fallback="No description available">
+                  {safeRenderValue(complaint.description, "No description available")}
+                </SafeRenderer>
+              </p>
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200">

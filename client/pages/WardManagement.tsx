@@ -407,7 +407,7 @@ const WardManagement: React.FC = () => {
                     {priorityComplaints.map((complaint: Complaint) => (
                       <TableRow key={complaint.id}>
                         <TableCell className="font-medium">
-                          #{complaint.complaintId || complaint.id.slice(-6)}
+                          #{complaint.complaintId || (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : 'Unknown')}
                         </TableCell>
                         <TableCell>
                           {(complaint.type || "").replace("_", " ")}

@@ -256,7 +256,7 @@ const GuestTrackComplaint: React.FC = () => {
                 <CardTitle className="flex items-center justify-between">
                   <span>Complaint Details</span>
                   <Badge className={getStatusColor(trackingResult.status)}>
-                    {trackingResult.status.replace("_", " ")}
+                    {trackingResult.status?.replace("_", " ") || "Unknown"}
                   </Badge>
                 </CardTitle>
               </CardHeader>

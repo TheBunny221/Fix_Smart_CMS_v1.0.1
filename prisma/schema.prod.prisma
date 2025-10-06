@@ -58,30 +58,30 @@ enum AttachmentEntityType {
 // ============================================================================
 
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
+  id          String    @id @default(cuid())
+  email       String    @unique
   fullName    String
   phoneNumber String?
   password    String?
-  role        UserRole @default(CITIZEN)
+  role        UserRole  @default(CITIZEN)
   wardId      String?
   department  String?
-  language    String   @default("en")
+  language    String    @default("en")
   avatar      String?
-  isActive    Boolean  @default(true)
+  isActive    Boolean   @default(true)
   lastLogin   DateTime?
-  joinedOn    DateTime @default(now())
+  joinedOn    DateTime  @default(now())
 
   // Relations - Only active models
-  ward                      Ward?           @relation(fields: [wardId], references: [id])
-  submittedComplaints       Complaint[]     @relation("SubmittedBy")
-  assignedComplaints        Complaint[]     @relation("AssignedTo")
-  wardOfficerComplaints     Complaint[]     @relation("WardOfficer")
-  maintenanceTeamComplaints Complaint[]     @relation("MaintenanceTeam")
+  ward                      Ward?          @relation(fields: [wardId], references: [id])
+  submittedComplaints       Complaint[]    @relation("SubmittedBy")
+  assignedComplaints        Complaint[]    @relation("AssignedTo")
+  wardOfficerComplaints     Complaint[]    @relation("WardOfficer")
+  maintenanceTeamComplaints Complaint[]    @relation("MaintenanceTeam")
   statusLogs                StatusLog[]
   otpSessions               OTPSession[]
-  uploadedAttachments       Attachment[]    @relation("AttachmentUploadedBy")
-  uploadedComplaintPhotos   ComplaintPhoto[] @relation("ComplaintPhotoUploadedBy")
+  uploadedAttachments       Attachment[]   @relation("AttachmentUploadedBy")
+  notifications             Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -131,16 +131,16 @@ model SubZone {
 }
 
 model ComplaintType {
-  id          Int       @id @default(autoincrement())
-  name        String    @unique
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
   description String?
-  priority    Priority  @default(MEDIUM)
-  slaHours    Int       @default(48)
-  isActive    Boolean   @default(true)
+  priority    Priority    @default(MEDIUM)
+  slaHours    Int         @default(48)
+  isActive    Boolean     @default(true)
   complaints  Complaint[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([name])
   @@index([isActive])
@@ -152,66 +152,66 @@ model ComplaintType {
 // ============================================================================
 
 model Complaint {
-  id              String            @id @default(cuid())
-  complaintId     String?           @unique  // Human-readable complaint ID like KSC0001
+  id              String          @id @default(cuid())
+  complaintId     String?         @unique // Human-readable complaint ID like KSC0001
   title           String?
   description     String
   // Legacy string type retained for backward compatibility
   type            String?
   complaintTypeId Int?
-  status          ComplaintStatus   @default(REGISTERED)
-  priority        Priority          @default(MEDIUM)
-  slaStatus       SLAStatus         @default(ON_TIME)
-  
+  status          ComplaintStatus @default(REGISTERED)
+  priority        Priority        @default(MEDIUM)
+  slaStatus       SLAStatus       @default(ON_TIME)
+
   // Location Information
-  wardId          String
-  subZoneId       String?
-  area            String
-  landmark        String?
-  address         String?
-  coordinates     String?           // JSON string for lat/lng
-  latitude        Float?            // Explicit latitude field
-  longitude       Float?            // Explicit longitude field
-  
+  wardId      String
+  subZoneId   String?
+  area        String
+  landmark    String?
+  address     String?
+  coordinates String? // JSON string for lat/lng
+  latitude    Float? // Explicit latitude field
+  longitude   Float? // Explicit longitude field
+
   // Contact Information
-  contactName     String?
-  contactEmail    String?
-  contactPhone    String
-  isAnonymous     Boolean           @default(false)
-  
+  contactName  String?
+  contactEmail String?
+  contactPhone String
+  isAnonymous  Boolean @default(false)
+
   // Assignment and Tracking
-  submittedById   String?
-  assignedToId    String?           // Generic assignment field (kept for backward compatibility)
-  resolvedById    String?
-  wardOfficerId   String?           // Automatically assigned ward officer
-  maintenanceTeamId String?         // Assigned maintenance team member
-  
+  submittedById     String?
+  assignedToId      String? // Generic assignment field (kept for backward compatibility)
+  resolvedById      String?
+  wardOfficerId     String? // Automatically assigned ward officer
+  maintenanceTeamId String? // Assigned maintenance team member
+
   // Timestamps
-  submittedOn     DateTime          @default(now())
-  assignedOn      DateTime?
-  resolvedOn      DateTime?
-  closedOn        DateTime?
-  deadline        DateTime?
-  
+  submittedOn DateTime  @default(now())
+  assignedOn  DateTime?
+  resolvedOn  DateTime?
+  closedOn    DateTime?
+  deadline    DateTime?
+
   // Additional Information
   remarks         String?
   citizenFeedback String?
-  rating          Int?              // 1-5 rating
-  assignToTeam    Boolean           @default(false)  // Team assignment flag
-  tags            String?           // JSON array of tags
-  
+  rating          Int? // 1-5 rating
+  assignToTeam    Boolean @default(false) // Team assignment flag
+  tags            String? // JSON array of tags
+
   // Relations - Only active models
-  ward            Ward              @relation(fields: [wardId], references: [id])
-  subZone         SubZone?          @relation(fields: [subZoneId], references: [id])
-  submittedBy     User?             @relation("SubmittedBy", fields: [submittedById], references: [id])
-  assignedTo      User?             @relation("AssignedTo", fields: [assignedToId], references: [id])
-  wardOfficer     User?             @relation("WardOfficer", fields: [wardOfficerId], references: [id])
-  maintenanceTeam User?             @relation("MaintenanceTeam", fields: [maintenanceTeamId], references: [id])
-  complaintType   ComplaintType?    @relation(fields: [complaintTypeId], references: [id])
+  ward            Ward           @relation(fields: [wardId], references: [id])
+  subZone         SubZone?       @relation(fields: [subZoneId], references: [id])
+  submittedBy     User?          @relation("SubmittedBy", fields: [submittedById], references: [id])
+  assignedTo      User?          @relation("AssignedTo", fields: [assignedToId], references: [id])
+  wardOfficer     User?          @relation("WardOfficer", fields: [wardOfficerId], references: [id])
+  maintenanceTeam User?          @relation("MaintenanceTeam", fields: [maintenanceTeamId], references: [id])
+  complaintType   ComplaintType? @relation(fields: [complaintTypeId], references: [id])
   statusLogs      StatusLog[]
   attachments     Attachment[]
-  complaintPhotos ComplaintPhoto[]
-  
+  notifications   Notification[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -233,14 +233,14 @@ model StatusLog {
   id          String   @id @default(cuid())
   complaintId String
   userId      String
-  fromStatus  String?  // Previous status
-  toStatus    String   // New status
+  fromStatus  String? // Previous status
+  toStatus    String // New status
   comment     String?
   timestamp   DateTime @default(now())
-  
+
   // Relations
-  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id])
+  complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id])
 
   @@index([complaintId, timestamp])
   @@index([userId])
@@ -253,22 +253,22 @@ model StatusLog {
 // ============================================================================
 
 model Attachment {
-  id           String                @id @default(cuid())
-  entityType   AttachmentEntityType  @default(COMPLAINT)
-  entityId     String                // Generic entity ID (complaint, user, etc.)
-  complaintId  String?               // Specific complaint reference for backward compatibility
+  id           String               @id @default(cuid())
+  entityType   AttachmentEntityType @default(COMPLAINT)
+  entityId     String // Generic entity ID (complaint, user, etc.)
+  complaintId  String? // Specific complaint reference for backward compatibility
   fileName     String
   originalName String
   mimeType     String
   size         Int
   url          String
-  description  String?               // Optional description of the attachment
-  createdAt    DateTime              @default(now())
+  description  String? // Optional description of the attachment
+  createdAt    DateTime             @default(now())
   uploadedById String?
 
   // Relations
-  complaint   Complaint? @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  uploadedBy  User?      @relation("AttachmentUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  complaint  Complaint? @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  uploadedBy User?      @relation("AttachmentUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
 
   @@index([entityType, entityId])
   @@index([fileName])
@@ -293,9 +293,9 @@ model OTPSession {
   expiresAt   DateTime
   createdAt   DateTime  @default(now())
   verifiedAt  DateTime?
-  
+
   // Relations
-  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([email, purpose, isVerified])
   @@index([expiresAt])
@@ -305,44 +305,44 @@ model OTPSession {
 }
 
 // ============================================================================
+// NOTIFICATIONS - In-app notification system
+// ============================================================================
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  complaintId String?
+  type        String   @default("IN_APP") // IN_APP, EMAIL, SMS
+  title       String
+  message     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  complaint Complaint? @relation(fields: [complaintId], references: [id], onDelete: SetNull)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@index([complaintId])
+  @@map("notifications")
+}
+
+// ============================================================================
 // SYSTEM CONFIGURATION & ADMINISTRATION
 // ============================================================================
 
 model SystemConfig {
-  id          String    @id @default(cuid())
-  key         String    @unique
+  id          String   @id @default(cuid())
+  key         String   @unique
   value       String
-  type        String?   // Type to categorize the setting (e.g., 'app', 'complaint', 'contact', 'system')
+  type        String? // Type to categorize the setting (e.g., 'app', 'complaint', 'contact', 'system')
   description String?
-  isActive    Boolean   @default(true)
-  updatedAt   DateTime  @updatedAt
+  isActive    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
 
   @@index([key, isActive])
   @@index([type])
   @@map("system_config")
-}
-
-// ============================================================================
-// LEGACY SUPPORT - ComplaintPhoto for backward compatibility
-// ============================================================================
-
-model ComplaintPhoto {
-  id          String    @id @default(cuid())
-  complaintId String
-  fileName    String
-  originalName String
-  mimeType    String
-  size        Int
-  url         String
-  uploadedAt  DateTime  @default(now())
-  uploadedById String?
-
-  // Relations
-  complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  uploadedBy  User?     @relation("ComplaintPhotoUploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
-
-  @@index([complaintId])
-  @@index([uploadedById])
-  @@index([uploadedAt])
-  @@map("complaint_photos")
 }

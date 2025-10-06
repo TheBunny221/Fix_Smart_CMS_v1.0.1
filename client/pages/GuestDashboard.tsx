@@ -352,7 +352,7 @@ const GuestDashboard: React.FC = () => {
                           </p>
                         </div>
                         <Badge className={getStatusColor(complaint.status)}>
-                          {complaint.status.replace("_", " ")}
+                          {complaint.status?.replace("_", " ") || "Unknown"}
                         </Badge>
                       </div>
                     ))}
@@ -518,7 +518,7 @@ const GuestDashboard: React.FC = () => {
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(complaint.status)}>
-                            {complaint.status.replace("_", " ")}
+                            {complaint.status?.replace("_", " ") || "Unknown"}
                           </Badge>
                         </TableCell>
                         <TableCell>

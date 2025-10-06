@@ -39,7 +39,7 @@ import {
   Search,
   Plus,
   Edit,
-  Trash2,
+
   UserCheck,
   Shield,
   Settings,
@@ -51,7 +51,7 @@ import {
   useGetUserStatsQuery,
   useActivateUserMutation,
   useDeactivateUserMutation,
-  useDeleteUserMutation,
+
   useCreateUserMutation,
   useUpdateUserMutation,
   type AdminUser,
@@ -170,7 +170,7 @@ const AdminUsers: React.FC = () => {
   // Mutations
   const [activateUser] = useActivateUserMutation();
   const [deactivateUser] = useDeactivateUserMutation();
-  const [deleteUser] = useDeleteUserMutation();
+
   const [createUser, { isLoading: isCreating }] = useCreateUserMutation();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
 
@@ -242,24 +242,7 @@ const AdminUsers: React.FC = () => {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      try {
-        await deleteUser(userId).unwrap();
-        toast({
-          title: "Success",
-          description: "User deleted successfully",
-        });
-        refetchUsers();
-      } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error?.data?.message || "Failed to delete user",
-          variant: "destructive",
-        });
-      }
-    }
-  };
+
 
   const handleResetFilters = () => {
     setSearchTerm("");
@@ -481,17 +464,21 @@ const AdminUsers: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
           <p className="text-gray-600">Manage all users in the system</p>
         </div>
-        <Button onClick={handleOpenAddDialog} variant="default">
-          Add New User
-        </Button>
-        <Button onClick={handleExportUsers} variant="outline">
-          Export Users
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button onClick={handleExportUsers} variant="outline" className="w-full sm:w-auto">
+            <Settings className="h-4 w-4 mr-2" />
+            Export Users
+          </Button>
+          <Button onClick={handleOpenAddDialog} variant="default" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
+            <Plus className="h-4 w-4 mr-2" />
+            Add New User
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -662,6 +649,7 @@ const AdminUsers: React.FC = () => {
                   <TableHead>Ward</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Complaints</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -710,6 +698,28 @@ const AdminUsers: React.FC = () => {
                         <p>Assigned: {user._count?.assignedComplaints || 0}</p>
                       </div>
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenEditDialog(user)}
+                          className="h-8 w-8 p-0"
+                          title="Edit user"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => user.isActive ? handleDeactivateUser(user.id) : handleActivateUser(user.id)}
+                          className={`h-8 w-8 p-0 ${user.isActive ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}`}
+                          title={user.isActive ? "Deactivate user" : "Activate user"}
+                        >
+                          {user.isActive ? <UserCheck className="h-4 w-4" /> : <Shield className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -750,9 +760,12 @@ const AdminUsers: React.FC = () => {
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-blue-600" />
+              Add New User
+            </DialogTitle>
             <DialogDescription>
-              Create a new user account in the system.
+              Create a new user account in the system. All fields marked with * are required.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleFormSubmit} className="space-y-4">
@@ -875,14 +888,17 @@ const AdminUsers: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isCreating}>
+              <Button type="submit" disabled={isCreating} className="bg-blue-600 hover:bg-blue-700">
                 {isCreating ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Creating...
                   </>
                 ) : (
-                  "Create User"
+                  <>
+                    <UserCheck className="h-4 w-4 mr-2" />
+                    Create User
+                  </>
                 )}
               </Button>
             </DialogFooter>
@@ -894,8 +910,13 @@ const AdminUsers: React.FC = () => {
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-            <DialogDescription>Update user information.</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5 text-blue-600" />
+              Edit User
+            </DialogTitle>
+            <DialogDescription>
+              Update user information. Changes will be applied immediately.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleFormSubmit} className="space-y-4">
             <div>
@@ -1009,14 +1030,17 @@ const AdminUsers: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isUpdating}>
+              <Button type="submit" disabled={isUpdating} className="bg-blue-600 hover:bg-blue-700">
                 {isUpdating ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Updating...
                   </>
                 ) : (
-                  "Update User"
+                  <>
+                    <UserCheck className="h-4 w-4 mr-2" />
+                    Update User
+                  </>
                 )}
               </Button>
             </DialogFooter>

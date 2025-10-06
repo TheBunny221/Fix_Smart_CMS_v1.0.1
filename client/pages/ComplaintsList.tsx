@@ -617,7 +617,7 @@ const ComplaintsList: React.FC = () => {
                   {filteredComplaints.map((complaint: any) => (
                     <TableRow key={complaint.id}>
                       <TableCell className="font-medium">
-                        #{complaint.complaintId || complaint.id.slice(-6)}
+                        #{complaint.complaintId || (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : 'Unknown')}
                       </TableCell>
                       <TableCell>
                         <div className="max-w-xs">
@@ -635,7 +635,7 @@ const ComplaintsList: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(complaint.status)}>
-                          {complaint.status.replace("_", " ")}
+                          {complaint.status?.replace("_", " ") || "Unknown"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -692,7 +692,7 @@ const ComplaintsList: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <Badge className={getSLAColor(complaint.slaStatus)}>
-                              {complaint.slaStatus.replace("_", " ")}
+                              {complaint.slaStatus?.replace("_", " ") || "Unknown"}
                             </Badge>
                           </TableCell>
                           <TableCell>

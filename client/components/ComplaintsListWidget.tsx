@@ -54,7 +54,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
   const effectiveUser = user || currentUser;
   const effectiveUserRole = userRole || effectiveUser?.role;
 
-  // Build query params with ward filtering for Ward Officers
+  // Build query params with proper filtering for Ward Officers
   const queryParams = useMemo(() => {
     const params = {
       ...filters,
@@ -62,13 +62,14 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
       limit: 50,
     };
 
-    // Enforce officer-based filtering for Ward Officers
-    if (effectiveUserRole === "WARD_OFFICER" && effectiveUser?.id) {
-      params.officerId = effectiveUser.id;
+    // For Ward Officers, use ward-based filtering if wardId is not already provided
+    // This allows them to see all complaints in their ward, not just assigned to them
+    if (effectiveUserRole === "WARD_OFFICER" && effectiveUser?.ward?.id && !params.wardId) {
+      params.wardId = effectiveUser.ward.id;
     }
 
     return params;
-  }, [filters, effectiveUserRole, effectiveUser?.id]);
+  }, [filters, effectiveUserRole, effectiveUser?.ward?.id]);
 
   const {
     data: complaintsResponse,
@@ -78,9 +79,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
   } = useGetComplaintsQuery(queryParams);
 
   // Normalize response to array of complaints
-  const complaints: Complaint[] = Array.isArray(complaintsResponse?.data)
-    ? complaintsResponse.data
-    : [];
+  const complaints: Complaint[] = complaintsResponse?.data?.complaints || [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -146,7 +145,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
         <CardTitle className="flex items-center justify-between">
           <span className="flex items-center">
             <FileText className="h-5 w-5 mr-2" />
-            {title} ({complaintsResponse?.meta?.total ?? complaints.length})
+            {title} ({complaintsResponse?.data?.pagination?.totalItems ?? complaints.length})
           </span>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-1" />
@@ -216,7 +215,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                 {complaints.map((complaint: Complaint) => (
                   <TableRow key={complaint.id}>
                     <TableCell className="font-medium">
-                      #{complaint.complaintId || complaint.id.slice(-6)}
+                      #{complaint.complaintId || (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : 'Unknown')}
                     </TableCell>
                     <TableCell>
                       <div className="max-w-xs">
@@ -304,10 +303,10 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {complaint.resolvedDate ? (
+                          {complaint.resolvedOn ? (
                             <span className="text-sm">
                               {new Date(
-                                complaint.resolvedDate,
+                                complaint.resolvedOn,
                               ).toLocaleDateString()}
                             </span>
                           ) : (
@@ -317,9 +316,9 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                       </>
                     )}
                     <TableCell>
-                      {complaint.lastUpdated ? (
+                      {complaint.updatedAt ? (
                         <span className="text-sm">
-                          {new Date(complaint.lastUpdated).toLocaleDateString()}
+                          {new Date(complaint.updatedAt).toLocaleDateString()}
                         </span>
                       ) : (
                         <span className="text-xs text-gray-500">-</span>
@@ -328,8 +327,8 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                     <TableCell>
                       <div className="flex items-center text-sm">
                         <Calendar className="h-3 w-3 mr-1" />
-                        {complaint.submittedDate
-                          ? new Date(complaint.submittedDate).toLocaleDateString()
+                        {complaint.submittedOn
+                          ? new Date(complaint.submittedOn).toLocaleDateString()
                           : "N/A"}
                       </div>
                     </TableCell>

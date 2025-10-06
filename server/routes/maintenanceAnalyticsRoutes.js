@@ -56,18 +56,18 @@ const getMaintenanceAnalytics = asyncHandler(async (req, res) => {
     // Calculate metrics specific to maintenance team
     const totalAssigned = assignedComplaints.length;
     const completedTasks = assignedComplaints.filter(
-      (c) => c.status === "resolved",
+      (c) => c.status === "RESOLVED",
     ).length;
     const inProgressTasks = assignedComplaints.filter(
-      (c) => c.status === "in_progress",
+      (c) => c.status === "IN_PROGRESS",
     ).length;
     const pendingTasks = assignedComplaints.filter((c) =>
-      ["registered", "assigned"].includes(c.status),
+      ["REGISTERED", "ASSIGNED"].includes(c.status),
     ).length;
 
     // Calculate overdue tasks
     const overdueTasks = assignedComplaints.filter((c) => {
-      if (c.deadline && ["assigned", "in_progress"].includes(c.status)) {
+      if (c.deadline && ["ASSIGNED", "IN_PROGRESS"].includes(c.status)) {
         return new Date(c.deadline) < new Date();
       }
       return false;
@@ -75,7 +75,7 @@ const getMaintenanceAnalytics = asyncHandler(async (req, res) => {
 
     // Calculate average completion time
     const completedWithTime = assignedComplaints.filter(
-      (c) => c.status === "resolved" && c.resolvedOn,
+      (c) => c.status === "RESOLVED" && c.resolvedOn,
     );
     const avgCompletionTime =
       completedWithTime.length > 0
@@ -101,7 +101,7 @@ const getMaintenanceAnalytics = asyncHandler(async (req, res) => {
 
       const dayCompleted = dayComplaints.filter(
         (c) =>
-          c.status === "resolved" &&
+          c.status === "RESOLVED" &&
           c.resolvedAt &&
           c.resolvedAt.toISOString().split("T")[0] === dateStr,
       );
@@ -129,7 +129,7 @@ const getMaintenanceAnalytics = asyncHandler(async (req, res) => {
       data.count++;
 
       if (
-        complaint.status === "resolved" &&
+        complaint.status === "RESOLVED" &&
         complaint.resolvedOn &&
         complaint.assignedOn
       ) {

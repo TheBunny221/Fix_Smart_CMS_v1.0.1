@@ -55,6 +55,16 @@ import {
 import FeedbackDialog from "../components/FeedbackDialog";
 import QuickComplaintModal from "../components/QuickComplaintModal";
 import ContactInfoCard from "../components/ContactInfoCard";
+import { SafeRenderer, safeRenderValue } from "../components/SafeRenderer";
+
+// Suppress ResizeObserver loop limit warnings
+const originalError = console.error;
+console.error = (...args) => {
+  if (typeof args[0] === 'string' && args[0].includes('ResizeObserver loop limit exceeded')) {
+    return;
+  }
+  originalError.call(console, ...args);
+};
 
 const CitizenDashboard: React.FC = () => {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -81,14 +91,26 @@ const CitizenDashboard: React.FC = () => {
     refetch: refetchComplaints,
   } = useGetComplaintsQuery(
     { page: 1, limit: 50 }, // Get more complaints for better stats
-    { skip: !isAuthenticated || !user },
+    {
+      skip: !isAuthenticated || !user,
+      selectFromResult: ({ data, ...other }) => ({
+        data: data || { success: false, data: { complaints: [], pagination: {} } },
+        ...other,
+      }),
+    },
   );
 
   const {
     data: statsResponse,
     isLoading: statsLoading,
     refetch: refetchStats,
-  } = useGetComplaintStatisticsQuery({}, { skip: !isAuthenticated || !user });
+  } = useGetComplaintStatisticsQuery({}, {
+    skip: !isAuthenticated || !user,
+    selectFromResult: ({ data, ...other }) => ({
+      data: data || { success: false, data: {} },
+      ...other,
+    }),
+  });
 
   // Debug: Log raw API responses
   console.log("Raw API responses:", {
@@ -99,13 +121,18 @@ const CitizenDashboard: React.FC = () => {
   // Extract complaints from the actual API response structure
   // Backend returns: { success: true, data: { complaints: [...], pagination: {...} } }
   const complaintsData = complaintsResponse?.data as any;
-  const complaints: Complaint[] = Array.isArray(complaintsData?.complaints)
-    ? complaintsData.complaints
-    : Array.isArray(complaintsData)
-    ? complaintsData
-    : Array.isArray(complaintsResponse)
-    ? complaintsResponse as any
-    : [];
+  const complaints: Complaint[] = useMemo(() => {
+    if (Array.isArray(complaintsData?.complaints)) {
+      return complaintsData.complaints;
+    }
+    if (Array.isArray(complaintsData)) {
+      return complaintsData;
+    }
+    if (Array.isArray(complaintsResponse)) {
+      return complaintsResponse as any;
+    }
+    return [];
+  }, [complaintsResponse, complaintsData]);
 
   console.log("Extracted complaints:", complaints);
   console.log("Complaints count:", complaints.length);
@@ -186,16 +213,16 @@ const CitizenDashboard: React.FC = () => {
     });
 
     // Calculate dashboard statistics from complaints or use stats API
-    if (statsResponse?.data) {
+    if (statsResponse?.data && typeof statsResponse.data === 'object') {
       // Use API stats if available
-      const stats = statsResponse.data;
-      const total = stats.total || 0;
+      const stats = statsResponse.data as any;
+      const total = stats?.total || 0;
       const pending =
-        stats.byStatus?.REGISTERED || stats.byStatus?.registered || 0;
+        stats?.byStatus?.REGISTERED || stats?.byStatus?.registered || 0;
       const inProgress =
-        stats.byStatus?.IN_PROGRESS || stats.byStatus?.in_progress || 0;
+        stats?.byStatus?.IN_PROGRESS || stats?.byStatus?.in_progress || 0;
       const resolved =
-        stats.byStatus?.RESOLVED || stats.byStatus?.resolved || 0;
+        stats?.byStatus?.RESOLVED || stats?.byStatus?.resolved || 0;
       const resolutionRate =
         total > 0 ? Math.round((resolved / total) * 100) : 0;
 
@@ -213,7 +240,7 @@ const CitizenDashboard: React.FC = () => {
         pending,
         inProgress,
         resolved,
-        avgResolutionTime: stats.avgResolutionTime || 0,
+        avgResolutionTime: stats?.avgResolutionTime || 0,
         resolutionRate,
       });
     } else {
@@ -295,9 +322,16 @@ const CitizenDashboard: React.FC = () => {
     }
   };
 
-  const getComplaintTypeLabel = (type: string) => {
+  const getComplaintTypeLabel = (type: string | any) => {
+    // Handle case where type might be an object instead of string
+    if (typeof type === 'object' && type !== null) {
+      return type.name || type.label || 'Unknown Type';
+    }
     // Convert type to readable format
-    return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+    if (typeof type === 'string') {
+      return type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+    }
+    return 'Unknown Type';
   };
 
   const isResolved = (status: string) => {
@@ -545,11 +579,11 @@ const CitizenDashboard: React.FC = () => {
               {(searchTerm ||
                 (statusFilter && statusFilter !== "all") ||
                 (typeFilter && typeFilter !== "all")) && (
-                <Button variant="ghost" onClick={clearAllFilters}>
-                  <Filter className="h-4 w-4 mr-2" />
-                  Clear Filters
-                </Button>
-              )}
+                  <Button variant="ghost" onClick={clearAllFilters}>
+                    <Filter className="h-4 w-4 mr-2" />
+                    Clear Filters
+                  </Button>
+                )}
             </div>
           </div>
 
@@ -585,20 +619,30 @@ const CitizenDashboard: React.FC = () => {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <h4 className="font-medium text-sm">
-                            {complaint.description.slice(0, 50)}...
+                            <SafeRenderer fallback="No description">
+                              {typeof complaint.description === 'string' ? complaint.description.slice(0, 50) + '...' : 'No description'}
+                            </SafeRenderer>
                           </h4>
                           <p className="text-xs text-gray-500 mt-1">
-                            ID: {complaint.complaintId || complaint.id}
+                            ID: <SafeRenderer fallback="Unknown">
+                              {safeRenderValue(complaint.complaintId || complaint.id, 'Unknown')}
+                            </SafeRenderer>
                           </p>
                         </div>
                         <Badge className={getStatusColor(complaint.status)}>
-                          {complaint.status.replace("_", " ")}
+                          <SafeRenderer fallback="Unknown">
+                            {typeof complaint.status === 'string' ? complaint.status.replace("_", " ") : 'Unknown'}
+                          </SafeRenderer>
                         </Badge>
                       </div>
 
                       <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>{getComplaintTypeLabel(complaint.type)}</span>
-                        <span>{formatDate(complaint.submittedDate)}</span>
+                        <SafeRenderer fallback="Unknown Type">
+                          {getComplaintTypeLabel(complaint.type)}
+                        </SafeRenderer>
+                        <SafeRenderer fallback="Unknown Date">
+                          {formatDate(complaint.submittedDate)}
+                        </SafeRenderer>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -606,12 +650,16 @@ const CitizenDashboard: React.FC = () => {
                           variant="outline"
                           className={getPriorityColor(complaint.priority)}
                         >
-                          {complaint.priority}
+                          <SafeRenderer fallback="Unknown">
+                            {typeof complaint.priority === 'string' ? complaint.priority : 'Unknown'}
+                          </SafeRenderer>
                         </Badge>
                         {complaint.ward && (
                           <div className="flex items-center text-xs text-gray-500">
                             <MapPin className="h-3 w-3 mr-1" />
-                            {complaint.ward}
+                            <SafeRenderer fallback="Unknown Ward">
+                              {safeRenderValue(complaint.ward, 'Unknown Ward')}
+                            </SafeRenderer>
                           </div>
                         )}
                       </div>
@@ -637,9 +685,9 @@ const CitizenDashboard: React.FC = () => {
                             existingFeedback={
                               complaint.rating
                                 ? {
-                                    rating: complaint.rating,
-                                    comment: complaint.feedback || "",
-                                  }
+                                  rating: complaint.rating,
+                                  comment: complaint.feedback || "",
+                                }
                                 : null
                             }
                           >
@@ -675,30 +723,44 @@ const CitizenDashboard: React.FC = () => {
                     {complaints.map((complaint: Complaint) => (
                       <TableRow key={complaint.id}>
                         <TableCell className="font-mono text-xs">
-                          {(complaint.complaintId ?? complaint.id)
-                            ? (complaint.complaintId ?? complaint.id).slice(-8)
-                            : "-"}
+                          <SafeRenderer fallback="-">
+                            {(() => {
+                              const id = complaint.complaintId ?? complaint.id;
+                              if (typeof id === 'string' && id) {
+                                return id.slice(-8);
+                              }
+                              return "-";
+                            })()}
+                          </SafeRenderer>
                         </TableCell>
                         <TableCell>
                           <div className="max-w-48">
                             <div className="font-medium text-sm truncate">
-                              {complaint.description.slice(0, 50)}...
+                              <SafeRenderer fallback="No description">
+                                {typeof complaint.description === 'string' ? complaint.description.slice(0, 50) + '...' : 'No description'}
+                              </SafeRenderer>
                             </div>
-                            {complaint.description && (
+                            {complaint.description && typeof complaint.description === 'string' && (
                               <div className="text-xs text-gray-500 truncate">
-                                {complaint.description.slice(0, 50)}...
+                                <SafeRenderer>
+                                  {complaint.description.slice(0, 50)}...
+                                </SafeRenderer>
                               </div>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm">
-                            {getComplaintTypeLabel(complaint.type)}
+                            <SafeRenderer fallback="Unknown Type">
+                              {getComplaintTypeLabel(complaint.type)}
+                            </SafeRenderer>
                           </span>
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(complaint.status)}>
-                            {complaint.status.replace("_", " ")}
+                            <SafeRenderer fallback="Unknown">
+                              {typeof complaint.status === 'string' ? complaint.status.replace("_", " ") : 'Unknown'}
+                            </SafeRenderer>
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -706,14 +768,18 @@ const CitizenDashboard: React.FC = () => {
                             variant="outline"
                             className={getPriorityColor(complaint.priority)}
                           >
-                            {complaint.priority}
+                            <SafeRenderer fallback="Unknown">
+                              {typeof complaint.priority === 'string' ? complaint.priority : 'Unknown'}
+                            </SafeRenderer>
                           </Badge>
                         </TableCell>
                         <TableCell>
                           {complaint.ward && (
                             <div className="flex items-center text-sm">
                               <MapPin className="h-3 w-3 mr-1" />
-                              {complaint.ward}
+                              <SafeRenderer fallback="Unknown Ward">
+                                {safeRenderValue(complaint.ward, 'Unknown Ward')}
+                              </SafeRenderer>
                             </div>
                           )}
                         </TableCell>
@@ -759,10 +825,10 @@ const CitizenDashboard: React.FC = () => {
                                 existingFeedback={
                                   complaint.rating
                                     ? {
-                                        rating: complaint.rating,
-                                        comment:
-                                          complaint.feedback || "",
-                                      }
+                                      rating: complaint.rating,
+                                      comment:
+                                        complaint.feedback || "",
+                                    }
                                     : null
                                 }
                               >

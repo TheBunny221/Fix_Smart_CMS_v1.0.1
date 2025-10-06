@@ -1,312 +1,312 @@
 {
-  "systemConfig": [
-    {
-      "key": "APP_NAME",
-      "value": "NLC-CMS",
-      "description": "Application name",
-      "isActive": true
-    },
-    {
-      "key": "APP_LOGO_URL",
-      "value": "/logo.png",
-      "description": "URL for the application logo",
-      "isActive": true
-    },
-    {
-      "key": "APP_LOGO_SIZE",
-      "value": "medium",
-      "description": "Size of the application logo (small, medium, large)",
-      "isActive": true
-    },
-    {
-      "key": "COMPLAINT_ID_PREFIX",
-      "value": "KSC",
-      "description": "Prefix for complaint IDs",
-      "isActive": true
-    },
-    {
-      "key": "COMPLAINT_ID_START_NUMBER",
-      "value": "1",
-      "description": "Starting number for complaint ID sequence",
-      "isActive": true
-    },
-    {
-      "key": "COMPLAINT_ID_LENGTH",
-      "value": "4",
-      "description": "Length of the numeric part in complaint IDs",
-      "isActive": true
-    },
-    {
-      "key": "OTP_EXPIRY_MINUTES",
-      "value": "5",
-      "description": "OTP expiration time in minutes",
-      "isActive": true
-    },
-    {
-      "key": "MAX_FILE_SIZE_MB",
-      "value": "10",
-      "description": "Maximum file upload size in MB",
-      "isActive": true
-    },
-    {
-      "key": "DEFAULT_SLA_HOURS",
-      "value": "48",
-      "description": "Default SLA time in hours",
-      "isActive": true
-    },
-    {
-      "key": "ADMIN_EMAIL",
-      "value": "admin@cochinsmart.gov.in",
-      "description": "Administrator email address",
-      "isActive": true
-    },
-    {
-      "key": "SYSTEM_MAINTENANCE",
-      "value": "false",
-      "description": "System maintenance mode",
-      "isActive": true
-    },
-    {
-      "key": "NOTIFICATION_SETTINGS",
-      "value": "{\"email\":true,\"sms\":false}",
-      "description": "Notification preferences",
-      "isActive": true
-    },
-    {
-      "key": "AUTO_ASSIGN_COMPLAINTS",
-      "value": "true",
-      "description": "Automatically assign complaints to ward officers",
-      "isActive": true
-    },
-    {
-      "key": "CITIZEN_REGISTRATION_ENABLED",
-      "value": "true",
-      "description": "Allow citizen self-registration",
-      "isActive": true
-    },
-    {
-      "key": "COMPLAINT_PRIORITIES",
-      "value": "[\"LOW\",\"MEDIUM\",\"HIGH\",\"CRITICAL\"]",
-      "description": "Available complaint priorities",
-      "isActive": true
-    },
-    {
-      "key": "COMPLAINT_STATUSES",
-      "value": "[\"REGISTERED\",\"ASSIGNED\",\"IN_PROGRESS\",\"RESOLVED\",\"CLOSED\",\"REOPENED\"]",
-      "description": "Available complaint statuses",
-      "isActive": true
-    },
-    {
-      "key": "MAP_SEARCH_PLACE",
-      "value": "Kochi, Kerala, India",
-      "description": "Place context appended to searches",
-      "isActive": true
-    },
-    {
-      "key": "MAP_COUNTRY_CODES",
-      "value": "in",
-      "description": "ISO2 country codes for Nominatim bias (comma-separated)",
-      "isActive": true
-    },
-    {
-      "key": "MAP_DEFAULT_LAT",
-      "value": "9.9312",
-      "description": "Default map center latitude",
-      "isActive": true
-    },
-    {
-      "key": "MAP_DEFAULT_LNG",
-      "value": "76.2673",
-      "description": "Default map center longitude",
-      "isActive": true
-    },
-    {
-      "key": "MAP_BBOX_NORTH",
-      "value": "10.05",
-      "description": "North latitude of bounding box",
-      "isActive": true
-    },
-    {
-      "key": "MAP_BBOX_SOUTH",
-      "value": "9.85",
-      "description": "South latitude of bounding box",
-      "isActive": true
-    },
-    {
-      "key": "MAP_BBOX_EAST",
-      "value": "76.39",
-      "description": "East longitude of bounding box",
-      "isActive": true
-    },
-    {
-      "key": "MAP_BBOX_WEST",
-      "value": "76.20",
-      "description": "West longitude of bounding box",
-      "isActive": true
-    },
-    {
-      "key": "CONTACT_HELPLINE",
-      "value": "+91-484-2668222",
-      "description": "Helpline phone number for citizen support",
-      "isActive": true
-    },
-    {
-      "key": "CONTACT_EMAIL",
-      "value": "support@cochinsmart.gov.in",
-      "description": "Official support email address",
-      "isActive": true
-    },
-    {
-      "key": "CONTACT_OFFICE_HOURS",
-      "value": "Monday to Friday: 9:00 AM - 5:00 PM",
-      "description": "Official office hours for citizen services",
-      "isActive": true
-    },
-    {
-      "key": "CONTACT_OFFICE_ADDRESS",
-      "value": "Cochin Smart City Limited, Marine Drive, Ernakulam, Kochi - 682031, Kerala, India",
-      "description": "Official office address",
-      "isActive": true
-    },
-    {
-      "key": "SYSTEM_VERSION",
-      "value": "1.0.3",
-      "description": "Current system version",
-      "isActive": true
-    },
-    {
-      "key": "MAINTENANCE_MODE",
-      "value": "false",
-      "description": "System maintenance mode status",
-      "isActive": true
-    },
-    {
-      "key": "GUEST_COMPLAINT_ENABLED",
-      "value": "true",
-      "description": "Allow guest users to submit complaints",
-      "isActive": true
-    },
-    {
-      "key": "EMAIL_NOTIFICATIONS_ENABLED",
-      "value": "true",
-      "description": "Enable email notifications for complaints",
-      "isActive": true
-    },
-    {
-      "key": "SMS_NOTIFICATIONS_ENABLED",
-      "value": "false",
-      "description": "Enable SMS notifications for complaints",
-      "isActive": true
-    },
-    {
-      "key": "COMPLAINT_PHOTO_MAX_SIZE",
-      "value": "5",
-      "description": "Maximum photo size in MB for complaints",
-      "isActive": true
-    },
-    {
-      "key": "COMPLAINT_PHOTO_MAX_COUNT",
-      "value": "5",
-      "description": "Maximum number of photos per complaint",
-      "isActive": true
-    },
-    {
-      "key": "AUTO_CLOSE_RESOLVED_COMPLAINTS",
-      "value": "true",
-      "description": "Automatically close resolved complaints after specified days",
-      "isActive": true
-    },
-    {
-      "key": "AUTO_CLOSE_DAYS",
-      "value": "7",
-      "description": "Number of days after which resolved complaints are auto-closed",
-      "isActive": true
-    }
-  ],
-  "ward": [
-    {
-      "name": "Ward 1 - Fort Kochi",
-      "description": "Historic Fort Kochi area",
-      "isActive": true
-    },
-    {
-      "name": "Ward 2 - Mattancherry",
-      "description": "Mattancherry",
-      "isActive": true
-    },
-    {
-      "name": "Ward 3 - Ernakulam South",
-      "description": "Ernakulam South",
-      "isActive": true
-    },
-    {
-      "name": "Ward 4 - Kadavanthra",
-      "description": "Kadavanthra",
-      "isActive": true
-    },
-    {
-      "name": "Ward 5 - Panampilly Nagar",
-      "description": "Panampilly Nagar",
-      "isActive": true
-    },
-    {
-      "name": "Ward 6 - Marine Drive",
-      "description": "Marine Drive",
-      "isActive": true
-    },
-    {
-      "name": "Ward 7 - Willingdon Island",
-      "description": "Willingdon Island",
-      "isActive": true
-    },
-    {
-      "name": "Ward 8 - Thevara",
-      "description": "Thevara",
-      "isActive": true
-    }
-  ],
-  "complaintType": [
-    {
-      "name": "Water Supply",
-      "description": "Issues related to water supply",
-      "priority": "HIGH",
-      "slaHours": 24,
-      "isActive": true
-    },
-    {
-      "name": "Electricity",
-      "description": "Power outages",
-      "priority": "HIGH",
-      "slaHours": 12,
-      "isActive": true
-    },
-    {
-      "name": "Road Repair",
-      "description": "Damaged roads",
-      "priority": "MEDIUM",
-      "slaHours": 72,
-      "isActive": true
-    },
-    {
-      "name": "Waste Management",
-      "description": "Garbage collection",
-      "priority": "MEDIUM",
-      "slaHours": 48,
-      "isActive": true
-    },
-    {
-      "name": "Street Lighting",
-      "description": "Street lights",
-      "priority": "LOW",
-      "slaHours": 48,
-      "isActive": true
-    },
-    {
-      "name": "Drainage",
-      "description": "Blocked drains",
-      "priority": "HIGH",
-      "slaHours": 24,
-      "isActive": true
-    }
-  ]
+    "systemConfig": [
+        {
+            "key": "APP_NAME",
+            "value": "NLC-CMS",
+            "description": "Application name",
+            "isActive": true
+        },
+        {
+            "key": "APP_LOGO_URL",
+            "value": "/logo.png",
+            "description": "URL for the application logo",
+            "isActive": true
+        },
+        {
+            "key": "APP_LOGO_SIZE",
+            "value": "medium",
+            "description": "Size of the application logo (small, medium, large)",
+            "isActive": true
+        },
+        {
+            "key": "COMPLAINT_ID_PREFIX",
+            "value": "KSC",
+            "description": "Prefix for complaint IDs",
+            "isActive": true
+        },
+        {
+            "key": "COMPLAINT_ID_START_NUMBER",
+            "value": "1",
+            "description": "Starting number for complaint ID sequence",
+            "isActive": true
+        },
+        {
+            "key": "COMPLAINT_ID_LENGTH",
+            "value": "4",
+            "description": "Length of the numeric part in complaint IDs",
+            "isActive": true
+        },
+        {
+            "key": "OTP_EXPIRY_MINUTES",
+            "value": "5",
+            "description": "OTP expiration time in minutes",
+            "isActive": true
+        },
+        {
+            "key": "MAX_FILE_SIZE_MB",
+            "value": "10",
+            "description": "Maximum file upload size in MB",
+            "isActive": true
+        },
+        {
+            "key": "DEFAULT_SLA_HOURS",
+            "value": "48",
+            "description": "Default SLA time in hours",
+            "isActive": true
+        },
+        {
+            "key": "ADMIN_EMAIL",
+            "value": "admin@cochinsmart.gov.in",
+            "description": "Administrator email address",
+            "isActive": true
+        },
+        {
+            "key": "SYSTEM_MAINTENANCE",
+            "value": "false",
+            "description": "System maintenance mode",
+            "isActive": true
+        },
+        {
+            "key": "NOTIFICATION_SETTINGS",
+            "value": "{\"email\":true,\"sms\":false}",
+            "description": "Notification preferences",
+            "isActive": true
+        },
+        {
+            "key": "AUTO_ASSIGN_COMPLAINTS",
+            "value": "true",
+            "description": "Automatically assign complaints to ward officers",
+            "isActive": true
+        },
+        {
+            "key": "CITIZEN_REGISTRATION_ENABLED",
+            "value": "true",
+            "description": "Allow citizen self-registration",
+            "isActive": true
+        },
+        {
+            "key": "COMPLAINT_PRIORITIES",
+            "value": "[\"LOW\",\"MEDIUM\",\"HIGH\",\"CRITICAL\"]",
+            "description": "Available complaint priorities",
+            "isActive": true
+        },
+        {
+            "key": "COMPLAINT_STATUSES",
+            "value": "[\"REGISTERED\",\"ASSIGNED\",\"IN_PROGRESS\",\"RESOLVED\",\"CLOSED\",\"REOPENED\"]",
+            "description": "Available complaint statuses",
+            "isActive": true
+        },
+        {
+            "key": "MAP_SEARCH_PLACE",
+            "value": "Kochi, Kerala, India",
+            "description": "Place context appended to searches",
+            "isActive": true
+        },
+        {
+            "key": "MAP_COUNTRY_CODES",
+            "value": "in",
+            "description": "ISO2 country codes for Nominatim bias (comma-separated)",
+            "isActive": true
+        },
+        {
+            "key": "MAP_DEFAULT_LAT",
+            "value": "9.9312",
+            "description": "Default map center latitude",
+            "isActive": true
+        },
+        {
+            "key": "MAP_DEFAULT_LNG",
+            "value": "76.2673",
+            "description": "Default map center longitude",
+            "isActive": true
+        },
+        {
+            "key": "MAP_BBOX_NORTH",
+            "value": "10.05",
+            "description": "North latitude of bounding box",
+            "isActive": true
+        },
+        {
+            "key": "MAP_BBOX_SOUTH",
+            "value": "9.85",
+            "description": "South latitude of bounding box",
+            "isActive": true
+        },
+        {
+            "key": "MAP_BBOX_EAST",
+            "value": "76.39",
+            "description": "East longitude of bounding box",
+            "isActive": true
+        },
+        {
+            "key": "MAP_BBOX_WEST",
+            "value": "76.20",
+            "description": "West longitude of bounding box",
+            "isActive": true
+        },
+        {
+            "key": "CONTACT_HELPLINE",
+            "value": "+91-484-2668222",
+            "description": "Helpline phone number for citizen support",
+            "isActive": true
+        },
+        {
+            "key": "CONTACT_EMAIL",
+            "value": "support@cochinsmart.gov.in",
+            "description": "Official support email address",
+            "isActive": true
+        },
+        {
+            "key": "CONTACT_OFFICE_HOURS",
+            "value": "Monday to Friday: 9:00 AM - 5:00 PM",
+            "description": "Official office hours for citizen services",
+            "isActive": true
+        },
+        {
+            "key": "CONTACT_OFFICE_ADDRESS",
+            "value": "Cochin Smart City Limited, Marine Drive, Ernakulam, Kochi - 682031, Kerala, India",
+            "description": "Official office address",
+            "isActive": true
+        },
+        {
+            "key": "SYSTEM_VERSION",
+            "value": "1.0.3",
+            "description": "Current system version",
+            "isActive": true
+        },
+        {
+            "key": "MAINTENANCE_MODE",
+            "value": "false",
+            "description": "System maintenance mode status",
+            "isActive": true
+        },
+        {
+            "key": "GUEST_COMPLAINT_ENABLED",
+            "value": "true",
+            "description": "Allow guest users to submit complaints",
+            "isActive": true
+        },
+        {
+            "key": "EMAIL_NOTIFICATIONS_ENABLED",
+            "value": "true",
+            "description": "Enable email notifications for complaints",
+            "isActive": true
+        },
+        {
+            "key": "SMS_NOTIFICATIONS_ENABLED",
+            "value": "false",
+            "description": "Enable SMS notifications for complaints",
+            "isActive": true
+        },
+        {
+            "key": "COMPLAINT_PHOTO_MAX_SIZE",
+            "value": "5",
+            "description": "Maximum photo size in MB for complaints",
+            "isActive": true
+        },
+        {
+            "key": "COMPLAINT_PHOTO_MAX_COUNT",
+            "value": "5",
+            "description": "Maximum number of photos per complaint",
+            "isActive": true
+        },
+        {
+            "key": "AUTO_CLOSE_RESOLVED_COMPLAINTS",
+            "value": "true",
+            "description": "Automatically close resolved complaints after specified days",
+            "isActive": true
+        },
+        {
+            "key": "AUTO_CLOSE_DAYS",
+            "value": "7",
+            "description": "Number of days after which resolved complaints are auto-closed",
+            "isActive": true
+        }
+    ],
+    "ward": [
+        {
+            "name": "Ward 1 - Fort Kochi",
+            "description": "Historic Fort Kochi area",
+            "isActive": true
+        },
+        {
+            "name": "Ward 2 - Mattancherry",
+            "description": "Mattancherry",
+            "isActive": true
+        },
+        {
+            "name": "Ward 3 - Ernakulam South",
+            "description": "Ernakulam South",
+            "isActive": true
+        },
+        {
+            "name": "Ward 4 - Kadavanthra",
+            "description": "Kadavanthra",
+            "isActive": true
+        },
+        {
+            "name": "Ward 5 - Panampilly Nagar",
+            "description": "Panampilly Nagar",
+            "isActive": true
+        },
+        {
+            "name": "Ward 6 - Marine Drive",
+            "description": "Marine Drive",
+            "isActive": true
+        },
+        {
+            "name": "Ward 7 - Willingdon Island",
+            "description": "Willingdon Island",
+            "isActive": true
+        },
+        {
+            "name": "Ward 8 - Thevara",
+            "description": "Thevara",
+            "isActive": true
+        }
+    ],
+    "complaintType": [
+        {
+            "name": "Water Supply",
+            "description": "Issues related to water supply",
+            "priority": "HIGH",
+            "slaHours": 24,
+            "isActive": true
+        },
+        {
+            "name": "Electricity",
+            "description": "Power outages",
+            "priority": "HIGH",
+            "slaHours": 12,
+            "isActive": true
+        },
+        {
+            "name": "Road Repair",
+            "description": "Damaged roads",
+            "priority": "MEDIUM",
+            "slaHours": 72,
+            "isActive": true
+        },
+        {
+            "name": "Waste Management",
+            "description": "Garbage collection",
+            "priority": "MEDIUM",
+            "slaHours": 48,
+            "isActive": true
+        },
+        {
+            "name": "Street Lighting",
+            "description": "Street lights",
+            "priority": "LOW",
+            "slaHours": 48,
+            "isActive": true
+        },
+        {
+            "name": "Drainage",
+            "description": "Blocked drains",
+            "priority": "HIGH",
+            "slaHours": 24,
+            "isActive": true
+        }
+    ]
 }

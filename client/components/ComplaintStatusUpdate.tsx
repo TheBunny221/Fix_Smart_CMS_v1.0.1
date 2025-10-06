@@ -281,7 +281,7 @@ const ComplaintStatusUpdate: React.FC<ComplaintStatusUpdateProps> = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <previousStatusInfo.icon className="h-5 w-5" />
-            Update Complaint #{complaint.complaintId || complaint.id.slice(-6)}
+            Update Complaint #{complaint.complaintId || (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : 'Unknown')}
           </DialogTitle>
           <DialogDescription>
             Update the status and assignment for this complaint

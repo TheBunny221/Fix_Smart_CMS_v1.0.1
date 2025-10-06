@@ -19,7 +19,6 @@ import {
   ArrowLeft,
   MapPin,
   Calendar,
-  Clock,
   Camera,
   Navigation,
   CheckCircle,
@@ -43,6 +42,18 @@ const TaskDetails: React.FC = () => {
   const [workNote, setWorkNote] = useState("");
   const [completionNote, setCompletionNote] = useState("");
 
+  // Safe rendering utility to prevent object rendering errors
+  const safeRender = (value: any, fallback: string = "Unknown"): string => {
+    if (value === null || value === undefined) return fallback;
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return value.toString();
+    if (typeof value === "boolean") return value.toString();
+    if (typeof value === "object") {
+      return value.name || value.title || value.fullName || value.email || fallback;
+    }
+    return String(value);
+  };
+
   const isMaintenanceTeam = user?.role === "MAINTENANCE_TEAM";
 
   // Fetch complaint dynamically
@@ -64,7 +75,7 @@ const TaskDetails: React.FC = () => {
     size?: number | null;
   } | null>(null);
 
-  const raw = complaintResponse?.data as any;
+  const raw = (complaintResponse?.data as any)?.complaint || complaintResponse?.data;
 
   const addWorkUpdate = async () => {
     if (!task) return;
@@ -73,7 +84,7 @@ const TaskDetails: React.FC = () => {
       setIsAddingLog(true);
       await updateComplaintStatus({
         id: task.id,
-        status: "in_progress",
+        status: "IN_PROGRESS",
         remarks: workNote.trim(),
       }).unwrap();
       setWorkNote("");
@@ -88,7 +99,21 @@ const TaskDetails: React.FC = () => {
 
   const task = useMemo(() => {
     if (!raw) return null;
-
+    
+    // Debug: Log the raw data to identify object issues
+    console.log("TaskDetails Debug Info:", {
+      id,
+      hasComplaintResponse: !!complaintResponse,
+      hasRawData: !!raw,
+      rawDataKeys: raw ? Object.keys(raw) : [],
+      materials: raw.materials,
+      tools: raw.tools,
+      contactName: raw.contactName,
+      contactPhone: raw.contactPhone,
+      contactEmail: raw.contactEmail,
+      fullRawData: raw
+    });
+    
     const latLng = (() => {
       let lat = raw.latitude;
       let lng = raw.longitude;
@@ -110,51 +135,104 @@ const TaskDetails: React.FC = () => {
     return {
       id: raw.id,
       complaintId: raw.complaintId,
-      title: raw.title || (raw.type ? `${raw.type} Issue` : "Task"),
-      description: raw.description,
+      title: raw.title || (raw.type ? `${raw.type.replace("_", " ")} Issue` : "Task"),
+      description: raw.description || "No description available",
       location: raw.area || raw.address || raw.location || "",
       coordinates: `${latLng.lat || ""}, ${latLng.lng || ""}`,
       priority: raw.priority || "MEDIUM",
-      status: raw.status,
+      status: raw.status || "UNKNOWN",
       estimatedTime: raw.estimatedTime || null,
       dueDate: raw.deadline
         ? new Date(raw.deadline).toISOString().split("T")[0]
-        : null,
+        : (raw.submittedOn ? new Date(new Date(raw.submittedOn).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null),
       assignedDate: raw.assignedOn || raw.submittedOn,
-      submittedBy: raw.submittedBy?.fullName || raw.submittedBy || "",
+      submittedBy: safeRender(raw.submittedBy, "Unknown"),
       contactPhone: raw.contactPhone || raw.mobile || "",
-      materials: raw.materials || [],
-      tools: raw.tools || [],
-      workLog: (raw.statusLogs || []).map((s: any) => ({
+      contactName: raw.contactName || "",
+      contactEmail: raw.contactEmail || "",
+      materials: Array.isArray(raw.materials) ? raw.materials : [],
+      tools: Array.isArray(raw.tools) ? raw.tools : [],
+      workLog: (Array.isArray(raw.statusLogs) ? raw.statusLogs : []).map((s: any) => ({
         time: s.timestamp,
-        note: s.comment || `${s.toStatus}`,
+        note: s.comment || `Status changed to ${s.toStatus?.replace("_", " ") || "Unknown"}`,
         photo: false,
         user: s.user,
+        fromStatus: s.fromStatus,
+        toStatus: s.toStatus,
       })),
       attachments: [
-        ...(raw.attachments || []),
-        ...((raw.photos || []).map((p: any) => ({
+        ...(Array.isArray(raw.attachments) ? raw.attachments : []),
+        ...(Array.isArray(raw.photos) ? raw.photos.map((p: any) => ({
           id: p.id,
-          fileName:
-            p.fileName || p.originalName || p.photoUrl?.split("/").pop(),
-          mimeType: p.mimeType,
+          fileName: p.fileName || p.originalName || p.photoUrl?.split("/").pop() || "Unknown file",
+          mimeType: p.mimeType || "image/*",
           uploadedAt: p.uploadedAt,
-          url: p.photoUrl || p.photoUrl || p.url,
+          url: p.photoUrl || p.url,
           description: p.description || null,
-          uploadedBy: p.uploadedByTeam?.fullName || null,
-        })) || []),
+          uploadedBy: safeRender(p.uploadedByTeam, "Unknown"),
+        })) : []),
       ],
     } as any;
   }, [raw]);
 
   if (complaintLoading) {
-    return <div>Loading task...</div>;
-  }
-
-  if (complaintError || !task) {
     return (
       <div className="space-y-6">
-        <p className="text-red-600">Failed to load task details.</p>
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
+            <div className="space-y-6">
+              <div className="h-32 bg-gray-200 rounded"></div>
+              <div className="h-32 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (complaintError) {
+    return (
+      <div className="text-center py-12">
+        <FileText className="h-12 w-12 mx-auto text-red-400 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Error Loading Task
+        </h2>
+        <p className="text-gray-600 mb-4">
+          {complaintError && typeof complaintError === 'object' && 'message' in complaintError 
+            ? (complaintError as any).message 
+            : 'Failed to load task details. Please try again.'}
+        </p>
+        <Link to="/maintenance">
+          <Button>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Tasks
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  if (!task) {
+    return (
+      <div className="text-center py-12">
+        <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Task Not Found
+        </h2>
+        <p className="text-gray-600 mb-4">
+          The task you're looking for doesn't exist or you don't have permission to view it.
+        </p>
+        <Link to="/maintenance">
+          <Button>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Tasks
+          </Button>
+        </Link>
       </div>
     );
   }
@@ -203,7 +281,7 @@ const TaskDetails: React.FC = () => {
           </div>
           <div className="flex items-center space-x-4">
             <Badge className={getStatusColor(task.status)}>
-              {task.status.replace("_", " ")}
+              {task.status?.replace("_", " ") || "Unknown"}
             </Badge>
             <Badge className={getPriorityColor(task.priority)}>
               {task.priority} Priority
@@ -239,7 +317,7 @@ const TaskDetails: React.FC = () => {
             <CardContent className="space-y-4">
               <div>
                 <h3 className="font-medium mb-2">Title</h3>
-                <p className="text-gray-900">{task.title}</p>
+                <p className="text-gray-900">{safeRender(task.title)}</p>
               </div>
               <div>
                 <h3 className="font-medium mb-2">Description</h3>
@@ -324,28 +402,66 @@ const TaskDetails: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {task.workLog.map((log: any, index: number) => (
-                    <div
-                      key={`log-${index}`}
-                      className="border-l-4 border-blue-500 pl-4 py-2"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">
-                            {new Date(log.time).toLocaleString()}
-                          </p>
-                          <p className="text-sm text-gray-600">{log.note}</p>
-                          {log.photo && (
-                            <Badge variant="secondary" className="mt-1">
-                              📷 Photo Attached
-                            </Badge>
-                          )}
+                  {task.workLog.length > 0 ? task.workLog.map((log: any, index: number) => {
+                    const getStatusColor = (status: string) => {
+                      switch (status) {
+                        case "REGISTERED":
+                          return "border-blue-500";
+                        case "ASSIGNED":
+                          return "border-yellow-500";
+                        case "IN_PROGRESS":
+                          return "border-orange-500";
+                        case "RESOLVED":
+                        case "COMPLETED":
+                          return "border-green-500";
+                        case "CLOSED":
+                          return "border-gray-500";
+                        default:
+                          return "border-gray-400";
+                      }
+                    };
 
-                          {/* Attachments inline for log entries if any reference (mock not linking here) */}
+                    return (
+                      <div
+                        key={`log-${index}`}
+                        className={`border-l-4 ${getStatusColor(log.toStatus)} pl-4 py-2`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium">
+                                {log.toStatus ? `Status: ${log.toStatus.replace("_", " ")}` : "Status Update"}
+                              </p>
+                              {log.user && (
+                                <Badge variant="outline" className="text-xs">
+                                  {safeRender(log.user)} ({log.user?.role || "Unknown"})
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 mb-1">{log.note}</p>
+                            {log.fromStatus && (
+                              <p className="text-xs text-gray-500">
+                                Changed from <span className="font-medium">{log.fromStatus.replace("_", " ")}</span> to <span className="font-medium">{log.toStatus?.replace("_", " ")}</span>
+                              </p>
+                            )}
+                            {log.photo && (
+                              <Badge variant="secondary" className="mt-1">
+                                📷 Photo Attached
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-500 ml-4">
+                            {new Date(log.time).toLocaleString()}
+                          </span>
                         </div>
                       </div>
+                    );
+                  }) : (
+                    <div className="text-center py-4 text-gray-500">
+                      <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>No work progress updates available yet</p>
                     </div>
-                  ))}
+                  )}
 
                   {/* Render image attachments as part of the work log so uploads appear immediately */}
                   {task.attachments &&
@@ -461,7 +577,7 @@ const TaskDetails: React.FC = () => {
                     Attachments
                   </h3>
                   <div className="space-y-3">
-                    {task.attachments.map((att: any) => {
+                    {task.attachments.length > 0 ? task.attachments.map((att: any) => {
                       const isImage = att.mimeType?.startsWith("image/");
                       const canDownload = [
                         "ADMINISTRATOR",
@@ -537,7 +653,12 @@ const TaskDetails: React.FC = () => {
                           </div>
                         </div>
                       );
-                    })}
+                    }) : (
+                      <div className="text-center py-4 text-gray-500">
+                        <Upload className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No attachments available</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -612,33 +733,31 @@ const TaskDetails: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {raw?.contactName && (
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2 text-gray-400" />
-                  <div className="flex flex-col">
-                    <span className="font-medium">{raw.contactName}</span>
-                    {raw?.submittedBy?.fullName && (
-                      <span className="text-xs text-gray-500">
-                        Registered User: {raw.submittedBy.fullName}
-                      </span>
-                    )}
-                  </div>
+              <div className="flex items-center">
+                <User className="h-4 w-4 mr-2 text-gray-400" />
+                <div className="flex flex-col">
+                  <span className="font-medium">
+                    {safeRender(raw?.contactName || task.contactName, 'Unknown Contact')}
+                  </span>
+                  {raw?.submittedBy && (
+                    <span className="text-xs text-gray-500">
+                      Submitted by: {safeRender(raw.submittedBy)}
+                    </span>
+                  )}
                 </div>
-              )}
+              </div>
               <div className="flex items-center">
                 <Phone className="h-4 w-4 mr-2 text-gray-400" />
                 <div className="flex flex-col">
-                  <span>{raw?.contactPhone || task.contactPhone}</span>
+                  <span>{safeRender(raw?.contactPhone || task.contactPhone, 'No phone provided')}</span>
                 </div>
               </div>
-              {raw?.contactEmail && (
-                <div className="flex items-center">
-                  <Mail className="h-4 w-4 mr-2 text-gray-400" />
-                  <div className="flex flex-col">
-                    <span>{raw.contactEmail}</span>
-                  </div>
+              <div className="flex items-center">
+                <Mail className="h-4 w-4 mr-2 text-gray-400" />
+                <div className="flex flex-col">
+                  <span>{safeRender(raw?.contactEmail || task.contactEmail, 'No email provided')}</span>
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
 
@@ -650,15 +769,21 @@ const TaskDetails: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {task.materials.map((material: any, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between"
-                    >
-                      <span className="text-sm">{material}</span>
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                  {task.materials.length > 0 ? (
+                    task.materials.map((material: any, index: number) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-sm">{safeRender(material, 'Unknown material')}</span>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      <p className="text-sm">No materials specified for this task</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -672,15 +797,21 @@ const TaskDetails: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {task.tools.map((tool: any, index: number) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between"
-                    >
-                      <span className="text-sm">{tool}</span>
-                      <CheckCircle className="h-4 w-4 text-green-600" />
+                  {task.tools.length > 0 ? (
+                    task.tools.map((tool: any, index: number) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between"
+                      >
+                        <span className="text-sm">{safeRender(tool, 'Unknown tool')}</span>
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-4 text-gray-500">
+                      <p className="text-sm">No tools specified for this task</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>

@@ -635,22 +635,37 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
   const slaBreaches = Number(resolvedLate) + Number(overdueOpen);
   const withinSLA = Math.max(0, Number(totalComplaints) - Number(slaBreaches));
 
-  // Calculate SLA compliance as average of type-level compliance using SLA hours from system config
-  const typeConfigs = await prisma.systemConfig.findMany({
-    where: { key: { startsWith: "COMPLAINT_TYPE_" }, isActive: true },
+  // Calculate SLA compliance using ComplaintType table
+  let complaintTypes = await prisma.complaintType.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, slaHours: true }
   });
-  const complaintTypes = typeConfigs
-    .map((cfg) => {
-      try {
-        const v = JSON.parse(cfg.value || "{}");
-        const id = cfg.key.replace("COMPLAINT_TYPE_", "");
-        return { id, name: v.name || id, slaHours: Number(v.slaHours) || 48 };
-      } catch {
-        const id = cfg.key.replace("COMPLAINT_TYPE_", "");
-        return { id, name: id, slaHours: 48 };
-      }
-    })
-    .filter((t) => t.id);
+  
+  // Fallback to legacy system config if no complaint types found
+  if (complaintTypes.length === 0) {
+    const typeConfigs = await prisma.systemConfig.findMany({
+      where: { key: { startsWith: "COMPLAINT_TYPE_" }, isActive: true },
+    });
+    complaintTypes = typeConfigs
+      .map((cfg) => {
+        try {
+          const v = JSON.parse(cfg.value || "{}");
+          const id = cfg.key.replace("COMPLAINT_TYPE_", "");
+          return { id, name: v.name || id, slaHours: Number(v.slaHours) || 48 };
+        } catch {
+          const id = cfg.key.replace("COMPLAINT_TYPE_", "");
+          return { id, name: id, slaHours: 48 };
+        }
+      })
+      .filter((t) => t.id);
+  } else {
+    // Convert to expected format for consistency
+    complaintTypes = complaintTypes.map(ct => ({
+      id: String(ct.id),
+      name: ct.name,
+      slaHours: ct.slaHours
+    }));
+  }
 
   const nowTs = new Date();
   let typePercentages = [];

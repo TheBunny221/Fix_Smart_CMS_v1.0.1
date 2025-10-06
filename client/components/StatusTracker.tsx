@@ -128,7 +128,7 @@ const StatusTracker: React.FC<StatusTrackerProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
                       <Badge className={`text-xs ${getStatusColor(update.status)}`}>
-                        {update.status.replace('_', ' ')}
+                        {update.status?.replace('_', ' ') || 'Unknown'}
                       </Badge>
                       <span className="text-xs text-gray-500">
                         {formatTimestamp(update.timestamp)}

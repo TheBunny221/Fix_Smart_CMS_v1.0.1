@@ -217,7 +217,7 @@ const MaintenanceTasks: React.FC = () => {
     try {
       await updateComplaintStatus({
         id: taskId,
-        status: "in_progress",
+        status: "IN_PROGRESS",
       }).unwrap();
       refetchComplaints();
     } catch (error) {
@@ -236,7 +236,7 @@ const MaintenanceTasks: React.FC = () => {
       try {
         await updateComplaintStatus({
           id: selectedTask.id,
-          status: "resolved",
+          status: "RESOLVED",
           remarks: resolveComment,
         }).unwrap();
 
@@ -449,7 +449,7 @@ const MaintenanceTasks: React.FC = () => {
                           </Badge>
                           {item.content.fromStatus && (
                             <span className="text-xs text-gray-500">
-                              from {item.content.fromStatus.replace("_", " ")}
+                              from {item.content.fromStatus?.replace("_", " ") || "Unknown"}
                             </span>
                           )}
                         </div>
@@ -1026,7 +1026,7 @@ const MaintenanceTasks: React.FC = () => {
                         <span className="flex items-center">
                           {getStatusIcon(task.status)}
                           <span className="ml-1">
-                            {task.status.replace("_", " ")}
+                            {task.status?.replace("_", " ") || "Unknown"}
                           </span>
                         </span>
                       </Badge>

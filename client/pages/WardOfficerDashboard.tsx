@@ -58,7 +58,7 @@ const WardOfficerDashboard: React.FC = () => {
 
   // State for filters
   const [filters, setFilters] = useState<FilterState>({
-    mainFilter: "registered",
+    mainFilter: "assigned", // Default to assigned since that's the most common status for ward officers
     overdue: false,
     urgent: false,
   });
@@ -379,29 +379,29 @@ const WardOfficerDashboard: React.FC = () => {
         </CardContent>
       </Card>  */}
 
-      {/* Filtered Complaints List */}
-      {hasActiveFilters && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Filtered Complaints</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigateToComplaints(complaintsFilter)}
-            >
-              View All in Complaints Page
-            </Button>
-          </div>
-          <ComplaintsListWidget
-            filters={complaintsFilter}
-            title="Filtered Results"
-            maxHeight="500px"
-            showActions={true}
-            userRole={user?.role || "GUEST"}
-            user={user}
-          />
+      {/* Recent Complaints List - Always shown */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">
+            {hasActiveFilters ? "Filtered Complaints" : "Recent Complaints"}
+          </h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigateToComplaints(hasActiveFilters ? complaintsFilter : { wardId: user?.ward?.id })}
+          >
+            View All in Complaints Page
+          </Button>
         </div>
-      )}
+        <ComplaintsListWidget
+          filters={hasActiveFilters ? complaintsFilter : { wardId: user?.ward?.id }}
+          title={hasActiveFilters ? "Filtered Results" : "Recent Complaints"}
+          maxHeight="500px"
+          showActions={true}
+          userRole={user?.role || "GUEST"}
+          user={user}
+        />
+      </div>
 
       {/* Quick Actions
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

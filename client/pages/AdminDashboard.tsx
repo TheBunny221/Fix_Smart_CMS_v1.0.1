@@ -70,6 +70,18 @@ import {
 } from "lucide-react";
 
 import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { SafeRenderer, safeRenderValue } from "../components/SafeRenderer";
+
+// Suppress ResizeObserver loop limit warnings (non-blocking)
+if (typeof window !== 'undefined') {
+  const originalError = console.error;
+  console.error = (...args) => {
+    if (typeof args[0] === 'string' && args[0].includes('ResizeObserver loop limit exceeded')) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+}
 
 const AdminDashboard: React.FC = () => {
   const { translations } = useAppSelector((state) => state.language);
@@ -625,7 +637,9 @@ const AdminDashboard: React.FC = () => {
                               }}
                             ></div>
                             <span className="truncate">
-                              {item?.name || "Unknown"} ({item?.value || 0})
+                              <SafeRenderer fallback="Unknown (0)">
+                                {safeRenderValue(item?.name, 'Unknown')} ({typeof item?.value === 'number' ? item.value : 0})
+                              </SafeRenderer>
                             </span>
                           </div>
                         ))}

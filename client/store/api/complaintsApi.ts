@@ -7,22 +7,23 @@ export interface Complaint {
   type: string;
   description: string;
   status:
-    | "registered"
-    | "assigned"
-    | "in_progress"
-    | "resolved"
-    | "closed"
-    | "reopened";
-  priority: "low" | "medium" | "high" | "critical";
-  submittedBy: string;
-  submittedDate: string;
-  lastUpdated: string;
-  assignedTo?: string;
-  resolvedDate?: string;
-  slaDeadline: string;
-  ward: string;
+    | "REGISTERED"
+    | "ASSIGNED"
+    | "IN_PROGRESS"
+    | "RESOLVED"
+    | "CLOSED"
+    | "REOPENED";
+  priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  submittedById?: string;
+  submittedOn: string; // Changed from submittedDate
+  updatedAt: string; // Changed from lastUpdated
+  assignedTo?: any; // Can be string or object
+  resolvedOn?: string; // Changed from resolvedDate
+  deadline?: string; // Changed from slaDeadline
+  wardId?: string;
+  ward?: any; // Ward object
   area: string;
-  location: string;
+  landmark?: string;
   address: string;
   mobile: string;
   email?: string;
@@ -113,11 +114,25 @@ export interface ComplaintListParams extends ComplaintFilters {
   sortOrder?: "asc" | "desc";
 }
 
+export interface ComplaintListResponse {
+  complaints: Complaint[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+  meta?: {
+    correlationId: string;
+  };
+}
+
 // Complaints API slice
 export const complaintsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get complaints list with pagination and filtering
-    getComplaints: builder.query<ApiResponse<Complaint[]>, ComplaintListParams>(
+    getComplaints: builder.query<ApiResponse<ComplaintListResponse>, ComplaintListParams>(
       {
         query: (params) => {
           const searchParams = new URLSearchParams();
@@ -558,6 +573,7 @@ export const complaintsApi = baseApi.injectEndpoints({
       ],
     }),
   }),
+  overrideExisting: true,
 });
 
 // Export hooks

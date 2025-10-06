@@ -145,9 +145,10 @@
 //     },
 //   };
 // });
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { fileURLToPath } from "url";
 import type { IncomingMessage, ServerResponse, ClientRequest } from "http";
 
 // https://vitejs.dev/config/
@@ -199,18 +200,27 @@ export default defineConfig(({ mode }) => {
   const apiHost = envVars.API_HOST || envVars.SERVER_HOST || "localhost";
   const proxyTarget = explicitApiUrl || `http://${apiHost}:${backendPort}`;
   const isProduction = mode === "production" || isCloudEnvironment;
+  const projectRoot = path.dirname(fileURLToPath(new URL(".", import.meta.url)));
+  const workspaceRoot = searchForWorkspaceRoot(process.cwd());
+  const fsAllow = Array.from(
+    new Set([
+      projectRoot,
+      workspaceRoot,
+      path.resolve(projectRoot, "index.html"),
+      path.resolve(projectRoot, "client"),
+      path.resolve(projectRoot, "shared"),
+      path.resolve(projectRoot, "uploads"),
+      path.resolve(projectRoot, "node_modules/leaflet/dist"),
+      path.resolve(projectRoot, "node_modules/vite/dist/client"),
+    ]),
+  );
 
   return {
     server: {
       host: clientHost,
       port: clientPort,
       fs: {
-        allow: [
-          "./client",
-          "./shared",
-          path.resolve(__dirname, "./node_modules/leaflet/dist"),
-          path.resolve(__dirname, "./uploads"),
-        ],
+        allow: fsAllow,
         deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
       },
       proxy: {

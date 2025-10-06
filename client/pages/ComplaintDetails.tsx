@@ -30,6 +30,7 @@ import {
   Download,
   Upload,
 } from "lucide-react";
+import { SafeRenderer, safeRenderValue } from "../components/SafeRenderer";
 // Dynamic import for jsPDF to avoid build issues
 
 const ComplaintDetails: React.FC = () => {
@@ -56,9 +57,41 @@ const ComplaintDetails: React.FC = () => {
     data: complaintResponse,
     isLoading,
     error,
-  } = useGetComplaintQuery(id!, { skip: !id || !isAuthenticated });
+  } = useGetComplaintQuery(id!, { 
+    skip: !id || !isAuthenticated,
+    // Add retry logic for failed requests
+    refetchOnMountOrArgChange: true,
+  });
 
-  const complaint = complaintResponse?.data as any;
+  const complaint = (complaintResponse?.data as any)?.complaint || complaintResponse?.data;
+
+  // Debug: Log the complaint data to see what we're actually receiving
+  useEffect(() => {
+    console.log("ComplaintDetails Debug Info:", {
+      id,
+      isAuthenticated,
+      isLoading,
+      hasError: !!error,
+      hasComplaintResponse: !!complaintResponse,
+      hasComplaintData: !!complaint,
+    });
+    
+    if (complaintResponse) {
+      console.log("Full API response:", complaintResponse);
+    }
+    
+    if (complaint) {
+      console.log("Complaint data received:", complaint);
+      console.log("Available fields:", Object.keys(complaint));
+      console.log("Complaint ID:", complaint.id);
+      console.log("Complaint submittedOn:", complaint.submittedOn);
+      console.log("Complaint status:", complaint.status);
+    }
+    
+    if (error) {
+      console.error("Error fetching complaint:", error);
+    }
+  }, [id, isAuthenticated, isLoading, error, complaintResponse, complaint]);
 
   // Cache complaint details when loaded
   useEffect(() => {
@@ -150,8 +183,8 @@ const ComplaintDetails: React.FC = () => {
     const typeHours = getTypeSlaHours(c.type);
 
     const reopenAt = getLastReopenAt(c.statusLogs);
-    const registeredAt = c.submittedDate
-      ? new Date(c.submittedDate)
+    const registeredAt = c.submittedOn
+      ? new Date(c.submittedOn)
       : c.createdAt
         ? new Date(c.createdAt)
         : null;
@@ -227,6 +260,42 @@ const ComplaintDetails: React.FC = () => {
     );
   }
 
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Loading Complaint Details...
+        </h2>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <FileText className="h-12 w-12 mx-auto text-red-400 mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Error Loading Complaint
+        </h2>
+        <p className="text-gray-600 mb-4">
+          {error && typeof error === 'object' && 'message' in error 
+            ? (error as any).message 
+            : 'Failed to load complaint details. Please try again.'}
+        </p>
+        <Link to="/complaints">
+          <Button>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Complaints
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
+  // Show not found state
   if (!complaint) {
     return (
       <div className="text-center py-12">
@@ -235,7 +304,7 @@ const ComplaintDetails: React.FC = () => {
           Complaint Not Found
         </h2>
         <p className="text-gray-600 mb-4">
-          The complaint you're looking for doesn't exist.
+          The complaint you're looking for doesn't exist or you don't have permission to view it.
         </p>
         <Link to="/complaints">
           <Button>
@@ -261,7 +330,7 @@ const ComplaintDetails: React.FC = () => {
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">
               Complaint #
-              {complaint?.complaintId || complaint?.id?.slice(-6) || "Unknown"}
+              {complaint?.complaintId || (complaint?.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : "Unknown")}
             </h1>
           </div>
           <div className="flex items-center space-x-4">
@@ -273,8 +342,8 @@ const ComplaintDetails: React.FC = () => {
             </Badge>
             <span className="text-sm text-gray-500">
               Created{" "}
-              {complaint?.submittedDate
-                ? new Date(complaint.submittedDate).toLocaleDateString()
+              {complaint?.submittedOn
+                ? new Date(complaint.submittedOn).toLocaleDateString()
                 : "Unknown"}
             </span>
           </div>
@@ -297,13 +366,17 @@ const ComplaintDetails: React.FC = () => {
               <div>
                 <h3 className="font-medium mb-2">Type</h3>
                 <p className="text-gray-600">
-                  {complaint?.type?.replace("_", " ") || "Unknown Type"}
+                  <SafeRenderer fallback="Unknown Type">
+                    {complaint?.type ? complaint.type.replace("_", " ") : "Unknown Type"}
+                  </SafeRenderer>
                 </p>
               </div>
               <div>
                 <h3 className="font-medium mb-2">Description</h3>
                 <p className="text-gray-600">
-                  {complaint?.description || "No description available"}
+                  <SafeRenderer fallback="No description available">
+                    {safeRenderValue(complaint?.description, "No description available")}
+                  </SafeRenderer>
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -314,17 +387,17 @@ const ComplaintDetails: React.FC = () => {
                   </h3>
                   <div className="space-y-1 text-sm">
                     <p className="text-gray-600">
-                      <strong>Area:</strong> {complaint.area}
+                      <strong>Area:</strong> <SafeRenderer fallback="Unknown Area">{safeRenderValue(complaint.area, "Unknown Area")}</SafeRenderer>
                     </p>
                     {complaint.ward && (
                       <p className="text-gray-600">
-                        <strong>Ward:</strong> {complaint.ward}
+                        <strong>Ward:</strong> <SafeRenderer fallback="Unknown Ward">{safeRenderValue(complaint.ward, "Unknown Ward")}</SafeRenderer>
                       </p>
                     )}
                     {/* Sub-zone and landmark not available in current interface */}
                     {complaint.address && (
                       <p className="text-gray-600">
-                        <strong>Address:</strong> {complaint.address}
+                        <strong>Address:</strong> <SafeRenderer fallback="No address provided">{safeRenderValue(complaint.address, "No address provided")}</SafeRenderer>
                       </p>
                     )}
                     {/* Coordinates not available in current interface */}
@@ -338,7 +411,7 @@ const ComplaintDetails: React.FC = () => {
                   <div className="space-y-1 text-sm">
                     <p className="text-gray-600">
                       <strong>Submitted:</strong>{" "}
-                      {new Date(complaint.submittedDate).toLocaleString()}
+                      {complaint?.submittedOn ? new Date(complaint.submittedOn).toLocaleString() : "Unknown"}
                     </p>
                     {complaint.assignedOn && (
                       <p className="text-gray-600">
@@ -733,9 +806,7 @@ const ComplaintDetails: React.FC = () => {
                       )}
                       <p className="text-gray-500 text-xs">
                         <strong>Created:</strong>{" "}
-                        {new Date(
-                          complaint.submittedDate,
-                        ).toLocaleString()}
+                        {complaint?.submittedOn ? new Date(complaint.submittedOn).toLocaleString() : "Unknown"}
                       </p>
                       <p className="text-gray-500 text-xs">
                         <strong>Last Updated:</strong>{" "}
@@ -819,7 +890,9 @@ const ComplaintDetails: React.FC = () => {
               <div className="flex items-center">
                 <Phone className="h-4 w-4 mr-2 text-gray-400" />
                 <div className="flex flex-col">
-                  <span>{complaint.contactPhone}</span>
+                  <SafeRenderer fallback="No phone provided">
+                    {safeRenderValue(complaint.contactPhone, "No phone provided")}
+                  </SafeRenderer>
                   {/* Show submitter phone for admin/ward managers if different */}
                   {(user?.role === "ADMINISTRATOR" ||
                     user?.role === "WARD_OFFICER") &&
@@ -836,7 +909,9 @@ const ComplaintDetails: React.FC = () => {
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 mr-2 text-gray-400" />
                   <div className="flex flex-col">
-                    <span>{complaint.contactEmail}</span>
+                    <SafeRenderer fallback="No email provided">
+                      {safeRenderValue(complaint.contactEmail, "No email provided")}
+                    </SafeRenderer>
                     {/* Show submitter email for admin/ward managers if different */}
                     {(user?.role === "ADMINISTRATOR" ||
                       user?.role === "WARD_OFFICER") &&
@@ -878,7 +953,7 @@ const ComplaintDetails: React.FC = () => {
                     Assignment & Status Information
                     <span className="ml-2 text-xs">
                       <Badge className={getStatusColor(complaint.status)}>
-                        {complaint.status.replace("_", " ")}
+                        {complaint.status?.replace("_", " ") || "Unknown"}
                       </Badge>
                     </span>
                   </CardTitle>
@@ -981,13 +1056,19 @@ const ComplaintDetails: React.FC = () => {
                         <div>
                           <p className="text-sm font-medium mb-1">Priority Level</p>
                           <Badge className={getPriorityColor(complaint.priority)}>
-                            {complaint.priority} Priority
+                            <SafeRenderer fallback="Unknown Priority">
+                              {safeRenderValue(complaint.priority, "Unknown")} Priority
+                            </SafeRenderer>
                           </Badge>
                         </div>
                         <div>
                           <p className="text-sm font-medium mb-1">Complaint Type</p>
                           <Badge variant="outline">
-                            {complaint.type?.replace("_", " ")}
+                            <SafeRenderer fallback="Unknown Type">
+                              {typeof complaint.type === 'string' 
+                                ? complaint.type.replace("_", " ")
+                                : complaint.type?.name || "Unknown Type"}
+                            </SafeRenderer>
                           </Badge>
                         </div>
                       </div>

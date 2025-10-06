@@ -92,7 +92,7 @@ const ComplaintQuickActions: React.FC<ComplaintQuickActionsProps> = ({
               className={getStatusColor(complaint.status)}
               variant="secondary"
             >
-              {complaint.status.replace("_", " ")}
+              {complaint.status?.replace("_", " ") || "Unknown"}
             </Badge>
             <Badge
               className={getPriorityColor(complaint.priority)}

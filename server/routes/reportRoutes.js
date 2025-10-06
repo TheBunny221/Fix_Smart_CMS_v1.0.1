@@ -776,18 +776,29 @@ router.get(
           xTypeKeys.map((t) => countMap.get(`${wid}||${t}`) || 0),
         );
 
-        // Map type keys to display names using complaint type config
-        const complaintTypeConfigs = await prisma.systemConfig.findMany({
-          where: { key: { startsWith: "COMPLAINT_TYPE_" } },
+        // Map type keys to display names using ComplaintType table
+        const complaintTypes = await prisma.complaintType.findMany({
+          select: { id: true, name: true }
         });
         const typeNameMap = new Map();
-        for (const cfg of complaintTypeConfigs) {
-          try {
-            const data = JSON.parse(cfg.value);
-            const id = cfg.key.replace("COMPLAINT_TYPE_", "");
-            typeNameMap.set(id, data.name);
-          } catch (e) {
-            // ignore parse errors
+        for (const ct of complaintTypes) {
+          typeNameMap.set(String(ct.id), ct.name);
+          typeNameMap.set(ct.name, ct.name); // Also map by name for legacy compatibility
+        }
+        
+        // Fallback to legacy system config if needed
+        if (typeNameMap.size === 0) {
+          const complaintTypeConfigs = await prisma.systemConfig.findMany({
+            where: { key: { startsWith: "COMPLAINT_TYPE_" } },
+          });
+          for (const cfg of complaintTypeConfigs) {
+            try {
+              const data = JSON.parse(cfg.value);
+              const id = cfg.key.replace("COMPLAINT_TYPE_", "");
+              typeNameMap.set(id, data.name);
+            } catch (e) {
+              // ignore parse errors
+            }
           }
         }
         const xLabelsDisplay = xTypeKeys.map(
@@ -847,18 +858,29 @@ router.get(
           xTypeKeys.map((t) => countMap.get(`${sid}||${t}`) || 0),
         );
 
-        // Map type keys to display names using complaint type config
-        const complaintTypeConfigs = await prisma.systemConfig.findMany({
-          where: { key: { startsWith: "COMPLAINT_TYPE_" } },
+        // Map type keys to display names using ComplaintType table
+        const complaintTypes = await prisma.complaintType.findMany({
+          select: { id: true, name: true }
         });
         const typeNameMap = new Map();
-        for (const cfg of complaintTypeConfigs) {
-          try {
-            const data = JSON.parse(cfg.value);
-            const id = cfg.key.replace("COMPLAINT_TYPE_", "");
-            typeNameMap.set(id, data.name);
-          } catch (e) {
-            // ignore parse errors
+        for (const ct of complaintTypes) {
+          typeNameMap.set(String(ct.id), ct.name);
+          typeNameMap.set(ct.name, ct.name); // Also map by name for legacy compatibility
+        }
+        
+        // Fallback to legacy system config if needed
+        if (typeNameMap.size === 0) {
+          const complaintTypeConfigs = await prisma.systemConfig.findMany({
+            where: { key: { startsWith: "COMPLAINT_TYPE_" } },
+          });
+          for (const cfg of complaintTypeConfigs) {
+            try {
+              const data = JSON.parse(cfg.value);
+              const id = cfg.key.replace("COMPLAINT_TYPE_", "");
+              typeNameMap.set(id, data.name);
+            } catch (e) {
+              // ignore parse errors
+            }
           }
         }
         const xLabelsDisplay = xTypeKeys.map(
