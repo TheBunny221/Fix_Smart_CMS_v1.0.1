@@ -1,43 +1,24 @@
 import { PrismaClient } from "@prisma/client";
-import seedCommon from "./seed.common.js";
 
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log("⚠️ This seed file is deprecated. Please use the new JSON-based seeding system:");
+  console.log("📝 Set environment variables:");
+  console.log("   ADMIN_EMAIL=your-admin@email.com");
+  console.log("   ADMIN_PASSWORD=your-secure-password");
+  console.log("   DESTRUCTIVE_SEED=false  # for production");
+  console.log("🚀 Then run: npx prisma db seed");
+  console.log("");
+  console.log("ℹ️ The new system reads seed data from prisma/seed.json");
+  console.log("ℹ️ You can customize the data by editing that file");
+  
   const adminEmail = process.env.ADMIN_EMAIL || null;
   const adminPassword = process.env.ADMIN_PASSWORD || null;
 
   if (!adminEmail || !adminPassword) {
-    console.log("⚠️ ADMIN_EMAIL and ADMIN_PASSWORD not set. Admin creation will be skipped. To create admin set these env vars and re-run the seed.");
+    console.log("⚠️ ADMIN_EMAIL and ADMIN_PASSWORD not set. Admin creation will be skipped.");
   }
-
-  // await seedCommon(prisma, {
-  //   destructive: false,
-  //   adminEmail,
-  //   adminPassword,
-  //   target: {
-  //     wards: 8,
-  //     subZonesPerWard: 3,
-  //     maintenancePerWard: 3,
-  //     citizens: 8,
-  //     complaints: 94,
-  //     serviceRequests: 10,
-  //   },
-  // });
-  await seedCommon(prisma, {
-    destructive: false,
-    adminEmail,
-    adminPassword,
-    environment: 'prod',
-    target: {
-      wards: 0,
-      subZonesPerWard: 0,
-      maintenancePerWard: 0,
-      citizens: 0,
-      complaints: 0,
-      serviceRequests: 0,
-    },
-  });
 }
 
 main()

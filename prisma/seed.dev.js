@@ -1,23 +1,17 @@
 import { PrismaClient } from "@prisma/client";
-import seedCommon from "./seed.common.js";
 
 const prisma = new PrismaClient();
 
 async function main() {
-  await seedCommon(prisma, {
-    destructive: true,
-    adminEmail: "admin@cochinsmartcity.dev",
-    adminPassword: "admin123",
-    environment: 'dev',
-    target: {
-      wards: 8,
-      subZonesPerWard: 3,
-      maintenancePerWard: 3,
-      citizens: 8,
-      complaints: 94,
-      serviceRequests: 10,
-    },
-  });
+  console.log("⚠️ This seed file is deprecated. Please use the new JSON-based seeding system:");
+  console.log("📝 Set environment variables:");
+  console.log("   ADMIN_EMAIL=admin@cochinsmartcity.dev");
+  console.log("   ADMIN_PASSWORD=admin123");
+  console.log("   DESTRUCTIVE_SEED=true");
+  console.log("🚀 Then run: npx prisma db seed");
+  console.log("");
+  console.log("ℹ️ The new system reads seed data from prisma/seed.json");
+  console.log("ℹ️ You can customize the data by editing that file");
 }
 
 main()

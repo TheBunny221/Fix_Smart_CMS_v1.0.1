@@ -341,7 +341,7 @@ export function createApp() {
   });
 
   // Serve static files from the React build
-  const distPath = path.resolve(__dirname, "../dist/spa");
+  const distPath = path.resolve(__dirname, "../dist/client");
   console.log("Serving static files from:", distPath);
 
   // Check if the build directory exists

@@ -240,6 +240,7 @@ function copyPrismaFiles() {
     'prisma/schema.prisma',
     'prisma/schema.prod.prisma',
     'prisma/seed.prod.js',
+    'prisma/seed.common.js',
     'prisma/migration-utils.js'
   ];
   
