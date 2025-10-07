@@ -68,6 +68,7 @@
     "db:setup:fresh:dev": "npm run db:migrate:reset:dev && npm run db:setup:dev",
     "db:setup:fresh:prod": "npm run db:migrate:reset:prod && npm run db:setup:prod",
     "db:setup:fresh": "npm run db:migrate:reset && npm run db:setup",
+    "db:setup:dev": "node scripts/setup-database-dev.js",
     "db:backup": "node prisma/migration-utils.js backup",
     "db:restore": "node prisma/migration-utils.js restore",
     "db:stats": "node prisma/migration-utils.js stats",

@@ -540,6 +540,7 @@ export const complaintsApi = baseApi.injectEndpoints({
           size: number;
           uploadedAt: string;
           description?: string;
+          entityType?: string;
           uploadedByTeam: {
             id: string;
             fullName: string;
@@ -551,15 +552,19 @@ export const complaintsApi = baseApi.injectEndpoints({
         complaintId: string;
         photos: File[];
         description?: string;
+        isMaintenancePhoto?: boolean;
       }
     >({
-      query: ({ complaintId, photos, description }) => {
+      query: ({ complaintId, photos, description, isMaintenancePhoto }) => {
         const formData = new FormData();
         photos.forEach((photo) => {
           formData.append("photos", photo);
         });
         if (description) {
           formData.append("description", description);
+        }
+        if (isMaintenancePhoto) {
+          formData.append("isMaintenancePhoto", "true");
         }
         return {
           url: `/complaints/${complaintId}/photos`,

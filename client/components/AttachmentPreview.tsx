@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogClose,
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 import {
@@ -441,11 +440,14 @@ export default function AttachmentPreview({
                   </Button>
                 </a>
               )}
-              <DialogClose asChild>
-                <Button size="sm" variant="destructive" className="font-bold">
-                  <X className="h-4 w-4 mr-1" /> Close
-                </Button>
-              </DialogClose>
+              <Button 
+                size="sm" 
+                variant="destructive" 
+                className="font-bold"
+                onClick={() => onOpenChange(false)}
+              >
+                <X className="h-4 w-4 mr-1" /> Close
+              </Button>
             </div>
           </div>
         </DialogHeader>

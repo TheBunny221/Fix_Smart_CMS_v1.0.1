@@ -20,6 +20,7 @@ interface PhotoUploadModalProps {
   onClose: () => void;
   complaintId: string;
   onSuccess?: () => void;
+  isMaintenancePhoto?: boolean;
 }
 
 interface PhotoFile {
@@ -35,6 +36,7 @@ const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
   onClose,
   complaintId,
   onSuccess,
+  isMaintenancePhoto = false,
 }) => {
   const [photos, setPhotos] = useState<PhotoFile[]>([]);
   const [description, setDescription] = useState("");
@@ -282,9 +284,11 @@ const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
         complaintId: string;
         photos: File[];
         description?: string;
+        isMaintenancePhoto?: boolean;
       } = {
         complaintId,
         photos: photos.map((p) => p.file),
+        isMaintenancePhoto,
       };
       const trimmed = description.trim();
       if (trimmed) payload.description = trimmed;
@@ -345,7 +349,9 @@ const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Upload Photos</DialogTitle>
+          <DialogTitle>
+            {isMaintenancePhoto ? "Upload Maintenance Photos" : "Upload Photos"}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">

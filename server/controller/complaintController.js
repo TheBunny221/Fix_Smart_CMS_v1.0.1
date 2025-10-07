@@ -346,8 +346,8 @@ export const createComplaint = asyncHandler(async (req, res) => {
     const ct = Number.isFinite(numericId)
       ? await prisma.complaintType.findUnique({ where: { id: numericId } })
       : await prisma.complaintType.findFirst({
-          where: { name: String(complaintTypeId) },
-        });
+        where: { name: String(complaintTypeId) },
+      });
     if (!ct) {
       return res
         .status(400)
@@ -387,7 +387,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
           const v = JSON.parse(byKey.value || "{}");
           resolvedTypeName = v.name;
           resolvedSlaHours = Number(v.slaHours);
-        } catch {}
+        } catch { }
       }
       if (!resolvedTypeName) {
         const allTypes = await prisma.systemConfig.findMany({
@@ -401,7 +401,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
               resolvedSlaHours = Number(v.slaHours);
               break;
             }
-          } catch {}
+          } catch { }
         }
       }
     }
@@ -527,7 +527,13 @@ export const createComplaint = asyncHandler(async (req, res) => {
   res.status(201).json({
     success: true,
     message: "Complaint registered successfully",
-    data: { complaint },
+    data: {
+      complaint: {
+        ...complaint,
+        // Ensure type field contains the complaint type name instead of ID
+        type: complaint.complaintType?.name || complaint.type,
+      }
+    },
   });
 });
 
@@ -611,33 +617,33 @@ const createComplaintWithUniqueId = async (data) => {
           },
           wardOfficer: data.wardOfficerId
             ? {
-                select: {
-                  id: true,
-                  fullName: true,
-                  email: true,
-                  role: true,
-                },
-              }
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                role: true,
+              },
+            }
             : false,
           maintenanceTeam: data.maintenanceTeamId
             ? {
-                select: {
-                  id: true,
-                  fullName: true,
-                  email: true,
-                  role: true,
-                },
-              }
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                role: true,
+              },
+            }
             : false,
           assignedTo: data.assignedToId
             ? {
-                select: {
-                  id: true,
-                  fullName: true,
-                  email: true,
-                  role: true,
-                },
-              }
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+                role: true,
+              },
+            }
             : false,
           complaintType: { select: { id: true, name: true } },
         },
@@ -831,8 +837,8 @@ export const getComplaints = asyncHandler(async (req, res) => {
         activeStatuses.length > 0
           ? { in: activeStatuses }
           : {
-              notIn: ["RESOLVED", "CLOSED"],
-            };
+            notIn: ["RESOLVED", "CLOSED"],
+          };
     }
   }
 
@@ -987,7 +993,16 @@ export const getComplaints = asyncHandler(async (req, res) => {
           },
           complaintType: { select: { id: true, name: true } },
           attachments: {
-            where: { entityType: "COMPLAINT" },
+            where: { 
+              entityType: { 
+                in: ["COMPLAINT", "MAINTENANCE_PHOTO"] 
+              } 
+            },
+            include: {
+              uploadedBy: {
+                select: { id: true, fullName: true, role: true },
+              },
+            },
           },
           statusLogs: {
             orderBy: { timestamp: "desc" },
@@ -1015,6 +1030,8 @@ export const getComplaints = asyncHandler(async (req, res) => {
 
       return {
         ...c,
+        // Ensure type field contains the complaint type name instead of ID
+        type: c.complaintType?.name || c.type,
         slaStatus: sla,
         needsTeamAssignment: !c.maintenanceTeamId,
       };
@@ -1103,8 +1120,12 @@ export const getComplaint = asyncHandler(async (req, res) => {
         },
       },
       complaintType: { select: { id: true, name: true } },
-      attachments: { 
-        where: { entityType: "COMPLAINT" },
+      attachments: {
+        where: { 
+          entityType: { 
+            in: ["COMPLAINT", "MAINTENANCE_PHOTO"] 
+          } 
+        },
         include: {
           uploadedBy: {
             select: {
@@ -1131,6 +1152,8 @@ export const getComplaint = asyncHandler(async (req, res) => {
 
   const complaint = baseComplaint && {
     ...baseComplaint,
+    // Ensure type field contains the complaint type name instead of ID
+    type: baseComplaint.complaintType?.name || baseComplaint.type,
     needsTeamAssignment: !baseComplaint.maintenanceTeamId,
   };
 
@@ -1519,6 +1542,7 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
           phoneNumber: true,
         },
       },
+      complaintType: { select: { id: true, name: true } },
     },
   });
   // Derived flag for frontend
@@ -1610,7 +1634,13 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Complaint status updated successfully",
-    data: { complaint: updatedComplaint },
+    data: {
+      complaint: {
+        ...updatedComplaint,
+        // Ensure type field contains the complaint type name instead of ID
+        type: updatedComplaint.complaintType?.name || updatedComplaint.type,
+      }
+    },
   });
 });
 
@@ -1666,13 +1696,20 @@ export const addComplaintFeedback = asyncHandler(async (req, res) => {
           email: true,
         },
       },
+      complaintType: { select: { id: true, name: true } },
     },
   });
 
   res.status(200).json({
     success: true,
     message: "Feedback added successfully",
-    data: { complaint: updatedComplaint },
+    data: {
+      complaint: {
+        ...updatedComplaint,
+        // Ensure type field contains the complaint type name instead of ID
+        type: updatedComplaint.complaintType?.name || updatedComplaint.type,
+      }
+    },
   });
 });
 
@@ -1727,6 +1764,9 @@ export const reopenComplaint = asyncHandler(async (req, res) => {
       resolvedById: null,
       closedOn: null,
     },
+    include: {
+      complaintType: { select: { id: true, name: true } },
+    },
   });
 
   // Create status log
@@ -1743,7 +1783,13 @@ export const reopenComplaint = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Complaint reopened successfully",
-    data: { complaint: updatedComplaint },
+    data: {
+      complaint: {
+        ...updatedComplaint,
+        // Ensure type field contains the complaint type name instead of ID
+        type: updatedComplaint.complaintType?.name || updatedComplaint.type,
+      }
+    },
   });
 });
 
@@ -1895,6 +1941,7 @@ export const assignComplaint = asyncHandler(async (req, res) => {
     include: {
       maintenanceTeam: { select: { id: true, fullName: true, role: true } },
       assignedTo: { select: { id: true, fullName: true, role: true } },
+      complaintType: { select: { id: true, name: true } },
     },
   });
 
@@ -1912,7 +1959,13 @@ export const assignComplaint = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Complaint assigned successfully",
-    data: { complaint: updatedComplaint },
+    data: {
+      complaint: {
+        ...updatedComplaint,
+        // Ensure type field contains the complaint type name instead of ID
+        type: updatedComplaint.complaintType?.name || updatedComplaint.type,
+      }
+    },
   });
 });
 

@@ -196,7 +196,7 @@ const MaintenanceDashboard: React.FC = () => {
     [myTasks],
   );
 
-  const handleStatusUpdate = async (complaintId: string, newStatus: "REGISTERED" | "ASSIGNED" | "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "REOPENED") => {
+  const handleStatusUpdate = async (complaintId: string, newStatus: "REGISTERED" | "ASSIGNED" | "IN_PROGRESS" | "RESOLVED" | "closed" | "reopened") => {
     try {
       await updateComplaintStatus({
         id: complaintId,

@@ -14,7 +14,12 @@ const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const baseUploadDir =
       process.env.UPLOAD_PATH || path.join(__dirname, "../../uploads");
-    const uploadDir = path.join(baseUploadDir, "complaint-photos");
+    
+    // Determine subdirectory based on attachment type
+    const isMaintenancePhoto = req.body.isMaintenancePhoto === "true" || req.body.isMaintenancePhoto === true;
+    const uploadDir = isMaintenancePhoto 
+      ? path.join(baseUploadDir, "maintenance-photos")
+      : path.join(baseUploadDir, "complaint-photos");
 
     // Create directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
@@ -27,7 +32,9 @@ const storage = multer.diskStorage({
     // Generate unique filename with timestamp and random string
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const fileExtension = path.extname(file.originalname);
-    cb(null, `complaint-${req.params.id}-${uniqueSuffix}${fileExtension}`);
+    const isMaintenancePhoto = req.body.isMaintenancePhoto === "true" || req.body.isMaintenancePhoto === true;
+    const prefix = isMaintenancePhoto ? "maintenance" : "complaint";
+    cb(null, `${prefix}-${req.params.id}-${uniqueSuffix}${fileExtension}`);
   },
 });
 
@@ -61,6 +68,7 @@ export const uploadPhoto = multer({
 // @access  Private (Maintenance Team, Ward Officer, Admin)
 export const getComplaintPhotos = asyncHandler(async (req, res) => {
   const { id: complaintId } = req.params;
+  const { type } = req.query; // Optional filter: 'maintenance', 'complaint', or 'all'
 
   // Check if complaint exists and user has access
   const complaint = await prisma.complaint.findUnique({
@@ -91,14 +99,32 @@ export const getComplaintPhotos = asyncHandler(async (req, res) => {
     });
   }
 
-  // Fetch attachments as photos (backward-compatible shape)
-  const attachments = await prisma.attachment.findMany({
-    where: {
+  // Build where clause based on type filter
+  let whereClause = {
+    OR: [
+      { entityType: { in: ["COMPLAINT", "MAINTENANCE_PHOTO"] }, entityId: complaintId },
+      { complaintId }, // backward-compat for any legacy rows
+    ],
+  };
+
+  // Apply type filter if specified
+  if (type === 'maintenance') {
+    whereClause = {
+      entityType: "MAINTENANCE_PHOTO",
+      entityId: complaintId,
+    };
+  } else if (type === 'complaint') {
+    whereClause = {
       OR: [
         { entityType: "COMPLAINT", entityId: complaintId },
-        { complaintId }, // backward-compat for any legacy rows
+        { complaintId, entityType: { not: "MAINTENANCE_PHOTO" } },
       ],
-    },
+    };
+  }
+
+  // Fetch attachments as photos
+  const attachments = await prisma.attachment.findMany({
+    where: whereClause,
     orderBy: { createdAt: "desc" },
     include: {
       uploadedBy: {
@@ -107,20 +133,31 @@ export const getComplaintPhotos = asyncHandler(async (req, res) => {
     },
   });
 
-  const photos = attachments.map((a) => ({
-    // Map to previous complaintPhoto-like shape for compatibility
+  // Separate attachments by type for better organization
+  const maintenancePhotos = attachments.filter(a => a.entityType === "MAINTENANCE_PHOTO");
+  const complaintPhotos = attachments.filter(a => a.entityType !== "MAINTENANCE_PHOTO");
+
+  const mapAttachmentToPhoto = (a) => ({
     id: a.id,
     complaintId: complaintId,
     uploadedByTeamId: a.uploadedById || null,
-    photoUrl: a.url, // served via /api/uploads/:filename
+    photoUrl: a.url,
     fileName: a.fileName,
     originalName: a.originalName,
     mimeType: a.mimeType,
     size: a.size,
     uploadedAt: a.createdAt,
-    description: null,
+    description: a.description,
     entityType: a.entityType,
     entityId: a.entityId,
+    uploadedBy: a.uploadedBy
+      ? {
+          id: a.uploadedBy.id,
+          fullName: a.uploadedBy.fullName,
+          role: a.uploadedBy.role,
+        }
+      : null,
+    // Legacy field for backward compatibility
     uploadedByTeam: a.uploadedBy
       ? {
           id: a.uploadedBy.id,
@@ -128,15 +165,22 @@ export const getComplaintPhotos = asyncHandler(async (req, res) => {
           role: a.uploadedBy.role,
         }
       : null,
-  }));
+  });
 
-  res.status(200).json({
+  const response = {
     success: true,
     message: "Photos retrieved successfully",
     data: {
-      photos,
+      photos: attachments.map(mapAttachmentToPhoto),
+      maintenancePhotos: maintenancePhotos.map(mapAttachmentToPhoto),
+      complaintPhotos: complaintPhotos.map(mapAttachmentToPhoto),
+      totalCount: attachments.length,
+      maintenanceCount: maintenancePhotos.length,
+      complaintCount: complaintPhotos.length,
     },
-  });
+  };
+
+  res.status(200).json(response);
 });
 
 // @desc    Upload photos for a complaint (to unified attachments)
@@ -144,6 +188,9 @@ export const getComplaintPhotos = asyncHandler(async (req, res) => {
 // @access  Private (Maintenance Team only)
 export const uploadComplaintPhotos = asyncHandler(async (req, res) => {
   const { id: complaintId } = req.params;
+  const { description, isMaintenancePhoto } = req.body;
+
+  console.log("Upload request:", { complaintId, description, isMaintenancePhoto, filesCount: req.files?.length });
 
   // Check if complaint exists
   const complaint = await prisma.complaint.findUnique({
@@ -157,16 +204,18 @@ export const uploadComplaintPhotos = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check authorization - only maintenance team assigned to this complaint
+  // Check authorization - maintenance team assigned to this complaint or admin/ward officer
   const isAuthorized =
-    req.user.role === "MAINTENANCE_TEAM" &&
-    (complaint.assignedToId === req.user.id ||
-      complaint.maintenanceTeamId === req.user.id);
+    req.user.role === "ADMINISTRATOR" ||
+    (req.user.role === "WARD_OFFICER" && complaint.wardId === req.user.wardId) ||
+    (req.user.role === "MAINTENANCE_TEAM" &&
+      (complaint.assignedToId === req.user.id ||
+        complaint.maintenanceTeamId === req.user.id));
 
   if (!isAuthorized) {
     return res.status(403).json({
       success: false,
-      message: "Only assigned maintenance team members can upload photos",
+      message: "Not authorized to upload photos for this complaint",
     });
   }
 
@@ -179,10 +228,17 @@ export const uploadComplaintPhotos = asyncHandler(async (req, res) => {
   }
 
   try {
+    // Determine attachment type based on request
+    const entityType = isMaintenancePhoto === "true" || isMaintenancePhoto === true 
+      ? "MAINTENANCE_PHOTO" 
+      : "COMPLAINT";
+
+    console.log("Creating attachments with entityType:", entityType);
+
     // Persist as unified attachments
     const created = await Promise.all(
-      req.files.map(async (file) =>
-        prisma.attachment.create({
+      req.files.map(async (file) => {
+        const attachment = await prisma.attachment.create({
           data: {
             fileName: file.filename,
             originalName: file.originalname,
@@ -190,31 +246,44 @@ export const uploadComplaintPhotos = asyncHandler(async (req, res) => {
             size: file.size,
             url: `/api/uploads/${file.filename}`,
             complaintId: complaintId,
-            entityType: "COMPLAINT",
+            entityType: entityType,
             entityId: complaintId,
             uploadedById: req.user.id,
+            description: description || null,
           },
           include: {
             uploadedBy: { select: { id: true, fullName: true, role: true } },
           },
-        }),
-      ),
+        });
+
+        console.log("Created attachment:", { id: attachment.id, entityType: attachment.entityType });
+        return attachment;
+      }),
     );
 
-    // Map to legacy response shape
+    // Map to response format compatible with TaskDetails page
     const photos = created.map((a) => ({
       id: a.id,
       complaintId: complaintId,
       uploadedByTeamId: a.uploadedById || null,
       photoUrl: a.url,
+      url: a.url, // Also include 'url' field for TaskDetails compatibility
       fileName: a.fileName,
       originalName: a.originalName,
       mimeType: a.mimeType,
       size: a.size,
       uploadedAt: a.createdAt,
-      description: null,
+      description: a.description,
       entityType: a.entityType,
       entityId: a.entityId,
+      uploadedBy: a.uploadedBy
+        ? {
+            id: a.uploadedBy.id,
+            fullName: a.uploadedBy.fullName,
+            role: a.uploadedBy.role,
+          }
+        : null,
+      // Legacy field for backward compatibility
       uploadedByTeam: a.uploadedBy
         ? {
             id: a.uploadedBy.id,
@@ -224,19 +293,34 @@ export const uploadComplaintPhotos = asyncHandler(async (req, res) => {
         : null,
     }));
 
+    const responseMessage = entityType === "MAINTENANCE_PHOTO" 
+      ? `${photos.length} maintenance photo(s) uploaded successfully`
+      : `${photos.length} complaint photo(s) uploaded successfully`;
+
     res.status(201).json({
       success: true,
-      message: `${photos.length} photo(s) uploaded successfully`,
-      data: { photos },
+      message: responseMessage,
+      data: { 
+        photos,
+        attachmentType: entityType,
+        count: photos.length,
+      },
     });
   } catch (error) {
+    console.error("Upload error:", error);
     // Clean up uploaded files if database save fails
-    req.files.forEach((file) => {
-      const filePath = file.path;
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    });
+    if (req.files) {
+      req.files.forEach((file) => {
+        const filePath = file.path;
+        if (fs.existsSync(filePath)) {
+          try {
+            fs.unlinkSync(filePath);
+          } catch (cleanupError) {
+            console.error("Error cleaning up file:", cleanupError);
+          }
+        }
+      });
+    }
     throw error;
   }
 });
@@ -283,6 +367,9 @@ export const deleteComplaintPhoto = asyncHandler(async (req, res) => {
   // Check if attachment exists
   const attachment = await prisma.attachment.findUnique({
     where: { id: photoId },
+    include: {
+      complaint: true,
+    },
   });
 
   if (!attachment) {
@@ -292,11 +379,14 @@ export const deleteComplaintPhoto = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check authorization - only the uploader or admin can delete
-  if (
-    attachment.uploadedById !== req.user.id &&
-    req.user.role !== "ADMINISTRATOR"
-  ) {
+  // Enhanced authorization - uploader, admin, or ward officer can delete
+  const isAuthorized =
+    attachment.uploadedById === req.user.id ||
+    req.user.role === "ADMINISTRATOR" ||
+    (req.user.role === "WARD_OFFICER" && 
+     attachment.complaint?.wardId === req.user.wardId);
+
+  if (!isAuthorized) {
     return res.status(403).json({
       success: false,
       message: "Not authorized to delete this attachment",
@@ -310,16 +400,10 @@ export const deleteComplaintPhoto = asyncHandler(async (req, res) => {
     const candidates = [
       path.join(baseUploadDir, attachment.fileName),
       path.join(baseUploadDir, "complaint-photos", attachment.fileName),
+      path.join(baseUploadDir, "maintenance-photos", attachment.fileName),
       path.join(baseUploadDir, "complaints", attachment.fileName),
     ];
-    for (const p of candidates) {
-      if (fs.existsSync(p)) {
-        try {
-          fs.unlinkSync(p);
-        } catch {}
-      }
-    }
-
+    
     // Delete database record
     await prisma.attachment.delete({ where: { id: photoId } });
 

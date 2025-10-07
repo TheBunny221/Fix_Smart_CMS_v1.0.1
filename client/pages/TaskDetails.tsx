@@ -49,9 +49,24 @@ const TaskDetails: React.FC = () => {
     if (typeof value === "number") return value.toString();
     if (typeof value === "boolean") return value.toString();
     if (typeof value === "object") {
-      return value.name || value.title || value.fullName || value.email || fallback;
+      // Handle user objects specifically
+      if (value.fullName) return value.fullName;
+      if (value.name) return value.name;
+      if (value.title) return value.title;
+      if (value.email) return value.email;
+      // If it's an object but no recognizable fields, return fallback
+      return fallback;
     }
     return String(value);
+  };
+
+  // Utility function to truncate file names
+  const truncateFileName = (fileName: string, maxLength: number = 25): string => {
+    if (!fileName || fileName.length <= maxLength) return fileName;
+    const extension = fileName.split('.').pop();
+    const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+    const truncatedName = nameWithoutExt.substring(0, maxLength - extension!.length - 4) + '...';
+    return `${truncatedName}.${extension}`;
   };
 
   const isMaintenanceTeam = user?.role === "MAINTENANCE_TEAM";
@@ -75,6 +90,7 @@ const TaskDetails: React.FC = () => {
     size?: number | null;
   } | null>(null);
 
+  // Handle both response structures: { data: { complaint: {...} } } and { data: {...} }
   const raw = (complaintResponse?.data as any)?.complaint || complaintResponse?.data;
 
   const addWorkUpdate = async () => {
@@ -99,21 +115,21 @@ const TaskDetails: React.FC = () => {
 
   const task = useMemo(() => {
     if (!raw) return null;
-    
+
     // Debug: Log the raw data to identify object issues
     console.log("TaskDetails Debug Info:", {
       id,
       hasComplaintResponse: !!complaintResponse,
       hasRawData: !!raw,
       rawDataKeys: raw ? Object.keys(raw) : [],
-      materials: raw.materials,
-      tools: raw.tools,
-      contactName: raw.contactName,
-      contactPhone: raw.contactPhone,
-      contactEmail: raw.contactEmail,
-      fullRawData: raw
+      complaintError: complaintError ? String(complaintError) : null,
+      responseStructure: complaintResponse ? {
+        hasData: !!complaintResponse.data,
+        hasComplaint: !!(complaintResponse.data as any)?.complaint,
+        dataKeys: complaintResponse.data ? Object.keys(complaintResponse.data) : []
+      } : null
     });
-    
+
     const latLng = (() => {
       let lat = raw.latitude;
       let lng = raw.longitude;
@@ -146,10 +162,10 @@ const TaskDetails: React.FC = () => {
         ? new Date(raw.deadline).toISOString().split("T")[0]
         : (raw.submittedOn ? new Date(new Date(raw.submittedOn).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] : null),
       assignedDate: raw.assignedOn || raw.submittedOn,
-      submittedBy: safeRender(raw.submittedBy, "Unknown"),
+      submittedBy: raw.submittedBy?.fullName || "Unknown",
       contactPhone: raw.contactPhone || raw.mobile || "",
-      contactName: raw.contactName || "",
-      contactEmail: raw.contactEmail || "",
+      contactName: safeRender(raw.contactName, ""),
+      contactEmail: safeRender(raw.contactEmail, ""),
       materials: Array.isArray(raw.materials) ? raw.materials : [],
       tools: Array.isArray(raw.tools) ? raw.tools : [],
       workLog: (Array.isArray(raw.statusLogs) ? raw.statusLogs : []).map((s: any) => ({
@@ -161,7 +177,10 @@ const TaskDetails: React.FC = () => {
         toStatus: s.toStatus,
       })),
       attachments: [
-        ...(Array.isArray(raw.attachments) ? raw.attachments : []),
+        ...(Array.isArray(raw.attachments) ? raw.attachments.map((a: any) => ({
+          ...a,
+          uploadedBy: safeRender(a.uploadedBy, "Unknown"),
+        })) : []),
         ...(Array.isArray(raw.photos) ? raw.photos.map((p: any) => ({
           id: p.id,
           fileName: p.fileName || p.originalName || p.photoUrl?.split("/").pop() || "Unknown file",
@@ -170,6 +189,7 @@ const TaskDetails: React.FC = () => {
           url: p.photoUrl || p.url,
           description: p.description || null,
           uploadedBy: safeRender(p.uploadedByTeam, "Unknown"),
+          entityType: p.entityType || "COMPLAINT",
         })) : []),
       ],
     } as any;
@@ -203,8 +223,8 @@ const TaskDetails: React.FC = () => {
           Error Loading Task
         </h2>
         <p className="text-gray-600 mb-4">
-          {complaintError && typeof complaintError === 'object' && 'message' in complaintError 
-            ? (complaintError as any).message 
+          {complaintError && typeof complaintError === 'object' && 'message' in complaintError
+            ? (complaintError as any).message
             : 'Failed to load task details. Please try again.'}
         </p>
         <Link to="/maintenance">
@@ -225,14 +245,41 @@ const TaskDetails: React.FC = () => {
           Task Not Found
         </h2>
         <p className="text-gray-600 mb-4">
-          The task you're looking for doesn't exist or you don't have permission to view it.
+          {complaintError
+            ? `Error loading task: ${typeof complaintError === 'object' && complaintError && 'message' in complaintError ? (complaintError as any).message : 'Unknown error'}`
+            : "The task you're looking for doesn't exist or you don't have permission to view it."
+          }
         </p>
-        <Link to="/maintenance">
-          <Button>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Tasks
-          </Button>
-        </Link>
+        <div className="space-y-2">
+          <Link to="/maintenance">
+            <Button>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Tasks
+            </Button>
+          </Link>
+          {complaintError && (
+            <Button
+              variant="outline"
+              onClick={() => refetchComplaint?.()}
+              className="ml-2"
+            >
+              Try Again
+            </Button>
+          )}
+        </div>
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-4 p-4 bg-gray-100 rounded text-left text-sm">
+            <strong>Debug Info:</strong>
+            <pre className="mt-2 text-xs">
+              {JSON.stringify({
+                id,
+                hasComplaintResponse: !!complaintResponse,
+                hasRawData: !!raw,
+                complaintError: complaintError ? String(complaintError) : null
+              }, null, 2)}
+            </pre>
+          </div>
+        )}
       </div>
     );
   }
@@ -393,124 +440,97 @@ const TaskDetails: React.FC = () => {
           {["ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"].includes(
             user?.role || "",
           ) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
-                  Work Progress Log
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {task.workLog.length > 0 ? task.workLog.map((log: any, index: number) => {
-                    const getStatusColor = (status: string) => {
-                      switch (status) {
-                        case "REGISTERED":
-                          return "border-blue-500";
-                        case "ASSIGNED":
-                          return "border-yellow-500";
-                        case "IN_PROGRESS":
-                          return "border-orange-500";
-                        case "RESOLVED":
-                        case "COMPLETED":
-                          return "border-green-500";
-                        case "CLOSED":
-                          return "border-gray-500";
-                        default:
-                          return "border-gray-400";
-                      }
-                    };
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <FileText className="h-5 w-5 mr-2" />
+                    Work Progress Log
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {task.workLog.length > 0 ? task.workLog.map((log: any, index: number) => {
+                      const getStatusColor = (status: string) => {
+                        switch (status) {
+                          case "REGISTERED":
+                            return "border-blue-500";
+                          case "ASSIGNED":
+                            return "border-yellow-500";
+                          case "IN_PROGRESS":
+                            return "border-orange-500";
+                          case "RESOLVED":
+                          case "COMPLETED":
+                            return "border-green-500";
+                          case "CLOSED":
+                            return "border-gray-500";
+                          default:
+                            return "border-gray-400";
+                        }
+                      };
 
-                    return (
-                      <div
-                        key={`log-${index}`}
-                        className={`border-l-4 ${getStatusColor(log.toStatus)} pl-4 py-2`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-medium">
-                                {log.toStatus ? `Status: ${log.toStatus.replace("_", " ")}` : "Status Update"}
-                              </p>
-                              {log.user && (
-                                <Badge variant="outline" className="text-xs">
-                                  {safeRender(log.user)} ({log.user?.role || "Unknown"})
+                      return (
+                        <div
+                          key={`log-${index}`}
+                          className={`border-l-4 ${getStatusColor(log.toStatus)} pl-4 py-2`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium">
+                                  {log.toStatus ? `Status: ${log.toStatus.replace("_", " ")}` : "Status Update"}
+                                </p>
+                                {log.user && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {log.user?.fullName || "Unknown"} ({log.user?.role || "Unknown"})
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-sm text-gray-600 mb-1">{log.note}</p>
+                              {log.fromStatus && (
+                                <p className="text-xs text-gray-500">
+                                  Changed from <span className="font-medium">{log.fromStatus.replace("_", " ")}</span> to <span className="font-medium">{log.toStatus?.replace("_", " ")}</span>
+                                </p>
+                              )}
+                              {log.photo && (
+                                <Badge variant="secondary" className="mt-1">
+                                  📷 Photo Attached
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600 mb-1">{log.note}</p>
-                            {log.fromStatus && (
-                              <p className="text-xs text-gray-500">
-                                Changed from <span className="font-medium">{log.fromStatus.replace("_", " ")}</span> to <span className="font-medium">{log.toStatus?.replace("_", " ")}</span>
-                              </p>
-                            )}
-                            {log.photo && (
-                              <Badge variant="secondary" className="mt-1">
-                                📷 Photo Attached
-                              </Badge>
-                            )}
+                            <span className="text-xs text-gray-500 ml-4">
+                              {new Date(log.time).toLocaleString()}
+                            </span>
                           </div>
-                          <span className="text-xs text-gray-500 ml-4">
-                            {new Date(log.time).toLocaleString()}
-                          </span>
                         </div>
+                      );
+                    }) : (
+                      <div className="text-center py-4 text-gray-500">
+                        <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>No work progress updates available yet</p>
                       </div>
-                    );
-                  }) : (
-                    <div className="text-center py-4 text-gray-500">
-                      <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>No work progress updates available yet</p>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Render image attachments as part of the work log so uploads appear immediately */}
-                  {task.attachments &&
-                    task.attachments.filter((a: any) =>
-                      a.mimeType?.startsWith("image/"),
-                    ).length > 0 && (
-                      <div className="pt-2">
-                        <h4 className="text-sm font-medium mb-2">Photos</h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                          {task.attachments
-                            .filter((a: any) =>
-                              a.mimeType?.startsWith("image/"),
-                            )
-                            .map((att: any) => (
-                              <div key={att.id} className="border rounded p-2">
-                                <img
-                                  src={att.url}
-                                  alt={att.fileName || att.originalName}
-                                  className="w-full h-28 object-cover rounded mb-2 cursor-pointer"
-                                  onClick={() => {
-                                    setPreviewItem({
-                                      url: att.url,
-                                      mimeType: att.mimeType || "image/*",
-                                      name: att.fileName || att.originalName,
-                                      size: null,
-                                    });
-                                    setIsPreviewOpen(true);
-                                  }}
-                                />
-                                <div className="text-xs text-gray-600">
-                                  {att.fileName || att.originalName}
-                                </div>
-                                {att.description && (
-                                  <div className="text-sm text-gray-700 mt-1">
-                                    {att.description}
-                                  </div>
-                                )}
-                                {att.uploadedBy && (
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    Uploaded by: {att.uploadedBy}
-                                  </div>
-                                )}
-                                <div className="text-xs text-gray-500 mt-1">
-                                  {new Date(att.uploadedAt).toLocaleString()}
-                                </div>
-                                <div className="mt-2 flex items-center gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
+                    {/* Render maintenance photos as part of the work log
+                    {task.attachments &&
+                      task.attachments.filter((a: any) =>
+                        a.mimeType?.startsWith("image/") && a.entityType === "MAINTENANCE_PHOTO",
+                      ).length > 0 && (
+                        <div className="pt-2">
+                          <h4 className="text-sm font-medium mb-2 flex items-center">
+                            <Wrench className="h-4 w-4 mr-1 text-blue-600" />
+                            Maintenance Photos
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
+                            {task.attachments
+                              .filter((a: any) =>
+                                a.mimeType?.startsWith("image/") && a.entityType === "MAINTENANCE_PHOTO",
+                              )
+                              .map((att: any) => (
+                                <div key={att.id} className="border-2 border-blue-200 rounded-lg p-3 bg-blue-50 hover:bg-blue-100 transition-colors">
+                                  <img
+                                    src={att.url}
+                                    alt={att.fileName || att.originalName}
+                                    className="w-full h-32 object-cover rounded-md mb-2 cursor-pointer hover:opacity-90 transition-opacity"
                                     onClick={() => {
                                       setPreviewItem({
                                         url: att.url,
@@ -520,145 +540,624 @@ const TaskDetails: React.FC = () => {
                                       });
                                       setIsPreviewOpen(true);
                                     }}
+                                  />
+                                  <div className="space-y-1">
+                                    <div className="text-xs font-medium text-gray-700 truncate" title={att.fileName || att.originalName}>
+                                      {truncateFileName(att.fileName || att.originalName)}
+                                    </div>
+                                    {att.description && (
+                                      <div className="text-xs text-gray-600 bg-white p-2 rounded border border-blue-200">
+                                        <span className="font-medium text-blue-700">Note:</span> {att.description}
+                                      </div>
+                                    )}
+                                    {att.uploadedBy && (
+                                      <div className="text-xs text-gray-500">
+                                        <span className="font-medium">By:</span> {att.uploadedBy}
+                                      </div>
+                                    )}
+                                    <div className="text-xs text-gray-500">
+                                      {new Date(att.uploadedAt).toLocaleString()}
+                                    </div>
+                                  </div>
+                                  <div className="mt-2 flex flex-col sm:flex-row gap-1">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="flex-1 text-xs"
+                                      onClick={() => {
+                                        setPreviewItem({
+                                          url: att.url,
+                                          mimeType: att.mimeType || "image/*",
+                                          name: att.fileName || att.originalName,
+                                          size: null,
+                                        });
+                                        setIsPreviewOpen(true);
+                                      }}
+                                    >
+                                      Preview
+                                    </Button>
+                                    <a
+                                      href={att.url}
+                                      download
+                                      className="inline-flex items-center flex-1"
+                                    >
+                                      <Button size="sm" className="w-full text-xs">Download</Button>
+                                    </a>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )} */}
+                  </div>
+
+                  {/* Add New Log Entry */}
+                  <div className="mt-6 pt-4 border-t">
+                    <Label htmlFor="workNote">Add Work Update</Label>
+                    <div className="flex space-x-2 mt-2">
+                      <Textarea
+                        id="workNote"
+                        value={workNote}
+                        onChange={(e) => setWorkNote(e.target.value)}
+                        placeholder="Describe current work status..."
+                        className="flex-1"
+                        rows={2}
+                      />
+                      <div className="flex flex-col space-y-2">
+                        <Button
+                          size="sm"
+                          onClick={() => setIsPhotoModalOpen(true)}
+                        >
+                          <Camera className="h-4 w-4 mr-1" />
+                          Photo
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={addWorkUpdate}
+                          disabled={isAddingLog || !workNote.trim()}
+                        >
+                          {isAddingLog ? "Adding..." : "Add Log"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Maintenance Photos 
+                  <div className="mt-6 pt-4 border-t">
+                    <div className="flex items-center mb-4">
+                      <Wrench className="h-5 w-5 mr-2 text-blue-600" />
+                      <h3 className="text-lg font-semibold text-gray-900">Maintenance Photos</h3>
+                    </div>
+                    
+                    {task.attachments.filter((att: any) => att.entityType === "MAINTENANCE_PHOTO").length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {task.attachments
+                          .filter((att: any) => att.entityType === "MAINTENANCE_PHOTO")
+                          .map((att: any) => {
+                            const isImage = att.mimeType?.startsWith("image/");
+                            const displayName = truncateFileName(att.fileName || att.originalName, 20);
+                            const fullName = att.fileName || att.originalName;
+                            
+                            return (
+                              <div
+                                key={att.id}
+                                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                              >
+                                <div className="mb-3">
+                                  {isImage ? (
+                                    <img
+                                      src={att.url}
+                                      alt={fullName}
+                                      className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                      onClick={() => {
+                                        setPreviewItem({
+                                          url: att.url,
+                                          mimeType: att.mimeType,
+                                          name: fullName,
+                                          size: att.size,
+                                        });
+                                        setIsPreviewOpen(true);
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-32 bg-gray-100 rounded-md flex items-center justify-center">
+                                      <File className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <h4 className="font-medium text-sm text-gray-900 truncate" title={fullName}>
+                                    {displayName}
+                                  </h4>
+                                  <div className="flex items-center justify-between text-xs text-gray-500">
+                                    <span>By: {att.uploadedBy || "Unknown"}</span>
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    {new Date(att.uploadedAt).toLocaleDateString()}
+                                  </div>
+                                  {att.description && (
+                                    <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                      <span className="font-medium">Note:</span> {att.description}
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="mt-3 flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 text-xs"
+                                    onClick={() => {
+                                      setPreviewItem({
+                                        url: att.url,
+                                        mimeType: att.mimeType,
+                                        name: fullName,
+                                        size: att.size,
+                                      });
+                                      setIsPreviewOpen(true);
+                                    }}
                                   >
                                     Preview
                                   </Button>
-                                  <a
-                                    href={att.url}
-                                    download
-                                    className="inline-flex items-center"
-                                  >
-                                    <Button size="sm">Download</Button>
+                                  <a href={att.url} download={fullName} className="flex-1">
+                                    <Button size="sm" className="w-full text-xs bg-teal-600 hover:bg-teal-700">
+                                      Download
+                                    </Button>
                                   </a>
                                 </div>
                               </div>
-                            ))}
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Wrench className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p className="text-sm">No maintenance photos available</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Complaint Attachments 
+                  <div className="mt-8">
+                    <div className="flex items-center mb-4">
+                      <Upload className="h-5 w-5 mr-2 text-gray-600" />
+                      <h3 className="text-lg font-semibold text-gray-900">Complaint Attachments</h3>
+                    </div>
+                    
+                    {task.attachments.filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO").length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {task.attachments
+                          .filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO")
+                          .map((att: any) => {
+                            const isImage = att.mimeType?.startsWith("image/");
+                            const displayName = truncateFileName(att.fileName || att.originalName, 20);
+                            const fullName = att.fileName || att.originalName;
+                            
+                            return (
+                              <div
+                                key={att.id}
+                                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                              >
+                                <div className="mb-3">
+                                  {isImage ? (
+                                    <img
+                                      src={att.url}
+                                      alt={fullName}
+                                      className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                      onClick={() => {
+                                        setPreviewItem({
+                                          url: att.url,
+                                          mimeType: att.mimeType,
+                                          name: fullName,
+                                          size: att.size,
+                                        });
+                                        setIsPreviewOpen(true);
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-32 bg-gray-100 rounded-md flex items-center justify-center">
+                                      <File className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <h4 className="font-medium text-sm text-gray-900 truncate" title={fullName}>
+                                    {displayName}
+                                  </h4>
+                                  <div className="flex items-center justify-between text-xs text-gray-500">
+                                    <span>By: {att.uploadedBy || "Citizen"}</span>
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    {new Date(att.uploadedAt).toLocaleDateString()}
+                                  </div>
+                                  {att.description && (
+                                    <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                                      <span className="font-medium">Note:</span> {att.description}
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="mt-3 flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 text-xs"
+                                    onClick={() => {
+                                      setPreviewItem({
+                                        url: att.url,
+                                        mimeType: att.mimeType,
+                                        name: fullName,
+                                        size: att.size,
+                                      });
+                                      setIsPreviewOpen(true);
+                                    }}
+                                  >
+                                    Preview
+                                  </Button>
+                                  <a href={att.url} download={fullName} className="flex-1">
+                                    <Button size="sm" className="w-full text-xs bg-gray-600 hover:bg-gray-700">
+                                      Download
+                                    </Button>
+                                  </a>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <Upload className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                        <p className="text-sm">No complaint attachments available</p>
+                      </div>
+                    )}
+                  </div>*/}
+                </CardContent>
+              </Card>
+            )}
+
+          {/* Maintenance Attachments Section */}
+          {task && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Wrench className="h-5 w-5 mr-2" />
+                  Maintenance Work Photos & Documents
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Maintenance Photos Section */}
+                  <div className="bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-100 rounded-xl p-6 border-2 border-blue-200 shadow-lg">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-600 rounded-lg shadow-md">
+                          <Camera className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-blue-900">Maintenance Photos</h3>
+                          <p className="text-sm text-blue-700">Photos taken during maintenance work</p>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-blue-600 text-white px-3 py-1 text-sm font-semibold">
+                        {task.attachments.filter((att: any) => att.entityType === "MAINTENANCE_PHOTO").length} photos
+                      </Badge>
+                    </div>
+
+                    {task.attachments.filter((att: any) => att.entityType === "MAINTENANCE_PHOTO").length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
+                        {task.attachments
+                          .filter((att: any) => att.entityType === "MAINTENANCE_PHOTO")
+                          .map((att: any) => {
+                            const isImage = att.mimeType?.startsWith("image/");
+                            const canDownload = [
+                              "ADMINISTRATOR",
+                              "WARD_OFFICER",
+                              "MAINTENANCE_TEAM",
+                            ].includes(user?.role || "");
+                            const displayName = truncateFileName(att.fileName || att.originalName, 20);
+                            const fullName = att.fileName || att.originalName;
+
+                            return (
+                              <div
+                                key={att.id}
+                                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                              >
+                                <div className="mb-3">
+                                  {isImage ? (
+                                    <div className="relative group">
+                                      <img
+                                        src={att.url}
+                                        alt={fullName}
+                                        className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                        onClick={() => {
+                                          setPreviewItem({
+                                            url: att.url,
+                                            mimeType: att.mimeType,
+                                            name: fullName,
+                                            size: att.size,
+                                          });
+                                          setIsPreviewOpen(true);
+                                        }}
+                                      />
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                          <div className="bg-white rounded-full p-2 shadow-lg">
+                                            <Image className="h-5 w-5 text-blue-600" />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center border-2 border-dashed border-blue-300">
+                                      <div className="text-center">
+                                        <File className="h-12 w-12 text-blue-600 mx-auto mb-2" />
+                                        <span className="text-xs text-blue-700 font-medium">Document</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* File Information */}
+                                <div className="space-y-3">
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900 text-sm leading-tight break-words" title={att.fileName || att.originalName}>
+                                      {truncateFileName(att.fileName || att.originalName, 25)}
+                                    </h4>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                        {(att.size / 1024).toFixed(1)}KB
+                                      </span>
+                                      <span className="text-xs text-gray-500">
+                                        {new Date(att.uploadedAt).toLocaleDateString()}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Description */}
+                                  {att.description && (
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                      <div className="flex items-start gap-2">
+                                        <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                        <div className="min-w-0">
+                                          <p className="text-xs font-medium text-blue-800 mb-1">Maintenance Note:</p>
+                                          <p className="text-xs text-blue-700 break-words leading-relaxed">{att.description}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Uploader Info */}
+                                  {att.uploadedBy && (
+                                    <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 rounded-lg p-2">
+                                      <User className="h-3 w-3 flex-shrink-0" />
+                                      <span className="truncate">Uploaded by {att.uploadedBy}</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="mt-4 flex flex-col gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 p-2 text-xs border-blue-300 hover:bg-blue-50 hover:border-blue-400"
+                                    onClick={() => {
+                                      setPreviewItem({
+                                        url: att.url,
+                                        mimeType: att.mimeType,
+                                        name: att.originalName || att.fileName,
+                                        size: att.size,
+                                      });
+                                      setIsPreviewOpen(true);
+                                    }}
+                                  >
+                                    <Image className="h-3 w-3 mr-1" />
+                                    Preview
+                                  </Button>
+                                  {canDownload ? (
+                                    <a
+                                      href={att.url}
+                                      download={att.originalName || att.fileName}
+                                      className="flex-1"
+                                    >
+                                      <Button size="sm" className="w-full text-xs bg-blue-600 hover:bg-blue-700 shadow-md">
+                                        <Download className="h-3 w-3 mr-1" />
+                                        Download
+                                      </Button>
+                                    </a>
+                                  ) : (
+                                    <Button size="sm" disabled className="flex-1 text-xs">
+                                      <Download className="h-3 w-3 mr-1" />
+                                      Restricted
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl border-2 border-dashed border-blue-300">
+                        <div className="bg-blue-100 rounded-full p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                          <Wrench className="h-10 w-10 text-blue-500" />
+                        </div>
+                        <h4 className="text-lg font-semibold text-blue-800 mb-2">No Maintenance Attachments</h4>
+                        <p className="text-sm text-blue-600 mb-4">Upload photos and documents from your maintenance work</p>
+                        <div className="flex items-center justify-center gap-2 text-xs text-blue-500">
+                          <Camera className="h-4 w-4" />
+                          <span>Photos, documents, and reports will appear here</span>
                         </div>
                       </div>
                     )}
-                </div>
-
-                {/* Add New Log Entry */}
-                <div className="mt-6 pt-4 border-t">
-                  <Label htmlFor="workNote">Add Work Update</Label>
-                  <div className="flex space-x-2 mt-2">
-                    <Textarea
-                      id="workNote"
-                      value={workNote}
-                      onChange={(e) => setWorkNote(e.target.value)}
-                      placeholder="Describe current work status..."
-                      className="flex-1"
-                      rows={2}
-                    />
-                    <div className="flex flex-col space-y-2">
-                      <Button
-                        size="sm"
-                        onClick={() => setIsPhotoModalOpen(true)}
-                      >
-                        <Camera className="h-4 w-4 mr-1" />
-                        Photo
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={addWorkUpdate}
-                        disabled={isAddingLog || !workNote.trim()}
-                      >
-                        {isAddingLog ? "Adding..." : "Add Log"}
-                      </Button>
-                    </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          )}
 
-                {/* Attachments listed here as well (visible to same roles) */}
-                <div className="mt-6 pt-4 border-t">
-                  <h3 className="font-medium mb-3 flex items-center">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Attachments
-                  </h3>
-                  <div className="space-y-3">
-                    {task.attachments.length > 0 ? task.attachments.map((att: any) => {
-                      const isImage = att.mimeType?.startsWith("image/");
-                      const canDownload = [
-                        "ADMINISTRATOR",
-                        "WARD_OFFICER",
-                        "MAINTENANCE_TEAM",
-                      ].includes(user?.role || "");
-                      return (
-                        <div
-                          key={att.id}
-                          className="flex items-center justify-between border rounded p-2"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 grid place-items-center rounded bg-gray-100">
-                              {isImage ? (
-                                <Image className="h-5 w-5" />
-                              ) : (
-                                <File className="h-5 w-5" />
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium">
-                                {att.fileName || att.originalName}
-                              </div>
-                              {att.description && (
-                                <div className="text-sm text-gray-700">
-                                  {att.description}
-                                </div>
-                              )}
-                              {att.uploadedBy && (
-                                <div className="text-xs text-gray-500">
-                                  Uploaded by: {att.uploadedBy}
-                                </div>
-                              )}
-                              <div className="text-xs text-gray-500">
-                                {att.mimeType} •{" "}
-                                {new Date(att.uploadedAt).toLocaleString()}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setPreviewItem({
-                                  url: att.url,
-                                  mimeType: att.mimeType,
-                                  name: att.originalName || att.fileName,
-                                  size: att.size,
-                                });
-                                setIsPreviewOpen(true);
-                              }}
-                            >
-                              Preview
-                            </Button>
-                            {canDownload ? (
-                              <a
-                                href={att.url}
-                                download
-                                className="inline-flex items-center"
-                              >
-                                <Button size="sm">
-                                  <Download className="h-4 w-4 mr-2" />
-                                  Download
-                                </Button>
-                              </a>
-                            ) : (
-                              <Button size="sm" disabled>
-                                <Download className="h-4 w-4 mr-2" />
-                                Restricted
-                              </Button>
-                            )}
-                          </div>
+          {/* Complaint Attachments Section */}
+          {task && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Upload className="h-5 w-5 mr-2" />
+                  Complaint Attachments
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-br from-gray-50 via-gray-100 to-slate-100 rounded-xl p-6 border-2 border-gray-200 shadow-lg">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-gray-600 rounded-lg shadow-md">
+                          <Upload className="h-6 w-6 text-white" />
                         </div>
-                      );
-                    }) : (
-                      <div className="text-center py-4 text-gray-500">
-                        <Upload className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">No attachments available</p>
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900">Complaint Attachments</h3>
+                          <p className="text-sm text-gray-700">Original files submitted with the complaint</p>
+                        </div>
                       </div>
-                    )}
+                      <Badge variant="secondary" className="bg-gray-600 text-white px-3 py-1 text-sm font-semibold">
+                        {task.attachments.filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO").length} files
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+                      {task.attachments.filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO").length > 0 ?
+                        task.attachments
+                          .filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO")
+                          .map((att: any) => {
+                            const isImage = att.mimeType?.startsWith("image/");
+                            const canDownload = [
+                              "ADMINISTRATOR",
+                              "WARD_OFFICER",
+                              "MAINTENANCE_TEAM",
+                            ].includes(user?.role || "");
+                            return (
+                              <div
+                                key={att.id}
+                                className="group relative bg-white border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                              >
+                                {/* File Icon and Preview */}
+                                <div className="flex items-center justify-center mb-3">
+                                  {isImage ? (
+                                    <div className="relative">
+                                      <img
+                                        src={att.url}
+                                        alt={att.fileName || att.originalName}
+                                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                                        onClick={() => {
+                                          setPreviewItem({
+                                            url: att.url,
+                                            mimeType: att.mimeType,
+                                            name: att.originalName || att.fileName,
+                                            size: att.size,
+                                          });
+                                          setIsPreviewOpen(true);
+                                        }}
+                                      />
+                                      <div className="absolute -top-1 -right-1 bg-gray-600 text-white rounded-full p-1">
+                                        <Image className="h-3 w-3" />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 grid place-items-center rounded-lg bg-gray-100 border border-gray-300">
+                                      <File className="h-8 w-8 text-gray-600" />
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* File Information */}
+                                <div className="flex-1 space-y-2">
+                                  <div className="text-sm font-medium text-gray-900 text-center break-words" title={att.fileName || att.originalName}>
+                                    {truncateFileName(att.fileName || att.originalName, 20)}
+                                  </div>
+
+                                  {/* Description */}
+                                  {att.description && (
+                                    <div className="text-xs text-gray-700 bg-gray-50 p-2 rounded border border-gray-200">
+                                      <div className="flex items-start gap-1">
+                                        <FileText className="h-3 w-3 text-gray-600 mt-0.5 flex-shrink-0" />
+                                        <div>
+                                          <span className="font-medium">Note:</span>
+                                          <p className="mt-1 break-words">{att.description}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Metadata */}
+                                  <div className="space-y-1 text-xs text-gray-600">
+                                    {att.uploadedBy && (
+                                      <div className="flex items-center gap-1 justify-center">
+                                        <User className="h-3 w-3 flex-shrink-0" />
+                                        <span className="truncate">{att.uploadedBy}</span>
+                                      </div>
+                                    )}
+                                    <div className="text-center text-gray-500">
+                                      {new Date(att.uploadedAt).toLocaleDateString()}
+                                    </div>
+                                    <div className="text-center text-gray-500 text-xs">
+                                      {(att.size / 1024).toFixed(1)}KB
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="mt-3 flex flex-col gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="w-full text-xs border-gray-300 hover:bg-gray-50"
+                                    onClick={() => {
+                                      setPreviewItem({
+                                        url: att.url,
+                                        mimeType: att.mimeType,
+                                        name: att.originalName || att.fileName,
+                                        size: att.size,
+                                      });
+                                      setIsPreviewOpen(true);
+                                    }}
+                                  >
+                                    <Image className="h-3 w-3 mr-1" />
+                                    Preview
+                                  </Button>
+                                  {canDownload ? (
+                                    <a
+                                      href={att.url}
+                                      download
+                                      className="inline-flex items-center flex-1 sm:flex-none"
+                                    >
+                                      <Button size="sm" className="w-full">
+                                        <Download className="h-4 w-4 mr-1" />
+                                        Download
+                                      </Button>
+                                    </a>
+                                  ) : (
+                                    <Button size="sm" disabled className="flex-1 sm:flex-none">
+                                      <Download className="h-4 w-4 mr-1" />
+                                      Restricted
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          }) : (
+                          <div className="col-span-full text-center py-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
+                            <div className="bg-gray-100 rounded-full p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                              <Upload className="h-10 w-10 text-gray-500" />
+                            </div>
+                            <h4 className="text-lg font-semibold text-gray-800 mb-2">No Complaint Attachments</h4>
+                            <p className="text-sm text-gray-600 mb-4">Original files submitted with the complaint</p>
+                            <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                              <FileText className="h-4 w-4" />
+                              <span>Documents and images from the original complaint</span>
+                            </div>
+                          </div>
+                        )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -671,6 +1170,7 @@ const TaskDetails: React.FC = () => {
             isOpen={isPhotoModalOpen}
             onClose={() => setIsPhotoModalOpen(false)}
             complaintId={task?.id}
+            isMaintenancePhoto={true}
             onSuccess={() => {
               refetchComplaint?.();
             }}
@@ -741,7 +1241,7 @@ const TaskDetails: React.FC = () => {
                   </span>
                   {raw?.submittedBy && (
                     <span className="text-xs text-gray-500">
-                      Submitted by: {safeRender(raw.submittedBy)}
+                      Submitted by: {raw.submittedBy?.fullName || "Unknown"}
                     </span>
                   )}
                 </div>

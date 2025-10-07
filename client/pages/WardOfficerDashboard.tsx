@@ -319,7 +319,7 @@ const WardOfficerDashboard: React.FC = () => {
           {...(stats && { stats })}
           filters={{
             ...filters,
-            mainFilter: filters.mainFilter === "total" || filters.mainFilter === "inProgress"
+            mainFilter: filters.mainFilter === "total"
               ? "none"
               : filters.mainFilter as any
           }}
