@@ -17,6 +17,17 @@ Complete production deployment guide including:
 - Process management with PM2
 - Monitoring and logging setup
 
+### [Docker Deployment Guide](./DOCKER_DEPLOYMENT.md)
+Comprehensive Docker deployment documentation including:
+- Multi-stage Docker builds for production optimization
+- Development environment with hot reload
+- Docker Compose configurations for all services
+- SSL/HTTPS setup with certificates
+- Database integration with PostgreSQL containers
+- Automated deployment scripts and monitoring
+- Scaling and performance optimization
+- Security hardening and best practices
+
 ### [QA Validation Checklist](./QA_VALIDATION_CHECKLIST.md)
 Comprehensive validation checklist including:
 - Pre-deployment testing procedures

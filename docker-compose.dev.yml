@@ -1,0 +1,151 @@
+# Fix_Smart_CMS v1.0.3 - Development Docker Compose Configuration
+# Optimized for local development with hot reload
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # PostgreSQL Database Service (Development)
+  # ============================================================================
+  database:
+    image: postgres:15-alpine
+    container_name: nlc-cms-dev-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nlc_cms_dev
+      POSTGRES_USER: nlc_cms_dev
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - ./prisma/migrations:/docker-entrypoint-initdb.d/migrations:ro
+    ports:
+      - "5433:5432"  # Different port to avoid conflicts
+    networks:
+      - nlc-cms-dev-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nlc_cms_dev -d nlc_cms_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================================
+  # Fix_Smart_CMS Development Service
+  # ============================================================================
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: nlc-cms-dev-app
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      # Development Configuration
+      NODE_ENV: development
+      PORT: 4005
+      CLIENT_URL: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3000
+      
+      # Database Configuration
+      DATABASE_URL: postgresql://nlc_cms_dev:dev_password@database:5432/nlc_cms_dev
+      
+      # Development Authentication
+      JWT_SECRET: dev-jwt-secret-not-for-production
+      JWT_EXPIRE: 24h
+      
+      # Development Email (Console output)
+      EMAIL_SERVICE: console
+      EMAIL_USER: dev@localhost
+      EMAIL_PASS: dev_password
+      EMAIL_PORT: 587
+      EMAIL_FROM: NLC-CMS Dev <dev@localhost>
+      
+      # Development Security (Relaxed)
+      TRUST_PROXY: "false"
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX: 1000
+      
+      # File Upload Configuration
+      MAX_FILE_SIZE: 10485760
+      UPLOAD_PATH: ./uploads
+      
+      # Development Logging
+      LOG_LEVEL: debug
+      LOG_FILE: logs/development.log
+    volumes:
+      # Source code mounting for hot reload
+      - .:/app
+      - /app/node_modules  # Prevent overwriting node_modules
+      - dev_uploads:/app/uploads
+      - dev_logs:/app/logs
+    ports:
+      - "4005:4005"  # Backend API
+      - "3000:3000"  # Frontend dev server
+    networks:
+      - nlc-cms-dev-network
+    command: npm run dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4005/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ============================================================================
+  # Redis Cache (Development - Optional)
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: nlc-cms-dev-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - nlc-cms-dev-network
+    profiles:
+      - cache
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ============================================================================
+  # Mailhog (Development Email Testing)
+  # ============================================================================
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: nlc-cms-dev-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP server
+      - "8025:8025"  # Web interface
+    networks:
+      - nlc-cms-dev-network
+    profiles:
+      - email-testing
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  nlc-cms-dev-network:
+    driver: bridge
+    name: nlc-cms-dev-network
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  postgres_dev_data:
+    driver: local
+    name: nlc-cms-dev-postgres-data
+  dev_uploads:
+    driver: local
+    name: nlc-cms-dev-uploads
+  dev_logs:
+    driver: local
+    name: nlc-cms-dev-logs

@@ -1,62 +1,143 @@
+# Fix_Smart_CMS Docker Ignore File
+# Optimized for production Docker builds
+
+# ============================================================================
+# Development and Build Artifacts
+# ============================================================================
 node_modules
 dist
-.git
-.gitignore
-README.md
+tsbuild
+coverage
+.nyc_output
+
+# ============================================================================
+# Environment and Configuration Files
+# ============================================================================
 .env
 .env.local
 .env.development
 .env.test
 .env.production
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.DS_Store
+*.env
+
+# ============================================================================
+# Version Control
+# ============================================================================
+.git
+.gitignore
+.github
+
+# ============================================================================
+# IDE and Editor Files
+# ============================================================================
 .vscode
 .idea
+.cursor
 *.swp
 *.swo
 *~
-.cursor
-coverage
-.nyc_output
-.eslintcache
+.DS_Store
+
+# ============================================================================
+# Logs and Temporary Files
+# ============================================================================
+logs
 *.log
-*.lock
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 *.tmp
 *.tmp.*
 log.txt
 
-.DS_Store
-node_modules
-**/node_modules/**
-build
-data
-.env
-load-ids.txt
+# ============================================================================
+# Testing and Quality Assurance
+# ============================================================================
+cypress
+cypress.config.ts
+.eslintcache
+vitest.config.ts
+coverage
 
-server
-tmp
-types
-.git
-.gitignore
-dist
-service
-tests
-fixtures-pages
-fixtures-apps
+# ============================================================================
+# Documentation and Development Files
+# ============================================================================
+README.md
+documents
+*.md
+CHANGELOG.md
+LICENSE
 
-# Netlify
-.netlify
-packages/ml-air/lib
-packages/ml-air/bin
-packages/ml-air/project
-packages/ml-air/share
-packages/ml-air/random_forest_classification/
-packages/ml-air/__pycache__/
-packages/ml-air/app/__pycache__/
-packages/vcp-common/native-bridge/build
-packages/vcp-common/_tests_/dataset-ranking.csv
-node_modules/
+# ============================================================================
+# Development Scripts and Tools
+# ============================================================================
+scripts/setup-dev-environment.js
+scripts/test-*.js
+scripts/validate-*.js
+scripts/comprehensive-validation.js
+scripts/simple-validation.js
+scripts/runtime-validation.js
+
+# ============================================================================
+# Development Dependencies and Lock Files
+# ============================================================================
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ============================================================================
+# Build and Deployment Artifacts
+# ============================================================================
+build-report.json
+validation-report.json
+comprehensive-validation-report.json
+tsbuild-report.json
+api-test-report.json
+architecture.json
+documentation_sync_report.json
+
+# ============================================================================
+# Development Database Files
+# ============================================================================
+prisma/dev.db
+prisma/dev.db-journal
+prisma/schema.dev.prisma
+
+# ============================================================================
+# Uploads and User Data (handled by volumes)
+# ============================================================================
+uploads/*
+!uploads/.gitkeep
+
+# ============================================================================
+# SSL Certificates (handled by volumes or secrets)
+# ============================================================================
+config/ssl/*.key
+config/ssl/*.crt
+config/ssl/*.pem
+
+# ============================================================================
+# Docker Files (avoid recursive copying)
+# ============================================================================
 Dockerfile
-.gitignore
+.dockerignore
+docker-compose*.yml
+
+# ============================================================================
+# Miscellaneous
+# ============================================================================
+.kiro
+.builder
+AGENTS.md
+components.json
+postcss.config.js
+tailwind.config.ts
+vite.config.ts
+vite.config.js
+vite.config.server.ts
+tsconfig.json
+tsconfig.typecheck.json
+nodemon.json
+.prettierrc
+.eslintrc.json
+.npmrc

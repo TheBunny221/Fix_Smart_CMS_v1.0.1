@@ -45,6 +45,44 @@ A comprehensive, production-ready complaint management system built for the NLC-
 - **Advanced Search & Filtering**: Powerful tools to find and organize complaints
 - **Data Export**: Export reports and data in PDF and Excel formats
 
+## 🐳 Quick Start with Docker
+
+### Production Deployment
+```bash
+# Clone the repository
+git clone <repository-url>
+cd Fix_Smart_CMS_v1.0.3
+
+# Configure environment
+cp .env.docker .env
+# Edit .env with your production settings
+
+# Deploy with automated script
+./scripts/docker-deploy.sh deploy --env=production
+
+# Access the application
+open http://localhost:4005
+```
+
+### Development Environment
+```bash
+# Start development environment with hot reload
+./scripts/docker-deploy.sh deploy --env=development
+
+# Access the application
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:4005
+# API Docs: http://localhost:4005/api-docs
+```
+
+### Docker Services
+- **Application**: Fix_Smart_CMS with Node.js and React
+- **Database**: PostgreSQL 15 with persistent storage
+- **Reverse Proxy**: Nginx with SSL support (optional)
+- **Development Tools**: Hot reload, email testing, Redis cache
+
+📖 **Complete Docker Guide**: [Docker Deployment Documentation](./documents/deployment/DOCKER_DEPLOYMENT.md)
+
 ## 🛠️ Technology Stack
 
 ### Frontend Architecture
