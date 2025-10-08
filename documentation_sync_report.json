@@ -1,8 +1,8 @@
 {
   "documentation_sync_report": {
     "sync_date": "$(date)",
-    "schema_version": "v1.0.3",
-    "system_version": "Fix_Smart_CMS_v1.0.3",
+    "schema_version": " ",
+    "system_version": "Fix_Smart_CMS_ ",
     "sync_status": "completed",
     "summary": {
       "total_files_processed": 45,
@@ -24,7 +24,7 @@
           {
             "name": "ARCHITECTURE_OVERVIEW.md",
             "status": "updated",
-            "changes": "Updated with v1.0.3 schema and current technology stack"
+            "changes": "Updated with   schema and current technology stack"
           },
           {
             "name": "DATA_FLOW_DIAGRAM.md",
@@ -108,7 +108,7 @@
           {
             "name": "SCHEMA_REFERENCE.md",
             "status": "updated",
-            "changes": "Updated to reflect v1.0.3 schema with active models only, removed deprecated models"
+            "changes": "Updated to reflect   schema with active models only, removed deprecated models"
           },
           {
             "name": "STATE_MANAGEMENT.md",
@@ -285,7 +285,7 @@
       }
     },
     "schema_updates": {
-      "current_version": "v1.0.3",
+      "current_version": " ",
       "active_models": [
         "User",
         "Ward", 
@@ -342,7 +342,7 @@
     },
     "validation": {
       "broken_links": "none_detected",
-      "outdated_references": "updated_to_v1.0.3",
+      "outdated_references": "updated_to_ ",
       "schema_consistency": "verified",
       "navigation_completeness": "complete"
     },

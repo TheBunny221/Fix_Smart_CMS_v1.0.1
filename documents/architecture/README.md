@@ -49,7 +49,7 @@ Fix_Smart_CMS follows these key architectural principles:
 ## Last Synced
 
 **Date**: $(date)  
-**Schema Version**: v1.0.3  
+**Schema Version**:    
 **Active Models**: User, Ward, SubZone, ComplaintType, Complaint, StatusLog, Attachment, OTPSession, Notification, SystemConfig
 
 ---

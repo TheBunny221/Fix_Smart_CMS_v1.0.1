@@ -1,0 +1,815 @@
+{
+  "Complaint": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "complaintTypeId": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "ASSIGNED",
+          "IN_PROGRESS",
+          "RESOLVED",
+          "CLOSED",
+          "REOPENED"
+        ],
+        "example": "REGISTERED"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaStatus": {
+        "type": "string",
+        "enum": [
+          "ON_TIME",
+          "WARNING",
+          "OVERDUE",
+          "COMPLETED"
+        ],
+        "example": "ON_TIME"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "subZoneId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "area": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "landmark": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "address": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactEmail": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactPhone": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isAnonymous": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "submittedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "resolvedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "submittedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "assignedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "resolvedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "closedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "deadline": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "remarks": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "citizenFeedback": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "assignToTeam": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "attachments": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "complaintId",
+      "title",
+      "description",
+      "type",
+      "complaintTypeId",
+      "status",
+      "priority",
+      "slaStatus",
+      "wardId",
+      "subZoneId",
+      "area",
+      "landmark",
+      "address",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "isAnonymous",
+      "submittedById",
+      "resolvedById",
+      "submittedOn",
+      "assignedOn",
+      "resolvedOn",
+      "closedOn",
+      "deadline",
+      "remarks",
+      "citizenFeedback",
+      "assignToTeam",
+      "statusLogs",
+      "attachments",
+      "notifications"
+    ]
+  },
+  "ComplaintCreateRequest": {
+    "type": "object",
+    "properties": {
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "complaintTypeId": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "ASSIGNED",
+          "IN_PROGRESS",
+          "RESOLVED",
+          "CLOSED",
+          "REOPENED"
+        ],
+        "example": "REGISTERED"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaStatus": {
+        "type": "string",
+        "enum": [
+          "ON_TIME",
+          "WARNING",
+          "OVERDUE",
+          "COMPLETED"
+        ],
+        "example": "ON_TIME"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "subZoneId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "area": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "landmark": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "address": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactEmail": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactPhone": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isAnonymous": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "submittedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "resolvedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "submittedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "assignedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "resolvedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "closedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "deadline": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "remarks": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "citizenFeedback": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "assignToTeam": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "attachments": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "complaintId",
+      "title",
+      "description",
+      "type",
+      "complaintTypeId",
+      "status",
+      "priority",
+      "slaStatus",
+      "wardId",
+      "subZoneId",
+      "area",
+      "landmark",
+      "address",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "isAnonymous",
+      "submittedById",
+      "resolvedById",
+      "submittedOn",
+      "assignedOn",
+      "resolvedOn",
+      "closedOn",
+      "deadline",
+      "remarks",
+      "citizenFeedback",
+      "assignToTeam",
+      "statusLogs",
+      "attachments",
+      "notifications"
+    ]
+  },
+  "ComplaintUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "complaintTypeId": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "ASSIGNED",
+          "IN_PROGRESS",
+          "RESOLVED",
+          "CLOSED",
+          "REOPENED"
+        ],
+        "example": "REGISTERED"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaStatus": {
+        "type": "string",
+        "enum": [
+          "ON_TIME",
+          "WARNING",
+          "OVERDUE",
+          "COMPLETED"
+        ],
+        "example": "ON_TIME"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "subZoneId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "area": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "landmark": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "address": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactEmail": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactPhone": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isAnonymous": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "submittedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "resolvedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "submittedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "assignedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "resolvedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "closedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "deadline": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "remarks": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "citizenFeedback": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "assignToTeam": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "attachments": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "complaintId",
+      "title",
+      "description",
+      "type",
+      "complaintTypeId",
+      "status",
+      "priority",
+      "slaStatus",
+      "wardId",
+      "subZoneId",
+      "area",
+      "landmark",
+      "address",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "isAnonymous",
+      "submittedById",
+      "resolvedById",
+      "submittedOn",
+      "assignedOn",
+      "resolvedOn",
+      "closedOn",
+      "deadline",
+      "remarks",
+      "citizenFeedback",
+      "assignToTeam",
+      "statusLogs",
+      "attachments",
+      "notifications"
+    ]
+  },
+  "ComplaintResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "complaintTypeId": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "ASSIGNED",
+          "IN_PROGRESS",
+          "RESOLVED",
+          "CLOSED",
+          "REOPENED"
+        ],
+        "example": "REGISTERED"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaStatus": {
+        "type": "string",
+        "enum": [
+          "ON_TIME",
+          "WARNING",
+          "OVERDUE",
+          "COMPLETED"
+        ],
+        "example": "ON_TIME"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "subZoneId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "area": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "landmark": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "address": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactEmail": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactPhone": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isAnonymous": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "submittedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "resolvedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "submittedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "assignedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "resolvedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "closedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "deadline": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "remarks": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "citizenFeedback": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "assignToTeam": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "ward": {
+        "$ref": "#/components/schemas/Ward"
+      },
+      "subZone": {
+        "$ref": "#/components/schemas/SubZone"
+      },
+      "submittedBy": {
+        "$ref": "#/components/schemas/User"
+      },
+      "assignedTo": {
+        "$ref": "#/components/schemas/User"
+      },
+      "wardOfficer": {
+        "$ref": "#/components/schemas/User"
+      },
+      "maintenanceTeam": {
+        "$ref": "#/components/schemas/User"
+      },
+      "complaintType": {
+        "$ref": "#/components/schemas/ComplaintType"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "attachments": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "complaintId",
+      "title",
+      "description",
+      "type",
+      "complaintTypeId",
+      "status",
+      "priority",
+      "slaStatus",
+      "wardId",
+      "subZoneId",
+      "area",
+      "landmark",
+      "address",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "isAnonymous",
+      "submittedById",
+      "resolvedById",
+      "submittedOn",
+      "assignedOn",
+      "resolvedOn",
+      "closedOn",
+      "deadline",
+      "remarks",
+      "citizenFeedback",
+      "assignToTeam",
+      "statusLogs",
+      "attachments",
+      "notifications"
+    ]
+  }
+}

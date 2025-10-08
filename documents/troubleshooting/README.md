@@ -256,7 +256,7 @@ nslookup domain.com
 ## Last Synced
 
 **Date**: $(date)  
-**Schema Version**: v1.0.3  
+**Schema Version**:    
 **System Version**: Production-ready  
 **Coverage**: Development, staging, and production environments
 

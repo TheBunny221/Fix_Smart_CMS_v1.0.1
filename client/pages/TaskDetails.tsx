@@ -69,6 +69,18 @@ const TaskDetails: React.FC = () => {
     return `${truncatedName}.${extension}`;
   };
 
+  // Utility function to safely format dates
+  const formatDate = (dateValue: any, format: 'date' | 'datetime' = 'datetime'): string => {
+    if (!dateValue) return 'Unknown date';
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) return 'Invalid date';
+      return format === 'date' ? date.toLocaleDateString() : date.toLocaleString();
+    } catch {
+      return 'Invalid date';
+    }
+  };
+
   const isMaintenanceTeam = user?.role === "MAINTENANCE_TEAM";
 
   // Fetch complaint dynamically
@@ -510,85 +522,7 @@ const TaskDetails: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Render maintenance photos as part of the work log
-                    {task.attachments &&
-                      task.attachments.filter((a: any) =>
-                        a.mimeType?.startsWith("image/") && a.entityType === "MAINTENANCE_PHOTO",
-                      ).length > 0 && (
-                        <div className="pt-2">
-                          <h4 className="text-sm font-medium mb-2 flex items-center">
-                            <Wrench className="h-4 w-4 mr-1 text-blue-600" />
-                            Maintenance Photos
-                          </h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
-                            {task.attachments
-                              .filter((a: any) =>
-                                a.mimeType?.startsWith("image/") && a.entityType === "MAINTENANCE_PHOTO",
-                              )
-                              .map((att: any) => (
-                                <div key={att.id} className="border-2 border-blue-200 rounded-lg p-3 bg-blue-50 hover:bg-blue-100 transition-colors">
-                                  <img
-                                    src={att.url}
-                                    alt={att.fileName || att.originalName}
-                                    className="w-full h-32 object-cover rounded-md mb-2 cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => {
-                                      setPreviewItem({
-                                        url: att.url,
-                                        mimeType: att.mimeType || "image/*",
-                                        name: att.fileName || att.originalName,
-                                        size: null,
-                                      });
-                                      setIsPreviewOpen(true);
-                                    }}
-                                  />
-                                  <div className="space-y-1">
-                                    <div className="text-xs font-medium text-gray-700 truncate" title={att.fileName || att.originalName}>
-                                      {truncateFileName(att.fileName || att.originalName)}
-                                    </div>
-                                    {att.description && (
-                                      <div className="text-xs text-gray-600 bg-white p-2 rounded border border-blue-200">
-                                        <span className="font-medium text-blue-700">Note:</span> {att.description}
-                                      </div>
-                                    )}
-                                    {att.uploadedBy && (
-                                      <div className="text-xs text-gray-500">
-                                        <span className="font-medium">By:</span> {att.uploadedBy}
-                                      </div>
-                                    )}
-                                    <div className="text-xs text-gray-500">
-                                      {new Date(att.uploadedAt).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div className="mt-2 flex flex-col sm:flex-row gap-1">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="flex-1 text-xs"
-                                      onClick={() => {
-                                        setPreviewItem({
-                                          url: att.url,
-                                          mimeType: att.mimeType || "image/*",
-                                          name: att.fileName || att.originalName,
-                                          size: null,
-                                        });
-                                        setIsPreviewOpen(true);
-                                      }}
-                                    >
-                                      Preview
-                                    </Button>
-                                    <a
-                                      href={att.url}
-                                      download
-                                      className="inline-flex items-center flex-1"
-                                    >
-                                      <Button size="sm" className="w-full text-xs">Download</Button>
-                                    </a>
-                                  </div>
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      )} */}
+
                   </div>
 
                   {/* Add New Log Entry */}
@@ -675,7 +609,7 @@ const TaskDetails: React.FC = () => {
                                     <span>By: {att.uploadedBy || "Unknown"}</span>
                                   </div>
                                   <div className="text-xs text-gray-500">
-                                    {new Date(att.uploadedAt).toLocaleDateString()}
+                                    {formatDate(att.uploadedAt, 'date')}
                                   </div>
                                   {att.description && (
                                     <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
@@ -771,7 +705,7 @@ const TaskDetails: React.FC = () => {
                                     <span>By: {att.uploadedBy || "Citizen"}</span>
                                   </div>
                                   <div className="text-xs text-gray-500">
-                                    {new Date(att.uploadedAt).toLocaleDateString()}
+                                    {formatDate(att.uploadedAt, 'date')}
                                   </div>
                                   {att.description && (
                                     <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
@@ -818,8 +752,8 @@ const TaskDetails: React.FC = () => {
               </Card>
             )}
 
-          {/* Maintenance Attachments Section */}
-          {task && (
+          {/* Duplicate attachment sections removed - now handled in sidebar after contact info */}
+          {false && task && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -911,7 +845,7 @@ const TaskDetails: React.FC = () => {
                                         {(att.size / 1024).toFixed(1)}KB
                                       </span>
                                       <span className="text-xs text-gray-500">
-                                        {new Date(att.uploadedAt).toLocaleDateString()}
+                                        {formatDate(att.uploadedAt, 'date')}
                                       </span>
                                     </div>
                                   </div>
@@ -998,8 +932,8 @@ const TaskDetails: React.FC = () => {
             </Card>
           )}
 
-          {/* Complaint Attachments Section */}
-          {task && (
+          {/* Duplicate attachment sections removed - now handled in sidebar after contact info */}
+          {false && task && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -1097,7 +1031,7 @@ const TaskDetails: React.FC = () => {
                                       </div>
                                     )}
                                     <div className="text-center text-gray-500">
-                                      {new Date(att.uploadedAt).toLocaleDateString()}
+                                      {formatDate(att.uploadedAt, 'date')}
                                     </div>
                                     <div className="text-center text-gray-500 text-xs">
                                       {(att.size / 1024).toFixed(1)}KB
@@ -1254,12 +1188,277 @@ const TaskDetails: React.FC = () => {
               </div>
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2 text-gray-400" />
-                <div className="flex flex-col">
+                <div className="flex flex-col wrap-text">
                   <span>{safeRender(raw?.contactEmail || task.contactEmail, 'No email provided')}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Attachments */}
+          {task.attachments && task.attachments.length > 0 && (
+            <>
+              {/* Maintenance Photos */}
+              {task.attachments.filter((att: any) => att.entityType === "MAINTENANCE_PHOTO").length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Wrench className="h-5 w-5 mr-2 text-blue-600" />
+                      Maintenance Photos ({task.attachments.filter((att: any) => att.entityType === "MAINTENANCE_PHOTO").length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1  gap-4">
+                      {task.attachments
+                        .filter((att: any) => att.entityType === "MAINTENANCE_PHOTO")
+                        .map((att: any) => {
+                          const isImage = att.mimeType?.startsWith("image/");
+                          const displayName = truncateFileName(att.fileName || att.originalName, 20);
+                          const fullName = att.fileName || att.originalName;
+
+                          return (
+                            <div
+                              key={att.id}
+                              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                            >
+                              <div className="mb-3">
+                                {isImage ? (
+                                  <div className="relative group">
+                                    <img
+                                      src={att.url}
+                                      alt={fullName}
+                                      className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                      onClick={() => {
+                                        setPreviewItem({
+                                          url: att.url,
+                                          mimeType: att.mimeType,
+                                          name: fullName,
+                                          size: att.size,
+                                        });
+                                        setIsPreviewOpen(true);
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <div className="bg-white rounded-full p-2 shadow-lg">
+                                          <Image className="h-5 w-5 text-blue-600" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center border-2 border-dashed border-blue-300">
+                                    <div className="text-center">
+                                      <File className="h-12 w-12 text-blue-600 mx-auto mb-2" />
+                                      <span className="text-xs text-blue-700 font-medium">Document</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="space-y-3">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 text-sm leading-tight break-words" title={att.fileName || att.originalName}>
+                                    {truncateFileName(att.fileName || att.originalName, 25)}
+                                  </h4>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                      {(att.size / 1024).toFixed(1)}KB
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {formatDate(att.createdAt, 'date')}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {att.description && (
+                                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                    <div className="flex items-start gap-2">
+                                      <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-medium text-blue-800 mb-1">Maintenance Note:</p>
+                                        <p className="text-xs text-blue-700 break-words leading-relaxed">{att.description}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {att.uploadedBy && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 rounded-lg p-2">
+                                    <User className="h-3 w-3 flex-shrink-0" />
+                                    <span className="truncate">Uploaded by {att.uploadedBy}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="mt-4 flex flex-col gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="flex-1 p-2 text-xs border-blue-300 hover:bg-blue-50 hover:border-blue-400"
+                                  onClick={() => {
+                                    setPreviewItem({
+                                      url: att.url,
+                                      mimeType: att.mimeType,
+                                      name: att.originalName || att.fileName,
+                                      size: att.size,
+                                    });
+                                    setIsPreviewOpen(true);
+                                  }}
+                                >
+                                  <Image className="h-3 w-3 mr-1" />
+                                  Preview
+                                </Button>
+                                <a
+                                  href={att.url}
+                                  download
+                                  className="inline-flex items-center"
+                                >
+                                  <Button size="sm" className="w-full p-2 text-xs">
+                                    <Download className="h-3 w-3 mr-1" />
+                                    Download
+                                  </Button>
+                                </a>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Original Attachments */}
+              {task.attachments.filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO").length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Upload className="h-5 w-5 mr-2" />
+                      Original Attachments ({task.attachments.filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO").length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 gap-4">
+                      {task.attachments
+                        .filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO")
+                        .map((att: any) => {
+                          const isImage = att.mimeType?.startsWith("image/");
+                          const displayName = truncateFileName(att.fileName || att.originalName, 20);
+                          const fullName = att.fileName || att.originalName;
+
+                          return (
+                            <div
+                              key={att.id}
+                              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                            >
+                              <div className="mb-3">
+                                {isImage ? (
+                                  <div className="relative group">
+                                    <img
+                                      src={att.url}
+                                      alt={fullName}
+                                      className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                      onClick={() => {
+                                        setPreviewItem({
+                                          url: att.url,
+                                          mimeType: att.mimeType,
+                                          name: fullName,
+                                          size: att.size,
+                                        });
+                                        setIsPreviewOpen(true);
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <div className="bg-white rounded-full p-2 shadow-lg">
+                                          <Image className="h-5 w-5 text-gray-600" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                                    <div className="text-center">
+                                      <File className="h-12 w-12 text-gray-600 mx-auto mb-2" />
+                                      <span className="text-xs text-gray-700 font-medium">Document</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="space-y-3">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 text-sm leading-tight break-words" title={att.fileName || att.originalName}>
+                                    {truncateFileName(att.fileName || att.originalName, 25)}
+                                  </h4>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                      {(att.size / 1024).toFixed(1)}KB
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {formatDate(att.createdAt, 'date')}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {att.description && (
+                                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    <div className="flex items-start gap-2">
+                                      <FileText className="h-4 w-4 text-gray-600 mt-0.5 flex-shrink-0" />
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-medium text-gray-800 mb-1">Note:</p>
+                                        <p className="text-xs text-gray-700 break-words leading-relaxed">{att.description}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {att.uploadedBy && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 rounded-lg p-2">
+                                    <User className="h-3 w-3 flex-shrink-0" />
+                                    <span className="truncate">Uploaded by {att.uploadedBy}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="mt-4 flex flex-col gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="flex-1 p-2 text-xs border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                                  onClick={() => {
+                                    setPreviewItem({
+                                      url: att.url,
+                                      mimeType: att.mimeType,
+                                      name: att.originalName || att.fileName,
+                                      size: att.size,
+                                    });
+                                    setIsPreviewOpen(true);
+                                  }}
+                                >
+                                  <Image className="h-3 w-3 mr-1" />
+                                  Preview
+                                </Button>
+                                <a
+                                  href={att.url}
+                                  download
+                                  className="inline-flex items-center"
+                                >
+                                  <Button size="sm" className="w-full p-2 text-xs">
+                                    <Download className="h-3 w-3 mr-1" />
+                                    Download
+                                  </Button>
+                                </a>
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
 
           {/* Required Materials - Hidden for Maintenance Team */}
           {!isMaintenanceTeam && (

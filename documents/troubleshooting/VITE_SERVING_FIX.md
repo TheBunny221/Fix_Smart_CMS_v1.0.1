@@ -3,7 +3,7 @@
 ## Issue
 ```
 403 Restricted
-The request id "D:/CCRSM/NEW/Fix_Smart_CMS_v1.0.3/index.html" is outside of Vite serving allow list.
+The request id "D:/CCRSM/NEW/Fix_Smart_CMS_ /index.html" is outside of Vite serving allow list.
 ```
 
 ## Root Cause

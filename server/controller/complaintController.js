@@ -2,6 +2,14 @@ import { getPrisma } from "../db/connection.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { sendEmail } from "../utils/emailService.js";
 import { verifyCaptchaForComplaint } from "./captchaController.js";
+import {
+  onComplaintCreated,
+  onComplaintStatusUpdated,
+  onComplaintAssigned,
+  onComplaintResolved,
+  onComplaintClosed,
+  onComplaintReopened
+} from "../utils/complaintEmailHooks.js";
 
 const prisma = getPrisma();
 
@@ -524,6 +532,9 @@ export const createComplaint = asyncHandler(async (req, res) => {
     }
   }
 
+  // Trigger email broadcast for complaint creation
+  await onComplaintCreated(complaint, req.user.id);
+
   res.status(201).json({
     success: true,
     message: "Complaint registered successfully",
@@ -993,10 +1004,10 @@ export const getComplaints = asyncHandler(async (req, res) => {
           },
           complaintType: { select: { id: true, name: true } },
           attachments: {
-            where: { 
-              entityType: { 
-                in: ["COMPLAINT", "MAINTENANCE_PHOTO"] 
-              } 
+            where: {
+              entityType: {
+                in: ["COMPLAINT", "MAINTENANCE_PHOTO"]
+              }
             },
             include: {
               uploadedBy: {
@@ -1121,10 +1132,10 @@ export const getComplaint = asyncHandler(async (req, res) => {
       },
       complaintType: { select: { id: true, name: true } },
       attachments: {
-        where: { 
-          entityType: { 
-            in: ["COMPLAINT", "MAINTENANCE_PHOTO"] 
-          } 
+        where: {
+          entityType: {
+            in: ["COMPLAINT", "MAINTENANCE_PHOTO"]
+          }
         },
         include: {
           uploadedBy: {
@@ -1250,18 +1261,51 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
       ASSIGNED: ["IN_PROGRESS"],
       IN_PROGRESS: ["RESOLVED"],
       RESOLVED: ["CLOSED"],
-      CLOSED: [],
+      CLOSED: ["ASSIGNED"], // Allow direct transition from CLOSED to ASSIGNED for reopened complaints
       REOPENED: ["ASSIGNED"],
     };
 
-    // Block setting REOPENED here – must use dedicated /reopen endpoint for auditability
+    // Handle REOPENED status - automatically transition to ASSIGNED
     if (status === "REOPENED") {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Use the /api/complaints/:id/reopen endpoint to reopen complaints",
-        data: null,
+      // Only administrators can reopen complaints
+      if (req.user.role !== "ADMINISTRATOR") {
+        return res.status(403).json({
+          success: false,
+          message: "Only administrators can reopen complaints",
+          data: null,
+        });
+      }
+
+      // Only closed complaints can be reopened
+      if (complaint.status !== "CLOSED") {
+        return res.status(400).json({
+          success: false,
+          message: "Only closed complaints can be reopened",
+          data: null,
+        });
+      }
+
+      // Log the reopening action first
+      await prisma.statusLog.create({
+        data: {
+          complaintId,
+          userId: req.user.id,
+          fromStatus: complaint.status,
+          toStatus: "REOPENED",
+          comment: remarks || "Complaint reopened by administrator - transitioning to ASSIGNED",
+        },
       });
+
+      // Automatically transition REOPENED to ASSIGNED
+      // This ensures proper workflow and requires reassignment
+      status = "ASSIGNED";
+
+      // Reset assignment fields to force reassignment
+      updateData.maintenanceTeamId = null;
+      updateData.assignedOn = null;
+      updateData.resolvedOn = null;
+      updateData.resolvedById = null;
+      updateData.closedOn = null;
     }
 
     const allowedNext = lifecycleTransitions[complaint.status] || [];
@@ -1275,12 +1319,15 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
 
     // Preconditions for certain transitions
     if (status === "ASSIGNED") {
-      // Require a maintenance team assignment present in request or already set
-      if (!maintenanceTeamId && !complaint.maintenanceTeamId) {
+      // For reopened complaints, we allow ASSIGNED without immediate team assignment
+      // but for new assignments, require a maintenance team
+      const isReopenedTransition = complaint.status === "CLOSED" || complaint.status === "REOPENED";
+
+      if (!isReopenedTransition && !maintenanceTeamId && !complaint.maintenanceTeamId) {
         return res.status(400).json({
           success: false,
           message:
-            "Assign a maintenance team member to mark complaint as ASSIGNED",
+            "Please assign a maintenance team member before setting status to ASSIGNED",
           data: null,
         });
       }
@@ -1631,6 +1678,43 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
     });
   }
 
+  // Trigger email broadcast for status update
+  if (updateData.status && updateData.status !== complaint.status) {
+    await onComplaintStatusUpdated({
+      complaintId,
+      newStatus: updateData.status,
+      previousStatus: complaint.status,
+      comment: statusLogComment,
+      updatedByUserId: req.user.id,
+      additionalData: {
+        priority: updateData.priority,
+        assignedToUserId: maintenanceTeamId || wardOfficerId || assignedToId,
+        assignmentType: maintenanceTeamId ? 'maintenance_team' : wardOfficerId ? 'ward_officer' : 'general'
+      }
+    });
+  }
+
+  // Trigger assignment notification if new assignment made
+  if (maintenanceTeamId && maintenanceTeamId !== complaint.maintenanceTeamId) {
+    await onComplaintAssigned({
+      complaintId,
+      assignedToUserId: maintenanceTeamId,
+      assignedByUserId: req.user.id,
+      assignmentType: 'maintenance_team',
+      comment: statusLogComment
+    });
+  }
+
+  if (wardOfficerId && wardOfficerId !== complaint.wardOfficerId) {
+    await onComplaintAssigned({
+      complaintId,
+      assignedToUserId: wardOfficerId,
+      assignedByUserId: req.user.id,
+      assignmentType: 'ward_officer',
+      comment: statusLogComment
+    });
+  }
+
   res.status(200).json({
     success: true,
     message: "Complaint status updated successfully",
@@ -1778,6 +1862,13 @@ export const reopenComplaint = asyncHandler(async (req, res) => {
       toStatus: "REOPENED",
       comment: comment || "Complaint reopened by administrator",
     },
+  });
+
+  // Trigger email broadcast for complaint reopening
+  await onComplaintReopened({
+    complaintId,
+    reopenReason: comment || "Complaint reopened by administrator",
+    reopenedByUserId: req.user.id
   });
 
   res.status(200).json({

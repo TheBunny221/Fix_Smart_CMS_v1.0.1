@@ -4,6 +4,7 @@ import { getApiErrorMessage } from "../store/api/baseApi";
 import {
   useUpdateComplaintMutation,
   useGetWardUsersQuery,
+  useReopenComplaintMutation,
 } from "../store/api/complaintsApi";
 import type {
   Complaint as StoreComplaint,
@@ -114,6 +115,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
 
   const [updateComplaint, { isLoading: isUpdating }] =
     useUpdateComplaintMutation();
+  const [reopenComplaint, { isLoading: isReopening }] =
+    useReopenComplaintMutation();
 
   // Filter users based on search term
   const filteredUsers = availableUsers.filter(
@@ -250,6 +253,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
     }
 
     if (user?.role === "ADMINISTRATOR") {
+      // Admin can set REOPENED, but it will automatically transition to ASSIGNED
       return [
         "REGISTERED",
         "ASSIGNED",
@@ -268,6 +272,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
     const availableStatuses = getAvailableStatusOptions();
     const complaintStatus = complaint?.status ?? "REGISTERED";
     const complaintPriority = complaint?.priority ?? "MEDIUM";
+    
     if (formData.status && !availableStatuses.includes(formData.status)) {
       errors.push(
         `You don't have permission to set status to '${formData.status}'. Available options: ${availableStatuses.join(", ")}`,
@@ -292,45 +297,51 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
       formData.status,
     );
 
+    // Enhanced validation for ASSIGNED status requiring maintenance team
+    if (formData.status === "ASSIGNED" && !isComplaintFinalized) {
+      if (user?.role === "WARD_OFFICER") {
+        if (!formData.maintenanceTeamId || formData.maintenanceTeamId === "none") {
+          errors.push(
+            "Please assign a maintenance team member before setting status to 'Assigned'.",
+          );
+        }
+      } else if (user?.role === "ADMINISTRATOR") {
+        // Admin needs both ward officer and maintenance team for ASSIGNED status
+        if (!formData.wardOfficerId || formData.wardOfficerId === "none") {
+          errors.push(
+            "Please select a Ward Officer before setting status to 'Assigned'.",
+          );
+        }
+        if (!formData.maintenanceTeamId || formData.maintenanceTeamId === "none") {
+          errors.push(
+            "Please assign a maintenance team member before setting status to 'Assigned'.",
+          );
+        }
+      }
+    }
+
+    // Additional validation for REOPENED status (Admin only)
+    if (formData.status === "REOPENED") {
+      if (user?.role !== "ADMINISTRATOR") {
+        errors.push("Only administrators can reopen complaints.");
+      } else if (complaintStatus !== "CLOSED") {
+        errors.push("Only closed complaints can be reopened.");
+      } else {
+        // Inform admin that REOPENED will transition to ASSIGNED
+        // This is informational, not an error
+      }
+    }
+
     if (user?.role === "WARD_OFFICER" && !isComplaintFinalized) {
       if (
-        formData.status === "ASSIGNED" &&
-        (!formData.maintenanceTeamId || formData.maintenanceTeamId === "none")
-      ) {
-        errors.push(
-          "Please select a Maintenance Team member before setting status to 'Assigned'.",
-        );
-      }
-      if (
-        complaintStatus === "REGISTERED" &&
-        formData.status === "ASSIGNED" &&
-        (!formData.maintenanceTeamId || formData.maintenanceTeamId === "none")
-      ) {
-        errors.push(
-          "Please select a Maintenance Team member to assign this complaint.",
-        );
-      }
-      if (
         (complaint as any)?.needsTeamAssignment &&
-        !formData.maintenanceTeamId &&
+        (!formData.maintenanceTeamId || formData.maintenanceTeamId === "none") &&
         formData.status !== "REGISTERED" &&
         complaintStatus &&
         !["RESOLVED", "CLOSED"].includes(complaintStatus)
       ) {
         errors.push(
           "This complaint needs a maintenance team assignment. Please select a team member.",
-        );
-      }
-    }
-
-    // Admin must pick a ward officer (new field) when assigning
-    if (user?.role === "ADMINISTRATOR" && !isComplaintFinalized) {
-      if (
-        formData.status === "ASSIGNED" &&
-        (!formData.wardOfficerId || formData.wardOfficerId === "none")
-      ) {
-        errors.push(
-          "Please select a Ward Officer before assigning the complaint.",
         );
       }
     }
@@ -348,6 +359,45 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
       const updateData: any = { status: formData.status };
       if (user?.role !== "MAINTENANCE_TEAM")
         updateData.priority = formData.priority;
+
+      // Handle REOPENED status - use dedicated reopen endpoint
+      if (formData.status === "REOPENED" && user?.role === "ADMINISTRATOR") {
+        const reopenData: any = {};
+        if (formData.remarks && formData.remarks.trim()) {
+          reopenData.comment = formData.remarks.trim();
+        } else {
+          reopenData.comment = "Complaint reopened by administrator";
+        }
+        
+        const reopenResponse = await reopenComplaint({
+          id: complaint.id,
+          ...reopenData,
+        }).unwrap();
+
+        toast({
+          title: "Success",
+          description: "Complaint reopened successfully. It has been set to ASSIGNED status and requires reassignment.",
+        });
+
+        if (reopenResponse?.data) {
+          const reopenedComplaint = reopenResponse.data as unknown as ComplaintWithAssignments;
+          const wardOfficerId = resolveAssignmentId(reopenedComplaint.wardOfficer);
+          const assignedToId = resolveAssignmentId(reopenedComplaint.assignedTo);
+          const maintenanceTeamId = resolveAssignmentId(reopenedComplaint.maintenanceTeam);
+
+          setFormData({
+            status: reopenedComplaint.status ?? "ASSIGNED",
+            priority: reopenedComplaint.priority ?? "MEDIUM",
+            wardOfficerId: wardOfficerId ?? "none",
+            assignedToId: assignedToId ?? "none",
+            maintenanceTeamId: maintenanceTeamId ?? "none",
+            remarks: "",
+          });
+        }
+
+        onSuccess();
+        return; // Exit early since we used the reopen endpoint
+      }
 
       if (user?.role === "WARD_OFFICER") {
         if (
@@ -375,7 +425,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
           updateData.assignedToId = formData.assignedToId;
       }
 
-      if (formData.remarks && formData.remarks.trim())
+      if (formData.remarks && formData.remarks.trim() && formData.status !== "REOPENED")
         updateData.remarks = formData.remarks.trim();
 
       const updatedComplaintResponse = await updateComplaint({
@@ -583,6 +633,22 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             </div>
           </div>
 
+          {/* Status Transition Warning for REOPENED */}
+          {formData.status === "REOPENED" && user?.role === "ADMINISTRATOR" && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+              <div className="flex items-start">
+                <AlertTriangle className="h-4 w-4 text-amber-500 mr-2 mt-0.5" />
+                <div className="text-sm">
+                  <p className="text-amber-800 font-medium">Status Transition Notice</p>
+                  <p className="text-amber-700 mt-1">
+                    When you reopen this complaint, it will automatically transition to <strong>ASSIGNED</strong> status 
+                    and require reassignment to a maintenance team member.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div
             className={`grid gap-4 ${user?.role === "MAINTENANCE_TEAM" ? "grid-cols-1" : "grid-cols-2"}`}
           >
@@ -593,7 +659,12 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                   You can update status to In Progress or mark as Resolved
                 </p>
               )}
-              {/* {process.env.NODE_ENV === "development" && <div className="text-xs text-blue-600 mb-1">Debug: Available statuses for {user?.role}: {getAvailableStatusOptions().join(", ")}</div>} */}
+              {/* Validation error display for status */}
+              {validationErrors.some(error => error.includes('status') || error.includes('Assigned')) && (
+                <div className="text-xs text-red-600 mb-1">
+                  {validationErrors.find(error => error.includes('status') || error.includes('Assigned'))}
+                </div>
+              )}
               <Select
                 value={formData.status}
                 onValueChange={(value) => {
@@ -601,7 +672,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                   setValidationErrors([]);
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className={validationErrors.some(error => error.includes('status') || error.includes('Assigned')) ? "border-red-300" : ""}>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -622,6 +693,9 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                         <div className="flex items-center">
                           <IconComponent className="h-4 w-4 mr-2" />
                           {config.label}
+                          {status === "REOPENED" && user?.role === "ADMINISTRATOR" && (
+                            <span className="ml-2 text-xs text-amber-600">→ Assigned</span>
+                          )}
                         </div>
                       </SelectItem>
                     );
@@ -756,6 +830,12 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
 
                       <div>
                         <Label>Maintenance Team</Label>
+                        {/* Validation error display for maintenance team */}
+                        {validationErrors.some(error => error.includes('maintenance team') || error.includes('team member')) && (
+                          <div className="text-xs text-red-600 mb-1">
+                            {validationErrors.find(error => error.includes('maintenance team') || error.includes('team member'))}
+                          </div>
+                        )}
                         <Select
                           value={formData.maintenanceTeamId}
                           onValueChange={(value) => {
@@ -769,7 +849,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                             isLoadingMaintenance || maintenanceUsers.length === 0
                           }
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className={validationErrors.some(error => error.includes('maintenance team') || error.includes('team member')) ? "border-red-300" : ""}>
                             <SelectValue placeholder="Select Maintenance Team" />
                           </SelectTrigger>
                           <SelectContent>
@@ -799,62 +879,70 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <Select
-                      value={
-                        user?.role === "WARD_OFFICER"
-                          ? formData.maintenanceTeamId
-                          : formData.wardOfficerId
-                      }
-                      onValueChange={(value) => {
-                        if (user?.role === "WARD_OFFICER")
-                          setFormData((prev) => ({
-                            ...prev,
-                            maintenanceTeamId: value,
-                          }));
-                        else
-                          setFormData((prev) => ({
-                            ...prev,
-                            wardOfficerId: value,
-                          }));
-                        setValidationErrors([]);
-                      }}
-                      disabled={availableUsers.length === 0}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder={getDropdownLabel()} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">
-                          <div className="flex items-center">
-                            <User className="h-4 w-4 mr-2" />
-                            No Assignment
-                          </div>
-                        </SelectItem>
-                        {filteredUsers.map((u: any) => (
-                          <SelectItem key={u.id} value={u.id}>
-                            <div className="flex items-center justify-between w-full gap-2">
-                              <div className="flex items-center">
-                                {getUserRoleIcon(u.role ?? "WARD_OFFICER")}
-                                <div className="ml-2 text-left">
-                                  <div className="font-medium">{u.fullName}</div>
-                                  <div className="text-xs text-gray-500">
-                                    {u.email}
-                                  </div>
-                                </div>
-                              </div>
-                              <Badge variant="outline" className="text-xs">
-                                {(u.role ?? "WARD_OFFICER").replace("_", " ")}
-                              </Badge>
-                              {u.ward && (
-                                <div className="text-xs text-blue-600">
-                                  {u.ward.name}
-                                </div>
-                              )}
+                    <>
+                      {/* Validation error display for single select */}
+                      {validationErrors.some(error => error.includes('maintenance team') || error.includes('team member') || error.includes('Ward Officer')) && (
+                        <div className="text-xs text-red-600 mb-1">
+                          {validationErrors.find(error => error.includes('maintenance team') || error.includes('team member') || error.includes('Ward Officer'))}
+                        </div>
+                      )}
+                      <Select
+                        value={
+                          user?.role === "WARD_OFFICER"
+                            ? formData.maintenanceTeamId
+                            : formData.wardOfficerId
+                        }
+                        onValueChange={(value) => {
+                          if (user?.role === "WARD_OFFICER")
+                            setFormData((prev) => ({
+                              ...prev,
+                              maintenanceTeamId: value,
+                            }));
+                          else
+                            setFormData((prev) => ({
+                              ...prev,
+                              wardOfficerId: value,
+                            }));
+                          setValidationErrors([]);
+                        }}
+                        disabled={availableUsers.length === 0}
+                      >
+                        <SelectTrigger className={validationErrors.some(error => error.includes('maintenance team') || error.includes('team member') || error.includes('Ward Officer')) ? "border-red-300" : ""}>
+                          <SelectValue placeholder={getDropdownLabel()} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">
+                            <div className="flex items-center">
+                              <User className="h-4 w-4 mr-2" />
+                              No Assignment
                             </div>
                           </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                          {filteredUsers.map((u: any) => (
+                            <SelectItem key={u.id} value={u.id}>
+                              <div className="flex items-center justify-between w-full gap-2">
+                                <div className="flex items-center">
+                                  {getUserRoleIcon(u.role ?? "WARD_OFFICER")}
+                                  <div className="ml-2 text-left">
+                                    <div className="font-medium">{u.fullName}</div>
+                                    <div className="text-xs text-gray-500">
+                                      {u.email}
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs">
+                                  {(u.role ?? "WARD_OFFICER").replace("_", " ")}
+                                </Badge>
+                                {u.ward && (
+                                  <div className="text-xs text-blue-600">
+                                    {u.ward.name}
+                                  </div>
+                                )}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </>
                   )}
 
                   {(isLoadingWardOfficers || isLoadingMaintenance) && (
@@ -868,6 +956,26 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                 </div>
               </div>
             )}
+
+          {/* Validation Errors Display */}
+          {validationErrors.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="flex items-start">
+                <AlertTriangle className="h-4 w-4 text-red-500 mr-2 mt-0.5" />
+                <div className="text-sm">
+                  <p className="text-red-800 font-medium">Please fix the following issues:</p>
+                  <ul className="text-red-700 mt-1 space-y-1">
+                    {validationErrors.map((error, index) => (
+                      <li key={index} className="flex items-start">
+                        <span className="mr-2">•</span>
+                        <span>{error}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div>
             <Label htmlFor="remarks">
@@ -896,9 +1004,10 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             <Button type="button" variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isUpdating}>
-              {isUpdating
-                ? "Updating..."
+            <Button type="submit" disabled={isUpdating || isReopening}>
+              {isUpdating || isReopening
+                ? formData.status === "REOPENED" ? "Reopening..." : "Updating..."
+                : formData.status === "REOPENED" ? "Reopen Complaint"
                 : user?.role === "MAINTENANCE_TEAM"
                   ? "Update Status"
                   : user?.role === "WARD_OFFICER"

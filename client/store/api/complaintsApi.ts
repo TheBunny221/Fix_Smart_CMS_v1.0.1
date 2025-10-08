@@ -279,6 +279,22 @@ export const complaintsApi = baseApi.injectEndpoints({
       ],
     }),
 
+    // Reopen complaint (Admin only)
+    reopenComplaint: builder.mutation<
+      ApiResponse<Complaint>,
+      { id: string; comment?: string }
+    >({
+      query: ({ id, comment }) => ({
+        url: `/complaints/${id}/reopen`,
+        method: "PUT",
+        body: { comment },
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Complaint", id },
+        { type: "Complaint", id: "LIST" },
+      ],
+    }),
+
     // Add complaint feedback
     addComplaintFeedback: builder.mutation<
       ApiResponse<Complaint>,
@@ -590,6 +606,7 @@ export const {
   useUpdateComplaintMutation,
   useAssignComplaintMutation,
   useUpdateComplaintStatusMutation,
+  useReopenComplaintMutation,
   useAddComplaintFeedbackMutation,
   useUploadComplaintAttachmentMutation,
   useGetComplaintStatisticsQuery,

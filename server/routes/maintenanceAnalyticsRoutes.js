@@ -6,6 +6,132 @@ import { getPrisma } from "../db/connection.js";
 const router = express.Router();
 const prisma = getPrisma();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Maintenance
+ *   description: Maintenance team operations and analytics
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     MaintenanceAnalytics:
+ *       type: object
+ *       properties:
+ *         complaints:
+ *           type: object
+ *           properties:
+ *             total:
+ *               type: integer
+ *               description: Total assigned complaints
+ *             resolved:
+ *               type: integer
+ *               description: Resolved complaints
+ *             pending:
+ *               type: integer
+ *               description: Pending complaints (assigned + in progress)
+ *             overdue:
+ *               type: integer
+ *               description: Overdue complaints
+ *         sla:
+ *           type: object
+ *           properties:
+ *             compliance:
+ *               type: number
+ *               description: SLA compliance percentage
+ *             avgResolutionTime:
+ *               type: number
+ *               description: Average resolution time in days
+ *             target:
+ *               type: number
+ *               description: Target resolution time in hours
+ *         trends:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               complaints:
+ *                 type: integer
+ *               resolved:
+ *                 type: integer
+ *               slaCompliance:
+ *                 type: number
+ *         categories:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               count:
+ *                 type: integer
+ *               avgTime:
+ *                 type: number
+ *               color:
+ *                 type: string
+ *         performance:
+ *           type: object
+ *           properties:
+ *             userSatisfaction:
+ *               type: number
+ *               description: User satisfaction rating
+ *             escalationRate:
+ *               type: number
+ *               description: Task escalation rate percentage
+ *             firstTimeFixRate:
+ *               type: number
+ *               description: First time fix rate percentage
+ *             repeatComplaints:
+ *               type: number
+ *               description: Repeat complaints percentage
+ *         taskBreakdown:
+ *           type: object
+ *           properties:
+ *             pending:
+ *               type: integer
+ *             inProgress:
+ *               type: integer
+ *             completed:
+ *               type: integer
+ *             overdue:
+ *               type: integer
+ *     
+ *     MaintenanceDashboard:
+ *       type: object
+ *       properties:
+ *         assignments:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Complaint'
+ *           description: Latest 10 assignments
+ *         metrics:
+ *           type: object
+ *           properties:
+ *             totalAssignments:
+ *               type: integer
+ *             todayCompleted:
+ *               type: integer
+ *             overdueCount:
+ *               type: integer
+ *             urgentCount:
+ *               type: integer
+ *         overdueTasks:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Complaint'
+ *           description: Top 5 overdue tasks
+ *         urgentTasks:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Complaint'
+ *           description: Top 5 urgent tasks
+ */
+
 // All routes require authentication
 router.use(protect);
 
@@ -152,13 +278,8 @@ const getMaintenanceAnalytics = asyncHandler(async (req, res) => {
       }),
     );
 
-    // Performance metrics for maintenance team
-    const performance = {
-      userSatisfaction: 4.0 + Math.random() * 0.8, // From citizen feedback
-      escalationRate: Math.random() * 10, // Tasks escalated back to ward officer
-      firstTimeFixRate: 70 + Math.random() * 20, // Fixed on first visit
-      repeatComplaints: Math.random() * 15, // Same issue reported again
-    };
+    // Performance metrics for maintenance team - calculate from real data
+    const performance = await calculateMaintenancePerformanceMetrics(prisma, where, req.user.id);
 
     // SLA compliance calculation
     const slaCompliance =
@@ -285,6 +406,94 @@ const getMaintenanceDashboard = asyncHandler(async (req, res) => {
     });
   }
 });
+
+/**
+ * @swagger
+ * /api/maintenance/analytics:
+ *   get:
+ *     summary: Get maintenance team analytics
+ *     tags: [Maintenance]
+ *     description: Retrieve comprehensive analytics for maintenance team members
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for analytics
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for analytics
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Filter by complaint type
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ["REGISTERED", "ASSIGNED", "IN_PROGRESS", "RESOLVED", "CLOSED"]
+ *         description: Filter by complaint status
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *           enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+ *         description: Filter by complaint priority
+ *     responses:
+ *       200:
+ *         description: Maintenance analytics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/MaintenanceAnalytics'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+
+/**
+ * @swagger
+ * /api/maintenance/dashboard:
+ *   get:
+ *     summary: Get maintenance team dashboard
+ *     tags: [Maintenance]
+ *     description: Retrieve dashboard data for maintenance team members including current assignments and metrics
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Maintenance dashboard data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/MaintenanceDashboard'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
 
 // Routes
 router.get(

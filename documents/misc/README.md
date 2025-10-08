@@ -72,7 +72,7 @@ Historical documentation files that provide context for past decisions and imple
 ## Last Synced
 
 **Date**: $(date)  
-**Schema Version**: v1.0.3  
+**Schema Version**:    
 **File Count**: 5 active files  
 **Status**: Organized and documented
 

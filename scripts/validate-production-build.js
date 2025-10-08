@@ -12,10 +12,10 @@ const distDir = path.join(rootDir, 'dist');
 
 /**
  * Comprehensive Production Build Validation Script
- * Tests all aspects of the Fix_Smart_CMS_v1.0.3 production build
+ * Tests all aspects of the Fix_Smart_CMS_  production build
  */
 
-console.log('🔍 Fix_Smart_CMS_v1.0.3 Production Build Validation\n');
+console.log('🔍 Fix_Smart_CMS_  Production Build Validation\n');
 
 const results = {
   buildStructure: false,
@@ -258,7 +258,7 @@ function generateReport() {
   
   if (successRate === 100) {
     console.log('\n🎉 ALL TESTS PASSED!');
-    console.log('✅ Fix_Smart_CMS_v1.0.3 production build is ready for deployment');
+    console.log('✅ Fix_Smart_CMS_  production build is ready for deployment');
     console.log('\n🚀 Next Steps:');
     console.log('1. Start server: cd dist && npm start');
     console.log('2. Access app: http://localhost:4005');

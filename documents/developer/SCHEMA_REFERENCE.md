@@ -1,16 +1,16 @@
 # Schema Reference
 
-Complete documentation of the Fix_Smart_CMS v1.0.3 database schema, including all active models, relationships, and field descriptions.
+Complete documentation of the Fix_Smart_CMS   database schema, including all active models, relationships, and field descriptions.
 
 ## Database Overview
 
 - **Production Database**: PostgreSQL
 - **Development Database**: SQLite (for local development)
 - **ORM**: Prisma 6.16.3
-- **Schema Version**: v1.0.3 (Production-ready, active models only)
+- **Schema Version**:   (Production-ready, active models only)
 - **Schema File**: `prisma/schema.prisma` (Unified production schema)
 
-## Schema Evolution (v1.0.3)
+## Schema Evolution ( )
 
 ### Active Models
 The current schema includes only production-ready, actively used models:
@@ -18,7 +18,7 @@ The current schema includes only production-ready, actively used models:
 - Attachment (unified), OTPSession, Notification, SystemConfig
 
 ### Removed Models
-The following models were deprecated and removed in v1.0.3:
+The following models were deprecated and removed in  :
 - **Message**: Replaced by unified notification system
 - **Material**: Simplified to string-based tracking in complaints
 - **Tool**: Simplified to string-based tracking in complaints  

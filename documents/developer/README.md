@@ -69,7 +69,7 @@ Frontend state management documentation covering:
 ```bash
 # Clone repository
 git clone <repository-url>
-cd Fix_Smart_CMS_v1.0.3
+cd Fix_Smart_CMS_ 
 
 # Install dependencies
 npm install
@@ -88,7 +88,7 @@ npm run dev
 
 ### 2. Code Structure
 ```
-Fix_Smart_CMS_v1.0.3/
+Fix_Smart_CMS_ /
 ├── client/                 # React frontend application
 │   ├── components/         # Reusable UI components
 │   ├── pages/             # Route-based page components
@@ -259,7 +259,7 @@ export const apiSlice = createApi({
 ## Last Synced
 
 **Date**: $(date)  
-**Schema Version**: v1.0.3  
+**Schema Version**:    
 **Node.js Version**: >=18.0.0  
 **React Version**: 18.2.0
 

@@ -1,0 +1,126 @@
+{
+  "SystemConfig": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "key": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "value": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      }
+    },
+    "required": [
+      "id",
+      "key",
+      "value",
+      "description",
+      "isActive"
+    ]
+  },
+  "SystemConfigCreateRequest": {
+    "type": "object",
+    "properties": {
+      "key": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "value": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      }
+    },
+    "required": [
+      "key",
+      "value",
+      "description",
+      "isActive"
+    ]
+  },
+  "SystemConfigUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "key": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "value": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      }
+    },
+    "required": [
+      "key",
+      "value",
+      "description",
+      "isActive"
+    ]
+  },
+  "SystemConfigResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "key": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "value": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      }
+    },
+    "required": [
+      "id",
+      "key",
+      "value",
+      "description",
+      "isActive"
+    ]
+  }
+}

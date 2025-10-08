@@ -51,7 +51,7 @@ A comprehensive, production-ready complaint management system built for the NLC-
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd Fix_Smart_CMS_v1.0.3
+cd Fix_Smart_CMS_ 
 
 # Configure environment
 cp .env.docker .env

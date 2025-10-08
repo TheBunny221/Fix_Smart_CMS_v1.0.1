@@ -72,7 +72,7 @@ sudo apt-get install git
 ```bash
 # Clone repository
 git clone <repository-url>
-cd Fix_Smart_CMS_v1.0.3
+cd Fix_Smart_CMS_ 
 
 # Install dependencies
 npm install
@@ -258,7 +258,7 @@ If you find gaps in documentation or areas for improvement, please contribute up
 ## Last Synced
 
 **Date**: $(date)  
-**Schema Version**: v1.0.3  
+**Schema Version**:    
 **Onboarding Version**: v1.0  
 **Target Audience**: New developers, system administrators, team members
 

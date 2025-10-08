@@ -1,6 +1,6 @@
 # Docker Deployment Guide
 
-This guide provides comprehensive instructions for deploying Fix_Smart_CMS v1.0.3 using Docker containers in both development and production environments.
+This guide provides comprehensive instructions for deploying Fix_Smart_CMS   using Docker containers in both development and production environments.
 
 ## Overview
 
@@ -41,7 +41,7 @@ docker-compose --version
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd Fix_Smart_CMS_v1.0.3
+cd Fix_Smart_CMS_ 
 
 # Configure environment
 cp .env.docker .env
@@ -510,4 +510,4 @@ For Docker-specific issues:
 **Last Updated**: $(date)  
 **Docker Version**: 20.10+  
 **Docker Compose Version**: 2.0+  
-**Application Version**: v1.0.3
+**Application Version**:  

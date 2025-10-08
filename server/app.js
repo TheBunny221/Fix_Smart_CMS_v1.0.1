@@ -3,8 +3,8 @@ import cors from "cors";
 import helmet from "helmet";
 import compression from "compression";
 import rateLimit from "express-rate-limit";
-import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
+import { specs } from "./config/swagger.js";
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -89,46 +89,7 @@ dotenv.config();
 //   next();
 // });
 
-// Swagger configuration
-const swaggerOptions = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "NLC-CMS API",
-      version: "1.0.0",
-      description:
-        "Comprehensive API for the NLC-CMS Complaint Management System",
-      contact: {
-        name: "API Support",
-        email: "api-support@cochinsmartcity.gov.in",
-      },
-    },
-    servers: [
-      {
-        url:
-          process.env.NODE_ENV === "production"
-            ? "https://api.cochinsmartcity.gov.in"
-            : `http://localhost:${process.env.PORT || 4005}`,
-        description:
-          process.env.NODE_ENV === "production"
-            ? "Production server"
-            : "Development server",
-      },
-    ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
-        },
-      },
-    },
-  },
-  apis: ["./server/routes/*.js", "./server/controller/*.js"], // paths to files containing OpenAPI definitions
-};
-
-const specs = swaggerJsdoc(swaggerOptions);
+// Swagger configuration is now imported from config/swagger.js
 
 export function createApp() {
   const app = express();
@@ -295,10 +256,10 @@ export function createApp() {
   app.use("/api/maintenance", maintenanceAnalyticsRoutes);
   app.use("/api/uploads", uploadRoutes);
   app.use("/api/complaint-types", complaintTypeRoutes);
-  app.use("/api/system-config", systemConfigRoutes);
+  app.use("/api/config", systemConfigRoutes);
   app.use("/api/logs", logRoutes);
   app.use("/api/geo", geoRoutes);
-  app.use("/api", materialsRoutes);
+  // app.use("/api", materialsRoutes);
   app.use("/api", complaintPhotosRoutes);
 
   // Serve uploaded files

@@ -2,6 +2,7 @@ import { getPrisma } from "../db/connection.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import bcrypt from "bcryptjs";
 import { sendEmail } from "../utils/emailService.js";
+import { computeSlaComplianceClosed } from "../utils/sla.js";
 
 const prisma = getPrisma();
 
@@ -416,11 +417,11 @@ export const getAnalytics = asyncHandler(async (req, res) => {
   const whereClause = {
     ...(startDate &&
       endDate && {
-        createdAt: {
-          gte: new Date(startDate),
-          lte: new Date(endDate),
-        },
-      }),
+      createdAt: {
+        gte: new Date(startDate),
+        lte: new Date(endDate),
+      },
+    }),
     ...(ward && { wardId: ward }),
   };
 
@@ -551,34 +552,186 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
     }))
     .sort((a, b) => a.month.localeCompare(b.month));
 
-  // Get complaints by type
-  const complaintsByType = await prisma.complaint.groupBy({
-    by: ["type"],
-    _count: true,
-    orderBy: {
-      _count: {
-        type: "desc",
+  // Get complaints by type with deduplication
+  let combinedComplaintsByType = [];
+
+  try {
+    // Use a Map to deduplicate by type name (case-insensitive)
+    const typeNameMap = new Map();
+
+    // First, try to get complaints with complaintTypeId (new approach - higher priority)
+    const complaintsByTypeId = await prisma.complaint.groupBy({
+      by: ["complaintTypeId"],
+      _count: true,
+      where: {
+        complaintTypeId: { not: null }
       },
-    },
+      orderBy: {
+        _count: {
+          complaintTypeId: "desc",
+        },
+      },
+    });
+
+    // Get complaint type details for proper naming
+    if (complaintsByTypeId.length > 0) {
+      const complaintTypeIds = complaintsByTypeId
+        .map(item => item.complaintTypeId)
+        .filter(id => id !== null);
+
+      const complaintTypes = await prisma.complaintType.findMany({
+        where: {
+          id: { in: complaintTypeIds },
+          isActive: true
+        },
+        select: { id: true, name: true }
+      });
+
+      // Create a map for quick lookup
+      const typeMap = new Map(complaintTypes.map(ct => [ct.id, ct.name]));
+
+      // Add complaints with proper type names (higher priority)
+      complaintsByTypeId.forEach(item => {
+        const typeName = typeMap.get(item.complaintTypeId) || `Type ${item.complaintTypeId}`;
+        const cleanName = cleanTypeName(typeName);
+
+        if (cleanName && item._count > 0) {
+          const key = cleanName.toLowerCase();
+          // Always use complaintType data (higher priority)
+          typeNameMap.set(key, {
+            typeId: item.complaintTypeId,
+            typeName: cleanName,
+            count: item._count,
+            source: 'complaintType'
+          });
+        }
+      });
+    }
+
+    // Also get complaints using legacy type field for backward compatibility
+    const complaintsByLegacyType = await prisma.complaint.groupBy({
+      by: ["type"],
+      _count: true,
+      where: {
+        type: {
+          not: null,
+          notIn: ["", "null", "undefined", "NULL", "UNDEFINED"]
+        }
+      },
+      orderBy: {
+        _count: {
+          type: "desc",
+        },
+      },
+    });
+
+    // Add legacy type complaints only if not already present
+    if (complaintsByLegacyType.length > 0) {
+      complaintsByLegacyType
+        .filter(item => item.type && item.type.trim() !== '' && item._count > 0)
+        .forEach(item => {
+          const cleanName = cleanTypeName(item.type);
+          if (cleanName) {
+            const key = cleanName.toLowerCase();
+            // Only add if not already present from complaintType data
+            if (!typeNameMap.has(key)) {
+              typeNameMap.set(key, {
+                typeId: null,
+                typeName: cleanName,
+                count: item._count,
+                source: 'legacy'
+              });
+            }
+          }
+        });
+    }
+
+    // Convert back to array and sort by count descending
+    combinedComplaintsByType = Array.from(typeNameMap.values())
+      .sort((a, b) => b.count - a.count);
+
+    // Debug logging
+    console.log('📊 Complaints by type debug:', {
+      complaintsByTypeId: complaintsByTypeId.length,
+      complaintsByLegacyType: complaintsByLegacyType.length,
+      finalCount: combinedComplaintsByType.length,
+      sampleData: combinedComplaintsByType.slice(0, 3)
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching complaints by type:', error);
+    combinedComplaintsByType = [];
+  }
+
+  // If no data found, let's check what's actually in the database
+  if (combinedComplaintsByType.length === 0) {
+    try {
+      const totalComplaints = await prisma.complaint.count();
+      const totalTypes = await prisma.complaintType.count();
+      console.log('🔍 Database check - Total complaints:', totalComplaints, 'Total types:', totalTypes);
+
+      if (totalComplaints > 0) {
+        // If we have complaints but no type data, let's get a simple count
+        const simpleTypeCount = await prisma.complaint.groupBy({
+          by: ["type"],
+          _count: true,
+          orderBy: {
+            _count: {
+              type: "desc",
+            },
+          },
+        });
+
+        console.log('🔍 Simple type count:', simpleTypeCount);
+
+        // Use this data if available, but filter out null/empty types
+        if (simpleTypeCount.length > 0) {
+          combinedComplaintsByType = simpleTypeCount
+            .filter(item => item.type && item.type.trim() !== '' && item._count > 0)
+            .map(item => ({
+              typeId: null,
+              typeName: item.type || "Uncategorized",
+              count: item._count,
+              source: 'simple'
+            }));
+        }
+      }
+    } catch (debugError) {
+      console.error('❌ Debug query failed:', debugError);
+    }
+  }
+
+  // Get ward performance with proper SLA calculation
+  const wards = await prisma.ward.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' }
   });
 
-  // Get ward performance
-  const wardPerformance = await prisma.$queryRaw`
-    SELECT
-      w.name AS ward,
-      COALESCE(COUNT(c.id), 0) AS complaints,
-      COALESCE(COUNT(CASE WHEN c.status = 'RESOLVED' THEN 1 END), 0) AS resolved,
-      COALESCE(ROUND(
-        (COUNT(CASE WHEN c.status = 'RESOLVED' THEN 1 END) * 100.0) /
-        NULLIF(COUNT(c.id), 0),
-        2
-      ), 0) AS sla
-    FROM "wards" w
-    LEFT JOIN "complaints" c ON w.id = c."wardId"
-    WHERE w."isActive" = TRUE
-    GROUP BY w.id, w.name
-    ORDER BY w.name
-  `;
+  const wardPerformance = [];
+  for (const ward of wards) {
+    // Get total complaints for this ward
+    const totalComplaints = await prisma.complaint.count({
+      where: { wardId: ward.id }
+    });
+
+    // Get resolved complaints for this ward
+    const resolvedComplaints = await prisma.complaint.count({
+      where: { wardId: ward.id, status: 'RESOLVED' }
+    });
+
+    // Calculate SLA compliance for this ward using the same logic as reports
+    const { compliance: slaCompliance } = await computeSlaComplianceClosed(prisma, {
+      wardId: ward.id
+    });
+
+    wardPerformance.push({
+      ward: ward.name,
+      complaints: totalComplaints,
+      resolved: resolvedComplaints,
+      sla: Math.round(slaCompliance * 100) / 100 // Round to 2 decimal places
+    });
+  }
 
   // Calculate averages and metrics
   const totalComplaints = await prisma.complaint.count();
@@ -606,11 +759,11 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
   const avgResolutionTime =
     validResolutions.length > 0
       ? validResolutions.reduce((acc, complaint) => {
-          const resolutionTime =
-            (new Date(complaint.resolvedOn) - new Date(complaint.createdAt)) /
-            (1000 * 60 * 60 * 24);
-          return acc + resolutionTime;
-        }, 0) / validResolutions.length
+        const resolutionTime =
+          (new Date(complaint.resolvedOn) - new Date(complaint.createdAt)) /
+          (1000 * 60 * 60 * 24);
+        return acc + resolutionTime;
+      }, 0) / validResolutions.length
       : 0;
 
   // Overdue open complaints (deadline passed but not resolved/closed)
@@ -635,66 +788,8 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
   const slaBreaches = Number(resolvedLate) + Number(overdueOpen);
   const withinSLA = Math.max(0, Number(totalComplaints) - Number(slaBreaches));
 
-  // Calculate SLA compliance using ComplaintType table
-  let complaintTypes = await prisma.complaintType.findMany({
-    where: { isActive: true },
-    select: { id: true, name: true, slaHours: true }
-  });
-  
-  // Fallback to legacy system config if no complaint types found
-  if (complaintTypes.length === 0) {
-    const typeConfigs = await prisma.systemConfig.findMany({
-      where: { key: { startsWith: "COMPLAINT_TYPE_" }, isActive: true },
-    });
-    complaintTypes = typeConfigs
-      .map((cfg) => {
-        try {
-          const v = JSON.parse(cfg.value || "{}");
-          const id = cfg.key.replace("COMPLAINT_TYPE_", "");
-          return { id, name: v.name || id, slaHours: Number(v.slaHours) || 48 };
-        } catch {
-          const id = cfg.key.replace("COMPLAINT_TYPE_", "");
-          return { id, name: id, slaHours: 48 };
-        }
-      })
-      .filter((t) => t.id);
-  } else {
-    // Convert to expected format for consistency
-    complaintTypes = complaintTypes.map(ct => ({
-      id: String(ct.id),
-      name: ct.name,
-      slaHours: ct.slaHours
-    }));
-  }
-
-  const nowTs = new Date();
-  let typePercentages = [];
-  for (const t of complaintTypes) {
-    const rows = await prisma.complaint.findMany({
-      where: { type: t.id },
-      select: { submittedOn: true, resolvedOn: true, status: true },
-    });
-    if (rows.length === 0) continue;
-    const windowMs = (t.slaHours || 48) * 60 * 60 * 1000;
-    let compliant = 0;
-    for (const r of rows) {
-      const start = r.submittedOn ? new Date(r.submittedOn).getTime() : null;
-      if (!start) continue;
-      const deadlineTs = start + windowMs;
-      if (r.status === "RESOLVED" || r.status === "CLOSED") {
-        if (r.resolvedOn && new Date(r.resolvedOn).getTime() <= deadlineTs)
-          compliant += 1;
-      } else {
-        if (nowTs.getTime() <= deadlineTs) compliant += 1;
-      }
-    }
-    typePercentages.push((compliant / rows.length) * 100);
-  }
-  const slaCompliance = typePercentages.length
-    ? Math.round(
-        typePercentages.reduce((a, b) => a + b, 0) / typePercentages.length,
-      )
-    : 0;
+  // Calculate SLA compliance using the same logic as reports page
+  const { compliance: slaCompliance } = await computeSlaComplianceClosed(prisma);
 
   // Get citizen satisfaction (average rating)
   const satisfactionResult = await prisma.complaint.aggregate({
@@ -741,37 +836,65 @@ export const getDashboardAnalytics = asyncHandler(async (req, res) => {
     processedTrends = generateEmptyTrends();
   }
 
+  // Prepare complaints by type data with final deduplication
+  let complaintsByTypeData;
+  if (combinedComplaintsByType.length > 0) {
+    // Create final data with additional deduplication check
+    const finalTypeMap = new Map();
+
+    combinedComplaintsByType
+      .filter(item => item.count > 0) // Only include types with actual complaints
+      .forEach((item) => {
+        const cleanedName = cleanTypeName(item.typeName);
+        const displayName = cleanedName || "Uncategorized";
+
+        if (cleanedName) {
+          const key = displayName.toLowerCase();
+          // If duplicate, combine counts
+          if (finalTypeMap.has(key)) {
+            const existing = finalTypeMap.get(key);
+            existing.value += item.count;
+          } else {
+            finalTypeMap.set(key, {
+              name: displayName,
+              value: item.count || 0,
+              color: getTypeColor(displayName),
+            });
+          }
+        }
+      });
+
+    complaintsByTypeData = Array.from(finalTypeMap.values())
+      .sort((a, b) => b.value - a.value); // Sort by count descending
+
+    console.log('✅ Sending complaints by type data:', {
+      count: complaintsByTypeData.length,
+      data: complaintsByTypeData,
+      typeNames: complaintsByTypeData.map(item => item.name)
+    });
+  } else {
+    complaintsByTypeData = await generateEmptyComplaintTypes();
+    console.log('📊 Using empty complaints by type data:', complaintsByTypeData);
+  }
+
   res.status(200).json({
     success: true,
     message: "Dashboard analytics retrieved successfully",
     data: {
       complaintTrends: processedTrends,
-      complaintsByType:
-        complaintsByType.length > 0
-          ? complaintsByType.map((item) => {
-              const rawType = item?.type || "UNKNOWN";
-              const safeName = String(rawType)
-                .replace(/_/g, " ")
-                .replace(/\b\w/g, (l) => l.toUpperCase());
-              return {
-                name: safeName,
-                value: item?._count || 0,
-                color: getTypeColor(String(rawType).toUpperCase()),
-              };
-            })
-          : generateEmptyComplaintTypes(),
+      complaintsByType: complaintsByTypeData,
       wardPerformance:
         wardPerformance.length > 0
           ? wardPerformance.map((ward) => ({
-              ward: ward.ward || "Unknown Ward",
-              complaints: Number(ward.complaints) || 0,
-              resolved: Number(ward.resolved) || 0,
-              sla: Number(ward.sla) || 0,
-            }))
+            ward: ward.ward || "Unknown Ward",
+            complaints: Number(ward.complaints) || 0,
+            resolved: Number(ward.resolved) || 0,
+            sla: Number(ward.sla) || 0,
+          }))
           : [],
       metrics: {
         avgResolutionTime: Math.round(avgResolutionTime * 10) / 10,
-        slaCompliance,
+        slaCompliance: Math.round(slaCompliance * 10) / 10,
         citizenSatisfaction: Math.round(citizenSatisfaction * 10) / 10,
         resolutionRate:
           totalComplaints > 0
@@ -887,9 +1010,9 @@ export const getRecentActivity = asyncHandler(async (req, res) => {
       time: formatTimeAgo(complaint.createdAt),
       user: complaint.submittedBy
         ? {
-            name: complaint.submittedBy.fullName,
-            email: complaint.submittedBy.email,
-          }
+          name: complaint.submittedBy.fullName,
+          email: complaint.submittedBy.email,
+        }
         : undefined,
       ward: complaint.ward?.name,
     });
@@ -904,10 +1027,10 @@ export const getRecentActivity = asyncHandler(async (req, res) => {
       time: formatTimeAgo(log.timestamp),
       user: log.user
         ? {
-            name: log.user.fullName,
-            email: log.user.email,
-            role: log.user.role,
-          }
+          name: log.user.fullName,
+          email: log.user.email,
+          role: log.user.role,
+        }
         : undefined,
       ward: log.complaint?.ward?.name,
     });
@@ -1044,29 +1167,65 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
 });
 
 // Helper functions
+// Helper function to clean up complaint type names
+function cleanTypeName(typeName) {
+  if (!typeName || typeof typeName !== 'string') return null;
+
+  const cleaned = typeName.trim();
+  if (cleaned === '' || cleaned.toLowerCase() === 'null' || cleaned.toLowerCase() === 'undefined') {
+    return null;
+  }
+
+  return cleaned;
+}
+
 function getTypeColor(type) {
+  if (!type) return "#64748B"; // Default slate color
+
+  // Normalize the type name to uppercase with underscores for consistent lookup
+  const normalizedType = String(type)
+    .toUpperCase()
+    .replace(/\s+/g, "_")
+    .replace(/[^A-Z0-9_]/g, "");
+
   const colors = {
     WATER_SUPPLY: "#3B82F6", // Blue
+    WATER: "#3B82F6", // Blue (alternative)
     ELECTRICITY: "#EF4444", // Red
+    ELECTRICAL: "#EF4444", // Red (alternative)
     ROAD_REPAIR: "#10B981", // Green
+    ROAD: "#10B981", // Green (alternative)
     GARBAGE: "#F59E0B", // Amber
+    GARBAGE_COLLECTION: "#F59E0B", // Amber (alternative)
     SEWAGE: "#8B5CF6", // Purple
     STREET_LIGHT: "#F97316", // Orange
+    STREETLIGHT: "#F97316", // Orange (alternative)
     WASTE_MANAGEMENT: "#EC4899", // Pink
+    WASTE: "#EC4899", // Pink (alternative)
     PUBLIC_TRANSPORT: "#06B6D4", // Cyan
+    TRANSPORT: "#06B6D4", // Cyan (alternative)
     TRAFFIC_SIGNAL: "#84CC16", // Lime
+    TRAFFIC: "#84CC16", // Lime (alternative)
     PARKS_GARDENS: "#22C55E", // Green
+    PARKS: "#22C55E", // Green (alternative)
     DRAINAGE: "#6366F1", // Indigo
     BUILDING_PERMIT: "#F43F5E", // Rose
+    BUILDING: "#F43F5E", // Rose (alternative)
     NOISE_POLLUTION: "#A855F7", // Violet
+    NOISE: "#A855F7", // Violet (alternative)
     AIR_POLLUTION: "#14B8A6", // Teal
+    AIR: "#14B8A6", // Teal (alternative)
     WATER_POLLUTION: "#0EA5E9", // Sky
     ILLEGAL_CONSTRUCTION: "#DC2626", // Red-600
+    CONSTRUCTION: "#DC2626", // Red-600 (alternative)
     STRAY_ANIMALS: "#CA8A04", // Yellow-600
+    ANIMALS: "#CA8A04", // Yellow-600 (alternative)
     ENCROACHMENT: "#7C3AED", // Purple-600
+    UNCATEGORIZED: "#64748B", // Slate-500
     OTHER: "#64748B", // Slate-500
   };
-  return colors[type] || getRandomColor();
+
+  return colors[normalizedType] || getRandomColor();
 }
 
 // Generate consistent colors for new types
@@ -1195,21 +1354,43 @@ function generateEmptyTrends() {
 }
 
 // Helper function to generate default complaint types when no data exists
-function generateEmptyComplaintTypes() {
-  const types = [
-    { type: "WATER_SUPPLY", name: "Water Supply" },
-    { type: "ELECTRICITY", name: "Electricity" },
-    { type: "ROAD_REPAIR", name: "Road Repair" },
-    { type: "WASTE_MANAGEMENT", name: "Waste Management" },
-    { type: "STREET_LIGHT", name: "Street Light" },
-    { type: "SEWAGE", name: "Sewage" },
-    { type: "GARBAGE", name: "Garbage Collection" },
+async function generateEmptyComplaintTypes() {
+  try {
+    // Get active complaint types from database
+    const complaintTypes = await prisma.complaintType.findMany({
+      where: { isActive: true },
+      select: { name: true },
+      take: 7 // Limit to 7 types for chart readability
+    });
+
+    if (complaintTypes.length > 0) {
+      console.log('Using database complaint types for empty chart:', complaintTypes.length);
+      return complaintTypes.map((ct) => ({
+        name: ct.name,
+        value: 0,
+        color: getTypeColor(ct.name),
+      }));
+    }
+  } catch (error) {
+    console.error("Error fetching complaint types for empty chart:", error);
+  }
+
+  // Fallback to hardcoded types if database query fails
+  console.log('Using fallback complaint types for empty chart');
+  const fallbackTypes = [
+    { name: "Water Supply" },
+    { name: "Electricity" },
+    { name: "Road Repair" },
+    { name: "Waste Management" },
+    { name: "Street Light" },
+    { name: "Sewage" },
+    { name: "Garbage Collection" },
   ];
 
-  return types.map((t) => ({
+  return fallbackTypes.map((t) => ({
     name: t.name,
     value: 0,
-    color: getTypeColor(t.type),
+    color: getTypeColor(t.name),
   }));
 }
 

@@ -24,6 +24,13 @@ import {
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management operations
+ */
+
 // Public routes
 router.post("/verify-account/:token", verifyAccount);
 

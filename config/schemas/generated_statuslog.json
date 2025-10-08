@@ -1,0 +1,136 @@
+{
+  "StatusLog": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "comment": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      }
+    },
+    "required": [
+      "id",
+      "complaintId",
+      "userId",
+      "comment",
+      "timestamp"
+    ]
+  },
+  "StatusLogCreateRequest": {
+    "type": "object",
+    "properties": {
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "comment": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      }
+    },
+    "required": [
+      "complaintId",
+      "userId",
+      "comment",
+      "timestamp"
+    ]
+  },
+  "StatusLogUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "comment": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      }
+    },
+    "required": [
+      "complaintId",
+      "userId",
+      "comment",
+      "timestamp"
+    ]
+  },
+  "StatusLogResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "comment": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "complaint": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "user": {
+        "$ref": "#/components/schemas/User"
+      }
+    },
+    "required": [
+      "id",
+      "complaintId",
+      "userId",
+      "comment",
+      "timestamp"
+    ]
+  }
+}

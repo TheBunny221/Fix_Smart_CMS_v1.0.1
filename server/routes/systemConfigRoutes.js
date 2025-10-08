@@ -1,95 +1,46 @@
+/**
+ * SystemConfig Routes
+ * 
+ * API routes for system configuration management
+ * 
+ * @version 1.0.3
+ * @author Fix_Smart_CMS Team
+ */
+
 import express from "express";
-import {
-  getSystemSettings,
-  getSystemSettingByKey,
-  createOrUpdateSystemSetting,
-  updateSystemSetting,
-  deleteSystemSetting,
-  resetSystemSettings,
-  getSystemHealth,
-  getPublicSystemSettings,
-} from "../controller/systemConfigController.js";
 import { protect, authorize } from "../middleware/auth.js";
-import { body, param } from "express-validator";
-import { handleValidationErrors } from "../middleware/validation.js";
+import {
+  getPublicConfig,
+  getAdminConfig,
+  updateConfig,
+  deleteConfig,
+  refreshCache,
+  getCacheStats,
+  bulkUpdateConfig,
+  getConfigByType,
+  getConfigByPattern,
+  createConfig
+} from "../controller/systemConfigController.js";
 
 const router = express.Router();
 
-// Public route (no authentication required)
-router.get("/public", getPublicSystemSettings);
-
-// Validation middleware for system settings
-const validateSystemSetting = [
-  body("key")
-    .notEmpty()
-    .withMessage("Key is required")
-    .matches(/^[A-Z_][A-Z0-9_]*$/)
-    .withMessage("Key must be uppercase letters and underscores only"),
-  body("value").notEmpty().withMessage("Value is required"),
-  body("description")
-    .optional()
-    .isLength({ max: 500 })
-    .withMessage("Description cannot exceed 500 characters"),
-  body("type")
-    .optional()
-    .isIn(["string", "number", "boolean", "json"])
-    .withMessage("Type must be one of: string, number, boolean, json"),
-  handleValidationErrors,
-];
-
-const validateKeyParam = [
-  param("key")
-    .matches(/^[A-Z_][A-Z0-9_]*$/)
-    .withMessage("Key must be uppercase letters and underscores only"),
-  handleValidationErrors,
-];
-
-// All routes require admin access
-router.use(protect);
-router.use(authorize("ADMINISTRATOR"));
-
 /**
  * @swagger
- * components:
- *   schemas:
- *     SystemSetting:
- *       type: object
- *       required:
- *         - key
- *         - value
- *       properties:
- *         key:
- *           type: string
- *           description: Setting key (uppercase with underscores)
- *         value:
- *           type: string
- *           description: Setting value
- *         description:
- *           type: string
- *           description: Description of the setting
- *         type:
- *           type: string
- *           enum: [string, number, boolean, json]
- *           description: Data type of the value
- *         isActive:
- *           type: boolean
- *           description: Whether the setting is active
- *         updatedAt:
- *           type: string
- *           format: date-time
+ * tags:
+ *   name: SystemConfig
+ *   description: System configuration management
  */
 
 /**
  * @swagger
- * /api/system-config:
+ * /api/config/public:
  *   get:
- *     summary: Get all system settings
- *     tags: [System Config]
- *     security:
- *       - bearerAuth: []
+ *     summary: Get public system configuration
+ *     tags: [SystemConfig]
+ *     description: Retrieve public system configuration values for frontend use
  *     responses:
  *       200:
- *         description: List of all system settings
+ *         description: Public configuration retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -98,46 +49,190 @@ router.use(authorize("ADMINISTRATOR"));
  *                 success:
  *                   type: boolean
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/SystemSetting'
+ *                   type: object
+ *                   properties:
+ *                     appName:
+ *                       type: string
+ *                       example: "Fix_Smart_CMS"
+ *                     appVersion:
+ *                       type: string
+ *                       example: "1.0.3"
+ *                     organizationName:
+ *                       type: string
+ *                       example: "Smart City Management"
+ *                     websiteUrl:
+ *                       type: string
+ *                       example: "https://fix-smart-cms.gov.in"
+ *                     logoUrl:
+ *                       type: string
+ *                       nullable: true
+ *                     primaryColor:
+ *                       type: string
+ *                       example: "#667eea"
+ *                     secondaryColor:
+ *                       type: string
+ *                       example: "#764ba2"
+ *                     supportEmail:
+ *                       type: string
+ *                       example: "support@fix-smart-cms.gov.in"
+ *                     complaintIdPrefix:
+ *                       type: string
+ *                       example: "KSC"
+ *                     complaintIdLength:
+ *                       type: integer
+ *                       example: 4
+ *                     autoAssignComplaints:
+ *                       type: boolean
+ *                     maintenanceMode:
+ *                       type: boolean
+ *                     registrationEnabled:
+ *                       type: boolean
+ *                 cached:
+ *                   type: object
+ *                   properties:
+ *                     isInitialized:
+ *                       type: boolean
+ *                     configCount:
+ *                       type: integer
+ *                     lastUpdated:
+ *                       type: string
+ *                       format: date-time
  */
-router.get("/", getSystemSettings);
+router.get("/public", getPublicConfig);
+
+// Protected routes - require authentication
+router.use(protect);
 
 /**
  * @swagger
- * /api/system-config/health:
+ * /api/config/stats:
  *   get:
- *     summary: Get system health status
- *     tags: [System Config]
+ *     summary: Get cache statistics
+ *     tags: [SystemConfig]
  *     security:
  *       - bearerAuth: []
+ *     description: Get system configuration cache statistics (Admin only)
  *     responses:
  *       200:
- *         description: System health information
+ *         description: Cache statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     isInitialized:
+ *                       type: boolean
+ *                     configCount:
+ *                       type: integer
+ *                     lastUpdated:
+ *                       type: string
+ *                       format: date-time
+ *                     refreshInterval:
+ *                       type: integer
+ *                     hasAutoRefresh:
+ *                       type: boolean
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
  */
-router.get("/health", getSystemHealth);
+router.get("/stats", authorize("ADMINISTRATOR"), getCacheStats);
 
 /**
  * @swagger
- * /api/system-config/reset:
- *   post:
- *     summary: Reset system settings to defaults
- *     tags: [System Config]
+ * /api/config/admin:
+ *   get:
+ *     summary: Get all system configuration (Admin only)
+ *     tags: [SystemConfig]
  *     security:
  *       - bearerAuth: []
+ *     description: Retrieve all system configuration values including sensitive data
  *     responses:
  *       200:
- *         description: Settings reset successfully
+ *         description: Admin configuration retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     cached:
+ *                       type: object
+ *                       description: Cached configuration values
+ *                     database:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           key:
+ *                             type: string
+ *                           value:
+ *                             type: string
+ *                           type:
+ *                             type: string
+ *                           description:
+ *                             type: string
+ *                           isActive:
+ *                             type: boolean
+ *                           updatedAt:
+ *                             type: string
+ *                             format: date-time
+ *                     cacheStats:
+ *                       type: object
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
  */
-router.post("/reset", resetSystemSettings);
+router.get("/admin", authorize("ADMINISTRATOR"), getAdminConfig);
 
 /**
  * @swagger
- * /api/system-config:
+ * /api/config/refresh:
  *   post:
- *     summary: Create or update system setting
- *     tags: [System Config]
+ *     summary: Refresh configuration cache
+ *     tags: [SystemConfig]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Manually refresh the system configuration cache
+ *     responses:
+ *       200:
+ *         description: Cache refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.post("/refresh", authorize("ADMINISTRATOR"), refreshCache);
+
+/**
+ * @swagger
+ * /api/config:
+ *   post:
+ *     summary: Create new system configuration
+ *     tags: [SystemConfig]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -145,90 +240,285 @@ router.post("/reset", resetSystemSettings);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/SystemSetting'
+ *             $ref: '#/components/schemas/SystemConfigCreateRequest'
  *     responses:
- *       200:
- *         description: System setting saved successfully
+ *       201:
+ *         description: Configuration created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/SystemConfig'
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       409:
+ *         description: Configuration key already exists
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
  */
-router.post("/", validateSystemSetting, createOrUpdateSystemSetting);
+router.post("/", authorize("ADMINISTRATOR"), createConfig);
 
 /**
  * @swagger
- * /api/system-config/{key}:
+ * /api/config/bulk:
+ *   post:
+ *     summary: Bulk update system configurations
+ *     tags: [SystemConfig]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/SystemConfigBulkUpdateRequest'
+ *     responses:
+ *       200:
+ *         description: Bulk update completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     updated:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/SystemConfig'
+ *                     created:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/SystemConfig'
+ *                     errors:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           key:
+ *                             type: string
+ *                           error:
+ *                             type: string
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.post("/bulk", authorize("ADMINISTRATOR"), bulkUpdateConfig);
+
+/**
+ * @swagger
+ * /api/config/type/{type}:
  *   get:
- *     summary: Get system setting by key
- *     tags: [System Config]
+ *     summary: Get configurations by type
+ *     tags: [SystemConfig]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: key
+ *       - name: type
+ *         in: path
  *         required: true
+ *         description: Configuration type
  *         schema:
  *           type: string
+ *           example: "app"
  *     responses:
  *       200:
- *         description: System setting details
- *       404:
- *         description: Setting not found
+ *         description: Configurations retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     type:
+ *                       type: string
+ *                     configs:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: string
+ *                     count:
+ *                       type: integer
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
  */
-router.get("/:key", validateKeyParam, getSystemSettingByKey);
+router.get("/type/:type", authorize("ADMINISTRATOR"), getConfigByType);
 
 /**
  * @swagger
- * /api/system-config/{key}:
- *   put:
- *     summary: Update system setting
- *     tags: [System Config]
+ * /api/config/pattern/{pattern}:
+ *   get:
+ *     summary: Get configurations by pattern
+ *     tags: [SystemConfig]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: key
+ *       - name: pattern
+ *         in: path
  *         required: true
+ *         description: Pattern to match against configuration keys
  *         schema:
  *           type: string
+ *           example: "COMPLAINT_"
+ *       - name: matchType
+ *         in: query
+ *         description: Type of pattern matching
+ *         schema:
+ *           type: string
+ *           enum: [startsWith, endsWith, includes]
+ *           default: startsWith
+ *     responses:
+ *       200:
+ *         description: Configurations retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     pattern:
+ *                       type: string
+ *                     matchType:
+ *                       type: string
+ *                     configs:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: string
+ *                     count:
+ *                       type: integer
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+router.get("/pattern/:pattern", authorize("ADMINISTRATOR"), getConfigByPattern);
+
+/**
+ * @swagger
+ * /api/config/{key}:
+ *   put:
+ *     summary: Update system configuration
+ *     tags: [SystemConfig]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: key
+ *         in: path
+ *         required: true
+ *         description: Configuration key to update
+ *         schema:
+ *           type: string
+ *           example: "APP_NAME"
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - value
  *             properties:
  *               value:
  *                 type: string
+ *                 description: Configuration value
+ *                 example: "My Smart CMS"
+ *               type:
+ *                 type: string
+ *                 description: Configuration type/category
+ *                 example: "app"
  *               description:
  *                 type: string
- *               isActive:
- *                 type: boolean
+ *                 description: Configuration description
+ *                 example: "Application display name"
  *     responses:
  *       200:
- *         description: Setting updated successfully
- *       404:
- *         description: Setting not found
+ *         description: Configuration updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
  */
-router.put("/:key", validateKeyParam, updateSystemSetting);
+router.put("/:key", authorize("ADMINISTRATOR"), updateConfig);
 
 /**
  * @swagger
- * /api/system-config/{key}:
+ * /api/config/{key}:
  *   delete:
- *     summary: Delete system setting
- *     tags: [System Config]
+ *     summary: Delete system configuration
+ *     tags: [SystemConfig]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: key
+ *       - name: key
+ *         in: path
  *         required: true
+ *         description: Configuration key to delete
  *         schema:
  *           type: string
+ *           example: "DEPRECATED_SETTING"
  *     responses:
  *       200:
- *         description: Setting deleted successfully
+ *         description: Configuration deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
  *       404:
- *         description: Setting not found
+ *         $ref: '#/components/responses/NotFoundError'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
  */
-router.delete("/:key", validateKeyParam, deleteSystemSetting);
+router.delete("/:key", authorize("ADMINISTRATOR"), deleteConfig);
 
 export default router;

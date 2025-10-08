@@ -1,4 +1,4 @@
-# Fix_Smart_CMS v1.0.3 - Docker Compose Configuration
+# Fix_Smart_CMS   - Docker Compose Configuration
 # Production-ready deployment with PostgreSQL database
 
 version: '3.8'

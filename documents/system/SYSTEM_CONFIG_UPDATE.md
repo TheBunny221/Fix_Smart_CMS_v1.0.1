@@ -1,4 +1,4 @@
-# System Configuration Update - Fix_Smart_CMS_v1.0.3
+# System Configuration Update - Fix_Smart_CMS_ 
 
 ## 🎯 **Objective**
 Add missing system configuration settings to the seed files to ensure all required contact and system settings are properly initialized during database seeding.

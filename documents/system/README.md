@@ -244,7 +244,7 @@ app.use(authorizeRoles(['ADMIN']));  // Role-based authorization
 ## Last Synced
 
 **Date**: $(date)  
-**Schema Version**: v1.0.3  
+**Schema Version**:    
 **System Version**: Production-ready  
 **Infrastructure**: Node.js 18+, PostgreSQL 13+, PM2
 

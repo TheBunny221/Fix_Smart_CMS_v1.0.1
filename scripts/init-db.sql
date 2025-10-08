@@ -1,4 +1,4 @@
--- Fix_Smart_CMS v1.0.3 - Database Initialization Script
+-- Fix_Smart_CMS   - Database Initialization Script
 -- PostgreSQL initialization for Docker deployment
 
 -- Create database if it doesn't exist (handled by POSTGRES_DB environment variable)
@@ -27,7 +27,7 @@ SELECT pg_reload_conf();
 -- This ensures the database is ready for Prisma migrations
 
 -- Log successful initialization
-INSERT INTO pg_stat_statements_info VALUES ('Database initialized for Fix_Smart_CMS v1.0.3');
+INSERT INTO pg_stat_statements_info VALUES ('Database initialized for Fix_Smart_CMS  ');
 
 -- Display initialization completion message
 DO $$

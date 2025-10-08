@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Fix_Smart_CMS v1.0.3 - Docker Deployment Script
+# Fix_Smart_CMS   - Docker Deployment Script
 # Comprehensive deployment script for production and development environments
 
 set -e  # Exit on any error

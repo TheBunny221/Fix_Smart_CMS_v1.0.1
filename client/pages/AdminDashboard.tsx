@@ -587,7 +587,7 @@ const AdminDashboard: React.FC = () => {
                       <ResponsiveContainer width="100%" height={300}>
                         <PieChart>
                           <Pie
-                            data={complaintsByType}
+                            data={complaintsByType.filter(item => item && item.value > 0)}
                             cx="50%"
                             cy="50%"
                             innerRadius={50}
@@ -596,7 +596,9 @@ const AdminDashboard: React.FC = () => {
                             dataKey="value"
                             nameKey="name"
                           >
-                            {complaintsByType.map((entry, index) => (
+                            {complaintsByType
+                              .filter(item => item && item.value > 0)
+                              .map((entry, index) => (
                               <Cell
                                 key={`cell-${index}`}
                                 fill={entry?.color || "#6B7280"}
@@ -625,7 +627,9 @@ const AdminDashboard: React.FC = () => {
                         </PieChart>
                       </ResponsiveContainer>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 max-h-32 overflow-y-auto">
-                        {complaintsByType.map((item, index) => (
+                        {complaintsByType
+                          .filter(item => item && item.name && item.value > 0) // Only show items with valid names and values > 0
+                          .map((item, index) => (
                           <div
                             key={index}
                             className="flex items-center space-x-2 text-xs"
@@ -637,20 +641,21 @@ const AdminDashboard: React.FC = () => {
                               }}
                             ></div>
                             <span className="truncate">
-                              <SafeRenderer fallback="Unknown (0)">
+                                {item?.name}
+                                {/* {console.warn(item)} */}
+                              {/* <SafeRenderer fallback="Unknown (0)">
                                 {safeRenderValue(item?.name, 'Unknown')} ({typeof item?.value === 'number' ? item.value : 0})
-                              </SafeRenderer>
+                              </SafeRenderer> */}
                             </span>
                           </div>
                         ))}
                       </div>
                       {process.env.NODE_ENV === "development" && (
                         <div className="mt-2 text-xs text-gray-400">
-                          Types: {complaintsByType.length} | Total:{" "}
-                          {complaintsByType.reduce(
-                            (sum, type) => sum + (type.value || 0),
-                            0,
-                          )}
+                          Types: {complaintsByType.filter(item => item && item.value > 0).length} | Total:{" "}
+                          {complaintsByType
+                            .filter(item => item && item.value > 0)
+                            .reduce((sum, type) => sum + (type.value || 0), 0)}
                         </div>
                       )}
                     </>

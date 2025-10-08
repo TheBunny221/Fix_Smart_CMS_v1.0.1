@@ -65,11 +65,30 @@ async function startServer() {
       }
     }
 
-    // 2. Create Express app
-    console.log("\n🔧 Step 2: Express Application Setup");
+    // 2. Initialize services
+    console.log("\n🔧 Step 2: Service Initialization");
+    if (databaseConnected) {
+      try {
+        const { initializeServices } = await import("./services/initializeServices.js");
+        await initializeServices();
+        console.log("✅ All services initialized successfully");
+      } catch (serviceError) {
+        console.error("❌ Service initialization failed:", serviceError.message);
+        if (env.isProduction) {
+          throw serviceError; // Fail in production
+        } else {
+          console.warn("⚠️ Continuing without service initialization in development");
+        }
+      }
+    } else {
+      console.warn("⚠️ Skipping service initialization (database not connected)");
+    }
+
+    // 3. Create Express app
+    console.log("\n🔧 Step 3: Express Application Setup");
     app = createApp();
 
-    // 3. Enhanced health check endpoint with database status
+    // 4. Enhanced health check endpoint with database status
     app.get("/api/health/detailed", async (req, res) => {
       let dbStatus = { healthy: false, message: "Database not connected" };
 
@@ -106,8 +125,8 @@ async function startServer() {
       });
     });
 
-    // 4. Start server
-    console.log("\n🔧 Step 3: Starting HTTP Server");
+    // 5. Start server
+    console.log("\n🔧 Step 4: Starting HTTP Server");
     const server = app.listen(PORT, HOST, () => {
       console.log("\n🎉 Server Successfully Started!");
       console.log("=".repeat(50));
@@ -142,11 +161,11 @@ async function startServer() {
       );
     });
 
-    // 5. Server configuration
+    // 6. Server configuration
     server.keepAliveTimeout = 120000; // 2 minutes
     server.headersTimeout = 120000; // 2 minutes
 
-    // 6. Graceful shutdown handler
+    // 7. Graceful shutdown handler
     const gracefulShutdown = (signal) => {
       console.log(`\n🛑 ${signal} received, initiating graceful shutdown...`);
 
@@ -154,6 +173,17 @@ async function startServer() {
         console.log("🔌 HTTP server closed");
 
         try {
+          // Shutdown services
+          if (databaseConnected) {
+            try {
+              const { shutdownServices } = await import("./services/initializeServices.js");
+              await shutdownServices();
+              console.log("🔧 Services shut down");
+            } catch (serviceError) {
+              console.warn("⚠️ Service shutdown error:", serviceError.message);
+            }
+          }
+
           // Close database connections
           const { getPrisma } = await import("./db/connection.js");
           const prisma = getPrisma();

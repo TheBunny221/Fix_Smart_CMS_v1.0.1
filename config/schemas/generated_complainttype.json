@@ -1,0 +1,212 @@
+{
+  "ComplaintType": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789",
+        "default": "autoincrement("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaHours": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1,
+        "default": "48"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "priority",
+      "slaHours",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "ComplaintTypeCreateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaHours": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1,
+        "default": "48"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "description",
+      "priority",
+      "slaHours",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "ComplaintTypeUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaHours": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1,
+        "default": "48"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "description",
+      "priority",
+      "slaHours",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "ComplaintTypeResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789",
+        "default": "autoincrement("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaHours": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1,
+        "default": "48"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "priority",
+      "slaHours",
+      "isActive",
+      "complaints"
+    ]
+  }
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Simple Fix_Smart_CMS_v1.0.3 Documentation Alignment Validation
+ * Simple Fix_Smart_CMS_  Documentation Alignment Validation
  */
 
 import fs from 'fs';
@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 
-console.log('🚀 Fix_Smart_CMS_v1.0.3 Documentation Alignment Validation');
+console.log('🚀 Fix_Smart_CMS_  Documentation Alignment Validation');
 console.log('📁 Project Root:', projectRoot);
 
 let passed = 0;

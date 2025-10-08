@@ -1,0 +1,202 @@
+{
+  "Ward": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "users": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "subZones": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "isActive",
+      "users",
+      "complaints",
+      "subZones"
+    ]
+  },
+  "WardCreateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "users": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "subZones": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "description",
+      "isActive",
+      "users",
+      "complaints",
+      "subZones"
+    ]
+  },
+  "WardUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "users": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "subZones": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "description",
+      "isActive",
+      "users",
+      "complaints",
+      "subZones"
+    ]
+  },
+  "WardResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "users": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "subZones": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "isActive",
+      "users",
+      "complaints",
+      "subZones"
+    ]
+  }
+}

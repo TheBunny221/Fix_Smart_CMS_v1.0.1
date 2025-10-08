@@ -1,0 +1,229 @@
+{
+  "OTPSession": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "otpCode": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "purpose": {
+        "type": "string",
+        "example": "example_string",
+        "default": "GUEST_VERIFICATION"
+      },
+      "isVerified": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "verifiedAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      }
+    },
+    "required": [
+      "id",
+      "userId",
+      "email",
+      "phoneNumber",
+      "otpCode",
+      "purpose",
+      "isVerified",
+      "expiresAt",
+      "verifiedAt"
+    ]
+  },
+  "OTPSessionCreateRequest": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "otpCode": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "purpose": {
+        "type": "string",
+        "example": "example_string",
+        "default": "GUEST_VERIFICATION"
+      },
+      "isVerified": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "verifiedAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      }
+    },
+    "required": [
+      "userId",
+      "email",
+      "phoneNumber",
+      "otpCode",
+      "purpose",
+      "isVerified",
+      "expiresAt",
+      "verifiedAt"
+    ]
+  },
+  "OTPSessionUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "otpCode": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "purpose": {
+        "type": "string",
+        "example": "example_string",
+        "default": "GUEST_VERIFICATION"
+      },
+      "isVerified": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "verifiedAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      }
+    },
+    "required": [
+      "userId",
+      "email",
+      "phoneNumber",
+      "otpCode",
+      "purpose",
+      "isVerified",
+      "expiresAt",
+      "verifiedAt"
+    ]
+  },
+  "OTPSessionResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "otpCode": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "purpose": {
+        "type": "string",
+        "example": "example_string",
+        "default": "GUEST_VERIFICATION"
+      },
+      "isVerified": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "verifiedAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "user": {
+        "$ref": "#/components/schemas/User"
+      }
+    },
+    "required": [
+      "id",
+      "userId",
+      "email",
+      "phoneNumber",
+      "otpCode",
+      "purpose",
+      "isVerified",
+      "expiresAt",
+      "verifiedAt"
+    ]
+  }
+}

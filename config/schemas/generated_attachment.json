@@ -1,0 +1,216 @@
+{
+  "Attachment": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "entityType": {
+        "type": "string",
+        "enum": [
+          "COMPLAINT",
+          "CITIZEN",
+          "USER",
+          "MAINTENANCE_PHOTO"
+        ],
+        "example": "COMPLAINT"
+      },
+      "fileName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "originalName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "mimeType": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "size": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1
+      },
+      "url": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "uploadedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      }
+    },
+    "required": [
+      "id",
+      "entityType",
+      "fileName",
+      "originalName",
+      "mimeType",
+      "size",
+      "url",
+      "uploadedById"
+    ]
+  },
+  "AttachmentCreateRequest": {
+    "type": "object",
+    "properties": {
+      "entityType": {
+        "type": "string",
+        "enum": [
+          "COMPLAINT",
+          "CITIZEN",
+          "USER",
+          "MAINTENANCE_PHOTO"
+        ],
+        "example": "COMPLAINT"
+      },
+      "fileName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "originalName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "mimeType": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "size": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1
+      },
+      "url": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "uploadedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      }
+    },
+    "required": [
+      "entityType",
+      "fileName",
+      "originalName",
+      "mimeType",
+      "size",
+      "url",
+      "uploadedById"
+    ]
+  },
+  "AttachmentUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "entityType": {
+        "type": "string",
+        "enum": [
+          "COMPLAINT",
+          "CITIZEN",
+          "USER",
+          "MAINTENANCE_PHOTO"
+        ],
+        "example": "COMPLAINT"
+      },
+      "fileName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "originalName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "mimeType": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "size": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1
+      },
+      "url": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "uploadedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      }
+    },
+    "required": [
+      "entityType",
+      "fileName",
+      "originalName",
+      "mimeType",
+      "size",
+      "url",
+      "uploadedById"
+    ]
+  },
+  "AttachmentResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "entityType": {
+        "type": "string",
+        "enum": [
+          "COMPLAINT",
+          "CITIZEN",
+          "USER",
+          "MAINTENANCE_PHOTO"
+        ],
+        "example": "COMPLAINT"
+      },
+      "fileName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "originalName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "mimeType": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "size": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1
+      },
+      "url": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "uploadedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaint": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "uploadedBy": {
+        "$ref": "#/components/schemas/User"
+      }
+    },
+    "required": [
+      "id",
+      "entityType",
+      "fileName",
+      "originalName",
+      "mimeType",
+      "size",
+      "url",
+      "uploadedById"
+    ]
+  }
+}

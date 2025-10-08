@@ -1,0 +1,161 @@
+{
+  "SubZone": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "wardId",
+      "description",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "SubZoneCreateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "wardId",
+      "description",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "SubZoneUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "wardId",
+      "description",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "SubZoneResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "ward": {
+        "$ref": "#/components/schemas/Ward"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "wardId",
+      "description",
+      "isActive",
+      "complaints"
+    ]
+  }
+}

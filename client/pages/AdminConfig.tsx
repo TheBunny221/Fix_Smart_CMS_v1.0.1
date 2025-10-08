@@ -162,6 +162,7 @@ const AdminConfig: React.FC = () => {
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoUploadMode, setLogoUploadMode] = useState<"url" | "file">("url");
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [dialogLogoUploadMode, setDialogLogoUploadMode] = useState<"url" | "file">("url");
   const [selectedWardForBoundary, setSelectedWardForBoundary] =
     useState<Ward | null>(null);
   const [isBoundaryManagerOpen, setIsBoundaryManagerOpen] = useState(false);
@@ -196,6 +197,7 @@ const AdminConfig: React.FC = () => {
     setLogoFile(null);
     setLogoPreview(null);
     setLogoUploadMode("url");
+    setDialogLogoUploadMode("url");
   };
 
   // API calls with retry logic for rate limiting
@@ -351,12 +353,35 @@ const AdminConfig: React.FC = () => {
       // Complaint types are loaded via RTK Query hooks
 
       // Load system settings (admin-only endpoint)
-      let settingsResponse: ApiResponse<SystemSetting[]>;
+      interface AdminConfigResponse {
+        cached: Record<string, string>;
+        database: Array<{
+          id: string;
+          key: string;
+          value: string;
+          type: string | null;
+          description: string | null;
+          isActive: boolean;
+          updatedAt: string;
+        }>;
+        cacheStats: any;
+      }
+      
+      let settingsResponse: ApiResponse<AdminConfigResponse>;
       try {
-        settingsResponse = await apiCall<ApiResponse<SystemSetting[]>>(
-          "/system-config",
+        settingsResponse = await apiCall<ApiResponse<AdminConfigResponse>>(
+          "/config/admin",
         );
-        setSystemSettings(settingsResponse.data || []);
+        
+        // Convert database configs to SystemSetting format
+        const systemSettings: SystemSetting[] = settingsResponse.data?.database?.map(config => ({
+          key: config.key,
+          value: config.value,
+          description: config.description || '',
+          type: 'string' as const // Default to string, could be enhanced later
+        })) || [];
+        
+        setSystemSettings(systemSettings);
       } catch (error: any) {
         console.error("Failed to load system settings:", error);
         if (error.message.includes("HTTP 429")) {
@@ -746,7 +771,7 @@ const AdminConfig: React.FC = () => {
   const handleUpdateSystemSetting = async (key: string, value: string) => {
     setIsLoading(true);
     try {
-      await apiCall<ApiResponse<SystemSetting>>(`/system-config/${key}`, {
+      await apiCall<ApiResponse<SystemSetting>>(`/config/${key}`, {
         method: "PUT",
         body: JSON.stringify({ value }),
       });
@@ -795,12 +820,14 @@ const AdminConfig: React.FC = () => {
 
       const data = await response.json();
 
-      // Update the APP_LOGO_URL setting with the new file URL
-      const logoSetting = systemSettings.find((s) => s.key === "APP_LOGO_URL");
-      if (logoSetting) {
-        const updatedSetting = { ...logoSetting, value: data.data.url };
-        await handleSaveSystemSetting(updatedSetting);
-      }
+      // Update the local state immediately
+      setSystemSettings((prev) =>
+        prev.map((s) =>
+          s.key === "APP_LOGO_URL"
+            ? { ...s, value: data.data.url }
+            : s
+        )
+      );
 
       return data.data.url;
     } catch (error: any) {
@@ -824,7 +851,7 @@ const AdminConfig: React.FC = () => {
       if (existingSetting) {
         // Update existing setting
         response = await apiCall<ApiResponse<SystemSetting>>(
-          `/system-config/${setting.key}`,
+          `/config/${setting.key}`,
           {
             method: "PUT",
             body: JSON.stringify({
@@ -841,7 +868,7 @@ const AdminConfig: React.FC = () => {
       } else {
         // Create new setting
         response = await apiCall<ApiResponse<SystemSetting>>(
-          "/system-config",
+          "/config",
           {
             method: "POST",
             body: JSON.stringify(settingData),
@@ -876,7 +903,7 @@ const AdminConfig: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await apiCall<unknown>(`/system-config/${key}`, { method: "DELETE" });
+      await apiCall<unknown>(`/config/${key}`, { method: "DELETE" });
       setSystemSettings((prev) => prev.filter((s) => s.key !== key));
 
       dispatch(
@@ -1368,21 +1395,20 @@ const AdminConfig: React.FC = () => {
                       if (!s) return null;
                       return (
                         <div className="border rounded-lg p-4" key={s.key}>
-                          <div className="mb-2 flex items-center justify-between">
+                          <div className="mb-4 flex items-center justify-between">
                             <div>
                               <h4 className="font-medium">
-                                Application Logo URL
+                                Application Logo
                               </h4>
                               <p className="text-sm text-gray-600">
-                                Public URL for the logo shown in the header and
-                                PDFs.
+                                Logo shown in the header, emails, and PDFs. You can provide a URL or upload a file.
                               </p>
                             </div>
-                            {s.value && (
+                            {(s.value || logoPreview) && (
                               <img
-                                src={s.value}
+                                src={logoPreview || s.value}
                                 alt="Logo"
-                                className="h-10 w-10 object-contain border rounded ml-4"
+                                className="h-12 w-12 object-contain border rounded ml-4"
                                 onError={(e) =>
                                   ((
                                     e.target as HTMLImageElement
@@ -1391,24 +1417,188 @@ const AdminConfig: React.FC = () => {
                               />
                             )}
                           </div>
-                          <Input
-                            type="text"
-                            value={s.value}
-                            onChange={(e) =>
-                              setSystemSettings((prev) =>
-                                prev.map((it) =>
-                                  it.key === s.key
-                                    ? { ...it, value: e.target.value }
-                                    : it,
-                                ),
-                              )
-                            }
-                            onBlur={(e) =>
-                              handleUpdateSystemSetting(s.key, e.target.value)
-                            }
-                            placeholder="https://.../logo.png"
-                            className="max-w-md"
-                          />
+                          
+                          {/* Logo Upload Mode Toggle */}
+                          <div className="mb-4">
+                            <Label className="text-sm font-medium mb-2 block">Upload Method</Label>
+                            {process.env.NODE_ENV === "development" && (
+                              <div className="text-xs text-blue-600 mb-2">
+                                Debug: Current mode = {logoUploadMode}
+                              </div>
+                            )}
+                            <div className="flex space-x-4">
+                              <label className="flex items-center cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="logoUploadMode"
+                                  value="url"
+                                  checked={logoUploadMode === "url"}
+                                  onChange={(e) => {
+                                    console.log("Main radio button changed to:", e.target.value);
+                                    setLogoUploadMode(e.target.value as "url" | "file");
+                                    resetLogoUploadState();
+                                  }}
+                                  className="mr-2 w-4 h-4"
+                                />
+                                <span className="text-sm">URL</span>
+                              </label>
+                              <label className="flex items-center cursor-pointer">
+                                <input
+                                  type="radio"
+                                  name="logoUploadMode"
+                                  value="file"
+                                  checked={logoUploadMode === "file"}
+                                  onChange={(e) => {
+                                    console.log("Main radio button changed to:", e.target.value);
+                                    setLogoUploadMode(e.target.value as "url" | "file");
+                                    resetLogoUploadState();
+                                  }}
+                                  className="mr-2 w-4 h-4"
+                                />
+                                <span className="text-sm">Upload File</span>
+                              </label>
+                            </div>
+                          </div>
+
+                          {/* URL Input Mode */}
+                          {logoUploadMode === "url" && (
+                            <div className="space-y-2">
+                              <Label htmlFor="logoUrl" className="text-sm">Logo URL</Label>
+                              <Input
+                                id="logoUrl"
+                                type="text"
+                                value={s.value}
+                                onChange={(e) => {
+                                  setSystemSettings((prev) =>
+                                    prev.map((it) =>
+                                      it.key === s.key
+                                        ? { ...it, value: e.target.value }
+                                        : it,
+                                    ),
+                                  );
+                                  // Clear any file upload state
+                                  setLogoFile(null);
+                                  setLogoPreview(null);
+                                }}
+                                onBlur={(e) =>
+                                  handleUpdateSystemSetting(s.key, e.target.value)
+                                }
+                                placeholder="https://example.com/logo.png"
+                                className="max-w-md"
+                              />
+                              <p className="text-xs text-gray-500">
+                                Enter a public URL to your logo image
+                              </p>
+                            </div>
+                          )}
+
+                          {/* File Upload Mode */}
+                          {logoUploadMode === "file" && (
+                            <div className="space-y-4">
+                              <div>
+                                <Label htmlFor="logoFile" className="text-sm">Upload Logo File</Label>
+                                <Input
+                                  id="logoFile"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      // Validate file size (5MB max)
+                                      if (file.size > 5 * 1024 * 1024) {
+                                        dispatch(showErrorToast(
+                                          "File Too Large",
+                                          "Logo file must be smaller than 5MB"
+                                        ));
+                                        e.target.value = "";
+                                        return;
+                                      }
+
+                                      // Validate file type
+                                      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+                                      if (!allowedTypes.includes(file.type)) {
+                                        dispatch(showErrorToast(
+                                          "Invalid File Type",
+                                          "Please upload a valid image file (JPEG, PNG, GIF, WEBP, SVG)"
+                                        ));
+                                        e.target.value = "";
+                                        return;
+                                      }
+
+                                      setLogoFile(file);
+                                      
+                                      // Create preview
+                                      const reader = new FileReader();
+                                      reader.onload = (e) => {
+                                        setLogoPreview(e.target?.result as string);
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }}
+                                  className="max-w-md"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Supported formats: JPEG, PNG, GIF, WEBP, SVG (max 5MB)
+                                </p>
+                              </div>
+
+                              {logoFile && (
+                                <div className="flex items-center space-x-4">
+                                  <div className="text-sm text-gray-600">
+                                    Selected: {logoFile.name} ({(logoFile.size / 1024 / 1024).toFixed(2)} MB)
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    onClick={async () => {
+                                      if (!logoFile) return;
+                                      
+                                      setIsLoading(true);
+                                      try {
+                                        const logoUrl = await handleLogoFileUpload(logoFile);
+                                        
+                                        // Update the preview and clear file state
+                                        setLogoPreview(logoUrl);
+                                        setLogoFile(null);
+                                        
+                                        // Clear the file input
+                                        const fileInput = document.getElementById('logoFile') as HTMLInputElement;
+                                        if (fileInput) fileInput.value = '';
+                                        
+                                        dispatch(showSuccessToast(
+                                          "Logo Uploaded",
+                                          "Logo has been uploaded and updated successfully"
+                                        ));
+                                      } catch (error: any) {
+                                        dispatch(showErrorToast(
+                                          "Upload Failed",
+                                          error.message || "Failed to upload logo"
+                                        ));
+                                      } finally {
+                                        setIsLoading(false);
+                                      }
+                                    }}
+                                    disabled={isLoading}
+                                    size="sm"
+                                  >
+                                    {isLoading ? "Uploading..." : "Upload Logo"}
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setLogoFile(null);
+                                      setLogoPreview(null);
+                                      const fileInput = document.getElementById('logoFile') as HTMLInputElement;
+                                      if (fileInput) fileInput.value = '';
+                                    }}
+                                    size="sm"
+                                  >
+                                    Cancel
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
@@ -2375,33 +2565,37 @@ const AdminConfig: React.FC = () => {
                   <div className="space-y-4">
                     {/* Mode Selection */}
                     <div className="flex gap-4">
-                      <label className="flex items-center space-x-2">
+                      <label className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="radio"
+                          name="logoUploadModeDialog"
                           value="url"
-                          checked={logoUploadMode === "url"}
-                          onChange={(e) =>
-                            setLogoUploadMode(e.target.value as "url" | "file")
-                          }
+                          checked={dialogLogoUploadMode === "url"}
+                          onChange={(e) => {
+                            console.log("Dialog radio button changed to:", e.target.value);
+                            setDialogLogoUploadMode(e.target.value as "url" | "file");
+                          }}
                           className="form-radio"
                         />
                         <span>URL</span>
                       </label>
-                      <label className="flex items-center space-x-2">
+                      <label className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="radio"
+                          name="logoUploadModeDialog"
                           value="file"
-                          checked={logoUploadMode === "file"}
-                          onChange={(e) =>
-                            setLogoUploadMode(e.target.value as "url" | "file")
-                          }
+                          checked={dialogLogoUploadMode === "file"}
+                          onChange={(e) => {
+                            console.log("Dialog radio button changed to:", e.target.value);
+                            setDialogLogoUploadMode(e.target.value as "url" | "file");
+                          }}
                           className="form-radio"
                         />
                         <span>Upload File</span>
                       </label>
                     </div>
 
-                    {logoUploadMode === "url" ? (
+                    {dialogLogoUploadMode === "url" ? (
                       <Input
                         id="settingValue"
                         value={editingSetting.value}
@@ -2547,7 +2741,7 @@ const AdminConfig: React.FC = () => {
                   onClick={async () => {
                     if (
                       editingSetting.key === "APP_LOGO_URL" &&
-                      logoUploadMode === "file" &&
+                      dialogLogoUploadMode === "file" &&
                       logoFile
                     ) {
                       try {
@@ -2585,7 +2779,7 @@ const AdminConfig: React.FC = () => {
                   disabled={
                     isLoading ||
                     !editingSetting.key ||
-                    (logoUploadMode === "file" &&
+                    (dialogLogoUploadMode === "file" &&
                     editingSetting.key === "APP_LOGO_URL"
                       ? !logoFile
                       : !editingSetting.value)

@@ -1,0 +1,2707 @@
+{
+  "User": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "fullName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "password": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "CITIZEN",
+          "WARD_OFFICER",
+          "MAINTENANCE_TEAM",
+          "ADMINISTRATOR",
+          "GUEST"
+        ],
+        "example": "CITIZEN"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "department": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "language": {
+        "type": "string",
+        "example": "example_string",
+        "default": "en"
+      },
+      "avatar": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "lastLogin": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "joinedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "otpSessions": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "email",
+      "fullName",
+      "phoneNumber",
+      "password",
+      "role",
+      "wardId",
+      "department",
+      "language",
+      "avatar",
+      "isActive",
+      "lastLogin",
+      "joinedOn",
+      "statusLogs",
+      "otpSessions",
+      "notifications"
+    ]
+  },
+  "UserCreateRequest": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "fullName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "password": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "CITIZEN",
+          "WARD_OFFICER",
+          "MAINTENANCE_TEAM",
+          "ADMINISTRATOR",
+          "GUEST"
+        ],
+        "example": "CITIZEN"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "department": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "language": {
+        "type": "string",
+        "example": "example_string",
+        "default": "en"
+      },
+      "avatar": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "lastLogin": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "joinedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "otpSessions": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "email",
+      "fullName",
+      "phoneNumber",
+      "password",
+      "role",
+      "wardId",
+      "department",
+      "language",
+      "avatar",
+      "isActive",
+      "lastLogin",
+      "joinedOn",
+      "statusLogs",
+      "otpSessions",
+      "notifications"
+    ]
+  },
+  "UserUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "fullName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "password": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "CITIZEN",
+          "WARD_OFFICER",
+          "MAINTENANCE_TEAM",
+          "ADMINISTRATOR",
+          "GUEST"
+        ],
+        "example": "CITIZEN"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "department": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "language": {
+        "type": "string",
+        "example": "example_string",
+        "default": "en"
+      },
+      "avatar": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "lastLogin": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "joinedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "otpSessions": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "email",
+      "fullName",
+      "phoneNumber",
+      "password",
+      "role",
+      "wardId",
+      "department",
+      "language",
+      "avatar",
+      "isActive",
+      "lastLogin",
+      "joinedOn",
+      "statusLogs",
+      "otpSessions",
+      "notifications"
+    ]
+  },
+  "UserResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "fullName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "password": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "CITIZEN",
+          "WARD_OFFICER",
+          "MAINTENANCE_TEAM",
+          "ADMINISTRATOR",
+          "GUEST"
+        ],
+        "example": "CITIZEN"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "department": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "language": {
+        "type": "string",
+        "example": "example_string",
+        "default": "en"
+      },
+      "avatar": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "lastLogin": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "joinedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "ward": {
+        "$ref": "#/components/schemas/Ward"
+      },
+      "submittedComplaints": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "assignedComplaints": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "wardOfficerComplaints": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "maintenanceTeamComplaints": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "otpSessions": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "uploadedAttachments": {
+        "$ref": "#/components/schemas/Attachment"
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "email",
+      "fullName",
+      "phoneNumber",
+      "password",
+      "role",
+      "wardId",
+      "department",
+      "language",
+      "avatar",
+      "isActive",
+      "lastLogin",
+      "joinedOn",
+      "statusLogs",
+      "otpSessions",
+      "notifications"
+    ]
+  },
+  "Ward": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "users": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "subZones": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "isActive",
+      "users",
+      "complaints",
+      "subZones"
+    ]
+  },
+  "WardCreateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "users": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "subZones": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "description",
+      "isActive",
+      "users",
+      "complaints",
+      "subZones"
+    ]
+  },
+  "WardUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "users": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "subZones": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "description",
+      "isActive",
+      "users",
+      "complaints",
+      "subZones"
+    ]
+  },
+  "WardResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "users": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "subZones": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "isActive",
+      "users",
+      "complaints",
+      "subZones"
+    ]
+  },
+  "SubZone": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "wardId",
+      "description",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "SubZoneCreateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "wardId",
+      "description",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "SubZoneUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "wardId",
+      "description",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "SubZoneResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "ward": {
+        "$ref": "#/components/schemas/Ward"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "wardId",
+      "description",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "ComplaintType": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789",
+        "default": "autoincrement("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaHours": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1,
+        "default": "48"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "priority",
+      "slaHours",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "ComplaintTypeCreateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaHours": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1,
+        "default": "48"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "description",
+      "priority",
+      "slaHours",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "ComplaintTypeUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaHours": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1,
+        "default": "48"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "name",
+      "description",
+      "priority",
+      "slaHours",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "ComplaintTypeResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789",
+        "default": "autoincrement("
+      },
+      "name": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaHours": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1,
+        "default": "48"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "complaints": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "description",
+      "priority",
+      "slaHours",
+      "isActive",
+      "complaints"
+    ]
+  },
+  "Complaint": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "complaintTypeId": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "ASSIGNED",
+          "IN_PROGRESS",
+          "RESOLVED",
+          "CLOSED",
+          "REOPENED"
+        ],
+        "example": "REGISTERED"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaStatus": {
+        "type": "string",
+        "enum": [
+          "ON_TIME",
+          "WARNING",
+          "OVERDUE",
+          "COMPLETED"
+        ],
+        "example": "ON_TIME"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "subZoneId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "area": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "landmark": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "address": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactEmail": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactPhone": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isAnonymous": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "submittedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "resolvedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "submittedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "assignedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "resolvedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "closedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "deadline": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "remarks": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "citizenFeedback": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "assignToTeam": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "attachments": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "complaintId",
+      "title",
+      "description",
+      "type",
+      "complaintTypeId",
+      "status",
+      "priority",
+      "slaStatus",
+      "wardId",
+      "subZoneId",
+      "area",
+      "landmark",
+      "address",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "isAnonymous",
+      "submittedById",
+      "resolvedById",
+      "submittedOn",
+      "assignedOn",
+      "resolvedOn",
+      "closedOn",
+      "deadline",
+      "remarks",
+      "citizenFeedback",
+      "assignToTeam",
+      "statusLogs",
+      "attachments",
+      "notifications"
+    ]
+  },
+  "ComplaintCreateRequest": {
+    "type": "object",
+    "properties": {
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "complaintTypeId": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "ASSIGNED",
+          "IN_PROGRESS",
+          "RESOLVED",
+          "CLOSED",
+          "REOPENED"
+        ],
+        "example": "REGISTERED"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaStatus": {
+        "type": "string",
+        "enum": [
+          "ON_TIME",
+          "WARNING",
+          "OVERDUE",
+          "COMPLETED"
+        ],
+        "example": "ON_TIME"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "subZoneId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "area": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "landmark": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "address": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactEmail": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactPhone": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isAnonymous": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "submittedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "resolvedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "submittedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "assignedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "resolvedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "closedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "deadline": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "remarks": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "citizenFeedback": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "assignToTeam": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "attachments": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "complaintId",
+      "title",
+      "description",
+      "type",
+      "complaintTypeId",
+      "status",
+      "priority",
+      "slaStatus",
+      "wardId",
+      "subZoneId",
+      "area",
+      "landmark",
+      "address",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "isAnonymous",
+      "submittedById",
+      "resolvedById",
+      "submittedOn",
+      "assignedOn",
+      "resolvedOn",
+      "closedOn",
+      "deadline",
+      "remarks",
+      "citizenFeedback",
+      "assignToTeam",
+      "statusLogs",
+      "attachments",
+      "notifications"
+    ]
+  },
+  "ComplaintUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "complaintTypeId": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "ASSIGNED",
+          "IN_PROGRESS",
+          "RESOLVED",
+          "CLOSED",
+          "REOPENED"
+        ],
+        "example": "REGISTERED"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaStatus": {
+        "type": "string",
+        "enum": [
+          "ON_TIME",
+          "WARNING",
+          "OVERDUE",
+          "COMPLETED"
+        ],
+        "example": "ON_TIME"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "subZoneId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "area": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "landmark": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "address": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactEmail": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactPhone": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isAnonymous": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "submittedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "resolvedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "submittedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "assignedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "resolvedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "closedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "deadline": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "remarks": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "citizenFeedback": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "assignToTeam": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "attachments": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "complaintId",
+      "title",
+      "description",
+      "type",
+      "complaintTypeId",
+      "status",
+      "priority",
+      "slaStatus",
+      "wardId",
+      "subZoneId",
+      "area",
+      "landmark",
+      "address",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "isAnonymous",
+      "submittedById",
+      "resolvedById",
+      "submittedOn",
+      "assignedOn",
+      "resolvedOn",
+      "closedOn",
+      "deadline",
+      "remarks",
+      "citizenFeedback",
+      "assignToTeam",
+      "statusLogs",
+      "attachments",
+      "notifications"
+    ]
+  },
+  "ComplaintResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "complaintTypeId": {
+        "type": "integer",
+        "format": "int32",
+        "example": "clp123abc456def789"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "REGISTERED",
+          "ASSIGNED",
+          "IN_PROGRESS",
+          "RESOLVED",
+          "CLOSED",
+          "REOPENED"
+        ],
+        "example": "REGISTERED"
+      },
+      "priority": {
+        "type": "string",
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "example": "LOW"
+      },
+      "slaStatus": {
+        "type": "string",
+        "enum": [
+          "ON_TIME",
+          "WARNING",
+          "OVERDUE",
+          "COMPLETED"
+        ],
+        "example": "ON_TIME"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "subZoneId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "area": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "landmark": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "address": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactEmail": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "contactPhone": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isAnonymous": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "submittedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "resolvedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "submittedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "assignedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "resolvedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "closedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "deadline": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "remarks": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "citizenFeedback": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "assignToTeam": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "ward": {
+        "$ref": "#/components/schemas/Ward"
+      },
+      "subZone": {
+        "$ref": "#/components/schemas/SubZone"
+      },
+      "submittedBy": {
+        "$ref": "#/components/schemas/User"
+      },
+      "assignedTo": {
+        "$ref": "#/components/schemas/User"
+      },
+      "wardOfficer": {
+        "$ref": "#/components/schemas/User"
+      },
+      "maintenanceTeam": {
+        "$ref": "#/components/schemas/User"
+      },
+      "complaintType": {
+        "$ref": "#/components/schemas/ComplaintType"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "attachments": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "complaintId",
+      "title",
+      "description",
+      "type",
+      "complaintTypeId",
+      "status",
+      "priority",
+      "slaStatus",
+      "wardId",
+      "subZoneId",
+      "area",
+      "landmark",
+      "address",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "isAnonymous",
+      "submittedById",
+      "resolvedById",
+      "submittedOn",
+      "assignedOn",
+      "resolvedOn",
+      "closedOn",
+      "deadline",
+      "remarks",
+      "citizenFeedback",
+      "assignToTeam",
+      "statusLogs",
+      "attachments",
+      "notifications"
+    ]
+  },
+  "StatusLog": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "comment": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      }
+    },
+    "required": [
+      "id",
+      "complaintId",
+      "userId",
+      "comment",
+      "timestamp"
+    ]
+  },
+  "StatusLogCreateRequest": {
+    "type": "object",
+    "properties": {
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "comment": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      }
+    },
+    "required": [
+      "complaintId",
+      "userId",
+      "comment",
+      "timestamp"
+    ]
+  },
+  "StatusLogUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "comment": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      }
+    },
+    "required": [
+      "complaintId",
+      "userId",
+      "comment",
+      "timestamp"
+    ]
+  },
+  "StatusLogResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "comment": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "complaint": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "user": {
+        "$ref": "#/components/schemas/User"
+      }
+    },
+    "required": [
+      "id",
+      "complaintId",
+      "userId",
+      "comment",
+      "timestamp"
+    ]
+  },
+  "Attachment": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "entityType": {
+        "type": "string",
+        "enum": [
+          "COMPLAINT",
+          "CITIZEN",
+          "USER",
+          "MAINTENANCE_PHOTO"
+        ],
+        "example": "COMPLAINT"
+      },
+      "fileName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "originalName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "mimeType": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "size": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1
+      },
+      "url": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "uploadedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      }
+    },
+    "required": [
+      "id",
+      "entityType",
+      "fileName",
+      "originalName",
+      "mimeType",
+      "size",
+      "url",
+      "uploadedById"
+    ]
+  },
+  "AttachmentCreateRequest": {
+    "type": "object",
+    "properties": {
+      "entityType": {
+        "type": "string",
+        "enum": [
+          "COMPLAINT",
+          "CITIZEN",
+          "USER",
+          "MAINTENANCE_PHOTO"
+        ],
+        "example": "COMPLAINT"
+      },
+      "fileName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "originalName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "mimeType": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "size": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1
+      },
+      "url": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "uploadedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      }
+    },
+    "required": [
+      "entityType",
+      "fileName",
+      "originalName",
+      "mimeType",
+      "size",
+      "url",
+      "uploadedById"
+    ]
+  },
+  "AttachmentUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "entityType": {
+        "type": "string",
+        "enum": [
+          "COMPLAINT",
+          "CITIZEN",
+          "USER",
+          "MAINTENANCE_PHOTO"
+        ],
+        "example": "COMPLAINT"
+      },
+      "fileName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "originalName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "mimeType": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "size": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1
+      },
+      "url": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "uploadedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      }
+    },
+    "required": [
+      "entityType",
+      "fileName",
+      "originalName",
+      "mimeType",
+      "size",
+      "url",
+      "uploadedById"
+    ]
+  },
+  "AttachmentResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "entityType": {
+        "type": "string",
+        "enum": [
+          "COMPLAINT",
+          "CITIZEN",
+          "USER",
+          "MAINTENANCE_PHOTO"
+        ],
+        "example": "COMPLAINT"
+      },
+      "fileName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "originalName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "mimeType": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "size": {
+        "type": "integer",
+        "format": "int32",
+        "example": 1
+      },
+      "url": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "uploadedById": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaint": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "uploadedBy": {
+        "$ref": "#/components/schemas/User"
+      }
+    },
+    "required": [
+      "id",
+      "entityType",
+      "fileName",
+      "originalName",
+      "mimeType",
+      "size",
+      "url",
+      "uploadedById"
+    ]
+  },
+  "OTPSession": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "otpCode": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "purpose": {
+        "type": "string",
+        "example": "example_string",
+        "default": "GUEST_VERIFICATION"
+      },
+      "isVerified": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "verifiedAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      }
+    },
+    "required": [
+      "id",
+      "userId",
+      "email",
+      "phoneNumber",
+      "otpCode",
+      "purpose",
+      "isVerified",
+      "expiresAt",
+      "verifiedAt"
+    ]
+  },
+  "OTPSessionCreateRequest": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "otpCode": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "purpose": {
+        "type": "string",
+        "example": "example_string",
+        "default": "GUEST_VERIFICATION"
+      },
+      "isVerified": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "verifiedAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      }
+    },
+    "required": [
+      "userId",
+      "email",
+      "phoneNumber",
+      "otpCode",
+      "purpose",
+      "isVerified",
+      "expiresAt",
+      "verifiedAt"
+    ]
+  },
+  "OTPSessionUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "otpCode": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "purpose": {
+        "type": "string",
+        "example": "example_string",
+        "default": "GUEST_VERIFICATION"
+      },
+      "isVerified": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "verifiedAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      }
+    },
+    "required": [
+      "userId",
+      "email",
+      "phoneNumber",
+      "otpCode",
+      "purpose",
+      "isVerified",
+      "expiresAt",
+      "verifiedAt"
+    ]
+  },
+  "OTPSessionResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "otpCode": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "purpose": {
+        "type": "string",
+        "example": "example_string",
+        "default": "GUEST_VERIFICATION"
+      },
+      "isVerified": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "expiresAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "verifiedAt": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "user": {
+        "$ref": "#/components/schemas/User"
+      }
+    },
+    "required": [
+      "id",
+      "userId",
+      "email",
+      "phoneNumber",
+      "otpCode",
+      "purpose",
+      "isVerified",
+      "expiresAt",
+      "verifiedAt"
+    ]
+  },
+  "Notification": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string",
+        "default": "IN_APP"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "message": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isRead": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      }
+    },
+    "required": [
+      "id",
+      "userId",
+      "complaintId",
+      "type",
+      "title",
+      "message",
+      "isRead"
+    ]
+  },
+  "NotificationCreateRequest": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string",
+        "default": "IN_APP"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "message": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isRead": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      }
+    },
+    "required": [
+      "userId",
+      "complaintId",
+      "type",
+      "title",
+      "message",
+      "isRead"
+    ]
+  },
+  "NotificationUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string",
+        "default": "IN_APP"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "message": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isRead": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      }
+    },
+    "required": [
+      "userId",
+      "complaintId",
+      "type",
+      "title",
+      "message",
+      "isRead"
+    ]
+  },
+  "NotificationResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string",
+        "default": "IN_APP"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "message": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isRead": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "user": {
+        "$ref": "#/components/schemas/User"
+      },
+      "complaint": {
+        "$ref": "#/components/schemas/Complaint"
+      }
+    },
+    "required": [
+      "id",
+      "userId",
+      "complaintId",
+      "type",
+      "title",
+      "message",
+      "isRead"
+    ]
+  },
+  "SystemConfig": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "key": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "value": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      }
+    },
+    "required": [
+      "id",
+      "key",
+      "value",
+      "description",
+      "isActive"
+    ]
+  },
+  "SystemConfigCreateRequest": {
+    "type": "object",
+    "properties": {
+      "key": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "value": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      }
+    },
+    "required": [
+      "key",
+      "value",
+      "description",
+      "isActive"
+    ]
+  },
+  "SystemConfigUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "key": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "value": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      }
+    },
+    "required": [
+      "key",
+      "value",
+      "description",
+      "isActive"
+    ]
+  },
+  "SystemConfigResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "key": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "value": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "description": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      }
+    },
+    "required": [
+      "id",
+      "key",
+      "value",
+      "description",
+      "isActive"
+    ]
+  }
+}

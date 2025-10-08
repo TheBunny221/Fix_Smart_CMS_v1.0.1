@@ -1,4 +1,7 @@
 import { getPrisma } from "../db/connection.js";
+import systemConfigCache from "../services/systemConfigCache.js";
+import { SystemConfigMigration } from "./systemConfigMigration.js";
+import logger from "./logger.js";
 
 // Build a map of complaint type -> SLA hours from ComplaintType table with fallback to system config
 export async function getTypeSlaMap(prisma) {
@@ -27,29 +30,63 @@ export async function getTypeSlaMap(prisma) {
       }
     }
   } else {
-    // Fallback to legacy system config
-    const typeConfigs = await client.systemConfig.findMany({
-      where: { key: { startsWith: "COMPLAINT_TYPE_" }, isActive: true },
-    });
+    // Fallback to legacy system config using cache
+    logger.info('Using SystemConfig cache for complaint type SLA lookup');
     
-    for (const cfg of typeConfigs) {
-      try {
-        const v = JSON.parse(cfg.value || "{}");
-        const id = (cfg.key || "").replace("COMPLAINT_TYPE_", "");
-        const slaHours = Number(v.slaHours);
-        if (!id || !Number.isFinite(slaHours) || slaHours <= 0) continue;
-        
-        // Primary key: the config suffix (e.g. WATER_SUPPLY) which matches complaint.type
-        map.set(id, slaHours);
-        // Also set uppercase/lowercase variants and the human-readable name (if present) for resilience
-        if (v.name && typeof v.name === "string") {
-          map.set(v.name.toUpperCase(), slaHours);
-          map.set(v.name.toLowerCase(), slaHours);
+    if (systemConfigCache.isInitialized) {
+      // Use cache for better performance
+      const typeConfigs = systemConfigCache.getByPattern('COMPLAINT_TYPE_', 'startsWith');
+      
+      for (const [key, value] of Object.entries(typeConfigs)) {
+        try {
+          const v = JSON.parse(value || "{}");
+          const id = key.replace("COMPLAINT_TYPE_", "");
+          const slaHours = Number(v.slaHours);
+          if (!id || !Number.isFinite(slaHours) || slaHours <= 0) continue;
+          
+          // Primary key: the config suffix (e.g. WATER_SUPPLY) which matches complaint.type
+          map.set(id, slaHours);
+          // Also set uppercase/lowercase variants and the human-readable name (if present) for resilience
+          if (v.name && typeof v.name === "string") {
+            map.set(v.name.toUpperCase(), slaHours);
+            map.set(v.name.toLowerCase(), slaHours);
+          }
+          map.set(id.toUpperCase(), slaHours);
+          map.set(id.toLowerCase(), slaHours);
+        } catch (e) {
+          logger.warn('Failed to parse complaint type config from cache', {
+            key,
+            value,
+            error: e.message
+          });
         }
-        map.set(id.toUpperCase(), slaHours);
-        map.set(id.toLowerCase(), slaHours);
-      } catch (e) {
-        // ignore parse errors
+      }
+    } else {
+      // Fallback to direct database access if cache not available
+      logger.warn('SystemConfig cache not initialized, falling back to database');
+      const typeConfigs = await client.systemConfig.findMany({
+        where: { key: { startsWith: "COMPLAINT_TYPE_" }, isActive: true },
+      });
+      
+      for (const cfg of typeConfigs) {
+        try {
+          const v = JSON.parse(cfg.value || "{}");
+          const id = (cfg.key || "").replace("COMPLAINT_TYPE_", "");
+          const slaHours = Number(v.slaHours);
+          if (!id || !Number.isFinite(slaHours) || slaHours <= 0) continue;
+          
+          // Primary key: the config suffix (e.g. WATER_SUPPLY) which matches complaint.type
+          map.set(id, slaHours);
+          // Also set uppercase/lowercase variants and the human-readable name (if present) for resilience
+          if (v.name && typeof v.name === "string") {
+            map.set(v.name.toUpperCase(), slaHours);
+            map.set(v.name.toLowerCase(), slaHours);
+          }
+          map.set(id.toUpperCase(), slaHours);
+          map.set(id.toLowerCase(), slaHours);
+        } catch (e) {
+          // ignore parse errors
+        }
       }
     }
   }

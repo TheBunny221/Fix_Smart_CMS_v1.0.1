@@ -1,0 +1,176 @@
+{
+  "Notification": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string",
+        "default": "IN_APP"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "message": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isRead": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      }
+    },
+    "required": [
+      "id",
+      "userId",
+      "complaintId",
+      "type",
+      "title",
+      "message",
+      "isRead"
+    ]
+  },
+  "NotificationCreateRequest": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string",
+        "default": "IN_APP"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "message": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isRead": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      }
+    },
+    "required": [
+      "userId",
+      "complaintId",
+      "type",
+      "title",
+      "message",
+      "isRead"
+    ]
+  },
+  "NotificationUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string",
+        "default": "IN_APP"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "message": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isRead": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      }
+    },
+    "required": [
+      "userId",
+      "complaintId",
+      "type",
+      "title",
+      "message",
+      "isRead"
+    ]
+  },
+  "NotificationResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "userId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "complaintId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "type": {
+        "type": "string",
+        "example": "example_string",
+        "default": "IN_APP"
+      },
+      "title": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "message": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isRead": {
+        "type": "boolean",
+        "example": true,
+        "default": "false"
+      },
+      "user": {
+        "$ref": "#/components/schemas/User"
+      },
+      "complaint": {
+        "$ref": "#/components/schemas/Complaint"
+      }
+    },
+    "required": [
+      "id",
+      "userId",
+      "complaintId",
+      "type",
+      "title",
+      "message",
+      "isRead"
+    ]
+  }
+}

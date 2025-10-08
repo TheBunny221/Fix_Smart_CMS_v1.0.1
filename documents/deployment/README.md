@@ -101,7 +101,7 @@ Fix_Smart_CMS is designed for production deployment with the following architect
 ```bash
 # Clone repository
 git clone <repository-url>
-cd Fix_Smart_CMS_v1.0.3
+cd Fix_Smart_CMS_ 
 
 # Install dependencies
 npm ci --production
@@ -243,7 +243,7 @@ RATE_LIMIT_MAX=100
 ## Last Synced
 
 **Date**: $(date)  
-**Schema Version**: v1.0.3  
+**Schema Version**:    
 **Deployment Version**: Production-ready  
 **Supported Platforms**: Ubuntu 20.04+, CentOS 8+
 

@@ -1,0 +1,452 @@
+{
+  "User": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "fullName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "password": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "CITIZEN",
+          "WARD_OFFICER",
+          "MAINTENANCE_TEAM",
+          "ADMINISTRATOR",
+          "GUEST"
+        ],
+        "example": "CITIZEN"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "department": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "language": {
+        "type": "string",
+        "example": "example_string",
+        "default": "en"
+      },
+      "avatar": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "lastLogin": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "joinedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "otpSessions": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "email",
+      "fullName",
+      "phoneNumber",
+      "password",
+      "role",
+      "wardId",
+      "department",
+      "language",
+      "avatar",
+      "isActive",
+      "lastLogin",
+      "joinedOn",
+      "statusLogs",
+      "otpSessions",
+      "notifications"
+    ]
+  },
+  "UserCreateRequest": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "fullName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "password": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "CITIZEN",
+          "WARD_OFFICER",
+          "MAINTENANCE_TEAM",
+          "ADMINISTRATOR",
+          "GUEST"
+        ],
+        "example": "CITIZEN"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "department": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "language": {
+        "type": "string",
+        "example": "example_string",
+        "default": "en"
+      },
+      "avatar": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "lastLogin": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "joinedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "otpSessions": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "email",
+      "fullName",
+      "phoneNumber",
+      "password",
+      "role",
+      "wardId",
+      "department",
+      "language",
+      "avatar",
+      "isActive",
+      "lastLogin",
+      "joinedOn",
+      "statusLogs",
+      "otpSessions",
+      "notifications"
+    ]
+  },
+  "UserUpdateRequest": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "fullName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "password": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "CITIZEN",
+          "WARD_OFFICER",
+          "MAINTENANCE_TEAM",
+          "ADMINISTRATOR",
+          "GUEST"
+        ],
+        "example": "CITIZEN"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "department": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "language": {
+        "type": "string",
+        "example": "example_string",
+        "default": "en"
+      },
+      "avatar": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "lastLogin": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "joinedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "otpSessions": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "email",
+      "fullName",
+      "phoneNumber",
+      "password",
+      "role",
+      "wardId",
+      "department",
+      "language",
+      "avatar",
+      "isActive",
+      "lastLogin",
+      "joinedOn",
+      "statusLogs",
+      "otpSessions",
+      "notifications"
+    ]
+  },
+  "UserResponse": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string",
+        "example": "clp123abc456def789",
+        "default": "cuid("
+      },
+      "email": {
+        "type": "string",
+        "example": "user@example.com",
+        "format": "email"
+      },
+      "fullName": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "phoneNumber": {
+        "type": "string",
+        "example": "+1234567890",
+        "pattern": "^\\+?[1-9]\\d{1,14}$"
+      },
+      "password": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "role": {
+        "type": "string",
+        "enum": [
+          "CITIZEN",
+          "WARD_OFFICER",
+          "MAINTENANCE_TEAM",
+          "ADMINISTRATOR",
+          "GUEST"
+        ],
+        "example": "CITIZEN"
+      },
+      "wardId": {
+        "type": "string",
+        "example": "clp123abc456def789"
+      },
+      "department": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "language": {
+        "type": "string",
+        "example": "example_string",
+        "default": "en"
+      },
+      "avatar": {
+        "type": "string",
+        "example": "example_string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "example": true,
+        "default": "true"
+      },
+      "lastLogin": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z"
+      },
+      "joinedOn": {
+        "type": "string",
+        "format": "date-time",
+        "example": "2024-01-01T00:00:00Z",
+        "default": "now("
+      },
+      "ward": {
+        "$ref": "#/components/schemas/Ward"
+      },
+      "submittedComplaints": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "assignedComplaints": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "wardOfficerComplaints": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "maintenanceTeamComplaints": {
+        "$ref": "#/components/schemas/Complaint"
+      },
+      "statusLogs": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "otpSessions": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      },
+      "uploadedAttachments": {
+        "$ref": "#/components/schemas/Attachment"
+      },
+      "notifications": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "example": "unknown_type"
+        }
+      }
+    },
+    "required": [
+      "id",
+      "email",
+      "fullName",
+      "phoneNumber",
+      "password",
+      "role",
+      "wardId",
+      "department",
+      "language",
+      "avatar",
+      "isActive",
+      "lastLogin",
+      "joinedOn",
+      "statusLogs",
+      "otpSessions",
+      "notifications"
+    ]
+  }
+}

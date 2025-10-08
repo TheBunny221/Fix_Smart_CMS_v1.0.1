@@ -7,6 +7,221 @@ import { computeSlaComplianceClosed, getTypeSlaMap } from "../utils/sla.js";
 const router = express.Router();
 const prisma = getPrisma();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Reports
+ *   description: Reporting and analytics endpoints for complaint management
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     DashboardMetrics:
+ *       type: object
+ *       properties:
+ *         complaints:
+ *           type: object
+ *           properties:
+ *             total:
+ *               type: integer
+ *             registered:
+ *               type: integer
+ *             assigned:
+ *               type: integer
+ *             inProgress:
+ *               type: integer
+ *             resolved:
+ *               type: integer
+ *             closed:
+ *               type: integer
+ *         users:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               _id:
+ *                 type: string
+ *               count:
+ *                 type: integer
+ *         today:
+ *           type: object
+ *           properties:
+ *             todayTotal:
+ *               type: integer
+ *             todayResolved:
+ *               type: integer
+ *     
+ *     TrendData:
+ *       type: object
+ *       properties:
+ *         trends:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               date:
+ *                 type: string
+ *                 format: date
+ *               complaints:
+ *                 type: integer
+ *               resolved:
+ *                 type: integer
+ *               slaCompliance:
+ *                 type: number
+ *                 description: SLA compliance percentage
+ *     
+ *     SLAReport:
+ *       type: object
+ *       properties:
+ *         slaReport:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               priority:
+ *                 type: string
+ *                 enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+ *               total:
+ *                 type: integer
+ *               onTime:
+ *                 type: integer
+ *               warning:
+ *                 type: integer
+ *               overdue:
+ *                 type: integer
+ *     
+ *     AnalyticsData:
+ *       type: object
+ *       properties:
+ *         complaints:
+ *           type: object
+ *           properties:
+ *             total:
+ *               type: integer
+ *             resolved:
+ *               type: integer
+ *             pending:
+ *               type: integer
+ *             overdue:
+ *               type: integer
+ *         sla:
+ *           type: object
+ *           properties:
+ *             compliance:
+ *               type: number
+ *             avgResolutionTime:
+ *               type: number
+ *             target:
+ *               type: number
+ *         trends:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               date:
+ *                 type: string
+ *               complaints:
+ *                 type: integer
+ *               resolved:
+ *                 type: integer
+ *               slaCompliance:
+ *                 type: number
+ *         wards:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               complaints:
+ *                 type: integer
+ *               resolved:
+ *                 type: integer
+ *               avgTime:
+ *                 type: number
+ *               slaScore:
+ *                 type: number
+ *         categories:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               count:
+ *                 type: integer
+ *               avgTime:
+ *                 type: number
+ *               color:
+ *                 type: string
+ *         performance:
+ *           type: object
+ *           properties:
+ *             userSatisfaction:
+ *               type: number
+ *             escalationRate:
+ *               type: number
+ *             firstCallResolution:
+ *               type: number
+ *             repeatComplaints:
+ *               type: number
+ *         metadata:
+ *           type: object
+ *           properties:
+ *             totalRecords:
+ *               type: integer
+ *             pageSize:
+ *               type: integer
+ *             currentPage:
+ *               type: integer
+ *             totalPages:
+ *               type: integer
+ *             dataFetchedAt:
+ *               type: string
+ *               format: date-time
+ *     
+ *     HeatmapData:
+ *       type: object
+ *       properties:
+ *         xLabels:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: X-axis labels (complaint types)
+ *         xTypeKeys:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Original type keys
+ *         yLabels:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: Y-axis labels (wards or sub-zones)
+ *         matrix:
+ *           type: array
+ *           items:
+ *             type: array
+ *             items:
+ *               type: integer
+ *           description: 2D matrix of complaint counts
+ *         xAxisLabel:
+ *           type: string
+ *         yAxisLabel:
+ *           type: string
+ *         meta:
+ *           type: object
+ *           properties:
+ *             yIds:
+ *               type: array
+ *               items:
+ *                 type: string
+ */
+
 // All routes require authentication
 router.use(protect);
 
@@ -505,12 +720,7 @@ const getComprehensiveAnalytics = asyncHandler(async (req, res) => {
       trends,
       wards,
       categories,
-      performance: {
-        userSatisfaction: 4.2 + Math.random() * 0.6,
-        escalationRate: Math.random() * 15,
-        firstCallResolution: 60 + Math.random() * 25,
-        repeatComplaints: Math.random() * 10,
-      },
+      performance: await calculatePerformanceMetrics(prisma, where, closedWhere),
       metadata: {
         totalRecords: totalComplaints,
         pageSize,
@@ -665,6 +875,176 @@ const exportReports = asyncHandler(async (req, res) => {
     });
   }
 });
+
+/**
+ * @swagger
+ * /api/reports/dashboard:
+ *   get:
+ *     summary: Get dashboard metrics
+ *     tags: [Reports]
+ *     description: Retrieve key metrics for the dashboard (Admin, Ward Officer, Maintenance Team)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard metrics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/DashboardMetrics'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+
+/**
+ * @swagger
+ * /api/reports/trends:
+ *   get:
+ *     summary: Get complaint trends
+ *     tags: [Reports]
+ *     description: Retrieve complaint trends over time (Admin, Ward Officer)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: ["day", "week", "month"]
+ *           default: "month"
+ *         description: Time period for trends
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for trends
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for trends
+ *       - in: query
+ *         name: ward
+ *         schema:
+ *           type: string
+ *         description: Filter by ward ID (Admin only)
+ *     responses:
+ *       200:
+ *         description: Trends retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/TrendData'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+
+/**
+ * @swagger
+ * /api/reports/sla:
+ *   get:
+ *     summary: Get SLA compliance report
+ *     tags: [Reports]
+ *     description: Retrieve SLA compliance metrics by priority (Admin, Ward Officer)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: SLA report retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/SLAReport'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+
+/**
+ * @swagger
+ * /api/reports/analytics:
+ *   get:
+ *     summary: Get comprehensive analytics data
+ *     tags: [Reports]
+ *     description: Retrieve comprehensive analytics for unified reports (Admin, Ward Officer, Maintenance Team)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for analytics
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for analytics
+ *       - in: query
+ *         name: ward
+ *         schema:
+ *           type: string
+ *         description: Filter by ward ID (Admin only)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Filter by complaint type
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: ["registered", "assigned", "in_progress", "resolved", "closed", "reopened"]
+ *         description: Filter by complaint status
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *           enum: ["low", "medium", "high", "critical"]
+ *         description: Filter by complaint priority
+ *       - $ref: '#/components/parameters/PageParam'
+ *       - $ref: '#/components/parameters/LimitParam'
+ *     responses:
+ *       200:
+ *         description: Analytics data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/AnalyticsData'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
 
 // Routes
 router.get(
@@ -913,6 +1293,252 @@ router.get(
     }
   }),
 );
+
+/**
+ * @swagger
+ * /api/reports/heatmap:
+ *   get:
+ *     summary: Get heatmap data for complaints
+ *     tags: [Reports]
+ *     description: Retrieve heatmap data showing complaint distribution across wards/sub-zones and types
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for heatmap data
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for heatmap data
+ *       - in: query
+ *         name: ward
+ *         schema:
+ *           type: string
+ *         description: Filter by ward ID (Admin only)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Filter by complaint type
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Filter by complaint status
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *         description: Filter by complaint priority
+ *     responses:
+ *       200:
+ *         description: Heatmap data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/HeatmapData'
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+
+/**
+ * @swagger
+ * /api/reports/export:
+ *   get:
+ *     summary: Export reports in various formats
+ *     tags: [Reports]
+ *     description: Export complaint reports in CSV or JSON format (Admin, Ward Officer)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: format
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: ["csv", "json"]
+ *         description: Export format
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for export
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for export
+ *       - in: query
+ *         name: ward
+ *         schema:
+ *           type: string
+ *         description: Filter by ward ID (Admin only)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Filter by complaint type
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Filter by complaint status
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *         description: Filter by complaint priority
+ *     responses:
+ *       200:
+ *         description: Report exported successfully
+ *         content:
+ *           text/csv:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     complaints:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Complaint'
+ *                     summary:
+ *                       type: object
+ *                     filters:
+ *                       type: object
+ *                     exportedAt:
+ *                       type: string
+ *                       format: date-time
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       403:
+ *         $ref: '#/components/responses/ForbiddenError'
+ */
+
+// Helper function to calculate real performance metrics
+async function calculatePerformanceMetrics(prisma, where, closedWhere) {
+  try {
+    // Calculate user satisfaction from actual ratings
+    const satisfactionResult = await prisma.complaint.aggregate({
+      where: {
+        ...closedWhere,
+        rating: { gt: 0 } // Only include complaints with ratings
+      },
+      _avg: {
+        rating: true
+      },
+      _count: {
+        rating: true
+      }
+    });
+
+    const userSatisfaction = satisfactionResult._avg.rating || 0;
+    const totalRatings = satisfactionResult._count.rating || 0;
+
+    // Calculate escalation rate (complaints that were escalated)
+    const totalComplaints = await prisma.complaint.count({ where });
+    const escalatedComplaints = await prisma.complaint.count({
+      where: {
+        ...where,
+        escalationLevel: { gt: 0 }
+      }
+    });
+    const escalationRate = totalComplaints > 0 ? (escalatedComplaints / totalComplaints) * 100 : 0;
+
+    // Calculate first call resolution (complaints resolved without reassignment)
+    const resolvedComplaints = await prisma.complaint.count({
+      where: {
+        ...closedWhere,
+        status: { in: ["RESOLVED", "CLOSED"] }
+      }
+    });
+    
+    // Count complaints that were reassigned (indicating not first-call resolution)
+    const reassignedComplaints = await prisma.statusLog.groupBy({
+      by: ["complaintId"],
+      where: {
+        toStatus: "ASSIGNED",
+        complaint: closedWhere
+      },
+      having: {
+        complaintId: {
+          _count: {
+            gt: 1 // More than one assignment = reassignment
+          }
+        }
+      }
+    });
+
+    const firstCallResolution = resolvedComplaints > 0 
+      ? ((resolvedComplaints - reassignedComplaints.length) / resolvedComplaints) * 100 
+      : 0;
+
+    // Calculate repeat complaints (same citizen submitting multiple complaints)
+    const repeatComplaintsResult = await prisma.complaint.groupBy({
+      by: ["contactPhone"],
+      where: {
+        ...where,
+        contactPhone: { not: null }
+      },
+      having: {
+        contactPhone: {
+          _count: {
+            gt: 1
+          }
+        }
+      }
+    });
+
+    const repeatComplaints = repeatComplaintsResult.length;
+
+    console.log('📊 Performance metrics calculated:', {
+      userSatisfaction: userSatisfaction.toFixed(2),
+      totalRatings,
+      escalationRate: escalationRate.toFixed(1),
+      firstCallResolution: firstCallResolution.toFixed(1),
+      repeatComplaints
+    });
+
+    return {
+      userSatisfaction: Math.round(userSatisfaction * 100) / 100, // Round to 2 decimal places
+      escalationRate: Math.round(escalationRate * 10) / 10, // Round to 1 decimal place
+      firstCallResolution: Math.round(firstCallResolution * 10) / 10,
+      repeatComplaints
+    };
+
+  } catch (error) {
+    console.error('❌ Error calculating performance metrics:', error);
+    // Return zeros if calculation fails
+    return {
+      userSatisfaction: 0,
+      escalationRate: 0,
+      firstCallResolution: 0,
+      repeatComplaints: 0,
+    };
+  }
+}
 
 router.get(
   "/export",

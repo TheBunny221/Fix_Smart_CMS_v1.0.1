@@ -1,4 +1,4 @@
-# Fix_Smart_CMS v1.0.3 - Documentation Index
+# Fix_Smart_CMS - Documentation Index
 
 Welcome to the comprehensive documentation for Fix_Smart_CMS (NLC-CMS), a modern complaint management system built with React, Node.js, and PostgreSQL.
 
@@ -59,11 +59,11 @@ Common issues, error resolution, and debugging guides
 
 ## 🔄 Current Schema Version
 
-**Schema Version**: v1.0.3 (Production)  
+**Schema Version**:   (Production)  
 **Last Updated**: $(date)  
 **Active Models**: User, Ward, SubZone, ComplaintType, Complaint, StatusLog, Attachment, OTPSession, Notification, SystemConfig
 
-### Key Schema Changes in v1.0.3
+### Key Schema Changes in  
 - Unified attachment system for all file types
 - Enhanced complaint assignment with ward officer and maintenance team fields
 - Improved geographic organization with SubZone model
@@ -86,4 +86,4 @@ For technical support or contribution guidelines, please refer to the [Developer
 
 **Last Synced**: $(date)  
 **Schema Reference**: [prisma/schema.prisma](../prisma/schema.prisma)  
-**System Version**: Fix_Smart_CMS v1.0.3
+**System Version**: Fix_Smart_CMS  
