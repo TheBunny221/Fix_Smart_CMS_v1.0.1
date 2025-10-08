@@ -9,7 +9,7 @@
  * @author Fix_Smart_CMS Team
  */
 
-import systemConfigCache from "../services/systemConfigCache.js";
+// SystemConfig cache removed - using static defaults
 
 /**
  * Email template configurations for different recipient types
@@ -264,19 +264,17 @@ export const NOTIFICATION_PREFERENCES = {
  * Get dynamic template customization options from SystemConfig cache
  */
 export const getTemplateCustomization = () => {
-  // Use fallback values if cache is not initialized
-  const appConfig = systemConfigCache.isInitialized 
-    ? systemConfigCache.getAppConfig() 
-    : {
-        appName: 'Fix_Smart_CMS',
-        appVersion: '1.0.3',
-        organizationName: 'Smart City Management',
-        websiteUrl: 'https://fix-smart-cms.gov.in',
-        logoUrl: null,
-        primaryColor: '#667eea',
-        secondaryColor: '#764ba2',
-        supportEmail: 'support@fix-smart-cms.gov.in'
-      };
+  // Using static defaults since SystemConfig cache was removed
+  const appConfig = {
+    appName: 'Fix_Smart_CMS',
+    appVersion: '1.0.3',
+    organizationName: 'Smart City Management',
+    websiteUrl: 'https://fix-smart-cms.gov.in',
+    logoUrl: null,
+    primaryColor: '#667eea',
+    secondaryColor: '#764ba2',
+    supportEmail: 'support@fix-smart-cms.gov.in'
+  };
   
   return {
     // Brand colors
