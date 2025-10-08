@@ -508,4 +508,123 @@ router.get(
   getMaintenanceDashboard,
 );
 
+// Helper function to calculate real maintenance performance metrics
+async function calculateMaintenancePerformanceMetrics(prisma, where, maintenanceUserId) {
+  try {
+    // Calculate user satisfaction from complaints assigned to this maintenance user
+    const satisfactionResult = await prisma.complaint.aggregate({
+      where: {
+        ...where,
+        maintenanceTeamId: maintenanceUserId,
+        rating: { gt: 0 } // Only include complaints with ratings
+      },
+      _avg: {
+        rating: true
+      },
+      _count: {
+        rating: true
+      }
+    });
+
+    const userSatisfaction = satisfactionResult._avg.rating || 0;
+    const totalRatings = satisfactionResult._count.rating || 0;
+
+    // Calculate escalation rate (tasks escalated back to ward officer)
+    const totalAssignedTasks = await prisma.complaint.count({
+      where: {
+        ...where,
+        maintenanceTeamId: maintenanceUserId
+      }
+    });
+
+    const escalatedTasks = await prisma.statusLog.count({
+      where: {
+        toStatus: "ASSIGNED",
+        fromStatus: "IN_PROGRESS",
+        complaint: {
+          ...where,
+          maintenanceTeamId: maintenanceUserId
+        }
+      }
+    });
+
+    const escalationRate = totalAssignedTasks > 0 ? (escalatedTasks / totalAssignedTasks) * 100 : 0;
+
+    // Calculate first time fix rate (resolved without multiple visits)
+    const resolvedTasks = await prisma.complaint.count({
+      where: {
+        ...where,
+        maintenanceTeamId: maintenanceUserId,
+        status: { in: ["RESOLVED", "CLOSED"] }
+      }
+    });
+
+    // Count tasks that required multiple status changes (indicating multiple visits)
+    const multipleVisitTasks = await prisma.statusLog.groupBy({
+      by: ["complaintId"],
+      where: {
+        complaint: {
+          ...where,
+          maintenanceTeamId: maintenanceUserId,
+          status: { in: ["RESOLVED", "CLOSED"] }
+        }
+      },
+      having: {
+        complaintId: {
+          _count: {
+            gt: 2 // More than 2 status changes indicates multiple visits
+          }
+        }
+      }
+    });
+
+    const firstTimeFixRate = resolvedTasks > 0 
+      ? ((resolvedTasks - multipleVisitTasks.length) / resolvedTasks) * 100 
+      : 0;
+
+    // Calculate repeat complaints (same location/type reported again)
+    const repeatComplaintsResult = await prisma.complaint.groupBy({
+      by: ["area", "type"],
+      where: {
+        ...where,
+        maintenanceTeamId: maintenanceUserId
+      },
+      having: {
+        area: {
+          _count: {
+            gt: 1
+          }
+        }
+      }
+    });
+
+    const repeatComplaints = repeatComplaintsResult.length;
+
+    console.log('📊 Maintenance performance metrics calculated:', {
+      userSatisfaction: userSatisfaction.toFixed(2),
+      totalRatings,
+      escalationRate: escalationRate.toFixed(1),
+      firstTimeFixRate: firstTimeFixRate.toFixed(1),
+      repeatComplaints
+    });
+
+    return {
+      userSatisfaction: Math.round(userSatisfaction * 100) / 100,
+      escalationRate: Math.round(escalationRate * 10) / 10,
+      firstTimeFixRate: Math.round(firstTimeFixRate * 10) / 10,
+      repeatComplaints
+    };
+
+  } catch (error) {
+    console.error('❌ Error calculating maintenance performance metrics:', error);
+    // Return zeros if calculation fails
+    return {
+      userSatisfaction: 0,
+      escalationRate: 0,
+      firstTimeFixRate: 0,
+      repeatComplaints: 0,
+    };
+  }
+}
+
 export default router;
