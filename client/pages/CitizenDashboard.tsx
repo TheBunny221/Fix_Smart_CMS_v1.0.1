@@ -257,15 +257,15 @@ const CitizenDashboard: React.FC = () => {
       );
 
       const pending = complaints.filter(
-        (c: Complaint) => c.status === "registered" || c.status === "assigned",
+        (c: Complaint) => c.status === "REGISTERED" || c.status === "ASSIGNED",
       ).length;
       const inProgress = complaints.filter(
-        (c: Complaint) => c.status === "in_progress",
+        (c: Complaint) => c.status === "IN_PROGRESS",
       ).length;
       const resolved = complaints.filter(
         (c: Complaint) =>
-          c.status === "resolved" ||
-          c.status === "closed",
+          c.status === "RESOLVED" ||
+          c.status === "CLOSED",
       ).length;
       const resolutionRate =
         total > 0 ? Math.round((resolved / total) * 100) : 0;
@@ -641,7 +641,7 @@ const CitizenDashboard: React.FC = () => {
                           {getComplaintTypeLabel(complaint.type)}
                         </SafeRenderer>
                         <SafeRenderer fallback="Unknown Date">
-                          {formatDate(complaint.submittedDate)}
+                          {formatDate(complaint.submittedOn)}
                         </SafeRenderer>
                       </div>
 
@@ -786,7 +786,7 @@ const CitizenDashboard: React.FC = () => {
                         <TableCell>
                           <div className="flex items-center text-sm">
                             <Calendar className="h-3 w-3 mr-1" />
-                            {formatDate(complaint.submittedDate)}
+                            {formatDate(complaint.submittedOn)}
                           </div>
                         </TableCell>
                         <TableCell>

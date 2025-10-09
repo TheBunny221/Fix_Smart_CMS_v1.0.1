@@ -615,16 +615,17 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">
-                    {translations?.auth?.email || "Email Address"}
+                  <Label htmlFor="email ">
+                    {translations?.auth?.email || "Email Address"} *
                   </Label>
                   <Input
                     id="email"
                     type="email"
+                    required
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     onBlur={() => validateField("email", formData.email)}
-                    placeholder={`${translations?.common?.optional || "Enter your"} ${translations?.auth?.email || "email address"}`}
+                    placeholder={`${"Enter your"} ${translations?.auth?.email || "email address"}`}
                     disabled={isAuthenticated && !!user?.email}
                   />
                   {errors.email && (

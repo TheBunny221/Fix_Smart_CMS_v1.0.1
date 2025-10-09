@@ -260,7 +260,7 @@ const UnifiedReports: React.FC = () => {
   // First load: fetch analytics for the initialized date range only once
   useEffect(() => {
     if (!user || didInitialFetch) return;
-    
+
     console.log("Initial fetch triggered");
     setDidInitialFetch(true);
     fetchAnalyticsData();
@@ -270,11 +270,11 @@ const UnifiedReports: React.FC = () => {
   // Update heatmap dynamically on filter changes with debouncing
   useEffect(() => {
     if (!user || !didInitialFetch) return;
-    
+
     const timer = setTimeout(() => {
       fetchHeatmapData();
     }, 500); // 500ms debounce
-    
+
     return () => clearTimeout(timer);
   }, [filters, user, didInitialFetch, fetchHeatmapData]);
 
@@ -425,10 +425,10 @@ const UnifiedReports: React.FC = () => {
     // Start countdown timer - more realistic progression
     let progress = 0;
     const timer = setInterval(() => {
-        progress += Math.random() * 3 + 1; // Random increment between 1-4
-        if (progress > 95) progress = 95; // Cap at 95% until API responds
-        setReportProgress(progress);
-      }, 200); // Update every 200ms
+      progress += Math.random() * 3 + 1; // Random increment between 1-4
+      if (progress > 95) progress = 95; // Cap at 95% until API responds
+      setReportProgress(progress);
+    }, 200); // Update every 200ms
 
     try {
       // Prepare query parameters
@@ -855,14 +855,14 @@ const UnifiedReports: React.FC = () => {
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">
               {translations?.reports?.title || "Reports & Analytics"}
             </h1>
-            <p className="text-sm text-muted-foreground hidden md:block">
+            {/* <p className="text-sm text-muted-foreground hidden md:block">
               {appName} –{" "}
               {user?.role === "ADMINISTRATOR"
                 ? "Comprehensive system-wide insights and analytics"
                 : user?.role === "WARD_OFFICER"
                   ? `Analytics for ${getWardNameById(user?.wardId)}`
                   : "Your assigned task analytics and performance metrics"}
-            </p>
+            </p> */}
             <div className="mt-1 flex flex-wrap gap-2">
               <Badge variant="secondary" className="text-xs">
                 <Calendar className="h-3 w-3 mr-2" />
@@ -1216,8 +1216,8 @@ const UnifiedReports: React.FC = () => {
                   <TrendingUp className="h-3 w-3 mr-1" />
                   {(analyticsData.complaints.total > 0
                     ? (analyticsData.complaints.resolved /
-                        analyticsData.complaints.total) *
-                      100
+                      analyticsData.complaints.total) *
+                    100
                     : 0
                   ).toFixed(1)}
                   % resolution rate
@@ -1424,37 +1424,37 @@ const UnifiedReports: React.FC = () => {
             {/* Heatmap */}
             {(user?.role === "ADMINISTRATOR" ||
               user?.role === "WARD_OFFICER") && (
-              <div className="mt-6">
-                <HeatmapGrid
-                  title={
-                    user?.role === "ADMINISTRATOR"
-                      ? "Complaints × Wards Heatmap"
-                      : "Complaints × Sub-zones Heatmap"
-                  }
-                  description={
-                    user?.role === "ADMINISTRATOR"
-                      ? "Distribution of complaints by type across all wards"
-                      : `Distribution of complaints by type across sub-zones in ${getWardNameById(user?.wardId)}`
-                  }
-                  data={
-                    heatmapData || {
-                      xLabels: [],
-                      yLabels: [],
-                      matrix: [],
-                      xAxisLabel: "Complaint Type",
-                      yAxisLabel:
-                        user?.role === "ADMINISTRATOR" ? "Ward" : "Sub-zone",
+                <div className="mt-6">
+                  <HeatmapGrid
+                    title={
+                      user?.role === "ADMINISTRATOR"
+                        ? "Complaints × Wards Heatmap"
+                        : "Complaints × Sub-zones Heatmap"
                     }
-                  }
-                />
-                {heatmapLoading && (
-                  <div className="h-8 flex items-center text-xs text-muted-foreground mt-2">
-                    <RefreshCw className="h-3 w-3 mr-2 animate-spin" /> Updating
-                    heatmap...
-                  </div>
-                )}
-              </div>
-            )}
+                    description={
+                      user?.role === "ADMINISTRATOR"
+                        ? "Distribution of complaints by type across all wards"
+                        : `Distribution of complaints by type across sub-zones in ${getWardNameById(user?.wardId)}`
+                    }
+                    data={
+                      heatmapData || {
+                        xLabels: [],
+                        yLabels: [],
+                        matrix: [],
+                        xAxisLabel: "Complaint Type",
+                        yAxisLabel:
+                          user?.role === "ADMINISTRATOR" ? "Ward" : "Sub-zone",
+                      }
+                    }
+                  />
+                  {heatmapLoading && (
+                    <div className="h-8 flex items-center text-xs text-muted-foreground mt-2">
+                      <RefreshCw className="h-3 w-3 mr-2 animate-spin" /> Updating
+                      heatmap...
+                    </div>
+                  )}
+                </div>
+              )}
           </TabsContent>
 
           {/* Trends Tab */}
@@ -1585,7 +1585,7 @@ const UnifiedReports: React.FC = () => {
                 <CardContent>
                   <div id="resolution-time-chart">
                     {(processedChartData?.categoriesWithColors?.length || 0) >
-                    0 ? (
+                      0 ? (
                       renderChart("bar", {
                         data: processedChartData?.categoriesWithColors || [],
                         xAxis: {
@@ -1718,7 +1718,7 @@ const UnifiedReports: React.FC = () => {
       )}
 
       {/* Report Generation Modal */}
-      <Dialog open={showReportModal} onOpenChange={() => {}}>
+      <Dialog open={showReportModal} onOpenChange={() => { }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center">

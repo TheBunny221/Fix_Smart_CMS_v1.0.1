@@ -7,7 +7,6 @@
  * @author Fix_Smart_CMS Team
  */
 
-import systemConfigCache from "./systemConfigCache.js";
 import logger from "../utils/logger.js";
 
 /**
@@ -17,15 +16,15 @@ export const initializeServices = async () => {
   try {
     logger.info('Initializing application services...');
     
-    // Initialize SystemConfig cache
-    await systemConfigCache.initialize();
+    // Email broadcaster is initialized on-demand, no setup required
+    logger.info('Email broadcaster service ready');
     
     logger.info('All services initialized successfully');
     
     return {
       success: true,
       services: {
-        systemConfigCache: systemConfigCache.getStats()
+        emailBroadcaster: 'ready'
       }
     };
     
@@ -46,8 +45,8 @@ export const shutdownServices = async () => {
   try {
     logger.info('Shutting down application services...');
     
-    // Shutdown SystemConfig cache
-    systemConfigCache.destroy();
+    // Email broadcaster cleanup if needed
+    logger.info('Email broadcaster service shutdown');
     
     logger.info('All services shut down successfully');
     

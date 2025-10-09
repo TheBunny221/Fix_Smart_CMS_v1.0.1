@@ -187,8 +187,8 @@ export const complaintsApi = baseApi.injectEndpoints({
           // Update complaints list if it's cached
           dispatch(
             complaintsApi.util.updateQueryData("getComplaints", {}, (draft) => {
-              if (draft.data) {
-                draft.data.unshift(data.data);
+              if (draft.data?.complaints) {
+                draft.data.complaints.unshift(data.data);
               }
             }),
           );
@@ -230,8 +230,8 @@ export const complaintsApi = baseApi.injectEndpoints({
         // Update complaints list
         const patchResult2 = dispatch(
           complaintsApi.util.updateQueryData("getComplaints", {}, (draft) => {
-            if (draft.data) {
-              draft.data = optimisticUpdate(draft.data, { id, ...patch });
+            if (draft.data?.complaints) {
+              draft.data.complaints = optimisticUpdate(draft.data.complaints, { id, ...patch });
             }
           }),
         );

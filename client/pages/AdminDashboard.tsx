@@ -1129,7 +1129,7 @@ const AdminDashboard: React.FC = () => {
                   ) : (
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">System Uptime</span>
+                        <span className="text-sm">Application Uptime</span>
                         <Badge className="bg-blue-100 text-blue-800">
                           {systemHealthData?.data?.uptime?.formatted || "N/A"}
                         </Badge>
@@ -1167,7 +1167,7 @@ const AdminDashboard: React.FC = () => {
                             ?.status || "Unknown"}
                         </Badge>
                       </div>
-                      <div className="flex justify-between items-center">
+                      {/* <div className="flex justify-between items-center">
                         <span className="text-sm">File Storage</span>
                         <Badge
                           className={
@@ -1210,7 +1210,7 @@ const AdminDashboard: React.FC = () => {
                             {systemHealthData.data.system.memory.percentage}%)
                           </Badge>
                         </div>
-                      )}
+                      )} */}
                     </div>
                   )}
                 </CardContent>

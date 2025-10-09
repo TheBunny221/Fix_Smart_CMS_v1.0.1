@@ -196,7 +196,7 @@ const MaintenanceDashboard: React.FC = () => {
     [myTasks],
   );
 
-  const handleStatusUpdate = async (complaintId: string, newStatus: "REGISTERED" | "ASSIGNED" | "IN_PROGRESS" | "RESOLVED" | "closed" | "reopened") => {
+  const handleStatusUpdate = async (complaintId: string, newStatus: "REGISTERED" | "ASSIGNED" | "IN_PROGRESS" | "RESOLVED" | "CLOSED" | "REOPENED") => {
     try {
       await updateComplaintStatus({
         id: complaintId,
@@ -443,17 +443,17 @@ const MaintenanceDashboard: React.FC = () => {
                               <Button
                                 size="sm"
                                 onClick={() =>
-                                  handleStatusUpdate(task.id, "in_progress")
+                                  handleStatusUpdate(task.id, "IN_PROGRESS")
                                 }
                               >
                                 Start Work
                               </Button>
                             )}
-                            {task.status === "in_progress" && (
+                            {task.status === "IN_PROGRESS" && (
                               <Button
                                 size="sm"
                                 onClick={() =>
-                                  handleStatusUpdate(task.id, "resolved")
+                                  handleStatusUpdate(task.id, "RESOLVED")
                                 }
                               >
                                 Mark Complete
@@ -637,7 +637,7 @@ const MaintenanceDashboard: React.FC = () => {
             <CardContent>
               <div className="space-y-4">
                 {myTasks
-                  .filter((task) => task.status === "resolved")
+                  .filter((task) => task.status === "RESOLVED")
                   .slice(0, 10)
                   .map((task) => (
                     <div

@@ -410,7 +410,7 @@ const ComplaintsList: React.FC = () => {
               {searchTerm && (
                 <p className="text-xs text-gray-500">
                   {searchTerm.match(/^[A-Za-z]/)
-                    ? `Searching for complaint ID: ${searchTerm}`
+                    ? `Searching for : ${searchTerm}`
                     : `Searching in descriptions and locations`}
                 </p>
               )}

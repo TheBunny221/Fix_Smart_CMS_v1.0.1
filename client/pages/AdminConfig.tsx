@@ -354,31 +354,26 @@ const AdminConfig: React.FC = () => {
 
       // Load system settings (admin-only endpoint)
       interface AdminConfigResponse {
-        cached: Record<string, string>;
-        database: Array<{
-          id: string;
-          key: string;
-          value: string;
-          type: string | null;
-          description: string | null;
-          isActive: boolean;
-          updatedAt: string;
-        }>;
-        cacheStats: any;
+        key: string;
+        value: string;
+        type: string;
+        description: string | null;
+        isActive: boolean;
+        updatedAt: string;
       }
       
-      let settingsResponse: ApiResponse<AdminConfigResponse>;
+      let settingsResponse: ApiResponse<AdminConfigResponse[]>;
       try {
-        settingsResponse = await apiCall<ApiResponse<AdminConfigResponse>>(
-          "/config/admin",
+        settingsResponse = await apiCall<ApiResponse<AdminConfigResponse[]>>(
+          "/system-config",
         );
         
-        // Convert database configs to SystemSetting format
-        const systemSettings: SystemSetting[] = settingsResponse.data?.database?.map(config => ({
+        // Convert configs to SystemSetting format
+        const systemSettings: SystemSetting[] = settingsResponse.data?.map(config => ({
           key: config.key,
           value: config.value,
           description: config.description || '',
-          type: 'string' as const // Default to string, could be enhanced later
+          type: config.type as 'string' | 'number' | 'boolean' | 'json' || 'string'
         })) || [];
         
         setSystemSettings(systemSettings);
@@ -771,7 +766,7 @@ const AdminConfig: React.FC = () => {
   const handleUpdateSystemSetting = async (key: string, value: string) => {
     setIsLoading(true);
     try {
-      await apiCall<ApiResponse<SystemSetting>>(`/config/${key}`, {
+      await apiCall<ApiResponse<SystemSetting>>(`/system-config/${key}`, {
         method: "PUT",
         body: JSON.stringify({ value }),
       });
@@ -851,7 +846,7 @@ const AdminConfig: React.FC = () => {
       if (existingSetting) {
         // Update existing setting
         response = await apiCall<ApiResponse<SystemSetting>>(
-          `/config/${setting.key}`,
+          `/system-config/${setting.key}`,
           {
             method: "PUT",
             body: JSON.stringify({
@@ -903,7 +898,7 @@ const AdminConfig: React.FC = () => {
 
     setIsLoading(true);
     try {
-      await apiCall<unknown>(`/config/${key}`, { method: "DELETE" });
+      await apiCall<unknown>(`/system-config/${key}`, { method: "DELETE" });
       setSystemSettings((prev) => prev.filter((s) => s.key !== key));
 
       dispatch(

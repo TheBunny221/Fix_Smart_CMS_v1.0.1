@@ -256,7 +256,7 @@ export function createApp() {
   app.use("/api/maintenance", maintenanceAnalyticsRoutes);
   app.use("/api/uploads", uploadRoutes);
   app.use("/api/complaint-types", complaintTypeRoutes);
-  app.use("/api/config", systemConfigRoutes);
+  app.use("/api/system-config", systemConfigRoutes);
   app.use("/api/logs", logRoutes);
   app.use("/api/geo", geoRoutes);
   // app.use("/api", materialsRoutes);
@@ -302,7 +302,7 @@ export function createApp() {
   });
 
   // Serve static files from the React build
-  const distPath = path.resolve(__dirname, "../dist/client");
+  const distPath = path.resolve(__dirname, "../client");
   console.log("Serving static files from:", distPath);
 
   // Check if the build directory exists
