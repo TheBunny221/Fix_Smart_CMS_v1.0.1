@@ -1,6 +1,8 @@
 # Architecture Documentation
 
-This folder contains comprehensive documentation about the Fix_Smart_CMS system architecture, including high-level overviews, data flow diagrams, and detailed module breakdowns.
+This folder contains comprehensive documentation about the Fix_Smart_CMS v1.0.3 system architecture, including high-level overviews, data flow diagrams, and detailed module breakdowns.
+
+**Navigation**: [← Documentation Index](../README.md) | [← Main README](../../README.md)
 
 ## Purpose
 
@@ -46,12 +48,12 @@ Fix_Smart_CMS follows these key architectural principles:
 4. **Maintainability**: Clean code structure with comprehensive documentation
 5. **Performance**: Optimized database queries and efficient data handling
 
-## Last Synced
+## Last Updated
 
-**Date**: $(date)  
-**Schema Version**:    
+**Date**: October 2025  
+**Schema Version**: v1.0.3  
 **Active Models**: User, Ward, SubZone, ComplaintType, Complaint, StatusLog, Attachment, OTPSession, Notification, SystemConfig
 
 ---
 
-[← Back to Main Documentation Index](../README.md)
+**Navigation**: [← Documentation Index](../README.md) | [← Main README](../../README.md)

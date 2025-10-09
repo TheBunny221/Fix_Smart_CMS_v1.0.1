@@ -1,18 +1,20 @@
-# Fix_Smart_CMS - Documentation Index
+# Fix_Smart_CMS v1.0.3 - Documentation Index
 
-Welcome to the comprehensive documentation for Fix_Smart_CMS (NLC-CMS), a modern complaint management system built with React, Node.js, and PostgreSQL.
+Welcome to the comprehensive documentation for Fix_Smart_CMS, a modern complaint management system built with React 18, Node.js 22+, and PostgreSQL.
 
 ## 📋 System Overview
 
-Fix_Smart_CMS is a production-ready complaint management system designed for municipal and civic organizations. The system enables citizens to submit complaints, track their progress, and receive updates while providing administrators and maintenance teams with powerful tools to manage and resolve issues efficiently.
+Fix_Smart_CMS is a production-ready complaint management system designed for smart city initiatives and municipal organizations. The system enables citizens to submit complaints, track their progress, and receive updates while providing administrators and maintenance teams with powerful tools to manage and resolve issues efficiently.
 
 ### Key Features
-- **Multi-role User Management**: Citizens, Ward Officers, Maintenance Teams, and Administrators
-- **Real-time Complaint Tracking**: Status updates, SLA monitoring, and notifications
-- **Geographic Organization**: Ward-based complaint assignment and management
-- **File Attachment System**: Support for photos, documents, and other attachments
-- **Guest Complaint System**: Anonymous complaint submission with OTP verification
-- **Responsive Design**: Mobile-first UI with modern React components
+- **Multi-role User Management**: Citizens, Ward Officers, Maintenance Teams, and System Administrators
+- **Real-time Complaint Tracking**: Live status updates, SLA monitoring, and email notifications
+- **Geographic Organization**: Ward-based complaint assignment and management with sub-zones
+- **File Attachment System**: Secure upload and management of photos, documents, and other attachments
+- **Guest Complaint System**: Anonymous complaint submission with OTP email verification
+- **Multi-language Support**: English, Hindi, and Malayalam interface
+- **Responsive Design**: Mobile-first UI with modern React components and TailwindCSS
+- **Email Broadcasting**: Automated notifications for status changes and assignments
 
 ## 📚 Documentation Structure
 
@@ -59,16 +61,18 @@ Common issues, error resolution, and debugging guides
 
 ## 🔄 Current Schema Version
 
-**Schema Version**:   (Production)  
-**Last Updated**: $(date)  
+**Schema Version**: v1.0.3 (Production)  
+**Last Updated**: October 2025  
 **Active Models**: User, Ward, SubZone, ComplaintType, Complaint, StatusLog, Attachment, OTPSession, Notification, SystemConfig
 
-### Key Schema Changes in  
-- Unified attachment system for all file types
-- Enhanced complaint assignment with ward officer and maintenance team fields
-- Improved geographic organization with SubZone model
-- Streamlined notification system
-- Removed deprecated models (Message, Material, Tool, etc.)
+### Key Schema Features in v1.0.3
+- **Unified attachment system** for all file types with secure storage
+- **Enhanced complaint assignment** with ward officer and maintenance team fields
+- **Geographic organization** with Ward and SubZone models for precise location management
+- **Streamlined notification system** with email broadcasting capabilities
+- **System configuration management** with dynamic settings and caching
+- **OTP session management** for secure guest complaint submission
+- **Comprehensive audit trail** with status logs and user action tracking
 
 ## 🚀 Quick Start
 
@@ -84,6 +88,7 @@ For technical support or contribution guidelines, please refer to the [Developer
 
 ---
 
-**Last Synced**: $(date)  
+**Last Updated**: October 2025  
 **Schema Reference**: [prisma/schema.prisma](../prisma/schema.prisma)  
-**System Version**: Fix_Smart_CMS  
+**System Version**: Fix_Smart_CMS v1.0.3  
+**Back to Main**: [← README.md](../README.md)  

@@ -1,6 +1,13 @@
-# NLC-CMS Complaint Management System
+# Fix_Smart_CMS v1.0.3 - Complaint Management System
 
-A comprehensive, production-ready complaint management system built for the NLC-CMS initiative. This modern web application enables citizens to register and track civic complaints while providing municipal authorities with powerful tools to manage and resolve issues efficiently.
+[![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)](https://github.com/your-org/Fix_Smart_CMS_v1.0.3)
+[![Node.js](https://img.shields.io/badge/node.js-22+-green.svg)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/postgresql-13+-blue.svg)](https://postgresql.org/)
+[![TypeScript](https://img.shields.io/badge/typescript-5.5+-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/react-18.3+-blue.svg)](https://reactjs.org/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+A comprehensive, production-ready complaint management system built for smart city initiatives. This modern web application enables citizens to register and track civic complaints while providing municipal authorities with powerful tools to manage and resolve issues efficiently.
 
 ## 🚀 Key Features
 
@@ -12,6 +19,7 @@ A comprehensive, production-ready complaint management system built for the NLC-
 - **Real-time Status Updates**: Track complaint progress from submission to resolution
 - **File Attachments**: Upload supporting documents, images, and videos (up to 10MB)
 - **Feedback System**: Rate and provide feedback on resolved complaints
+- **Multi-language Support**: Interface available in English, Hindi, and Malayalam
 
 **Ward Officers**
 - **Ward-Specific Dashboard**: Manage complaints within assigned geographical areas
@@ -19,6 +27,7 @@ A comprehensive, production-ready complaint management system built for the NLC-
 - **Status Management**: Update complaint progress and add detailed remarks
 - **Performance Analytics**: Track ward-specific metrics and SLA compliance
 - **Team Communication**: Internal messaging system for coordination
+- **Geographic Management**: Manage ward boundaries and sub-zones
 
 **Maintenance Teams**
 - **Task Management**: View and manage assigned maintenance tasks
@@ -26,6 +35,7 @@ A comprehensive, production-ready complaint management system built for the NLC-
 - **Photo Documentation**: Upload before/after photos and work evidence
 - **Material Tracking**: Log materials and resources used for each task
 - **Completion Reporting**: Submit detailed work completion reports
+- **Mobile-Optimized Interface**: Responsive design for field work
 
 **System Administrators**
 - **Comprehensive Dashboard**: System-wide overview with key performance indicators
@@ -33,17 +43,19 @@ A comprehensive, production-ready complaint management system built for the NLC-
 - **System Configuration**: Manage wards, complaint types, SLA settings, and system parameters
 - **Advanced Analytics**: Generate detailed reports with charts and performance insights
 - **Content Management**: Manage multi-language content and system notifications
-
-### 🌐 Core Capabilities
+- **Email Broadcasting**: Configure automated notification templates and settings### 🌐 Core C
+apabilities
 
 - **Multi-Language Support**: Full interface available in English, Hindi, and Malayalam
 - **Mobile-Responsive Design**: Optimized experience across all devices and screen sizes
 - **Real-time Notifications**: Email notifications for status updates and assignments
-- **Geographic Organization**: Ward-based complaint routing and management
+- **Geographic Organization**: Ward-based complaint routing and management with sub-zones
 - **SLA Monitoring**: Automated tracking of service level agreement compliance
 - **Audit Trail**: Complete history of all complaint actions and status changes
 - **Advanced Search & Filtering**: Powerful tools to find and organize complaints
 - **Data Export**: Export reports and data in PDF and Excel formats
+- **Email Broadcasting**: Automated notification system with customizable templates
+- **System Configuration**: Dynamic settings management with direct database access
 
 ## 🐳 Quick Start with Docker
 
@@ -51,7 +63,7 @@ A comprehensive, production-ready complaint management system built for the NLC-
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd Fix_Smart_CMS_ 
+cd Fix_Smart_CMS_v1.0.3
 
 # Configure environment
 cp .env.docker .env
@@ -81,9 +93,8 @@ open http://localhost:4005
 - **Reverse Proxy**: Nginx with SSL support (optional)
 - **Development Tools**: Hot reload, email testing, Redis cache
 
-📖 **Complete Docker Guide**: [Docker Deployment Documentation](./documents/deployment/DOCKER_DEPLOYMENT.md)
-
-## 🛠️ Technology Stack
+📖 **Complete Docker Guide**: [Docker Deployment Documentation](./documents/deployment/DOCKER_DEPLOYMENT.md)##
+ 🛠️ Technology Stack
 
 ### Frontend Architecture
 - **React 18.3.1** - Modern React with concurrent features and TypeScript
@@ -97,7 +108,7 @@ open http://localhost:4005
 - **Zod 3.23.8** - TypeScript-first schema validation
 
 ### Backend Architecture
-- **Node.js 18+** - JavaScript runtime with ES modules support
+- **Node.js 22+** - JavaScript runtime with ES modules support
 - **Express.js 4.18.2** - Fast, unopinionated web framework
 - **Prisma 5.7.1** - Next-generation ORM with type safety
 - **PostgreSQL 13+** - Production database (SQLite for development)
@@ -106,6 +117,7 @@ open http://localhost:4005
 - **Multer 1.4.5** - Multipart form data handling for file uploads
 - **Helmet 8.1.0** - Security middleware for HTTP headers
 - **Express Rate Limit** - API rate limiting and abuse prevention
+- **Email Broadcasting System** - Automated notification management
 
 ### Development & Quality Assurance
 - **TypeScript 5.5.3** - Static type checking across frontend and backend
@@ -120,9 +132,8 @@ open http://localhost:4005
 - **Nginx** - Reverse proxy and static file serving
 - **Docker** - Containerization support for consistent deployments
 - **PostgreSQL** - Scalable relational database with connection pooling
-- **Cloud Storage** - Configurable file storage (local/AWS S3/CloudFlare R2)
-
-## 📁 Project Architecture
+- **Cloud Storage** - Configurable file storage (local/AWS S3/CloudFlare R2)## 
+📁 Project Architecture
 
 ```
 ├── client/                     # Frontend React application
@@ -142,37 +153,60 @@ open http://localhost:4005
 │   │   │   ├── complaintsSlice.ts
 │   │   │   ├── languageSlice.ts
 │   │   │   └── ...
+│   │   ├── api/              # RTK Query API slices
+│   │   │   ├── systemConfigApi.ts
+│   │   │   ├── complaintsApi.ts
+│   │   │   └── ...
 │   │   ├── hooks.ts          # Typed Redux hooks
 │   │   └── index.ts          # Store configuration
+│   ├── contexts/             # React contexts
+│   │   ├── SystemConfigContext.tsx
+│   │   └── ...
 │   ├── hooks/                # Custom React hooks
 │   ├── lib/                  # Utility functions
 │   └── global.css           # Global styles
 ├── server/                    # Backend Node.js application
 │   ├── routes/               # API route handlers
+│   ├── controller/           # Business logic controllers
+│   │   ├── systemConfigController.js
+│   │   ├── adminController.js
+│   │   └── ...
+│   ├── services/             # Business services
+│   │   ├── emailBroadcaster.js
+│   │   ├── initializeServices.js
+│   │   └── ...
 │   ├── middleware/           # Express middleware
-│   ├── models/               # Data models
-│   ├── controllers/          # Business logic
 │   ├── utils/                # Utility functions
-│   └── index.ts              # Server entry point
-├── backend/                   # Legacy backend (being phased out)
+│   │   ├── complaintEmailHooks.js
+│   │   ├── sla.js
+│   │   └── ...
+│   ├── config/               # Configuration files
+│   │   ├── emailBroadcasterConfig.js
+│   │   └── ...
+│   └── app.js                # Server entry point
 ├── prisma/                   # Database schema and migrations
-│   └── schema.prisma         # Prisma schema definition
-├── netlify/                  # Netlify deployment configuration
-│   └── functions/            # Serverless functions
-├── shared/                   # Shared utilities between client/server
-├── public/                   # Static assets
-└── docs/                     # Documentation files
-    ├── DEPLOYMENT_GUIDE.md
-    ├─�� GUEST_COMPLAINT_SYSTEM.md
-    ├── REDUX_TOOLKIT_MIGRATION.md
-    └── QA_TEST_RESULTS.md
-```
-
-## 🚀 Quick Start Guide
+│   ├── schema.prisma         # Prisma schema definition
+│   ├── migrations/           # Database migrations
+│   └── seed.js               # Database seeding
+├── documents/                # Comprehensive documentation
+│   ├── architecture/         # System architecture docs
+│   ├── database/             # Database documentation
+│   ├── deployment/           # Deployment guides
+│   ├── developer/            # Developer resources
+│   ├── system/               # System configuration
+│   ├── troubleshooting/      # Issue resolution
+│   └── README.md             # Documentation index
+├── scripts/                  # Build and deployment scripts
+│   ├── build-production.js   # Production build script
+│   └── ...
+├── dist/                     # Production build output
+└── public/                   # Static assets
+```## 🚀 Quick 
+Start Guide
 
 ### Prerequisites
 
-- **Node.js 18+** - JavaScript runtime environment
+- **Node.js 22+** - JavaScript runtime environment
 - **npm 8+** - Package manager (comes with Node.js)
 - **Git** - Version control system
 - **PostgreSQL 13+** - Production database (SQLite auto-configured for development)
@@ -183,7 +217,7 @@ open http://localhost:4005
 
    ```bash
    git clone <repository-url>
-   cd nlc-cms
+   cd Fix_Smart_CMS_v1.0.3
    ```
 
 2. **Install Dependencies**
@@ -222,7 +256,7 @@ open http://localhost:4005
    EMAIL_USER="your-email@gmail.com"
    EMAIL_PASS="your-app-password"
    EMAIL_PORT="587"
-   EMAIL_FROM="NLC-CMS <noreply@nlc-cms.gov.in>"
+   EMAIL_FROM="Fix_Smart_CMS <noreply@fix-smart-cms.gov.in>"
 
    # File Upload Configuration
    MAX_FILE_SIZE=10485760  # 10MB
@@ -264,10 +298,9 @@ open http://localhost:4005
 ### Default Admin Account
 
 After seeding, you can log in with:
-- **Email**: admin@nlc-cms.gov.in
-- **Password**: admin123 (change immediately in production)
-
-## 🎯 Usage Guide
+- **Email**: admin@fix-smart-cms.gov.in
+- **Password**: admin123 (change immediately in production)## 🎯 Usage G
+uide
 
 ### Guest Users
 
@@ -354,8 +387,8 @@ After seeding, you can log in with:
 - Password complexity requirements
 - Session timeout settings
 - Rate limiting thresholds
-
-## 🔐 Security & Authentication
+- Email broadcasting configuration## 
+🔐 Security & Authentication
 
 ### Authentication Methods
 
@@ -417,9 +450,8 @@ After seeding, you can log in with:
 - User action audit trails
 - Failed authentication attempt tracking
 - Security event alerting
-- Performance monitoring and anomaly detection
-
-## 📊 API Reference
+- Performance monitoring and anomaly detection#
+# 📊 API Reference
 
 ### Authentication Endpoints
 
@@ -470,15 +502,26 @@ GET    /api/admin/reports              # Generate system reports
 ### System Configuration
 
 ```bash
-GET    /api/wards                      # List all wards
-GET    /api/complaint-types            # List complaint types
-GET    /api/system-config              # Get system configuration
-PUT    /api/system-config              # Update system settings
+GET    /api/system-config/public       # Get public system settings
+GET    /api/system-config              # Get all system settings (admin)
+POST   /api/system-config              # Create system setting
+PUT    /api/system-config/:key         # Update system setting
+DELETE /api/system-config/:key         # Delete system setting
+GET    /api/system-config/health       # System health check
 ```
 
-**Complete API Documentation**: Available at `/api-docs` when server is running
+### Ward & Geographic Management
 
-## 🚀 Production Deployment
+```bash
+GET    /api/wards                      # List all wards
+GET    /api/wards/:id                  # Get ward details
+POST   /api/wards                      # Create new ward
+PUT    /api/wards/:id                  # Update ward
+GET    /api/wards/:id/subzones         # Get ward sub-zones
+```
+
+**Complete API Documentation**: Available at `/api-docs` when server is running#
+# 🚀 Production Deployment
 
 ### Build for Production
 
@@ -506,12 +549,12 @@ npm run seed:prod
 ```env
 NODE_ENV="production"
 PORT=4005
-DATABASE_URL="postgresql://user:password@host:5432/nlc_cms_prod"
+DATABASE_URL="postgresql://user:password@host:5432/fix_smart_cms_prod"
 JWT_SECRET="your-production-jwt-secret-very-secure"
 
 # Email Configuration (Production SMTP)
 EMAIL_SERVICE="smtp.office365.com"
-EMAIL_USER="notifications@nlc-cms.gov.in"
+EMAIL_USER="notifications@fix-smart-cms.gov.in"
 EMAIL_PASS="your-production-email-password"
 
 # Security Settings
@@ -540,7 +583,7 @@ pm2 startup
 
 ```bash
 # Build Docker image
-docker build -t nlc-cms:latest .
+docker build -t fix-smart-cms:latest .
 
 # Run with Docker Compose
 docker-compose -f docker-compose.prod.yml up -d
@@ -550,7 +593,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 **Heroku**:
 ```bash
-heroku create nlc-cms-app
+heroku create fix-smart-cms-app
 heroku addons:create heroku-postgresql:hobby-dev
 git push heroku main
 ```
@@ -572,7 +615,7 @@ server {
 
     # Serve static files
     location / {
-        root /var/www/nlc-cms/dist;
+        root /var/www/fix-smart-cms/dist;
         try_files $uri $uri/ /index.html;
     }
 
@@ -596,9 +639,8 @@ server {
 - **Health Check**: `GET /api/health`
 - **Detailed Health**: `GET /api/health/detailed`
 - **Logs**: Available in `logs/` directory
-- **Metrics**: Built-in performance monitoring
-
-## 🧪 Testing & Quality Assurance
+- **Metrics**: Built-in performance monitoring## 🧪 
+Testing & Quality Assurance
 
 ### Test Suite
 
@@ -651,15 +693,16 @@ npm run lint                    # ESLint code analysis
 - ✅ Real-time notifications
 - ✅ Data export and reporting
 - ✅ Performance under load
+- ✅ Email broadcasting system
+- ✅ SystemConfig management
 
 ### Test Coverage
 
 - **Frontend**: 85%+ code coverage
 - **Backend**: 90%+ API endpoint coverage
 - **E2E**: Critical user journeys covered
-- **Security**: OWASP compliance validated
-
-## 📈 Performance & Optimization
+- **Security**: OWASP compliance validated## 
+📈 Performance & Optimization
 
 ### Frontend Performance
 
@@ -683,7 +726,7 @@ npm run lint                    # ESLint code analysis
 - **Query Optimization**: Efficient Prisma queries with proper indexing
 - **Connection Pooling**: PostgreSQL connection pool management
 - **Database Indexing**: Strategic indexes on frequently queried fields
-- **Query Caching**: Redis integration ready for query result caching
+- **Query Caching**: Direct database access for optimal performance
 - **Pagination**: Efficient cursor-based pagination for large datasets
 
 **Server Optimization**:
@@ -692,6 +735,7 @@ npm run lint                    # ESLint code analysis
 - **Rate Limiting**: Intelligent rate limiting to prevent abuse
 - **Memory Management**: Efficient memory usage and garbage collection
 - **Clustering**: PM2 cluster mode for multi-core utilization
+- **Email Broadcasting**: Optimized notification delivery system
 
 ### Scalability Features
 
@@ -701,22 +745,22 @@ npm run lint                    # ESLint code analysis
 - File storage abstraction (local/cloud)
 - Load balancer compatible
 - Microservice architecture ready
+- Email service abstraction
 
 **Performance Metrics**:
 - **Response Times**: < 200ms for API endpoints
 - **Database Queries**: < 50ms average query time
 - **File Uploads**: Streaming uploads for large files
 - **Concurrent Users**: Tested for 1000+ concurrent users
-- **Memory Usage**: < 512MB RAM usage per instance
-
-## 🤝 Contributing
+- **Memory Usage**: < 512MB RAM usage per instance#
+# 🤝 Contributing
 
 ### Development Workflow
 
 1. **Fork & Clone**
    ```bash
-   git clone https://github.com/your-username/nlc-cms.git
-   cd nlc-cms
+   git clone https://github.com/your-username/Fix_Smart_CMS_v1.0.3.git
+   cd Fix_Smart_CMS_v1.0.3
    ```
 
 2. **Create Feature Branch**
@@ -785,32 +829,31 @@ docs(readme): update installation instructions
 test(api): add integration tests for complaint endpoints
 ```
 
-**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
-
-## 📚 Documentation & Support
+**Types**: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`#
+# 📚 Documentation & Support
 
 ### Complete Documentation
 
 **Setup & Deployment**:
-- 📖 [Deployment Guide](docs/deployment/) - Production deployment instructions
-- 🔧 [Database Setup](docs/DATABASE_SETUP.md) - Database configuration guide
-- ⚙️ [Environment Configuration](docs/SETUP_DEPLOYMENT_GUIDE.md) - Environment setup
+- 📖 [Deployment Guide](./documents/deployment/README.md) - Production deployment instructions
+- 🔧 [Database Setup](./documents/database/README.md) - Database configuration guide
+- ⚙️ [Environment Configuration](./documents/system/README.md) - Environment setup
 
 **Feature Documentation**:
-- 👥 [Guest Complaint System](docs/GUEST_COMPLAINT_SYSTEM.md) - Anonymous user features
-- 🔄 [Redux Toolkit Migration](docs/REDUX_TOOLKIT_MIGRATION.md) - State management guide
-- 🏗️ [Architecture Overview](docs/architecture.md) - System architecture details
-- 📊 [API Reference](docs/BACKEND_API_REFERENCE.md) - Complete API documentation
+- 👥 [Guest Complaint System](./documents/developer/README.md) - Anonymous user features
+- 🔄 [Redux Toolkit Migration](./documents/developer/STATE_MANAGEMENT.md) - State management guide
+- 🏗️ [Architecture Overview](./documents/architecture/README.md) - System architecture details
+- 📊 [API Reference](./documents/developer/API_REFERENCE.md) - Complete API documentation
 
 **Quality Assurance**:
-- ✅ [QA Test Results](docs/QA_TEST_RESULTS.md) - Comprehensive testing results
-- 🔍 [Code Audit Report](docs/CODE_AUDIT_REPORT.md) - Security and quality audit
-- 📋 [Project Overview](docs/PROJECT_OVERVIEW.md) - High-level project summary
+- ✅ [QA Test Results](./documents/deployment/QA_VALIDATION_CHECKLIST.md) - Comprehensive testing results
+- 🔍 [Code Audit Report](./documents/misc/README.md) - Security and quality audit
+- 📋 [Project Overview](./documents/README.md) - High-level project summary
 
 ### Getting Support
 
 **Development Support**:
-- 📖 Check comprehensive documentation in `/docs` directory
+- 📖 Check comprehensive documentation in `/documents` directory
 - 🔍 Review existing GitHub issues and discussions
 - 📊 Consult API documentation at `/api-docs` endpoint
 - 🧪 Review QA test results for known issues
@@ -829,7 +872,7 @@ test(api): add integration tests for complaint endpoints
 
 ## 📊 Project Status
 
-### Current Version: 1.0.0 (Production Ready)
+### Current Version: v1.0.3 (Production Ready)
 
 **Development Status**: ✅ **STABLE**
 - All core features implemented and tested
@@ -844,10 +887,21 @@ test(api): add integration tests for complaint endpoints
 - ✅ Administrative dashboards
 - ✅ Multi-language support (EN/HI/ML)
 - ✅ File upload and management
-- ✅ Email notifications
+- ✅ Email notifications and broadcasting
 - ✅ Advanced reporting and analytics
 - ✅ Mobile-responsive design
 - ✅ Security and performance optimization
+- ✅ System configuration management
+- ✅ Direct database access optimization
+
+### Recent Updates (v1.0.3)
+
+**SystemConfig Enhancements**:
+- ✅ Reverted to direct database access for improved performance
+- ✅ Enhanced email broadcaster with database integration
+- ✅ Updated build system with service integration
+- ✅ Fixed API endpoint routing issues
+- ✅ Comprehensive documentation reorganization
 
 ### Roadmap
 
@@ -857,9 +911,8 @@ test(api): add integration tests for complaint endpoints
 - 🗺️ Advanced GIS mapping integration
 - 📊 AI-powered analytics and insights
 - 🤖 WhatsApp bot integration
-- 🌐 Multi-tenant architecture
-
-## 📄 License
+- 🌐 Multi-tenant architecture## 📄 
+License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
@@ -886,21 +939,44 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - 🧪 **Vitest & Cypress** - Comprehensive testing frameworks
 
 **Special Recognition**:
-- 🏛️ **NLC-CMS Initiative** - Vision for digital governance
+- 🏛️ **Smart City Initiative** - Vision for digital governance
 - 👥 **Municipal Officers** - Real-world feedback and requirements
 - 🧑‍💻 **Open Source Community** - Continuous inspiration and support
 - 🎯 **Quality Assurance Team** - Ensuring production readiness
 
 ---
 
+## 📚 Documentation Index
+
+### Core Documentation
+- [🏗️ Architecture Overview](./documents/architecture/README.md) - System design and technical architecture
+- [🗄️ Database Design](./documents/database/README.md) - Schema, migrations, and data management
+- [🚀 Deployment Guide](./documents/deployment/README.md) - Production deployment and configuration
+- [👨‍💻 Developer Guide](./documents/developer/README.md) - Development setup and coding standards
+
+### Operational Documentation
+- [⚙️ System Configuration](./documents/system/README.md) - Configuration management and settings
+- [📋 Onboarding Guide](./documents/onboarding/README.md) - User onboarding and training materials
+- [📝 Release Notes](./documents/release/README.md) - Version history and changelog
+- [🔧 Troubleshooting](./documents/troubleshooting/README.md) - Common issues and solutions
+
+### Additional Resources
+- [📊 API Reference](./documents/developer/API_REFERENCE.md) - Complete API documentation
+- [🔒 Security Guide](./documents/system/SECURITY_AND_AUTHENTICATION.md) - Security best practices
+- [📧 Email Configuration](./documents/developer/EMAIL_BROADCASTER.md) - Email service setup
+- [🧪 Testing Guide](./documents/developer/README.md#testing) - Testing strategies and tools
+
+---
+
 <div align="center">
 
-**🏛️ Built with ❤️ for Better Municipal Services and Citizen Engagement**
+**🏛️ Built for Smart City Initiatives**
 
-*Empowering communities through digital transformation*
+*Empowering municipal authorities and citizens through digital transformation*
 
 [![Made with React](https://img.shields.io/badge/Made%20with-React-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
 [![Powered by TypeScript](https://img.shields.io/badge/Powered%20by-TypeScript-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
-[![Built with Vite](https://img.shields.io/badge/Built%20with-Vite-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
+[![Built with Node.js](https://img.shields.io/badge/Built%20with-Node.js-339933?style=flat-square&logo=node.js)](https://nodejs.org/)
+[![Database PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?style=flat-square&logo=postgresql)](https://postgresql.org/)
 
 </div>

@@ -211,6 +211,7 @@ function copyConfigurationFiles() {
     const configFiles = [
         'ecosystem.prod.config.cjs',
         '.env.production',
+        '.env.development',
         'config/ssl/README.md'
     ];
 
@@ -276,12 +277,16 @@ function copyPrismaFiles() {
  * Copy essential scripts
  */
 function copyScripts() {
-    console.log('📜 Copying essential scripts...');
+    console.log('📜 Copying deployment and utility scripts...');
 
     const scriptFiles = [
         'scripts/validate-db-env.js',
+        'scripts/validate-env.js',
         'scripts/setup-dev-environment.js',
-        'scripts/build-verifier.js'
+        'scripts/build-verifier.js',
+        'scripts/start-production.js',
+        'scripts/deploy-production.js',
+        'scripts/align-env.js'
     ];
 
     scriptFiles.forEach(file => {
@@ -292,9 +297,12 @@ function copyScripts() {
             fs.mkdirSync(path.dirname(destPath), { recursive: true });
             fs.copyFileSync(srcPath, destPath);
             console.log(`   ✅ Copied: ${file}`);
+        } else {
+            console.log(`   ⚠️ Not found: ${file}`);
         }
     });
 
+    console.log('   ✅ All deployment scripts copied');
     console.log('');
 }
 
@@ -307,7 +315,7 @@ function createProductionPackageJson() {
     // Read original package.json
     const originalPackage = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 
-    // Create minimal production package.json
+    // Create comprehensive production package.json with all deployment commands
     const productionPackage = {
         name: originalPackage.name,
         version: originalPackage.version,
@@ -315,19 +323,50 @@ function createProductionPackageJson() {
         type: originalPackage.type,
         main: "server/server.js",
         scripts: {
+            // Basic server commands
             start: "node server/server.js",
             "start:https": "node server/https-server.js",
+            "start:production": "node scripts/start-production.js",
+            
+            // PM2 commands for production deployment
+            "pm2:start": "pm2 start ecosystem.prod.config.cjs",
+            "pm2:start:https": "pm2 start ecosystem.prod.config.cjs --env https",
+            "pm2:stop": "pm2 stop Fix_Smart_CMS",
+            "pm2:restart": "pm2 restart Fix_Smart_CMS",
+            "pm2:logs": "pm2 logs Fix_Smart_CMS",
+            "pm2:status": "pm2 status",
+            "pm2:delete": "pm2 delete Fix_Smart_CMS",
+            
+            // Database commands
             "db:generate": "npx prisma generate --schema=prisma/schema.prod.prisma",
             "db:migrate": "npx prisma migrate deploy --schema=prisma/schema.prod.prisma",
             "db:seed": "node prisma/seed.prod.js",
             "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed",
+            "db:studio": "npx prisma studio --schema=prisma/schema.prod.prisma",
+            "db:reset": "npx prisma migrate reset --force --schema=prisma/schema.prod.prisma",
+            
+            // Validation and deployment commands
+            "validate:env": "node scripts/validate-env.js",
             "validate:db": "node scripts/validate-db-env.js",
-            "verify:build": "node scripts/build-verifier.js"
+            "validate:build": "node scripts/build-verifier.js",
+            "deploy:validate": "node scripts/deploy-production.js",
+            "env:align": "node scripts/align-env.js",
+            
+            // Health and monitoring
+            "health:check": "curl http://localhost:4005/api/health || curl https://localhost:443/api/health",
+            "logs:view": "tail -f logs/application.log",
+            "logs:error": "tail -f logs/error.log",
+            
+            // Quick deployment commands
+            "deploy:quick": "npm ci --production && npm run db:setup && npm start",
+            "deploy:pm2": "npm ci --production && npm run db:setup && npm run pm2:start",
+            "deploy:https": "npm ci --production && npm run db:setup && npm run pm2:start:https"
         },
         dependencies: {
-            // Only include runtime dependencies
+            // Runtime dependencies
             "@prisma/client": originalPackage.dependencies["@prisma/client"],
             "bcryptjs": originalPackage.dependencies["bcryptjs"],
+            "compression": originalPackage.dependencies["compression"] || "^1.8.1",
             "cors": originalPackage.dependencies["cors"],
             "dotenv": originalPackage.dependencies["dotenv"],
             "express": originalPackage.dependencies["express"],
@@ -357,7 +396,7 @@ function createProductionPackageJson() {
         JSON.stringify(productionPackage, null, 2)
     );
 
-    console.log('   ✅ Production package.json created\n');
+    console.log('   ✅ Production package.json created with all deployment commands\n');
 }
 
 /**
@@ -509,70 +548,259 @@ function generateBuildReport() {
  * Create deployment README
  */
 function createDeploymentReadme() {
-    console.log('📖 Creating deployment README...');
+    console.log('📖 Creating comprehensive deployment README...');
 
-    const deploymentReadme = `# NLC-CMS Production Deployment
+    const deploymentReadme = `# NLC-CMS Production Deployment Guide
 
-## Quick Start
+## Quick Start (Recommended)
 
 1. **Extract the build archive**
    \`\`\`bash
-   unzip build_v1.0.0.zip
+   unzip nlc-cms-production-build.zip
    cd dist/
    \`\`\`
 
-2. **Install dependencies**
+2. **Quick deployment with validation**
    \`\`\`bash
-   npm ci --production
+   # Validate environment and deploy
+   npm run deploy:validate
+   npm run deploy:quick
    \`\`\`
 
-3. **Configure environment**
+## Manual Deployment Steps
+
+### 1. Install Dependencies
+\`\`\`bash
+npm ci --production
+\`\`\`
+
+### 2. Environment Configuration
+\`\`\`bash
+# Copy and configure environment
+cp .env.production.template .env
+# Edit .env with your specific configuration
+
+# Validate environment
+npm run validate:env
+
+# Align environment files
+npm run env:align
+\`\`\`
+
+### 3. SSL Certificates (Optional for HTTPS)
+- Place your SSL certificate in \`config/ssl/server.crt\`
+- Place your private key in \`config/ssl/server.key\`
+- See \`config/ssl/README.md\` for detailed instructions
+
+### 4. Database Setup
+\`\`\`bash
+# Validate database connection
+npm run validate:db
+
+# Setup database (generate, migrate, seed)
+npm run db:setup
+
+# Or run individually:
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+\`\`\`
+
+### 5. Start the Application
+
+#### Option A: Direct Node.js (Simple)
+\`\`\`bash
+# HTTP mode
+npm start
+
+# HTTPS mode (with valid SSL certificates)
+npm run start:https
+
+# Production startup script (recommended)
+npm run start:production
+\`\`\`
+
+#### Option B: PM2 (Recommended for Production)
+\`\`\`bash
+# Install PM2 globally (if not installed)
+npm install -g pm2
+
+# Start with PM2 (HTTP mode)
+npm run pm2:start
+
+# Start with PM2 (HTTPS mode)
+npm run pm2:start:https
+
+# PM2 management commands
+npm run pm2:status    # Check status
+npm run pm2:logs      # View logs
+npm run pm2:restart   # Restart application
+npm run pm2:stop      # Stop application
+npm run pm2:delete    # Remove from PM2
+\`\`\`
+
+## Available Commands
+
+### Deployment Commands
+- \`npm run deploy:validate\` - Validate deployment configuration
+- \`npm run deploy:quick\` - Quick deployment (install + setup + start)
+- \`npm run deploy:pm2\` - Deploy with PM2
+- \`npm run deploy:https\` - Deploy with HTTPS and PM2
+
+### Server Commands
+- \`npm start\` - Start HTTP server
+- \`npm run start:https\` - Start HTTPS server
+- \`npm run start:production\` - Start with production script
+
+### Database Commands
+- \`npm run db:setup\` - Complete database setup
+- \`npm run db:generate\` - Generate Prisma client
+- \`npm run db:migrate\` - Run database migrations
+- \`npm run db:seed\` - Seed database with initial data
+- \`npm run db:studio\` - Open Prisma Studio
+- \`npm run db:reset\` - Reset database (⚠️ destructive)
+
+### Validation Commands
+- \`npm run validate:env\` - Validate environment configuration
+- \`npm run validate:db\` - Validate database connection
+- \`npm run validate:build\` - Validate build integrity
+- \`npm run env:align\` - Align environment files
+
+### Monitoring Commands
+- \`npm run health:check\` - Check application health
+- \`npm run logs:view\` - View application logs
+- \`npm run logs:error\` - View error logs
+
+## Health Checks & Verification
+
+### Health Endpoints
+- **Basic Health**: \`http://localhost:4005/api/health\`
+- **Detailed Health**: \`http://localhost:4005/api/health/detailed\`
+- **API Documentation**: \`http://localhost:4005/api-docs\`
+- **Application**: \`http://localhost:4005\`
+
+### Verification Commands
+\`\`\`bash
+# Check if server is running
+curl http://localhost:4005/api/health
+
+# Check detailed status
+curl http://localhost:4005/api/health/detailed
+
+# Test API endpoints
+curl http://localhost:4005/api-docs
+\`\`\`
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Port already in use**
    \`\`\`bash
-   cp .env.production.template .env
-   # Edit .env with your configuration
+   # Check what's using the port
+   netstat -tulpn | grep :4005
+   # Kill the process or change PORT in .env
    \`\`\`
 
-4. **Add SSL certificates** (for HTTPS)
-   - Place your SSL certificate in \`config/ssl/server.crt\`
-   - Place your private key in \`config/ssl/server.key\`
-   - See \`config/ssl/README.md\` for details
-
-5. **Setup database**
+2. **Database connection failed**
    \`\`\`bash
-   npm run db:setup
+   # Validate database configuration
+   npm run validate:db
+   # Check DATABASE_URL in .env file
    \`\`\`
 
-6. **Start the server**
+3. **SSL certificate issues**
    \`\`\`bash
-   # HTTP mode
-   npm start
-   
-   # HTTPS mode (with SSL certificates)
-   npm run start:https
-   
-   # Using PM2 (recommended for production)
-   pm2 start ecosystem.prod.config.cjs
+   # Check SSL configuration
+   npm run validate:env
+   # Disable HTTPS temporarily: set HTTPS_ENABLED=false in .env
    \`\`\`
 
-## Verification
+4. **Environment configuration issues**
+   \`\`\`bash
+   # Align all environment files
+   npm run env:align
+   # Validate configuration
+   npm run validate:env
+   \`\`\`
 
-- Health check: \`curl https://your-domain.com/api/health\`
-- API documentation: \`https://your-domain.com/api-docs\`
-- Application: \`https://your-domain.com\`
+### Log Files
+- Application logs: \`logs/application.log\`
+- Error logs: \`logs/error.log\`
+- PM2 logs: \`~/.pm2/logs/\`
+
+### Support Commands
+\`\`\`bash
+# View real-time logs
+npm run logs:view
+
+# Check PM2 status
+npm run pm2:status
+
+# Restart if needed
+npm run pm2:restart
+\`\`\`
+
+## Production Checklist
+
+- [ ] Environment variables configured in \`.env\`
+- [ ] Database connection tested (\`npm run validate:db\`)
+- [ ] SSL certificates added (if using HTTPS)
+- [ ] Application health check passes
+- [ ] PM2 process manager configured
+- [ ] Log rotation configured
+- [ ] Backup strategy in place
+- [ ] Monitoring alerts configured
+
+## Environment Variables Reference
+
+### Required Variables
+- \`NODE_ENV=production\`
+- \`PORT=4005\` (or 443 for HTTPS)
+- \`DATABASE_URL=postgresql://...\`
+- \`JWT_SECRET=your-secret-key\`
+- \`CLIENT_URL=http://your-domain.com\`
+- \`CORS_ORIGIN=http://your-domain.com\`
+
+### Optional Variables
+- \`HTTPS_ENABLED=true\` (for HTTPS mode)
+- \`SSL_KEY_PATH=config/ssl/server.key\`
+- \`SSL_CERT_PATH=config/ssl/server.crt\`
+- \`EMAIL_SERVICE=smtp.office365.com\`
+- \`EMAIL_USER=your-email@domain.com\`
 
 ## Support
 
-See the complete documentation in the \`docs/\` directory of the source repository.
+For issues and support:
+1. Check the troubleshooting section above
+2. Review application logs
+3. Validate configuration with provided scripts
+4. Contact the development team
 
 ---
 
-**Build Date**: ${BUILD_CONFIG.buildDate}  
-**Version**: 1.0.0  
-**Node.js**: ${BUILD_CONFIG.nodeVersion}
+**Build Information**
+- **Build Date**: ${BUILD_CONFIG.buildDate}
+- **Version**: 1.0.0
+- **Node.js**: ${BUILD_CONFIG.nodeVersion}
+- **Git Commit**: ${getGitCommitHash()}
+- **Git Branch**: ${getGitBranch()}
+
+**Quick Commands Summary**
+\`\`\`bash
+# Complete deployment
+npm run deploy:validate && npm run deploy:pm2
+
+# Start/Stop/Restart
+npm run pm2:start / npm run pm2:stop / npm run pm2:restart
+
+# Monitor
+npm run pm2:status && npm run health:check
+\`\`\`
 `;
 
     fs.writeFileSync(path.join(BUILD_CONFIG.distDir, 'README_DEPLOYMENT.md'), deploymentReadme);
-    console.log('   ✅ Deployment README created\n');
+    console.log('   ✅ Comprehensive deployment README created\n');
 }
 
 /**

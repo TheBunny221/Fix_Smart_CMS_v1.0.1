@@ -1,6 +1,8 @@
 # Developer Documentation
 
-This folder contains comprehensive technical documentation for developers working on Fix_Smart_CMS, including API references, development guides, schema documentation, and state management patterns.
+This folder contains comprehensive technical documentation for developers working on Fix_Smart_CMS v1.0.3, including API references, development guides, schema documentation, and state management patterns.
+
+**Navigation**: [← Documentation Index](../README.md) | [← Main README](../../README.md)
 
 ## Purpose
 
@@ -266,3 +268,7 @@ export const apiSlice = createApi({
 ---
 
 [← Back to Main Documentation Index](../README.md)
+--
+-
+
+**Navigation**: [← Documentation Index](../README.md) | [← Main README](../../README.md)

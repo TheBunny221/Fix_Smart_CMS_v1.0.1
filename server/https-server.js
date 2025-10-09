@@ -36,11 +36,15 @@ function checkSSLCertificates() {
   try {
     if (!fs.existsSync(SSL_KEY_PATH)) {
       console.warn(`⚠️ SSL private key not found: ${SSL_KEY_PATH}`);
+      console.warn(`   Expected location: ${SSL_KEY_PATH}`);
+      console.warn(`   Please add SSL certificates or disable HTTPS mode`);
       return false;
     }
     
     if (!fs.existsSync(SSL_CERT_PATH)) {
       console.warn(`⚠️ SSL certificate not found: ${SSL_CERT_PATH}`);
+      console.warn(`   Expected location: ${SSL_CERT_PATH}`);
+      console.warn(`   Please add SSL certificates or disable HTTPS mode`);
       return false;
     }
 
@@ -49,8 +53,12 @@ function checkSSLCertificates() {
     const certContent = fs.readFileSync(SSL_CERT_PATH, 'utf8');
     
     if (keyContent.includes('# SSL Private Key Placeholder') || 
-        certContent.includes('# SSL Certificate Placeholder')) {
-      console.warn(`⚠️ SSL certificate files contain placeholders. Please replace with actual certificates.`);
+        keyContent.includes('-----BEGIN PRIVATE KEY-----') === false ||
+        certContent.includes('# SSL Certificate Placeholder') ||
+        certContent.includes('-----BEGIN CERTIFICATE-----') === false) {
+      console.warn(`⚠️ SSL certificate files contain placeholders or are invalid.`);
+      console.warn(`   Please replace with actual certificates or disable HTTPS mode`);
+      console.warn(`   Automatically falling back to HTTP mode to prevent restart loops`);
       return false;
     }
 
@@ -58,6 +66,7 @@ function checkSSLCertificates() {
     return true;
   } catch (error) {
     console.warn(`⚠️ Error checking SSL certificates: ${error.message}`);
+    console.warn(`   Falling back to HTTP mode`);
     return false;
   }
 }
@@ -199,30 +208,86 @@ async function startServer() {
     // 4. Start server with HTTPS support
     console.log("\n🔧 Step 3: Starting HTTP/HTTPS Server");
 
-    if (HTTPS_ENABLED && checkSSLCertificates()) {
-      // Start HTTPS server
-      const sslOptions = loadSSLCertificates();
-      server = https.createServer(sslOptions, app);
-      
-      server.listen(PORT, HOST, () => {
-        console.log("\n🎉 HTTPS Server Successfully Started!");
-        console.log("=".repeat(60));
-        console.log(`🔒 HTTPS Server URL: https://${HOST}:${PORT}`);
-        console.log(`📖 API Documentation: https://${HOST}:${PORT}/api-docs`);
-        console.log(`🔍 Health Check: https://${HOST}:${PORT}/api/health`);
-        console.log(`📊 Detailed Health: https://${HOST}:${PORT}/api/health/detailed`);
-        console.log(`🔒 SSL Status: ✅ Enabled with valid certificates`);
-        console.log("=".repeat(60));
-      });
+    // Check if HTTPS is enabled and certificates are available
+    const sslAvailable = HTTPS_ENABLED && checkSSLCertificates();
+    
+    // Force HTTP mode if SSL certificates are not available to prevent restart loops
+    if (HTTPS_ENABLED && !sslAvailable) {
+      console.warn(`⚠️ HTTPS requested but SSL certificates unavailable`);
+      console.warn(`   Automatically switching to HTTP mode to prevent restart loops`);
+      console.warn(`   To enable HTTPS: Add valid SSL certificates and restart`);
+    }
+    
+    if (sslAvailable) {
+      try {
+        // Start HTTPS server
+        const sslOptions = loadSSLCertificates();
+        server = https.createServer(sslOptions, app);
+        
+        server.on('error', (error) => {
+          console.error(`❌ HTTPS Server Error: ${error.message}`);
+          if (error.code === 'EADDRINUSE') {
+            console.error(`   Port ${PORT} is already in use`);
+            console.error(`   Please check if another instance is running or change the PORT`);
+          } else if (error.code === 'EACCES') {
+            console.error(`   Permission denied to bind to port ${PORT}`);
+            console.error(`   Try running with sudo or use a port > 1024`);
+          }
+          
+          // Don't exit immediately, try HTTP fallback
+          console.warn(`⚠️ Attempting HTTP fallback...`);
+          startHttpFallback();
+        });
+        
+        server.listen(PORT, HOST, () => {
+          console.log("\n🎉 HTTPS Server Successfully Started!");
+          console.log("=".repeat(60));
+          console.log(`🔒 HTTPS Server URL: https://${HOST}:${PORT}`);
+          console.log(`📖 API Documentation: https://${HOST}:${PORT}/api-docs`);
+          console.log(`🔍 Health Check: https://${HOST}:${PORT}/api/health`);
+          console.log(`📊 Detailed Health: https://${HOST}:${PORT}/api/health/detailed`);
+          console.log(`🔒 SSL Status: ✅ Enabled with valid certificates`);
+          console.log("=".repeat(60));
+        });
 
-      // Start HTTP redirect server if in production
-      if (env.isProduction && HTTP_PORT !== PORT) {
-        httpRedirectServer = createHttpRedirectServer();
+        // Start HTTP redirect server if in production and different port
+        if (env.isProduction && HTTP_PORT !== PORT && HTTP_PORT !== 0) {
+          try {
+            httpRedirectServer = createHttpRedirectServer();
+          } catch (redirectError) {
+            console.warn(`⚠️ Could not start HTTP redirect server: ${redirectError.message}`);
+            console.warn(`   HTTPS server will continue without HTTP redirect`);
+          }
+        }
+
+      } catch (httpsError) {
+        console.error(`❌ Failed to start HTTPS server: ${httpsError.message}`);
+        console.warn(`⚠️ Falling back to HTTP mode`);
+        startHttpFallback();
       }
 
     } else {
       // Start HTTP server (development or missing certificates)
+      startHttpFallback();
+    }
+    
+    function startHttpFallback() {
       server = http.createServer(app);
+      
+      server.on('error', (error) => {
+        console.error(`❌ HTTP Server Error: ${error.message}`);
+        if (error.code === 'EADDRINUSE') {
+          console.error(`   Port ${PORT} is already in use`);
+          console.error(`   Please check if another instance is running or change the PORT`);
+        } else if (error.code === 'EACCES') {
+          console.error(`   Permission denied to bind to port ${PORT}`);
+          console.error(`   Try running with sudo or use a port > 1024`);
+        }
+        
+        // Final exit if HTTP also fails
+        console.error(`❌ Both HTTPS and HTTP startup failed. Exiting...`);
+        process.exit(1);
+      });
       
       server.listen(PORT, HOST, () => {
         console.log("\n🎉 HTTP Server Successfully Started!");
@@ -232,11 +297,15 @@ async function startServer() {
         console.log(`🔍 Health Check: http://${HOST}:${PORT}/api/health`);
         console.log(`📊 Detailed Health: http://${HOST}:${PORT}/api/health/detailed`);
         
-        if (env.isProduction) {
-          console.log(`⚠️ SSL Status: ❌ Running HTTP in production (certificates missing)`);
-          console.log(`   Please add SSL certificates to enable HTTPS`);
+        if (env.isProduction && HTTPS_ENABLED) {
+          console.log(`⚠️ SSL Status: ❌ Running HTTP in production (certificates missing/invalid)`);
+          console.log(`   Please add valid SSL certificates to enable HTTPS`);
+          console.log(`   Expected locations:`);
+          console.log(`   - Private Key: ${SSL_KEY_PATH}`);
+          console.log(`   - Certificate: ${SSL_CERT_PATH}`);
+          console.log(`   - CA Bundle: ${SSL_CA_PATH} (optional)`);
         } else {
-          console.log(`🔓 SSL Status: HTTP mode (development)`);
+          console.log(`🔓 SSL Status: HTTP mode (${env.isDevelopment ? 'development' : 'HTTPS disabled'})`);
         }
         console.log("=".repeat(60));
       });
