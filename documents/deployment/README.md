@@ -28,6 +28,15 @@ Comprehensive Docker deployment documentation including:
 - Scaling and performance optimization
 - Security hardening and best practices
 
+### [Debian + Nginx Deployment Guide](./DEBIAN_NGINX_DEPLOYMENT.md)
+Complete Debian server deployment with Nginx reverse proxy:
+- Automated deployment scripts
+- Step-by-step manual deployment
+- Nginx configuration and SSL setup
+- Service management and monitoring
+- Troubleshooting and performance optimization
+- Security best practices
+
 ### [QA Validation Checklist](./QA_VALIDATION_CHECKLIST.md)
 Comprehensive validation checklist including:
 - Pre-deployment testing procedures
