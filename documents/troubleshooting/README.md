@@ -17,6 +17,22 @@ Comprehensive error resolution guide including:
 - API endpoint and server errors
 - Performance and memory issues
 
+### [Network Access Troubleshooting](./NETWORK_ACCESS_TROUBLESHOOTING.md)
+Network connectivity and access issues:
+- Application binding and port configuration
+- Nginx reverse proxy setup and issues
+- Firewall and security configuration
+- SSL certificate problems
+- External IP access troubleshooting
+
+### [Emergency Deployment Fix](./EMERGENCY_DEPLOYMENT_FIX.md)
+Immediate fixes for critical deployment issues:
+- Port configuration problems (8085 vs 4005)
+- Service startup and connectivity issues
+- Quick diagnostic and repair procedures
+- Automated fix scripts and manual procedures
+- Connection timeout and access problems
+
 ## Troubleshooting Framework
 
 ### Issue Classification

@@ -35,6 +35,8 @@
     "deploy:debian:nginx": "node scripts/deploy-debian.js setup-nginx",
     "deploy:debian:ssl": "node scripts/deploy-debian.js setup-ssl",
     "deploy:debian:status": "node scripts/deploy-debian.js status",
+    "diagnose": "node scripts/diagnose-deployment.js",
+    "fix-ports": "node scripts/fix-port-issues.js",
     "clean:client": "find client -type f \\( -name \"*.js\" -o -name \"*.js.map\" \\) -delete",
     "clean:tsbuild": "rm -rf tsbuild",
     "build:ts": "tsc --project tsconfig.json",
