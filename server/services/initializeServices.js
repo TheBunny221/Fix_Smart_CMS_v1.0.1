@@ -3,7 +3,7 @@
  * 
  * Initializes all required services at server startup
  * 
- * @version 1.0.3
+ * @version  1.0.0
  * @author Fix_Smart_CMS Team
  */
 

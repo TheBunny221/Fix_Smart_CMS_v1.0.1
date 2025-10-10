@@ -11,7 +11,7 @@
  * - Comprehensive logging
  * - Multi-language support ready
  * 
- * @version 1.0.3
+ * @version  1.0.0
  * @author Fix_Smart_CMS Team
  */
 

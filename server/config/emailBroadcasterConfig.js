@@ -5,7 +5,7 @@
  * including templates, recipient rules, and system settings.
  * Now enhanced with SystemConfig cache integration.
  * 
- * @version 1.0.3
+ * @version  1.0.0
  * @author Fix_Smart_CMS Team
  */
 
@@ -267,7 +267,7 @@ export const getTemplateCustomization = () => {
   // Using static defaults since SystemConfig cache was removed
   const appConfig = {
     appName: 'Fix_Smart_CMS',
-    appVersion: '1.0.3',
+    appVersion: ' 1.0.0',
     organizationName: 'Smart City Management',
     websiteUrl: 'https://fix-smart-cms.gov.in',
     logoUrl: null,

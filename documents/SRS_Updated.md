@@ -1,13 +1,13 @@
 # Software Requirements Specification (SRS)
 ## Fix_Smart_CMS - Complaint Management System
-### Version 1.0.3 - Production Release
+### Version  1.0.0 - Production Release
 
 ---
 
 ## Document Information
-- **Document Version**: 1.0.3
+- **Document Version**:  1.0.0
 - **Last Updated**: December 2024
-- **System Version**: Fix_Smart_CMS v1.0.3
+- **System Version**: Fix_Smart_CMS v 1.0.0
 - **Status**: Production Ready
 - **Prepared By**: Development Team
 - **Approved By**: Project Manager
@@ -880,7 +880,7 @@ The Fix_Smart_CMS uses a comprehensive PostgreSQL database schema with 12 core m
 ---
 
 **Document Control**
-- **Version**: 1.0.3
+- **Version**:  1.0.0
 - **Last Updated**: December 2024
 - **Next Review**: March 2025
 - **Approved By**: Project Manager

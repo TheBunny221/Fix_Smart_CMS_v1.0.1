@@ -53,6 +53,6 @@ CMD ["npm", "run", "dev"]
 # Build metadata
 # ============================================================================
 LABEL maintainer="Harihar Upadhyay <hariharupadhyay21@gnu.ac.in>"
-LABEL version="1.0.3-dev"
+LABEL version=" 1.0.0-dev"
 LABEL description="Fix_Smart_CMS - Development Environment"
 LABEL environment="development"

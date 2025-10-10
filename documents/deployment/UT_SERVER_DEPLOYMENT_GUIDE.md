@@ -2,14 +2,15 @@
 
 ## Overview
 
-This guide provides step-by-step instructions for deploying Fix_Smart_CMS on a UT server with LAN access using HTTPS.
+This guide provides step-by-step instructions for deploying Fix_Smart_CMS on a UT server with LAN access. The application uses Nginx as a reverse proxy to handle HTTPS/SSL termination, while the Node.js application runs on HTTP behind Nginx.
 
 ## Server Configuration
 
 The application is configured for:
-- **Host**: 0.0.0.0 (accessible from LAN)
-- **Port**: 443 (HTTPS)
-- **HTTP Redirect**: Port 80 → 443
+- **Architecture**: Nginx reverse proxy + Node.js application
+- **Nginx**: Handles HTTPS on port 443, HTTP redirect from port 80
+- **Application**: HTTP on port 4005 (behind Nginx)
+- **Host**: 127.0.0.1 (application), 0.0.0.0 (Nginx for LAN access)
 - **Environment**: Production
 - **Database**: PostgreSQL (external)
 
@@ -19,7 +20,7 @@ The application is configured for:
 ```bash
 # Ubuntu/Debian
 sudo apt update
-sudo apt install -y nodejs npm postgresql-client openssl
+sudo apt install -y nodejs npm postgresql-client openssl nginx
 
 # Install PM2 globally
 sudo npm install -g pm2
@@ -27,40 +28,55 @@ sudo npm install -g pm2
 # Verify installations
 node --version    # Should be v18+
 npm --version
+nginx -v
 openssl version
 ```
 
-### 2. SSL Certificate Generation
+### 2. Nginx and SSL Configuration
 
-Since this is for UT server deployment, generate self-signed certificates:
+Configure Nginx as reverse proxy with SSL certificates:
 
 ```bash
 # Navigate to project directory
-cd Fix_Smart_CMS_v1.0.3
+cd Fix_Smart_CMS_v 1.0.0
 
-# Generate SSL certificates
-openssl req -x509 -newkey rsa:2048 -keyout config/ssl/server.key -out config/ssl/server.crt -days 365 -nodes -subj "/C=IN/ST=Kerala/L=Kochi/O=Fix Smart CMS/CN=0.0.0.0"
+# Copy Nginx configuration
+sudo cp config/nginx/nginx.conf /etc/nginx/sites-available/fix-smart-cms
+sudo ln -s /etc/nginx/sites-available/fix-smart-cms /etc/nginx/sites-enabled/
+
+# Remove default Nginx site (optional)
+sudo rm /etc/nginx/sites-enabled/default
+
+# Generate SSL certificates for Nginx
+sudo openssl req -x509 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/fix-smart-cms.key \
+  -out /etc/ssl/certs/fix-smart-cms.crt \
+  -days 365 -nodes \
+  -subj "/C=IN/ST=Kerala/L=Kochi/O=Fix Smart CMS/CN=$(hostname -I | awk '{print $1}')"
 
 # Set proper permissions
-chmod 600 config/ssl/server.key
-chmod 644 config/ssl/server.crt
+sudo chmod 600 /etc/ssl/private/fix-smart-cms.key
+sudo chmod 644 /etc/ssl/certs/fix-smart-cms.crt
 
-# Verify certificates
-openssl x509 -in config/ssl/server.crt -text -noout | head -20
+# Test Nginx configuration
+sudo nginx -t
+
+# Start and enable Nginx
+sudo systemctl enable nginx
+sudo systemctl start nginx
 ```
 
 ### 3. Environment Configuration
 
-The `.env.production` is already configured for UT server deployment:
+The `.env.production` is configured for HTTP mode behind Nginx:
 
 ```env
 NODE_ENV=production
-PORT=443
-HTTP_PORT=80
-HOST=0.0.0.0
-HTTPS_ENABLED=true
-CLIENT_URL=https://0.0.0.0
-CORS_ORIGIN=https://0.0.0.0,http://0.0.0.0,https://localhost,http://localhost
+PORT=4005
+HOST=127.0.0.1
+TRUST_PROXY=true
+CLIENT_URL=http://localhost:4005
+CORS_ORIGIN=http://localhost:4005,http://localhost:3000
 ```
 
 ## Deployment Steps
@@ -114,10 +130,13 @@ npm run db:setup
 npm run start:production
 
 # Option 2: PM2 (recommended)
-npm run pm2:start:https
+npm run pm2:start
 
 # Check status
 npm run pm2:status
+
+# Verify Nginx is running
+sudo systemctl status nginx
 ```
 
 ## Network Access Configuration
@@ -138,7 +157,7 @@ sudo ufw status
 sudo setcap 'cap_net_bind_service=+ep' $(which node)
 
 # Or run with sudo (not recommended)
-sudo npm run pm2:start:https
+sudo npm run pm2:start
 ```
 
 ### 3. LAN Access Testing
@@ -285,8 +304,8 @@ For deployment issues:
 npm run build && scp -r dist/ user@server:/path/
 
 # Start
-npm run pm2:start:https
+npm run pm2:start
 
 # Monitor
-npm run pm2:status && npm run health:check
+npm run pm2:status && curl -k https://localhost/api/health
 ```

@@ -126,11 +126,11 @@ CMD ["node", "server/server.js"]
 # Build metadata
 # ============================================================================
 LABEL maintainer="Harihar Upadhyay <hariharupadhyay21@gnu.ac.in>"
-LABEL version="1.0.3"
+LABEL version=" 1.0.0"
 LABEL description="Fix_Smart_CMS - Complaint Management System"
 LABEL org.opencontainers.image.title="Fix_Smart_CMS"
 LABEL org.opencontainers.image.description="Modern complaint management system for municipal organizations"
-LABEL org.opencontainers.image.version="1.0.3"
+LABEL org.opencontainers.image.version=" 1.0.0"
 LABEL org.opencontainers.image.vendor="NLC-CMS"
 LABEL org.opencontainers.image.licenses="MIT"
 LABEL org.opencontainers.image.source="https://github.com/your-org/Fix_Smart_CMS_ "

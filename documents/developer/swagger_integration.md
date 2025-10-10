@@ -1,5 +1,5 @@
 # Swagger/OpenAPI Integration Guide
-## Fix_Smart_CMS v1.0.3
+## Fix_Smart_CMS v 1.0.0
 
 ### Overview
 This document explains how Swagger/OpenAPI documentation is configured and integrated into the Fix_Smart_CMS project. The API documentation is automatically generated from JSDoc comments in route files and served via Swagger UI.

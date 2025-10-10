@@ -1,4 +1,4 @@
-# Fix_Smart_CMS v1.0.3 - Development Docker Compose Configuration
+# Fix_Smart_CMS v 1.0.0 - Development Docker Compose Configuration
 # Optimized for local development with hot reload
 
 version: '3.8'

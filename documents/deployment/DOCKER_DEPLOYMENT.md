@@ -199,10 +199,10 @@ The `scripts/docker-deploy.sh` script provides comprehensive deployment automati
 #### 1. Build Images
 ```bash
 # Production
-docker build -t fix-smart-cms:1.0.3 .
+docker build -t fix-smart-cms: 1.0.0 .
 
 # Development
-docker build -f Dockerfile.dev -t fix-smart-cms:1.0.3-dev .
+docker build -f Dockerfile.dev -t fix-smart-cms: 1.0.0-dev .
 ```
 
 #### 2. Start Services

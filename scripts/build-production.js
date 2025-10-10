@@ -255,9 +255,8 @@ function copyPrismaFiles() {
 
     const prismaFiles = [
         'prisma/schema.prisma',
-        'prisma/schema.prod.prisma',
-        'prisma/seed.prod.js',
-        'prisma/seed.common.js',
+        'prisma/seed.js',
+        'prisma/seed.json',
         'prisma/migration-utils.js'
     ];
 
@@ -347,12 +346,12 @@ function createProductionPackageJson() {
             "pm2:delete": "pm2 delete Fix_Smart_CMS",
             
             // Database commands
-            "db:generate": "npx prisma generate --schema=prisma/schema.prod.prisma",
-            "db:migrate": "npx prisma migrate deploy --schema=prisma/schema.prod.prisma",
-            "db:seed": "node prisma/seed.prod.js",
+            "db:generate": "npx prisma generate",
+            "db:migrate": "npx prisma migrate deploy",
+            "db:seed": "npx prisma db seed",
             "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed",
-            "db:studio": "npx prisma studio --schema=prisma/schema.prod.prisma",
-            "db:reset": "npx prisma migrate reset --force --schema=prisma/schema.prod.prisma",
+            "db:studio": "npx prisma studio",
+            "db:reset": "npx prisma migrate reset --force",
             
             // Validation and deployment commands
             "validate:env": "node scripts/validate-env.js",
@@ -419,16 +418,14 @@ function createEnvironmentTemplate() {
 
 # Application Configuration
 NODE_ENV=production
-PORT=443
-HTTP_PORT=80
-CLIENT_URL=https://your-domain.com
-CORS_ORIGIN=https://your-domain.com
+PORT=4005
+HOST=127.0.0.1
+CLIENT_URL=http://localhost:4005
+CORS_ORIGIN=http://localhost:4005,http://localhost:3000
 
-# HTTPS Configuration
-HTTPS_ENABLED=true
-SSL_KEY_PATH=config/ssl/server.key
-SSL_CERT_PATH=config/ssl/server.crt
-SSL_CA_PATH=config/ssl/ca-bundle.crt
+# Nginx Reverse Proxy Configuration
+# HTTPS/SSL handled at Nginx layer - no internal SSL needed
+TRUST_PROXY=true
 
 # Database Configuration (PostgreSQL)
 DATABASE_URL="postgresql://username:password@localhost:5432/nlc_cms_prod"
@@ -720,9 +717,9 @@ curl http://localhost:4005/api-docs
 
 3. **SSL certificate issues**
    \`\`\`bash
-   # Check SSL configuration
+   # Check Nginx configuration
    npm run validate:env
-   # Disable HTTPS temporarily: set HTTPS_ENABLED=false in .env
+   # Ensure TRUST_PROXY=true for production with Nginx reverse proxy
    \`\`\`
 
 4. **Environment configuration issues**
@@ -772,9 +769,7 @@ npm run pm2:restart
 - \`CORS_ORIGIN=http://your-domain.com\`
 
 ### Optional Variables
-- \`HTTPS_ENABLED=true\` (for HTTPS mode)
-- \`SSL_KEY_PATH=config/ssl/server.key\`
-- \`SSL_CERT_PATH=config/ssl/server.crt\`
+- \`TRUST_PROXY=true\` (required for production with Nginx reverse proxy)
 - \`EMAIL_SERVICE=smtp.office365.com\`
 - \`EMAIL_USER=your-email@domain.com\`
 

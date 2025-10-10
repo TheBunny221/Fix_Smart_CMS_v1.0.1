@@ -35,7 +35,7 @@ Based on the server logs showing missing configurations, the following settings 
 ```javascript
 {
   key: "SYSTEM_VERSION",
-  value: "1.0.3",
+  value: " 1.0.0",
   description: "Current system version",
 },
 {

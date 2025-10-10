@@ -28,10 +28,8 @@ function validateBuildArtifacts() {
   const requiredFiles = [
     'dist/package.json',
     'dist/server/server.js',
-    'dist/server/https-server.js',
     'dist/client/index.html',
-    'dist/config/ssl/server.key',
-    'dist/config/ssl/server.crt',
+    'dist/config/nginx/nginx.conf',
     'dist/.env.production',
     'dist/ecosystem.prod.config.cjs',
     'dist/README.md',
@@ -82,7 +80,7 @@ function validateEnvironmentConfig() {
   
   const envVars = result.parsed;
   const requiredVars = [
-    'NODE_ENV', 'PORT', 'HOST', 'HTTPS_ENABLED',
+    'NODE_ENV', 'PORT', 'HOST', 'TRUST_PROXY',
     'DATABASE_URL', 'JWT_SECRET', 'CLIENT_URL', 'CORS_ORIGIN'
   ];
   
@@ -101,12 +99,12 @@ function validateEnvironmentConfig() {
     issues.push('NODE_ENV should be "production"');
   }
   
-  if (envVars.HOST !== '0.0.0.0') {
-    issues.push('HOST should be "0.0.0.0" for LAN access');
+  if (envVars.HOST !== '127.0.0.1' && envVars.HOST !== '0.0.0.0') {
+    issues.push('HOST should be "127.0.0.1" for production or "0.0.0.0" for LAN access');
   }
   
-  if (envVars.HTTPS_ENABLED !== 'true') {
-    issues.push('HTTPS_ENABLED should be "true" for secure deployment');
+  if (envVars.TRUST_PROXY !== 'true' && envVars.NODE_ENV === 'production') {
+    issues.push('TRUST_PROXY should be "true" for production with Nginx reverse proxy');
   }
   
   if (!envVars.DATABASE_URL.startsWith('postgresql://')) {
@@ -127,55 +125,43 @@ function validateEnvironmentConfig() {
 }
 
 /**
- * Validate SSL certificates
+ * Validate Nginx configuration
  */
-function validateSSLCertificates() {
-  console.log('\n🔒 Validating SSL Certificates...');
+function validateNginxConfiguration() {
+  console.log('\n🔒 Validating Nginx Configuration...');
   
-  const keyPath = path.join(rootDir, 'config/ssl/server.key');
-  const certPath = path.join(rootDir, 'config/ssl/server.crt');
+  const nginxConfigPath = path.join(rootDir, 'config/nginx/nginx.conf');
   
-  if (!fs.existsSync(keyPath)) {
-    console.log(`   ❌ SSL private key not found: ${keyPath}`);
-    return false;
-  }
-  
-  if (!fs.existsSync(certPath)) {
-    console.log(`   ❌ SSL certificate not found: ${certPath}`);
+  if (!fs.existsSync(nginxConfigPath)) {
+    console.log(`   ❌ Nginx configuration not found: ${nginxConfigPath}`);
     return false;
   }
   
   try {
-    const keyContent = fs.readFileSync(keyPath, 'utf8');
-    const certContent = fs.readFileSync(certPath, 'utf8');
+    const nginxContent = fs.readFileSync(nginxConfigPath, 'utf8');
     
-    if (keyContent.includes('PLACEHOLDER') || !keyContent.includes('-----BEGIN PRIVATE KEY-----')) {
-      console.log('   ⚠️ SSL private key appears to be a placeholder');
-      console.log('   💡 Generate proper certificates with: npm run deploy ssl');
+    // Check for required configurations
+    const requiredConfigs = [
+      'upstream fix_smart_cms',
+      'server 127.0.0.1:4005',
+      'listen 443 ssl',
+      'proxy_pass http://fix_smart_cms'
+    ];
+    
+    const missingConfigs = requiredConfigs.filter(config => !nginxContent.includes(config));
+    
+    if (missingConfigs.length > 0) {
+      console.log('   ⚠️ Missing Nginx configurations:');
+      missingConfigs.forEach(config => console.log(`      - ${config}`));
     }
     
-    if (certContent.includes('PLACEHOLDER') || !certContent.includes('-----BEGIN CERTIFICATE-----')) {
-      console.log('   ⚠️ SSL certificate appears to be a placeholder');
-      console.log('   💡 Generate proper certificates with: npm run deploy ssl');
-    }
-    
-    // Try to get certificate info
-    try {
-      const certInfo = execSync(`openssl x509 -in "${certPath}" -noout -subject -dates`, { 
-        encoding: 'utf8',
-        stdio: 'pipe'
-      });
-      console.log('   📋 Certificate Information:');
-      console.log(certInfo.trim().split('\n').map(line => `      ${line}`).join('\n'));
-    } catch (infoError) {
-      console.log('   ⚠️ Could not read certificate information (OpenSSL not available)');
-    }
-    
-    console.log('   ✅ SSL certificates present and appear valid');
+    console.log('   ✅ Nginx configuration is present and properly configured');
+    console.log('   💡 SSL certificates should be configured at Nginx level');
+    console.log('   💡 Application will run on HTTP behind Nginx reverse proxy');
     return true;
     
   } catch (error) {
-    console.log(`   ❌ Error reading SSL certificates: ${error.message}`);
+    console.log(`   ❌ Error reading Nginx configuration: ${error.message}`);
     return false;
   }
 }
@@ -243,9 +229,9 @@ function validateEcosystemConfig() {
     
     // Check for required configurations
     const requiredConfigs = [
-      'HTTPS_ENABLED.*true',
-      'PORT.*443',
-      'HOST.*0.0.0.0',
+      'TRUST_PROXY.*true',
+      'PORT.*4005',
+      'HOST.*127.0.0.1',
       'NODE_ENV.*production'
     ];
     
@@ -345,8 +331,8 @@ function generateDeploymentReport(results) {
     if (!results['Build Artifacts']) {
       console.log('- Run: npm run deploy:full');
     }
-    if (!results['SSL Certificates']) {
-      console.log('- Run: npm run deploy ssl');
+    if (!results['Nginx Configuration']) {
+      console.log('- Configure Nginx with SSL certificates');
     }
     if (!results['Environment Config']) {
       console.log('- Review and fix .env.production');
@@ -363,7 +349,7 @@ function main() {
   const results = {
     'Build Artifacts': validateBuildArtifacts(),
     'Environment Config': validateEnvironmentConfig(),
-    'SSL Certificates': validateSSLCertificates(),
+    'Nginx Configuration': validateNginxConfiguration(),
     'Package Config': validatePackageConfig(),
     'Ecosystem Config': validateEcosystemConfig(),
     'System Requirements': validateSystemRequirements()

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide provides comprehensive instructions for deploying Fix_Smart_CMS to production. The system has been optimized to prevent HTTPS restart loops and includes all necessary deployment commands in the build.
+This guide provides comprehensive instructions for deploying Fix_Smart_CMS to production. The system uses Nginx as a reverse proxy to handle HTTPS/SSL termination, while the Node.js application runs on HTTP behind Nginx. This architecture provides better performance, security, and eliminates HTTPS restart loops.
 
 ## Quick Deployment Summary
 
@@ -10,7 +10,8 @@ The production build now includes:
 
 - ✅ All deployment scripts and commands
 - ✅ Environment validation and alignment tools
-- ✅ HTTPS loop prevention mechanisms
+- ✅ Nginx reverse proxy configuration
+- ✅ HTTP-only application setup (HTTPS handled by Nginx)
 - ✅ Comprehensive health checks
 - ✅ PM2 configuration for production
 - ✅ Database setup and migration tools
@@ -73,16 +74,14 @@ npm run db:studio        # Open database browser
 ### Server Management
 
 ```bash
-npm start                # Start HTTP server
-npm run start:https      # Start HTTPS server (with SSL)
+npm start                # Start HTTP server (behind Nginx)
 npm run start:production # Start with production script
 ```
 
 ### PM2 Process Management
 
 ```bash
-npm run pm2:start        # Start with PM2 (HTTP)
-npm run pm2:start:https  # Start with PM2 (HTTPS)
+npm run pm2:start        # Start with PM2 (HTTP behind Nginx)
 npm run pm2:status       # Check PM2 status
 npm run pm2:logs         # View PM2 logs
 npm run pm2:restart      # Restart application
@@ -94,7 +93,6 @@ npm run pm2:stop         # Stop application
 ```bash
 npm run deploy:quick     # Install + setup + start
 npm run deploy:pm2       # Deploy with PM2
-npm run deploy:https     # Deploy with HTTPS
 ```
 
 ## Step-by-Step Deployment
@@ -141,16 +139,31 @@ npm run validate:db
 npm run db:setup
 ```
 
-### 4. SSL Configuration (Optional)
+### 4. Nginx and SSL Configuration
 
 ```bash
-# Add SSL certificates to config/ssl/
-# - server.key (private key)
-# - server.crt (certificate)
-# - ca-bundle.crt (certificate authority bundle, optional)
+# Install Nginx
+sudo apt update && sudo apt install nginx
 
-# Validate SSL setup
-npm run validate:env
+# Copy Nginx configuration
+sudo cp config/nginx/nginx.conf /etc/nginx/sites-available/fix-smart-cms
+sudo ln -s /etc/nginx/sites-available/fix-smart-cms /etc/nginx/sites-enabled/
+
+# Generate SSL certificates for Nginx
+sudo openssl req -x509 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/fix-smart-cms.key \
+  -out /etc/ssl/certs/fix-smart-cms.crt \
+  -days 365 -nodes \
+  -subj "/C=IN/ST=Kerala/L=Kochi/O=Fix Smart CMS/CN=$(hostname -I | awk '{print $1}')"
+
+# Set proper permissions
+sudo chmod 600 /etc/ssl/private/fix-smart-cms.key
+sudo chmod 644 /etc/ssl/certs/fix-smart-cms.crt
+
+# Test and start Nginx
+sudo nginx -t
+sudo systemctl enable nginx
+sudo systemctl start nginx
 ```
 
 ### 5. Start Application
@@ -173,25 +186,29 @@ npm run pm2:start:https
 ```env
 NODE_ENV=production
 PORT=4005
-HOST=0.0.0.0
+HOST=127.0.0.1
 DATABASE_URL=postgresql://user:password@host:5432/database
 JWT_SECRET=your-super-secure-jwt-secret-256-bits
-CLIENT_URL=http://your-domain.com:4005
-CORS_ORIGIN=http://your-domain.com:4005,http://localhost:3000
+CLIENT_URL=http://localhost:4005
+CORS_ORIGIN=http://localhost:4005,http://localhost:3000
+TRUST_PROXY=true
 ```
 
-### HTTPS Configuration
+### Nginx Reverse Proxy Configuration
+
+The application runs on HTTP behind Nginx which handles HTTPS:
 
 ```env
-HTTPS_ENABLED=true
-SSL_KEY_PATH=config/ssl/server.key
-SSL_CERT_PATH=config/ssl/server.crt
-SSL_CA_PATH=config/ssl/ca-bundle.crt
-PORT=443
-HTTP_PORT=80
-CLIENT_URL=https://your-domain.com
-CORS_ORIGIN=https://your-domain.com
+# Application Configuration (HTTP behind Nginx)
+NODE_ENV=production
+PORT=4005
+HOST=127.0.0.1
+TRUST_PROXY=true
+CLIENT_URL=http://localhost:4005
+CORS_ORIGIN=http://localhost:4005,http://localhost:3000
 ```
+
+SSL certificates are managed by Nginx at `/etc/ssl/private/fix-smart-cms.key` and `/etc/ssl/certs/fix-smart-cms.crt`.
 
 ## HTTPS Loop Prevention
 
@@ -254,7 +271,7 @@ npm run pm2:status
 
    ```bash
    npm run validate:env
-   # Set HTTPS_ENABLED=false to disable HTTPS temporarily
+   # Ensure TRUST_PROXY=true for production with Nginx reverse proxy
    ```
 
 4. **Environment Misalignment**

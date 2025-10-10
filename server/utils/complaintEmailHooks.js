@@ -4,7 +4,7 @@
  * This module provides integration hooks for automatically triggering
  * email broadcasts when complaint status changes occur.
  * 
- * @version 1.0.3
+ * @version  1.0.0
  * @author Fix_Smart_CMS Team
  */
 

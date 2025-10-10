@@ -1,4 +1,4 @@
-# API Endpoints Inventory - Fix_Smart_CMS v1.0.3
+# API Endpoints Inventory - Fix_Smart_CMS v 1.0.0
 
 ## Summary Statistics
 - **Total Route Files**: 19

@@ -1,4 +1,4 @@
-# Fix_Smart_CMS v1.0.3 - Documentation Index
+# Fix_Smart_CMS v 1.0.0 - Documentation Index
 
 Welcome to the comprehensive documentation for Fix_Smart_CMS, a modern complaint management system built with React 18, Node.js 22+, and PostgreSQL.
 
@@ -27,10 +27,14 @@ System architecture, data flow diagrams, and module breakdown
 ### [🗄️ Database](./database/README.md)
 Database schema, migrations, and data management
 - [Database Migration Guide](./database/DB_MIGRATION_GUIDE.md)
+- [Prisma Cleanup Summary](./database/PRISMA_CLEANUP_SUMMARY.md)
 
 ### [🚀 Deployment](./deployment/README.md)
 Production deployment guides and validation checklists
 - [Deployment Guide](./deployment/DEPLOYMENT_GUIDE.md)
+- [Production Deployment Guide](./deployment/PRODUCTION_DEPLOYMENT_GUIDE.md)
+- [LAN Deployment README](./deployment/LAN_DEPLOYMENT_README.md)
+- [UT Server Deployment Guide](./deployment/UT_SERVER_DEPLOYMENT_GUIDE.md)
 - [QA Validation Checklist](./deployment/QA_VALIDATION_CHECKLIST.md)
 
 ### [👨‍💻 Developer](./developer/README.md)
@@ -39,6 +43,8 @@ API references, development guides, and technical documentation
 - [Developer Guide](./developer/DEVELOPER_GUIDE.md)
 - [Schema Reference](./developer/SCHEMA_REFERENCE.md)
 - [State Management](./developer/STATE_MANAGEMENT.md)
+- [Server Validation Report](./developer/SERVER_VALIDATION_REPORT.md)
+- [Scripts Reference](./developer/SCRIPTS_REFERENCE.md)
 
 ### [🎯 Onboarding](./onboarding/README.md)
 New developer setup and team onboarding resources
@@ -54,6 +60,7 @@ System configuration, logging, monitoring, and security
 - [Ecosystem and Environment Setup](./system/ECOSYSTEM_AND_ENV_SETUP.md)
 - [Logging and Monitoring](./system/LOGGING_AND_MONITORING.md)
 - [Security and Authentication](./system/SECURITY_AND_AUTHENTICATION.md)
+- [HTTPS SSL Removal Summary](./system/HTTPS_SSL_REMOVAL_SUMMARY.md)
 
 ### [🔧 Troubleshooting](./troubleshooting/README.md)
 Common issues, error resolution, and debugging guides
@@ -61,11 +68,11 @@ Common issues, error resolution, and debugging guides
 
 ## 🔄 Current Schema Version
 
-**Schema Version**: v1.0.3 (Production)  
+**Schema Version**: v 1.0.0 (Production)  
 **Last Updated**: October 2025  
 **Active Models**: User, Ward, SubZone, ComplaintType, Complaint, StatusLog, Attachment, OTPSession, Notification, SystemConfig
 
-### Key Schema Features in v1.0.3
+### Key Schema Features in v 1.0.0
 - **Unified attachment system** for all file types with secure storage
 - **Enhanced complaint assignment** with ward officer and maintenance team fields
 - **Geographic organization** with Ward and SubZone models for precise location management
@@ -90,5 +97,5 @@ For technical support or contribution guidelines, please refer to the [Developer
 
 **Last Updated**: October 2025  
 **Schema Reference**: [prisma/schema.prisma](../prisma/schema.prisma)  
-**System Version**: Fix_Smart_CMS v1.0.3  
+**System Version**: Fix_Smart_CMS v 1.0.0  
 **Back to Main**: [← README.md](../README.md)  

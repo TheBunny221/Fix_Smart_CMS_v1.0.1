@@ -1,6 +1,6 @@
-# Fix_Smart_CMS v1.0.3 - Complaint Management System
+# Fix_Smart_CMS v 1.0.0 - Complaint Management System
 
-[![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)](https://github.com/your-org/Fix_Smart_CMS_v1.0.3)
+[![Version](https://img.shields.io/badge/version- 1.0.0-blue.svg)](https://github.com/your-org/Fix_Smart_CMS_v 1.0.0)
 [![Node.js](https://img.shields.io/badge/node.js-22+-green.svg)](https://nodejs.org/)
 [![PostgreSQL](https://img.shields.io/badge/postgresql-13+-blue.svg)](https://postgresql.org/)
 [![TypeScript](https://img.shields.io/badge/typescript-5.5+-blue.svg)](https://www.typescriptlang.org/)
@@ -63,7 +63,7 @@ apabilities
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd Fix_Smart_CMS_v1.0.3
+cd Fix_Smart_CMS_v 1.0.0
 
 # Configure environment
 cp .env.docker .env
@@ -217,7 +217,7 @@ Start Guide
 
    ```bash
    git clone <repository-url>
-   cd Fix_Smart_CMS_v1.0.3
+   cd Fix_Smart_CMS_v 1.0.0
    ```
 
 2. **Install Dependencies**
@@ -759,8 +759,8 @@ npm run lint                    # ESLint code analysis
 
 1. **Fork & Clone**
    ```bash
-   git clone https://github.com/your-username/Fix_Smart_CMS_v1.0.3.git
-   cd Fix_Smart_CMS_v1.0.3
+   git clone https://github.com/your-username/Fix_Smart_CMS_v 1.0.0.git
+   cd Fix_Smart_CMS_v 1.0.0
    ```
 
 2. **Create Feature Branch**
@@ -872,7 +872,7 @@ test(api): add integration tests for complaint endpoints
 
 ## 📊 Project Status
 
-### Current Version: v1.0.3 (Production Ready)
+### Current Version: v 1.0.0 (Production Ready)
 
 **Development Status**: ✅ **STABLE**
 - All core features implemented and tested
@@ -894,7 +894,7 @@ test(api): add integration tests for complaint endpoints
 - ✅ System configuration management
 - ✅ Direct database access optimization
 
-### Recent Updates (v1.0.3)
+### Recent Updates (v 1.0.0)
 
 **SystemConfig Enhancements**:
 - ✅ Reverted to direct database access for improved performance

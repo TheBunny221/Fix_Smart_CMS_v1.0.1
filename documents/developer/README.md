@@ -1,6 +1,6 @@
 # Developer Documentation
 
-This folder contains comprehensive technical documentation for developers working on Fix_Smart_CMS v1.0.3, including API references, development guides, schema documentation, and state management patterns.
+This folder contains comprehensive technical documentation for developers working on Fix_Smart_CMS v 1.0.0, including API references, development guides, schema documentation, and state management patterns.
 
 **Navigation**: [← Documentation Index](../README.md) | [← Main README](../../README.md)
 
@@ -39,6 +39,20 @@ Frontend state management documentation covering:
 - RTK Query for API state management
 - Slice definitions and actions
 - Async thunk patterns and error handling
+
+### [Server Validation Report](./SERVER_VALIDATION_REPORT.md)
+Comprehensive validation report covering:
+- Server files validation and testing
+- Scripts directory validation
+- Package.json commands verification
+- Architecture compliance checks
+
+### [Scripts Reference](./SCRIPTS_REFERENCE.md)
+Complete reference for all application scripts:
+- Root scripts directory documentation
+- Server scripts functionality
+- Package.json commands reference
+- Usage examples and troubleshooting
 
 ## Technology Stack
 

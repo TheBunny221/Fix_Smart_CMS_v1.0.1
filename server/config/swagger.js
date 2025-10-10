@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 /**
  * Comprehensive Swagger Configuration for Fix_Smart_CMS API
- * Version: 1.0.3
+ * Version:  1.0.0
  */
 
 const swaggerOptions = {
@@ -15,7 +15,7 @@ const swaggerOptions = {
     openapi: "3.0.3",
     info: {
       title: "Fix_Smart_CMS API",
-      version: "1.0.3",
+      version: " 1.0.0",
       description: `
         Comprehensive API documentation for Fix_Smart_CMS (NLC-CMS) - A modern complaint management system.
         

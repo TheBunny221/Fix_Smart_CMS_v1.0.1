@@ -10,8 +10,7 @@ const execAsync = promisify(exec);
 const PROJECT_ROOT = process.cwd();
 const DEV_ENV_FILE = path.join(PROJECT_ROOT, '.env.development');
 const ENV_FILE = path.join(PROJECT_ROOT, '.env');
-const DEV_SCHEMA = path.join(PROJECT_ROOT, 'prisma', 'schema.dev.prisma');
-const PROD_SCHEMA = path.join(PROJECT_ROOT, 'prisma', 'schema.prisma');
+const SCHEMA = path.join(PROJECT_ROOT, 'prisma', 'schema.prisma');
 
 async function setupDevelopmentEnvironment() {
   console.log('🚀 Setting up development environment...');

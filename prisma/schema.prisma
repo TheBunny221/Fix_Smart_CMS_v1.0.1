@@ -1,6 +1,6 @@
-// Final Production Prisma schema file for PostgreSQL
 // NLC-CMS Complaint Management System
-// Version: 1.0.3 - Finalized Schema (Active Models Only)
+// Unified Prisma Schema for PostgreSQL
+// Version:  1.0.0 - Production Ready
 
 generator client {
   provider = "prisma-client-js"

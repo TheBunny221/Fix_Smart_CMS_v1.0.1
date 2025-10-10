@@ -970,7 +970,7 @@ const validateEmailParams = (params) => {
 
 ## Changelog
 
-### Version 1.0.3 (Current)
+### Version  1.0.0 (Current)
 - Initial implementation of centralized email broadcaster
 - Role-based content filtering
 - Responsive HTML templates
@@ -998,5 +998,5 @@ For technical support or questions about the Email Broadcaster System:
 ---
 
 **Last Updated**: December 2024  
-**Version**: 1.0.3  
+**Version**:  1.0.0  
 **Maintainer**: Fix_Smart_CMS Development Team

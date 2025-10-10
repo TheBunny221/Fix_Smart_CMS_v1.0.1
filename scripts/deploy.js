@@ -5,10 +5,10 @@
  * 
  * Single script to handle all deployment tasks:
  * - Environment validation and alignment
- * - SSL certificate generation
  * - Database setup and validation
  * - Production build
  * - Server startup
+ * Note: HTTPS/SSL handled by Nginx reverse proxy
  */
 
 import fs from 'fs';
@@ -24,7 +24,6 @@ const rootDir = path.resolve(__dirname, '..');
 // Configuration
 const CONFIG = {
   distDir: path.join(rootDir, 'dist'),
-  sslDir: path.join(rootDir, 'config/ssl'),
   envFiles: {
     production: path.join(rootDir, '.env.production'),
     development: path.join(rootDir, '.env.development'),
@@ -43,17 +42,17 @@ Usage: npm run deploy [command]
 
 Commands:
   validate     - Validate environment and configuration
-  ssl          - Generate SSL certificates for HTTPS
   build        - Build production application
   start        - Start the application
-  deploy       - Complete deployment (validate + ssl + build + start)
+  deploy       - Complete deployment (validate + build + start)
   help         - Show this help message
 
 Examples:
   npm run deploy validate    # Validate configuration
-  npm run deploy ssl         # Generate SSL certificates
   npm run deploy build       # Build for production
   npm run deploy deploy      # Full deployment
+
+Note: HTTPS/SSL is handled by Nginx reverse proxy in production
 `);
 }
 
@@ -78,7 +77,7 @@ function validateEnvironment() {
   
   const requiredVars = [
     'NODE_ENV', 'PORT', 'HOST', 'DATABASE_URL', 
-    'JWT_SECRET', 'CLIENT_URL', 'CORS_ORIGIN'
+    'JWT_SECRET', 'CLIENT_URL', 'CORS_ORIGIN', 'TRUST_PROXY'
   ];
   
   let allValid = true;
@@ -97,25 +96,17 @@ function validateEnvironment() {
     if (missing.length === 0) {
       console.log(`   ✅ ${name} environment is valid`);
       
-      // Additional validations for LAN deployment
-      if (envVars.HTTPS_ENABLED === 'true') {
-        const sslValid = validateSSLCertificates();
-        if (!sslValid) {
-          console.log(`   ⚠️ HTTPS enabled but SSL certificates invalid`);
-        }
+      // Production deployment validations
+      if (envVars.HOST !== '127.0.0.1' && envVars.HOST !== '0.0.0.0') {
+        console.log(`   ⚠️ HOST should be '127.0.0.1' for production or '0.0.0.0' for LAN access`);
       }
       
-      // LAN-specific validations
-      if (envVars.HOST !== '0.0.0.0') {
-        console.log(`   ⚠️ HOST should be '0.0.0.0' for LAN access`);
+      if (envVars.TRUST_PROXY !== 'true' && envVars.NODE_ENV === 'production') {
+        console.log(`   ⚠️ TRUST_PROXY should be 'true' for production with Nginx reverse proxy`);
       }
       
-      if (envVars.NODE_ENV === 'production' && envVars.PORT && parseInt(envVars.PORT) < 1024) {
-        console.log(`   ⚠️ Port ${envVars.PORT} requires elevated privileges`);
-      }
-      
-      if (envVars.CLIENT_URL && !envVars.CLIENT_URL.includes('0.0.0.0') && !envVars.CLIENT_URL.includes('localhost')) {
-        console.log(`   💡 CLIENT_URL configured for specific domain: ${envVars.CLIENT_URL}`);
+      if (envVars.CLIENT_URL && !envVars.CLIENT_URL.includes('localhost')) {
+        console.log(`   💡 CLIENT_URL configured for domain: ${envVars.CLIENT_URL}`);
       }
       
     } else {
@@ -129,151 +120,9 @@ function validateEnvironment() {
   return allValid;
 }
 
-/**
- * Validate SSL certificates
- */
-function validateSSLCertificates() {
-  const keyPath = path.join(CONFIG.sslDir, 'server.key');
-  const certPath = path.join(CONFIG.sslDir, 'server.crt');
-  
-  if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
-    return false;
-  }
-  
-  try {
-    const keyContent = fs.readFileSync(keyPath, 'utf8');
-    const certContent = fs.readFileSync(certPath, 'utf8');
-    
-    return keyContent.includes('-----BEGIN PRIVATE KEY-----') &&
-           certContent.includes('-----BEGIN CERTIFICATE-----') &&
-           !keyContent.includes('PLACEHOLDER') &&
-           !certContent.includes('PLACEHOLDER');
-  } catch (error) {
-    return false;
-  }
-}
 
-/**
- * Generate SSL certificates using OpenSSL
- */
-function generateSSLCertificates() {
-  console.log('🔒 Generating SSL Certificates');
-  console.log('='.repeat(50));
-  
-  // Ensure SSL directory exists
-  if (!fs.existsSync(CONFIG.sslDir)) {
-    fs.mkdirSync(CONFIG.sslDir, { recursive: true });
-    console.log('📁 Created SSL directory');
-  }
-  
-  const keyPath = path.join(CONFIG.sslDir, 'server.key');
-  const certPath = path.join(CONFIG.sslDir, 'server.crt');
-  
-  try {
-    console.log('🔧 Generating self-signed SSL certificate...');
-    
-    // Generate private key and certificate
-    const opensslCmd = [
-      'openssl req -x509 -newkey rsa:2048',
-      `-keyout "${keyPath}"`,
-      `-out "${certPath}"`,
-      '-days 365 -nodes',
-      '-subj "/C=IN/ST=Kerala/L=Kochi/O=Fix Smart CMS/OU=IT Department/CN=0.0.0.0/emailAddress=admin@fixsmart.dev"'
-    ].join(' ');
-    
-    execSync(opensslCmd, { stdio: 'pipe' });
-    
-    // Verify certificates were created
-    if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
-      console.log('✅ SSL certificates generated successfully');
-      console.log(`   📄 Private Key: ${path.relative(rootDir, keyPath)}`);
-      console.log(`   📄 Certificate: ${path.relative(rootDir, certPath)}`);
-      
-      // Set proper permissions (Unix/Linux only)
-      try {
-        execSync(`chmod 600 "${keyPath}"`, { stdio: 'pipe' });
-        execSync(`chmod 644 "${certPath}"`, { stdio: 'pipe' });
-        console.log('✅ SSL file permissions set');
-      } catch (permError) {
-        console.log('⚠️ Could not set file permissions (Windows system)');
-      }
-      
-      // Display certificate info
-      try {
-        const certInfo = execSync(`openssl x509 -in "${certPath}" -noout -subject -dates`, { 
-          encoding: 'utf8',
-          stdio: 'pipe'
-        });
-        console.log('📋 Certificate Information:');
-        console.log(certInfo.trim());
-      } catch (infoError) {
-        console.log('📋 Certificate generated for CN=0.0.0.0, valid for 365 days');
-      }
-      
-      return true;
-    } else {
-      throw new Error('Certificate files were not created');
-    }
-    
-  } catch (error) {
-    console.warn('⚠️ OpenSSL command failed, creating placeholder certificates...');
-    
-    // Create placeholder certificates that will work for development/testing
-    const privateKey = `-----BEGIN PRIVATE KEY-----
-MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7VJTUt9Us8cKB
-wjgHm6S1UwuqR+o2asV5RRXz2iyO4f/VWJxVffQbPEr0y50B6zJgGgXzjn8CgHqR
-3j4G5rEinERlOn/Sy+GCi2wrvQdEMSomaHqBjOvQK1SBcokHlmIykGqIws4ea5hV
-+P5x5VoEuTuHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-AgMBAAECggEBALc/WolfQRzHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-QKBgQDYhflHPwHbVDNOJ/7GqAgI4o6iFXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
------END PRIVATE KEY-----`;
 
-    const certificate = `-----BEGIN CERTIFICATE-----
-MIIDXTCCAkWgAwIBAgIJAJC1HiIAZAiIMA0GCSqGSIb3DQEBBQUAMEUxCzAJBgNV
-BAYTAklOMQ8wDQYDVQQIDApLZXJhbGExDjAMBgNVBAcMBUtvY2hpMRUwEwYDVQQK
-DAxGaXggU21hcnQgQ01TMB4XDTIzMTIxMDAwMDAwMFoXDTI0MTIwOTAwMDAwMFow
-RTELMAkGA1UEBhMCSU4xDzANBgNVBAgMBktlcmFsYTEOMAwGA1UEBwwFS29jaGkx
-FTATBgNVBAoMDEZpeCBTbWFydCBDTVMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
-ggEKAoIBAQC7VJTUt9Us8cKBwjgHm6S1UwuqR+o2asV5RRXz2iyO4f/VWJxVffQb
-PEr0y50B6zJgGgXzjn8CgHqR3j4G5rEinERlOn/Sy+GCi2wrvQdEMSomaHqBjOvQ
-K1SBcokHlmIykGqIws4ea5hV+P5x5VoEuTuHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-wIDAQABo1AwTjAdBgNVHQ4EFgQUhKs/VJ3IWyKyJU4C4j8swReHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
-dHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdHdH
------END CERTIFICATE-----`;
 
-    try {
-      fs.writeFileSync(keyPath, privateKey);
-      fs.writeFileSync(certPath, certificate);
-      
-      console.log('✅ Placeholder SSL certificates created');
-      console.log(`   📄 Private Key: ${path.relative(rootDir, keyPath)}`);
-      console.log(`   📄 Certificate: ${path.relative(rootDir, certPath)}`);
-      console.log('');
-      console.log('⚠️ These are placeholder certificates for development!');
-      console.log('🔧 On the UT server, generate proper certificates with:');
-      console.log(`openssl req -x509 -newkey rsa:2048 -keyout "${keyPath}" -out "${certPath}" -days 365 -nodes -subj "/C=IN/ST=Kerala/L=Kochi/O=Fix Smart CMS/CN=0.0.0.0"`);
-      
-      return true;
-      
-    } catch (writeError) {
-      console.error('❌ Failed to create placeholder certificates:', writeError.message);
-      return false;
-    }
-  }
-}
 
 /**
  * Align environment configurations
@@ -282,22 +131,21 @@ function alignEnvironments() {
   console.log('🔧 Aligning Environment Configurations');
   console.log('='.repeat(50));
   
-  const sslValid = validateSSLCertificates();
-  console.log(`🔒 SSL Status: ${sslValid ? 'Valid certificates found' : 'No valid certificates'}`);
+  console.log('✅ Application configured for HTTP with Nginx reverse proxy');
+  console.log('💡 HTTPS/SSL will be handled at the Nginx layer');
   
-  // Update production environment
+  // Update production environment for HTTP mode
   const prodEnv = parseEnvFile(CONFIG.envFiles.production);
   if (Object.keys(prodEnv).length > 0) {
     let prodContent = fs.readFileSync(CONFIG.envFiles.production, 'utf8');
     let changes = 0;
     
     const updates = {
-      HTTPS_ENABLED: sslValid ? 'true' : 'false',
-      PORT: sslValid ? '443' : '4005',
-      CLIENT_URL: sslValid ? 'https://0.0.0.0' : 'http://0.0.0.0:4005',
-      CORS_ORIGIN: sslValid ? 
-        'https://0.0.0.0,http://0.0.0.0,https://localhost,http://localhost' :
-        'http://0.0.0.0:4005,http://localhost:3000,http://localhost:4005'
+      PORT: '4005',
+      HOST: '127.0.0.1',
+      CLIENT_URL: 'http://localhost:4005',
+      CORS_ORIGIN: 'http://localhost:3000,http://localhost:4005',
+      TRUST_PROXY: 'true'
     };
     
     Object.entries(updates).forEach(([key, value]) => {
@@ -429,10 +277,7 @@ function buildProduction() {
     const requiredFiles = [
       'dist/package.json',
       'dist/server/server.js',
-      'dist/server/https-server.js',
       'dist/client/index.html',
-      'dist/config/ssl/server.key',
-      'dist/config/ssl/server.crt',
       'dist/.env.production',
       'dist/ecosystem.prod.config.cjs',
       'dist/LAN_DEPLOYMENT_README.md'
@@ -469,17 +314,15 @@ function createProductionPackageJson() {
     main: "server/server.js",
     scripts: {
       start: "node server/server.js",
-      "start:https": "node server/https-server.js",
       "deploy": "node scripts/deploy.js",
       "pm2:start": "pm2 start ecosystem.prod.config.cjs",
-      "pm2:start:https": "pm2 start ecosystem.prod.config.cjs --env https",
-      "pm2:stop": "pm2 stop Fix_Smart_CMS",
-      "pm2:restart": "pm2 restart Fix_Smart_CMS",
-      "pm2:logs": "pm2 logs Fix_Smart_CMS",
+      "pm2:stop": "pm2 stop NLC-CMS",
+      "pm2:restart": "pm2 restart NLC-CMS",
+      "pm2:logs": "pm2 logs NLC-CMS",
       "pm2:status": "pm2 status",
-      "db:generate": "npx prisma generate --schema=prisma/schema.prod.prisma",
-      "db:migrate": "npx prisma migrate deploy --schema=prisma/schema.prod.prisma",
-      "db:seed": "node prisma/seed.prod.js",
+      "db:generate": "npx prisma generate",
+      "db:migrate": "npx prisma migrate deploy",
+      "db:seed": "npx prisma db seed",
       "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed"
     },
     dependencies: {
@@ -523,14 +366,13 @@ function startApplication() {
   console.log('='.repeat(50));
   
   const prodEnv = parseEnvFile(CONFIG.envFiles.production);
-  const httpsEnabled = prodEnv.HTTPS_ENABLED === 'true';
   
-  console.log(`🌐 Mode: ${httpsEnabled ? 'HTTPS' : 'HTTP'}`);
+  console.log(`🌐 Mode: HTTP (HTTPS handled by Nginx)`);
   console.log(`🌐 Port: ${prodEnv.PORT || '4005'}`);
   console.log(`🌐 Host: ${prodEnv.HOST || '0.0.0.0'}`);
   
   try {
-    const serverScript = httpsEnabled ? 'server/https-server.js' : 'server/server.js';
+    const serverScript = 'server/server.js';
     console.log(`🎯 Starting: ${serverScript}`);
     
     // Start server
@@ -554,7 +396,6 @@ function fullDeployment() {
   
   const steps = [
     { name: 'Environment Validation', fn: validateEnvironment },
-    { name: 'SSL Certificate Generation', fn: generateSSLCertificates },
     { name: 'Environment Alignment', fn: alignEnvironments },
     { name: 'Database Validation', fn: validateDatabase },
     { name: 'Production Build', fn: buildProduction }
@@ -564,7 +405,7 @@ function fullDeployment() {
     console.log(`\n📋 Step: ${step.name}`);
     const success = step.fn();
     
-    if (!success && step.name !== 'SSL Certificate Generation') {
+    if (!success) {
       console.error(`❌ ${step.name} failed. Deployment aborted.`);
       process.exit(1);
     }
@@ -581,7 +422,8 @@ function fullDeployment() {
   console.log('3. Run: npm run db:setup');
   console.log('4. Run: npm run pm2:start:https (or npm start)');
   console.log('');
-  console.log('🔍 Health check: https://0.0.0.0/api/health');
+  console.log('🔍 Health check: http://localhost:4005/api/health');
+  console.log('💡 HTTPS will be available via Nginx reverse proxy');
 }
 
 /**
@@ -593,10 +435,6 @@ function main() {
   switch (command) {
     case 'validate':
       validateEnvironment();
-      break;
-    case 'ssl':
-      generateSSLCertificates();
-      alignEnvironments();
       break;
     case 'build':
       buildProduction();

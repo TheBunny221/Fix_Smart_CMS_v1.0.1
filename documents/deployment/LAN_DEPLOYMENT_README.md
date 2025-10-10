@@ -2,7 +2,7 @@
 
 ## 🚀 Quick Start for LAN Deployment
 
-This build is configured for **LAN deployment with HTTPS** on Debian systems.
+This build is configured for **LAN deployment with HTTPS via Nginx reverse proxy** on Debian systems. The Node.js application runs on HTTP behind Nginx which handles SSL termination.
 
 ### Prerequisites
 - **Node.js**: v18+ installed
@@ -33,28 +33,39 @@ nano .env
 **Required Environment Variables:**
 ```env
 NODE_ENV=production
-PORT=443                    # HTTPS port
-HTTP_PORT=80               # HTTP redirect port
-HOST=0.0.0.0              # LAN accessible
-HTTPS_ENABLED=true        # Enable HTTPS
-CLIENT_URL=https://[YOUR_LAN_IP]
-CORS_ORIGIN=https://[YOUR_LAN_IP],http://[YOUR_LAN_IP]
+PORT=4005                   # Application HTTP port (behind Nginx)
+HOST=127.0.0.1             # Bind to localhost (Nginx handles LAN access)
+TRUST_PROXY=true           # Required for Nginx reverse proxy
+CLIENT_URL=http://localhost:4005
+CORS_ORIGIN=http://localhost:4005,http://localhost:3000
 DATABASE_URL=postgresql://user:pass@db_host:5432/database
 JWT_SECRET=your-secure-jwt-secret-256-bits
 ```
 
-### 3. SSL Certificate Generation
+### 3. Nginx Setup and SSL Configuration
 ```bash
-# Generate self-signed certificate for LAN IP
-openssl req -x509 -newkey rsa:2048 \
-  -keyout config/ssl/server.key \
-  -out config/ssl/server.crt \
+# Install Nginx
+sudo apt update && sudo apt install nginx
+
+# Copy Nginx configuration
+sudo cp config/nginx/nginx.conf /etc/nginx/sites-available/fix-smart-cms
+sudo ln -s /etc/nginx/sites-available/fix-smart-cms /etc/nginx/sites-enabled/
+
+# Generate SSL certificate for Nginx (use your LAN IP)
+sudo openssl req -x509 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/fix-smart-cms.key \
+  -out /etc/ssl/certs/fix-smart-cms.crt \
   -days 365 -nodes \
   -subj "/C=IN/ST=Kerala/L=Kochi/O=Fix Smart CMS/CN=[YOUR_LAN_IP]"
 
 # Set proper permissions
-chmod 600 config/ssl/server.key
-chmod 644 config/ssl/server.crt
+sudo chmod 600 /etc/ssl/private/fix-smart-cms.key
+sudo chmod 644 /etc/ssl/certs/fix-smart-cms.crt
+
+# Test and start Nginx
+sudo nginx -t
+sudo systemctl enable nginx
+sudo systemctl start nginx
 ```
 
 ### 4. Database Setup
@@ -72,10 +83,13 @@ npm run deploy validate
 npm start
 
 # Option 2: PM2 (recommended for production)
-npm run pm2:start:https
+npm run pm2:start
 
 # Check status
 npm run pm2:status
+
+# Check Nginx status
+sudo systemctl status nginx
 ```
 
 ### 6. Network Configuration
@@ -191,21 +205,19 @@ Since using self-signed certificates, browsers will show warnings:
 ### Required Variables
 ```env
 NODE_ENV=production
-PORT=443
-HOST=0.0.0.0
-HTTPS_ENABLED=true
+PORT=4005
+HOST=127.0.0.1
+TRUST_PROXY=true
 DATABASE_URL=postgresql://...
 JWT_SECRET=your-secret
-CLIENT_URL=https://[LAN_IP]
-CORS_ORIGIN=https://[LAN_IP]
+CLIENT_URL=http://localhost:4005
+CORS_ORIGIN=http://localhost:4005,http://localhost:3000
 ```
 
-### SSL Configuration
-```env
-SSL_KEY_PATH=config/ssl/server.key
-SSL_CERT_PATH=config/ssl/server.crt
-SSL_CA_PATH=config/ssl/ca-bundle.crt
-```
+### Nginx SSL Configuration
+SSL certificates are managed by Nginx at:
+- `/etc/ssl/private/fix-smart-cms.key` (private key)
+- `/etc/ssl/certs/fix-smart-cms.crt` (certificate)
 
 ### Optional Configuration
 ```env

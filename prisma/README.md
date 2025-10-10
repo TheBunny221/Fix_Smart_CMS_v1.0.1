@@ -1,166 +1,144 @@
-# Prisma Dual Database Setup
+# NLC-CMS Database Setup
 
-This project now supports both SQLite (development) and PostgreSQL (production) databases with dedicated schema files and seeding scripts.
+This directory contains the database schema and seeding configuration for the NLC-CMS application.
 
-## Schema Files
+## Files
 
-- **`schema.dev.prisma`**: SQLite configuration for development environment
-- **`schema.prod.prisma`**: PostgreSQL configuration for production environment
+- **`schema.prisma`** - Main database schema (PostgreSQL)
+- **`seed.js`** - Database seeding script
+- **`seed.json`** - Seed data configuration
+- **`migrations/`** - Database migration files
 
-## Environment Configuration
+## Quick Setup
 
-### Development (SQLite)
+### 1. Environment Configuration
 
 ```bash
-DATABASE_URL="file:./dev.db"
+# Required environment variables
+DATABASE_URL="postgresql://user:password@host:port/database"
+ADMIN_EMAIL="admin@example.com"
+ADMIN_PASSWORD="secure-password"
+
+# Optional
+DESTRUCTIVE_SEED="false"  # Set to "true" to clear existing data
 ```
 
-### Production (PostgreSQL)
+### 2. Database Setup
 
 ```bash
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
+# Generate Prisma client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate deploy
+
+# Seed database
+npx prisma db seed
+```
+
+### 3. Complete Setup (One Command)
+
+```bash
+# Install dependencies, migrate, and seed
+npm run db:setup
 ```
 
 ## Available Commands
 
-### Development Environment (SQLite)
-
 ```bash
-# Generate Prisma client
-npm run db:generate:dev
+# Database operations
+npx prisma generate          # Generate Prisma client
+npx prisma migrate deploy    # Deploy migrations
+npx prisma db seed          # Seed database
+npx prisma studio           # Open database browser
 
-# Run migrations
-npm run dev:db
-# or
-npm run db:migrate
-
-# Reset and migrate database
-npm run db:migrate:reset:dev
-
-# Seed database
-npm run seed:dev
-
-# Complete setup (generate + migrate + seed)
-npm run db:setup:dev
-
-# Fresh setup (reset + migrate + seed)
-npm run db:setup:fresh:dev
-
-# Open Prisma Studio
-npm run db:studio:dev
+# Development
+npx prisma migrate dev      # Create and apply migration
+npx prisma db push         # Push schema changes (dev only)
 ```
 
-### Production Environment (PostgreSQL)
+## Seeding
 
+The seeding system reads data from `seed.json` and supports:
+
+- **System Configuration** - Application settings
+- **Wards** - Administrative divisions
+- **Complaint Types** - Complaint categories with SLA
+- **Admin User** - Automatic admin user creation
+
+### Seeding Modes
+
+**Non-destructive (default):**
 ```bash
-# Generate Prisma client
-npm run db:generate:prod
-
-# Deploy migrations
-npm run prod:db
-# or
-npm run db:migrate:deploy:prod
-
-# Seed database
-npm run seed:production
-
-# Complete setup (generate + deploy + seed)
-npm run db:setup:prod 
-
-# Migrate and seed in one command
-npm run migrate-and-seed
-
-# Open Prisma Studio
-npm run db:studio:prod
+npx prisma db seed
 ```
 
-### Utility Commands
-
+**Destructive (clears existing data):**
 ```bash
-# Validate schema files
-npm run db:validate:dev
-npm run db:validate:prod
-
-# Format schema files
-npm run db:format:dev
-npm run db:format:prod
-
-# Check migration status
-npm run db:migrate:status:dev
-npm run db:migrate:status:prod
+DESTRUCTIVE_SEED=true npx prisma db seed
 ```
 
-## Seed Files
+## Schema Overview
 
-- **`seed.dev.ts`**: Development seeding with sample data and `.dev` email domains
-- **`seed.prod.ts`**: Production seeding with minimal essential data and safety checks
+### Core Models
+- **User** - System users (citizens, officers, admins)
+- **Ward** - Administrative divisions
+- **Complaint** - Complaint records
+- **ComplaintType** - Complaint categories
+- **StatusLog** - Complaint status history
 
-## Key Differences
+### Supporting Models
+- **Attachment** - File attachments
+- **Notification** - In-app notifications
+- **OTPSession** - OTP verification
+- **SystemConfig** - Application configuration
 
-### SQLite (Development)
+## Database Provider
 
-- Uses string fields instead of enums for better compatibility
-- No indexes on foreign keys (handled by Prisma)
-- Simpler setup for local development
-- Contains sample data for testing
+This schema is configured for **PostgreSQL**. For development, you can use:
 
-### PostgreSQL (Production)
-
-- Uses proper enums for better type safety
-- Includes database indexes for performance
-- Production-ready constraints and relationships
-- Minimal seeding with safety checks
+- **Local PostgreSQL** - Full production-like setup
+- **Docker PostgreSQL** - Containerized database
+- **Cloud PostgreSQL** - Hosted database (AWS RDS, etc.)
 
 ## Migration Workflow
 
-### Development
-
-1. Make schema changes in `schema.dev.prisma`
-2. Run `npm run db:migrate` to create and apply migration
-3. Test changes locally
-
-### Production
-
-1. Update `schema.prod.prisma` with the same changes
-2. Test migration in staging environment
-3. Deploy to production using `npm run prod:db`
-
-## Environment Variables
-
-Create a `.env` file based on `.env.example`:
-
-```bash
-# Development
-DATABASE_URL="file:./dev.db"
-
-# Production
-# DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public"
-# ADMIN_PASSWORD="YourSecureAdminPassword"
-```
-
-## Best Practices
-
-1. **Always test migrations in development first**
-2. **Backup production database before major migrations**
-3. **Use environment-specific seed files appropriately**
-4. **Keep schema files in sync between dev and prod**
-5. **Use the safety checks in production seeding**
+1. **Make schema changes** in `schema.prisma`
+2. **Create migration**: `npx prisma migrate dev --name description`
+3. **Test locally** with the new migration
+4. **Deploy to production**: `npx prisma migrate deploy`
 
 ## Troubleshooting
 
-### SQLite Issues
+### Common Issues
 
-- Delete `dev.db` file to start fresh
-- Run `npm run db:setup:fresh:dev`
+**Connection errors:**
+- Verify `DATABASE_URL` format
+- Check database server is running
+- Ensure database exists
 
-### PostgreSQL Issues
+**Migration errors:**
+- Check for schema conflicts
+- Review migration files in `migrations/`
+- Use `npx prisma migrate reset` for development
 
-- Check connection string format
-- Ensure database exists before running migrations
-- Verify user permissions
+**Seeding errors:**
+- Verify `seed.json` format
+- Check for unique constraint violations
+- Review error messages in console output
 
-### Schema Sync Issues
+### Reset Database (Development)
 
-- Use `npm run db:validate:dev` and `npm run db:validate:prod`
-- Compare schema files manually
-- Run `npm run db:format:dev` and `npm run db:format:prod`
+```bash
+# WARNING: This will delete all data
+npx prisma migrate reset
+```
+
+## Production Deployment
+
+1. **Set environment variables**
+2. **Run migrations**: `npx prisma migrate deploy`
+3. **Seed database**: `npx prisma db seed`
+4. **Generate client**: `npx prisma generate`
+
+The application will automatically connect using the configured `DATABASE_URL`.

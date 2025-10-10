@@ -170,7 +170,7 @@
         },
         {
             "key": "SYSTEM_VERSION",
-            "value": "1.0.3",
+            "value": " 1.0.0",
             "description": "Current system version",
             "isActive": true
         },

@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Fix_Smart_CMS API",
-    "version": "1.0.3",
+    "version": " 1.0.0",
     "description": "\n        Comprehensive API documentation for Fix_Smart_CMS (NLC-CMS) - A modern complaint management system.\n        \n        ## Features\n        - **Multi-role Authentication**: Citizens, Ward Officers, Maintenance Teams, Administrators\n        - **Complaint Management**: Complete lifecycle from registration to resolution\n        - **Geographic Routing**: Ward-based automatic complaint assignment\n        - **File Management**: Unified attachment system for all file types\n        - **Real-time Notifications**: Email and in-app notification system\n        - **Analytics & Reporting**: Comprehensive dashboard and reporting capabilities\n        \n        ## Authentication\n        Most endpoints require JWT authentication. Include the token in the Authorization header:\n        `Authorization: Bearer <your-jwt-token>`\n        \n        ## Rate Limiting\n        API requests are rate-limited to prevent abuse. Development environment has higher limits.\n        \n        ## Response Format\n        All API responses follow a consistent format:\n        ```json\n        {\n          \"success\": boolean,\n          \"message\": \"string\",\n          \"data\": object | array | null,\n          \"errors\": array (optional)\n        }\n        ```\n      ",
     "contact": {
       "name": "API Support",
@@ -6924,7 +6924,7 @@
                         },
                         "appVersion": {
                           "type": "string",
-                          "example": "1.0.3"
+                          "example": " 1.0.0"
                         },
                         "organizationName": {
                           "type": "string",
