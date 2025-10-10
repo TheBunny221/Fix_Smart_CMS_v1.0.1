@@ -553,7 +553,7 @@ const UnifiedReports: React.FC = () => {
 
   // Chart colors
   const COLORS = [
-    "#0088FE",
+    "#0f5691", // Primary theme color
     "#00C49F",
     "#FFBB28",
     "#FF8042",

@@ -636,7 +636,7 @@ const TaskDetails: React.FC = () => {
                                     Preview
                                   </Button>
                                   <a href={att.url} download={fullName} className="flex-1">
-                                    <Button size="sm" className="w-full text-xs bg-teal-600 hover:bg-teal-700">
+                                    <Button size="sm" className="w-full text-xs bg-primary hover:bg-primary/90">
                                       Download
                                     </Button>
                                   </a>

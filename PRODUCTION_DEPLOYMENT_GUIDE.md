@@ -7,6 +7,7 @@ This guide provides comprehensive instructions for deploying Fix_Smart_CMS to pr
 ## Quick Deployment Summary
 
 The production build now includes:
+
 - ✅ All deployment scripts and commands
 - ✅ Environment validation and alignment tools
 - ✅ HTTPS loop prevention mechanisms
@@ -17,12 +18,14 @@ The production build now includes:
 ## Build Process
 
 ### 1. Create Production Build
+
 ```bash
 # Clean and build for production
 npm run build
 ```
 
 This creates a complete `dist/` folder with:
+
 - Compiled server code
 - Built client application
 - All deployment scripts
@@ -32,6 +35,7 @@ This creates a complete `dist/` folder with:
 - Comprehensive documentation
 
 ### 2. Build Output Structure
+
 ```
 dist/
 ├── server/                 # Compiled server code
@@ -48,6 +52,7 @@ dist/
 ## Deployment Commands (Available in dist/)
 
 ### Environment Management
+
 ```bash
 npm run validate:env       # Validate all environment files
 npm run env:align         # Align environment configurations
@@ -55,6 +60,7 @@ npm run deploy:validate   # Complete deployment validation
 ```
 
 ### Database Operations
+
 ```bash
 npm run validate:db       # Test database connection
 npm run db:setup         # Complete database setup
@@ -65,6 +71,7 @@ npm run db:studio        # Open database browser
 ```
 
 ### Server Management
+
 ```bash
 npm start                # Start HTTP server
 npm run start:https      # Start HTTPS server (with SSL)
@@ -72,6 +79,7 @@ npm run start:production # Start with production script
 ```
 
 ### PM2 Process Management
+
 ```bash
 npm run pm2:start        # Start with PM2 (HTTP)
 npm run pm2:start:https  # Start with PM2 (HTTPS)
@@ -82,6 +90,7 @@ npm run pm2:stop         # Stop application
 ```
 
 ### Quick Deployment
+
 ```bash
 npm run deploy:quick     # Install + setup + start
 npm run deploy:pm2       # Deploy with PM2
@@ -91,6 +100,7 @@ npm run deploy:https     # Deploy with HTTPS
 ## Step-by-Step Deployment
 
 ### 1. Prepare Production Server
+
 ```bash
 # Install Node.js (v18+)
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
@@ -104,6 +114,7 @@ sudo apt-get install postgresql postgresql-contrib
 ```
 
 ### 2. Deploy Application
+
 ```bash
 # Extract build archive
 unzip nlc-cms-production-build.zip
@@ -121,6 +132,7 @@ npm run deploy:validate
 ```
 
 ### 3. Database Setup
+
 ```bash
 # Test database connection
 npm run validate:db
@@ -130,6 +142,7 @@ npm run db:setup
 ```
 
 ### 4. SSL Configuration (Optional)
+
 ```bash
 # Add SSL certificates to config/ssl/
 # - server.key (private key)
@@ -141,6 +154,7 @@ npm run validate:env
 ```
 
 ### 5. Start Application
+
 ```bash
 # Option 1: Direct start (for testing)
 npm run start:production
@@ -155,6 +169,7 @@ npm run pm2:start:https
 ## Environment Configuration
 
 ### Required Variables (.env)
+
 ```env
 NODE_ENV=production
 PORT=4005
@@ -166,6 +181,7 @@ CORS_ORIGIN=http://your-domain.com:4005,http://localhost:3000
 ```
 
 ### HTTPS Configuration
+
 ```env
 HTTPS_ENABLED=true
 SSL_KEY_PATH=config/ssl/server.key
@@ -187,6 +203,7 @@ The system now includes automatic HTTPS loop prevention:
 4. **Graceful Error Handling**: Prevents restart loops on SSL failures
 
 ### How It Works
+
 - If HTTPS is enabled but SSL certificates are missing/invalid, the system automatically switches to HTTP mode
 - Environment variables are automatically aligned to prevent conflicts
 - The ecosystem configuration uses only one PM2 app to avoid port conflicts
@@ -195,12 +212,14 @@ The system now includes automatic HTTPS loop prevention:
 ## Health Checks
 
 ### Endpoints
+
 - **Basic Health**: `http://localhost:4005/api/health`
 - **Detailed Health**: `http://localhost:4005/api/health/detailed`
 - **API Documentation**: `http://localhost:4005/api-docs`
 - **Application**: `http://localhost:4005`
 
 ### Validation Commands
+
 ```bash
 # Check application health
 npm run health:check
@@ -217,6 +236,7 @@ npm run pm2:status
 ### Common Issues
 
 1. **Port Already in Use**
+
    ```bash
    # Check what's using the port
    sudo netstat -tulpn | grep :4005
@@ -224,12 +244,14 @@ npm run pm2:status
    ```
 
 2. **Database Connection Failed**
+
    ```bash
    npm run validate:db
    # Check DATABASE_URL in .env
    ```
 
 3. **SSL Certificate Issues**
+
    ```bash
    npm run validate:env
    # Set HTTPS_ENABLED=false to disable HTTPS temporarily
@@ -242,6 +264,7 @@ npm run pm2:status
    ```
 
 ### Log Files
+
 - Application: `logs/application.log`
 - PM2 logs: `~/.pm2/logs/`
 - Error logs: `logs/error.log`
@@ -270,6 +293,7 @@ For QA teams, the complete deployment package includes:
 5. **Health Checks**: Endpoints and commands to verify functionality
 
 ### QA Quick Start
+
 ```bash
 # Extract and validate
 unzip nlc-cms-production-build.zip
@@ -287,6 +311,7 @@ curl http://localhost:4005/api/health
 ## Support
 
 For deployment issues:
+
 1. Check the troubleshooting section
 2. Run validation commands
 3. Review application logs
@@ -296,6 +321,7 @@ For deployment issues:
 ---
 
 **Build Information**
+
 - **Version**: 1.0.0
 - **Node.js**: v18+
 - **Database**: PostgreSQL
@@ -303,6 +329,7 @@ For deployment issues:
 - **SSL**: Optional (auto-fallback to HTTP)
 
 **Key Features**
+
 - ✅ HTTPS loop prevention
 - ✅ Automatic environment alignment
 - ✅ Comprehensive validation

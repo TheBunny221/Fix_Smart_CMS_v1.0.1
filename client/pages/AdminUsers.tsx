@@ -474,7 +474,7 @@ const AdminUsers: React.FC = () => {
             <Settings className="h-4 w-4 mr-2" />
             Export Users
           </Button>
-          <Button onClick={handleOpenAddDialog} variant="default" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleOpenAddDialog} variant="default" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
             <Plus className="h-4 w-4 mr-2" />
             Add New User
           </Button>
@@ -496,7 +496,7 @@ const AdminUsers: React.FC = () => {
                   )}
                 </p>
               </div>
-              <Users className="h-8 w-8 text-blue-600" />
+              <Users className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -554,7 +554,7 @@ const AdminUsers: React.FC = () => {
                   )}
                 </p>
               </div>
-              <UserCheck className="h-8 w-8 text-blue-600" />
+              <UserCheck className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -761,7 +761,7 @@ const AdminUsers: React.FC = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-blue-600" />
+              <Users className="h-5 w-5 text-primary" />
               Add New User
             </DialogTitle>
             <DialogDescription>
@@ -888,7 +888,7 @@ const AdminUsers: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isCreating} className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" disabled={isCreating} className="bg-primary hover:bg-primary/90">
                 {isCreating ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -911,7 +911,7 @@ const AdminUsers: React.FC = () => {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Edit className="h-5 w-5 text-blue-600" />
+              <Edit className="h-5 w-5 text-primary" />
               Edit User
             </DialogTitle>
             <DialogDescription>
@@ -1030,7 +1030,7 @@ const AdminUsers: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isUpdating} className="bg-blue-600 hover:bg-blue-700">
+              <Button type="submit" disabled={isUpdating} className="bg-primary hover:bg-primary/90">
                 {isUpdating ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />

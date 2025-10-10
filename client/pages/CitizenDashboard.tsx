@@ -363,20 +363,20 @@ const CitizenDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-6 text-white">
+      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2">
               🚀 Welcome back, {user?.fullName || "Citizen"}! 👋
             </h1>
-            <p className="text-blue-100">
+            <p className="text-primary-foreground/80">
               Track your complaints and stay updated with the latest progress.
             </p>
           </div>
           <div className="hidden md:flex items-center space-x-4">
             <Button
               onClick={() => setIsQuickFormOpen(true)}
-              className="bg-white text-blue-600 hover:bg-gray-50"
+              className="bg-white text-primary hover:bg-gray-50"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               New Complaint

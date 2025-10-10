@@ -1,21 +1,30 @@
 #!/usr/bin/env node
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { execSync } from 'child_process';
-import crypto from 'crypto';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '..');
-
 /**
- * Production Build Script for NLC-CMS
- * Creates a unified dist/ folder with both client and server builds
+ * Simple Production Build Script
+ * Use 'npm run deploy:build' for the comprehensive build process
  */
 
-console.log('🚀 Starting NLC-CMS Production Build...\n');
+import { execSync } from 'child_process';
+
+console.log('🚀 Simple Production Build');
+console.log('For full deployment features, use: npm run deploy:full');
+console.log('='.repeat(50));
+
+try {
+  console.log('🔧 Building TypeScript...');
+  execSync('npx tsc --project tsconfig.json', { stdio: 'inherit' });
+  
+  console.log('🎨 Building React client...');
+  execSync('npx vite build', { stdio: 'inherit' });
+  
+  console.log('✅ Build completed successfully');
+  console.log('💡 For complete deployment: npm run deploy:full');
+  
+} catch (error) {
+  console.error('❌ Build failed:', error.message);
+  process.exit(1);
+}
 
 // Build configuration
 const BUILD_CONFIG = {

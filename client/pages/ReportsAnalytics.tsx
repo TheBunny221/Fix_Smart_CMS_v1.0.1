@@ -165,7 +165,7 @@ const ReportsAnalytics: React.FC = () => {
       },
     ],
     categories: [
-      { name: "Water Supply", count: 356, avgTime: 2.1, color: "#3B82F6" },
+      { name: "Water Supply", count: 356, avgTime: 2.1, color: "#0f5691" },
       { name: "Electricity", count: 287, avgTime: 1.8, color: "#EF4444" },
       { name: "Road Repair", count: 234, avgTime: 4.2, color: "#10B981" },
       { name: "Garbage", count: 198, avgTime: 1.5, color: "#F59E0B" },
@@ -374,7 +374,7 @@ const ReportsAnalytics: React.FC = () => {
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip />
                     <Legend />
-                    <Bar yAxisId="left" dataKey="complaints" fill="#3B82F6" />
+                    <Bar yAxisId="left" dataKey="complaints" fill="#0f5691" />
                     <Bar yAxisId="left" dataKey="resolved" fill="#10B981" />
                     <Line
                       yAxisId="right"

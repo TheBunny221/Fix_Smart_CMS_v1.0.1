@@ -92,7 +92,7 @@ const AdminAnalytics: React.FC = () => {
   ];
 
   const complaintTypes = [
-    { name: "Water Supply", value: 35, color: "#3B82F6", resolved: 32 },
+    { name: "Water Supply", value: 35, color: "#0f5691", resolved: 32 },
     { name: "Electricity", value: 28, color: "#EF4444", resolved: 25 },
     { name: "Road Repair", value: 22, color: "#10B981", resolved: 20 },
     { name: "Garbage", value: 15, color: "#F59E0B", resolved: 14 },
@@ -240,8 +240,8 @@ const AdminAnalytics: React.FC = () => {
                       type="monotone"
                       dataKey="complaints"
                       stackId="1"
-                      stroke="#3B82F6"
-                      fill="#3B82F6"
+                      stroke="#0f5691"
+                      fill="#0f5691"
                       fillOpacity={0.6}
                     />
                     <Area
@@ -344,7 +344,7 @@ const AdminAnalytics: React.FC = () => {
                       formatter={(value, name) => [`${value}%`, "Efficiency"]}
                       labelFormatter={(label) => `Ward: ${label}`}
                     />
-                    <Bar dataKey="efficiency" fill="#3B82F6" />
+                    <Bar dataKey="efficiency" fill="#0f5691" />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>

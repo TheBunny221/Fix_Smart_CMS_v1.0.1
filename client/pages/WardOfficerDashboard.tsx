@@ -261,10 +261,10 @@ const WardOfficerDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-6 text-white flex items-center justify-between">
+      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-white flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold mb-2">Ward Officer Dashboard</h1>
-          <p className="text-blue-100">
+          <p className="text-primary-foreground/80">
             Manage complaints for {user?.ward?.name || "your assigned ward"} and
             monitor team performance.
           </p>

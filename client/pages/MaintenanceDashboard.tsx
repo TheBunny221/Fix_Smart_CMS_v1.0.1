@@ -262,13 +262,13 @@ const MaintenanceDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-green-600 to-green-800 rounded-lg p-6 text-white">
+      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-white">
         <h1 className="text-2xl font-bold mb-2">🚧 Maintenance Dashboard 🛠️</h1>
-        <p className="text-green-100">
+        <p className="text-primary-foreground/80">
           Manage your assigned tasks and track field work progress.
         </p>
         <div className="mt-4 flex space-x-2">
-          <Button className="bg-white text-green-600 hover:bg-gray-100">
+          <Button className="bg-white text-primary hover:bg-gray-100">
             <Navigation className="h-4 w-4 mr-2" />
             Start Field Work
           </Button>

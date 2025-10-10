@@ -873,16 +873,16 @@ export const formatDataForChart = (
 // Enhanced color palette for charts
 export const getChartColors = (count: number) => {
   const baseColors = [
-    "#2980b9",
-    "#27ae60",
-    "#f39c12",
-    "#e74c3c",
-    "#9b59b6",
-    "#1abc9c",
-    "#34495e",
-    "#f1c40f",
-    "#e67e22",
-    "#8e44ad",
+    "#0f5691", // Primary theme color
+    "#27ae60", // Green
+    "#f39c12", // Orange
+    "#e74c3c", // Red
+    "#9b59b6", // Purple
+    "#1e40af", // Blue variant
+    "#34495e", // Dark gray
+    "#f1c40f", // Yellow
+    "#e67e22", // Orange variant
+    "#7c3aed", // Purple variant
   ];
 
   const colors = [];

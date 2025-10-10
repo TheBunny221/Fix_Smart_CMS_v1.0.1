@@ -238,17 +238,17 @@ const AdminDashboard: React.FC = () => {
     <TooltipProvider>
       <div className="space-y-6">
         {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-purple-800 rounded-lg p-6 text-white">
+        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">
                 🛡️ Administrator Dashboard 🛠️
               </h1>
-              <p className="text-purple-100">
+              <p className="text-primary-foreground/80">
                 Complete system overview and management controls for {appName}
               </p>
             </div>
-            <Shield className="h-16 w-16 text-purple-200" />
+            <Shield className="h-16 w-16 text-primary-foreground/60" />
           </div>
           {/* <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-lg p-3 shadow">
@@ -530,7 +530,7 @@ const AdminDashboard: React.FC = () => {
                           <Line
                             type="monotone"
                             dataKey="complaints"
-                            stroke="#3B82F6"
+                            stroke="#0f5691"
                             strokeWidth={2}
                             name="Complaints"
                             connectNulls={false}
