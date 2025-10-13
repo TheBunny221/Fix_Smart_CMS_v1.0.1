@@ -1,261 +1,464 @@
-# Deployment Documentation
+# NLC-CMS Deployment Guide
 
-This folder contains comprehensive documentation for deploying Fix_Smart_CMS in production environments, including deployment guides, validation checklists, and operational procedures.
+## Overview
 
-## Purpose
+This guide provides comprehensive instructions for deploying NLC-CMS across all environments using our standardized three-script deployment process. The system supports both Linux (Debian) and Windows environments with LAN and VPS setups, including HTTPS configuration.
 
-The deployment documentation provides system administrators and DevOps teams with detailed instructions for setting up, deploying, and maintaining Fix_Smart_CMS in production environments.
+## Quick Start
 
-## Contents
+### Three Main Deployment Scripts
 
-### [Deployment Guide](./DEPLOYMENT_GUIDE.md)
-Complete production deployment guide including:
-- Server requirements and setup
-- Database configuration and migration
-- Environment variable configuration
-- SSL/TLS certificate setup
-- Process management with PM2
-- Monitoring and logging setup
+1. **`production-build`** - Compiles and prepares production-ready build
+2. **`deploy:linux`** - Deploys to Linux/Debian servers with reverse proxy
+3. **`deploy:windows`** - Deploys to Windows servers with reverse proxy options
 
-### [Docker Deployment Guide](./DOCKER_DEPLOYMENT.md)
-Comprehensive Docker deployment documentation including:
-- Multi-stage Docker builds for production optimization
-- Development environment with hot reload
-- Docker Compose configurations for all services
-- SSL/HTTPS setup with certificates
-- Database integration with PostgreSQL containers
-- Automated deployment scripts and monitoring
-- Scaling and performance optimization
-- Security hardening and best practices
+### Basic Deployment Flow
 
-### [Debian + Nginx Deployment Guide](./DEBIAN_NGINX_DEPLOYMENT.md)
-Complete Debian server deployment with Nginx reverse proxy:
-- Automated deployment scripts
-- Step-by-step manual deployment
-- Nginx configuration and SSL setup
-- Service management and monitoring
-- Troubleshooting and performance optimization
-- Security best practices
-
-### [QA Validation Checklist](./QA_VALIDATION_CHECKLIST.md)
-Comprehensive validation checklist including:
-- Pre-deployment testing procedures
-- Functional testing scenarios
-- Performance validation tests
-- Security verification steps
-- Post-deployment validation
-- Rollback procedures
-
-## Deployment Architecture
-
-Fix_Smart_CMS is designed for production deployment with the following architecture:
-
-### Production Environment
-- **Application Server**: Node.js with PM2 process management
-- **Database**: PostgreSQL with automated backups
-- **Web Server**: Nginx as reverse proxy (recommended)
-- **SSL/TLS**: Let's Encrypt or commercial certificates
-- **Monitoring**: Built-in health checks and logging
-
-### Deployment Options
-1. **Single Server Deployment**: All components on one server
-2. **Multi-Server Deployment**: Separate database and application servers
-3. **Containerized Deployment**: Docker-based deployment (future)
-4. **Cloud Deployment**: AWS, Azure, or GCP deployment
-
-## System Requirements
-
-### Minimum Requirements
-- **CPU**: 2 cores
-- **RAM**: 4GB
-- **Storage**: 50GB SSD
-- **OS**: Ubuntu 20.04 LTS or CentOS 8
-- **Node.js**: v18.0.0 or higher
-- **PostgreSQL**: v13 or higher
-
-### Recommended Requirements
-- **CPU**: 4 cores
-- **RAM**: 8GB
-- **Storage**: 100GB SSD with backup storage
-- **OS**: Ubuntu 22.04 LTS
-- **Node.js**: v20.x LTS
-- **PostgreSQL**: v15 or higher
-
-## Pre-Deployment Checklist
-
-### Infrastructure Preparation
-- [ ] Server provisioning and OS installation
-- [ ] Network configuration and firewall setup
-- [ ] Domain name and DNS configuration
-- [ ] SSL certificate acquisition
-- [ ] Database server setup and configuration
-
-### Application Preparation
-- [ ] Source code deployment
-- [ ] Environment configuration
-- [ ] Database migration and seeding
-- [ ] Static asset compilation
-- [ ] Process manager configuration
-
-### Security Configuration
-- [ ] Firewall rules configuration
-- [ ] SSL/TLS certificate installation
-- [ ] Database security hardening
-- [ ] Application security headers
-- [ ] Rate limiting configuration
-
-## Deployment Process
-
-### 1. Initial Deployment
 ```bash
-# Clone repository
-git clone <repository-url>
-cd Fix_Smart_CMS_ 
+# 1. Build for production
+npm run production-build
 
-# Install dependencies
-npm ci --production
-
-# Configure environment
-cp .env.example .env.production
-# Edit .env.production with production values
-
-# Build application
-npm run build
-
-# Setup database
-npm run db:migrate:prod
-npm run db:seed:prod
-
-# Start application
-npm run start:prod
+# 2. Deploy to target environment
+npm run deploy:linux    # For Linux/Debian servers
+npm run deploy:windows  # For Windows servers
 ```
 
-### 2. Update Deployment
+## Deployment Scripts
+
+### 1. Production Build Script
+
+**Command:** `npm run production-build`
+
+**Purpose:** Compiles TypeScript code, bundles React frontend, and prepares production-ready server in the `dist` directory.
+
+**Features:**
+- ✅ TypeScript compilation with error checking
+- ✅ React frontend bundling with Vite
+- ✅ Prisma schema synchronization
+- ✅ Production environment configuration
+- ✅ Dependency optimization
+- ✅ Build validation
+
+**Requirements:**
+- Node.js 18+
+- `.env.production` file configured
+- All dependencies installed
+
+**Output:** Complete production build in `dist/` directory
+
+### 2. Linux/Debian Deployment Script
+
+**Command:** `npm run deploy:linux`
+
+**Purpose:** Deploys the `dist` build to Debian-based Linux server and configures reverse proxy.
+
+**Features:**
+- 🌐 **Reverse Proxy Options:** Nginx or Apache2
+- 🔒 **SSL Support:** Let's Encrypt or self-signed certificates
+- 🚀 **Process Management:** PM2 with auto-restart
+- 🔧 **System Integration:** Systemd services
+- 📊 **Health Monitoring:** Automated validation
+
+**CLI Arguments:**
 ```bash
-# Pull latest changes
-git pull origin main
+# Non-interactive deployment (CI/CD)
+npm run deploy:linux -- --proxy=nginx --env=production
 
-# Install new dependencies
-npm ci --production
-
-# Build application
-npm run build
-
-# Run migrations
-npm run db:migrate:prod
-
-# Restart application
-pm2 restart ecosystem.prod.config.cjs
+# Interactive deployment
+npm run deploy:linux
 ```
+
+**Supported Options:**
+- `--proxy=nginx|apache2` - Choose reverse proxy
+- `--domain=your-domain.com` - Domain for Let's Encrypt
+- `--env=production` - Environment configuration
+
+### 3. Windows Server Deployment Script
+
+**Command:** `npm run deploy:windows`
+
+**Purpose:** Deploys the `dist` build on Windows server with reverse proxy configuration.
+
+**Features:**
+- 🌐 **Reverse Proxy Options:** IIS, Nginx, Apache, or None
+- 🔒 **SSL Support:** Self-signed or custom certificates
+- 🚀 **Process Management:** PM2 with Windows service
+- 🔥 **Firewall Configuration:** Automatic port opening
+- 🌍 **LAN Access:** Host binding to 0.0.0.0
+
+**CLI Arguments:**
+```bash
+# Non-interactive deployment (CI/CD)
+npm run deploy:windows -- --proxy=iis --env=production
+
+# Interactive deployment
+npm run deploy:windows
+```
+
+**Supported Options:**
+- `--proxy=iis|nginx|apache|none` - Choose reverse proxy
+- `--env=production` - Environment configuration
 
 ## Environment Configuration
 
-### Required Environment Variables
-```bash
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/nlc_cms"
+### Production Environment File (`.env.production`)
 
-# Application
-NODE_ENV="production"
+Create `.env.production` with your production settings:
+
+```env
+# Database Configuration
+DATABASE_URL="postgresql://user:password@localhost:5432/nlc_cms_prod"
+
+# Server Configuration
+NODE_ENV=production
 PORT=4005
-JWT_SECRET="your-jwt-secret"
-JWT_EXPIRES_IN="7d"
+HOST=0.0.0.0
+TRUST_PROXY=true
 
-# Email Configuration
-SMTP_HOST="smtp.gmail.com"
+# Security
+JWT_SECRET=your-super-secure-jwt-secret-here
+BCRYPT_ROUNDS=12
+
+# CORS Configuration
+CLIENT_URL=https://your-domain.com
+CORS_ORIGIN=https://your-domain.com,http://localhost:4005
+
+# Email Configuration (Optional)
+SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER="your-email@domain.com"
-SMTP_PASS="your-app-password"
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
 
 # File Upload
 MAX_FILE_SIZE=10485760
-UPLOAD_PATH="./uploads"
+UPLOAD_PATH=./uploads
 
-# Security
-CORS_ORIGIN="https://yourdomain.com"
-RATE_LIMIT_WINDOW=900000
-RATE_LIMIT_MAX=100
+# Logging
+LOG_LEVEL=info
+LOG_FILE=./logs/app.log
 ```
 
-## Monitoring and Maintenance
+### Environment-Specific Configurations
 
-### Health Monitoring
-- **Application Health**: `/api/health` endpoint
-- **Database Health**: Connection pool monitoring
-- **Process Monitoring**: PM2 process status
-- **Log Monitoring**: Winston log analysis
+#### LAN Deployment (UT Server)
+```env
+HOST=0.0.0.0
+CLIENT_URL=http://192.168.1.100:4005
+CORS_ORIGIN=http://192.168.1.100:4005,https://192.168.1.100
+```
 
-### Backup Procedures
-- **Database Backups**: Automated daily PostgreSQL dumps
-- **File Backups**: Regular backup of upload directories
-- **Configuration Backups**: Environment and config file backups
-- **Code Backups**: Git repository with tagged releases
+#### VPS Deployment (Public)
+```env
+HOST=0.0.0.0
+CLIENT_URL=https://your-domain.com
+CORS_ORIGIN=https://your-domain.com
+```
 
-### Update Procedures
-- **Security Updates**: Regular OS and dependency updates
-- **Application Updates**: Staged deployment with rollback capability
-- **Database Updates**: Migration testing and backup procedures
-- **Configuration Updates**: Version-controlled configuration changes
+## Reverse Proxy Configuration
+
+### Nginx (Recommended for Linux)
+
+**Automatic Configuration:** The deployment script automatically configures Nginx with:
+- HTTP to HTTPS redirect
+- SSL termination
+- Proxy headers
+- Security headers
+- Gzip compression
+- Health check endpoint
+
+**Manual Configuration:** See [reverse_proxy_setup.md](./reverse_proxy_setup.md)
+
+### Apache2 (Alternative for Linux)
+
+**Automatic Configuration:** The deployment script configures Apache2 with:
+- Virtual hosts for HTTP/HTTPS
+- SSL module configuration
+- Proxy modules
+- Security headers
+
+### IIS (Windows Default)
+
+**Automatic Configuration:** The deployment script configures IIS with:
+- URL Rewrite rules
+- Reverse proxy setup
+- Security headers
+- SSL bindings
+
+### Nginx/Apache for Windows
+
+**Manual Setup Required:** Download and install Windows versions, then use generated configuration files.
+
+## SSL Certificate Management
+
+### Let's Encrypt (Production/VPS)
+
+**Automatic Setup:**
+```bash
+# During deployment, provide domain name
+npm run deploy:linux -- --domain=your-domain.com
+```
+
+**Manual Renewal:**
+```bash
+sudo certbot renew --quiet
+sudo systemctl reload nginx
+```
+
+### Self-Signed Certificates (LAN/Testing)
+
+**Automatic Generation:** The deployment scripts automatically generate self-signed certificates for LAN deployments.
+
+**Manual Generation:**
+```bash
+sudo openssl req -x509 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/nlc-cms.key \
+  -out /etc/ssl/certs/nlc-cms.crt \
+  -days 365 -nodes \
+  -subj "/C=IN/ST=Kerala/L=Kochi/O=NLC CMS/CN=192.168.1.100"
+```
+
+## Deployment Examples
+
+### Example 1: Linux VPS with Domain
+
+```bash
+# 1. Build production
+npm run production-build
+
+# 2. Deploy with Let's Encrypt
+npm run deploy:linux -- --proxy=nginx --domain=nlc-cms.example.com
+```
+
+### Example 2: Linux LAN Server
+
+```bash
+# 1. Build production
+npm run production-build
+
+# 2. Deploy with self-signed SSL
+npm run deploy:linux -- --proxy=nginx
+# When prompted, leave domain empty for self-signed certificate
+```
+
+### Example 3: Windows Server with IIS
+
+```bash
+# 1. Build production
+npm run production-build
+
+# 2. Deploy with IIS
+npm run deploy:windows -- --proxy=iis
+```
+
+### Example 4: Windows LAN (Direct Access)
+
+```bash
+# 1. Build production
+npm run production-build
+
+# 2. Deploy without reverse proxy
+npm run deploy:windows -- --proxy=none
+# Access via: http://server-ip:4005
+```
+
+## Post-Deployment Validation
+
+### Automated Validation
+
+Both deployment scripts include automatic validation:
+- ✅ Application health check
+- ✅ Reverse proxy connectivity
+- ✅ HTTPS certificate validation
+- ✅ Database connectivity
+- ✅ File upload functionality
+
+### Manual Validation
+
+Use our comprehensive SSL testing guide: [SSL_TESTING_GUIDE.md](./SSL_TESTING_GUIDE.md)
+
+**Quick Tests:**
+```bash
+# Test application directly
+curl http://localhost:4005/api/health
+
+# Test reverse proxy
+curl -k https://server-ip/health
+
+# Test from another LAN device
+curl -k https://192.168.1.100/health
+```
+
+## Service Management
+
+### PM2 Process Management
+
+```bash
+# Check application status
+npm run pm2:status
+
+# View application logs
+npm run pm2:logs
+
+# Restart application
+npm run pm2:restart
+
+# Stop application
+npm run pm2:stop
+```
+
+### Reverse Proxy Management
+
+**Linux (Nginx):**
+```bash
+sudo systemctl status nginx
+sudo systemctl restart nginx
+sudo systemctl reload nginx
+```
+
+**Linux (Apache2):**
+```bash
+sudo systemctl status apache2
+sudo systemctl restart apache2
+sudo systemctl reload apache2
+```
+
+**Windows (IIS):**
+```cmd
+iisreset
+iisreset /start
+iisreset /stop
+```
 
 ## Troubleshooting
 
 ### Common Issues
-- **Database Connection**: Check connection string and credentials
-- **File Permissions**: Ensure proper ownership and permissions
-- **Port Conflicts**: Verify port availability and configuration
-- **SSL Issues**: Check certificate validity and configuration
-- **Memory Issues**: Monitor memory usage and optimize if needed
 
-### Log Locations
-- **Application Logs**: `./logs/prod/`
-- **PM2 Logs**: `~/.pm2/logs/`
-- **System Logs**: `/var/log/`
-- **Database Logs**: PostgreSQL log directory
+1. **Port Conflicts**
+   - Check if ports 80, 443, 4005 are available
+   - Use `netstat -tulpn | grep :port` (Linux) or `netstat -an | findstr :port` (Windows)
 
-## Related Documentation
+2. **SSL Certificate Issues**
+   - Verify certificate paths and permissions
+   - Check certificate expiration dates
+   - Validate certificate chain
 
-- [Architecture Overview](../architecture/README.md) - System architecture and components
-- [Database Documentation](../database/README.md) - Database setup and management
-- [Developer Guide](../developer/README.md) - Development and build processes
-- [Troubleshooting](../troubleshooting/README.md) - Issue resolution guides
+3. **Database Connection Issues**
+   - Verify DATABASE_URL in .env.production
+   - Check database server accessibility
+   - Ensure Prisma migrations are applied
+
+4. **CORS Issues**
+   - Update CORS_ORIGIN in environment configuration
+   - Ensure CLIENT_URL matches access URL
+   - Check TRUST_PROXY setting
+
+### Diagnostic Commands
+
+```bash
+# Check application logs
+npm run pm2:logs
+
+# Test database connection
+npm run validate:db
+
+# Check system resources
+df -h          # Disk space (Linux)
+free -h        # Memory usage (Linux)
+top            # Process usage (Linux)
+```
+
+## CI/CD Integration
+
+### GitHub Actions Example
+
+```yaml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build production
+        run: npm run production-build
+        
+      - name: Deploy to server
+        run: |
+          scp -r dist/ user@server:/path/to/app/
+          ssh user@server "cd /path/to/app/dist && npm run deploy:linux -- --proxy=nginx --domain=your-domain.com"
+```
 
 ## Security Considerations
 
-### Application Security
-- **Authentication**: JWT-based with secure token generation
-- **Authorization**: Role-based access control
-- **Input Validation**: Comprehensive request validation
-- **File Upload Security**: Type and size restrictions
-- **Rate Limiting**: API abuse prevention
+### Production Security Checklist
 
-### Infrastructure Security
-- **Firewall Configuration**: Restrict unnecessary ports
-- **SSL/TLS**: Encrypt all communications
-- **Database Security**: Secure credentials and access
-- **Regular Updates**: Keep all components updated
-- **Backup Security**: Encrypt and secure backups
+- [ ] Strong JWT secrets and database passwords
+- [ ] HTTPS enabled with valid certificates
+- [ ] Security headers configured
+- [ ] File upload restrictions in place
+- [ ] Database access restricted
+- [ ] Firewall rules configured
+- [ ] Regular security updates applied
+- [ ] Log monitoring enabled
+
+### Network Security
+
+- [ ] Reverse proxy configured correctly
+- [ ] Application not directly exposed (except Windows direct mode)
+- [ ] SSL/TLS protocols up to date
+- [ ] CORS origins properly configured
+- [ ] Rate limiting enabled
 
 ## Performance Optimization
 
-### Application Performance
-- **Database Optimization**: Proper indexing and query optimization
-- **Caching**: Response caching for static data
-- **Connection Pooling**: Efficient database connections
-- **Static Assets**: Optimized serving of static files
+### Production Optimizations
 
-### Infrastructure Performance
-- **Server Resources**: Adequate CPU, RAM, and storage
-- **Network Optimization**: CDN for static assets (optional)
-- **Database Performance**: Proper PostgreSQL configuration
-- **Monitoring**: Regular performance monitoring and optimization
+- [ ] Gzip compression enabled
+- [ ] Static file caching configured
+- [ ] Database connection pooling
+- [ ] PM2 cluster mode (if needed)
+- [ ] Log rotation configured
+- [ ] Health monitoring setup
 
-## Last Synced
+### Monitoring
 
-**Date**: $(date)  
-**Schema Version**:    
-**Deployment Version**: Production-ready  
-**Supported Platforms**: Ubuntu 20.04+, CentOS 8+
+- [ ] Application health checks
+- [ ] SSL certificate expiration monitoring
+- [ ] Disk space monitoring
+- [ ] Memory usage monitoring
+- [ ] Database performance monitoring
+
+## Support and Documentation
+
+### Additional Documentation
+
+- [SSL Testing Guide](./SSL_TESTING_GUIDE.md) - Comprehensive SSL validation procedures
+- [Reverse Proxy Setup](./reverse_proxy_setup.md) - Manual proxy configuration
+- [Troubleshooting Guide](../troubleshooting/README.md) - Common issues and solutions
+- [Database Guide](../database/README.md) - Database setup and management
+
+### Getting Help
+
+1. Check the troubleshooting documentation
+2. Review application logs: `npm run pm2:logs`
+3. Validate deployment: Run SSL testing guide procedures
+4. Check system resources and network connectivity
 
 ---
 
-[← Back to Main Documentation Index](../README.md)
+**Last Updated:** October 2025  
+**Version:** 1.0.0  
+**Compatibility:** NLC-CMS v1.0.0+

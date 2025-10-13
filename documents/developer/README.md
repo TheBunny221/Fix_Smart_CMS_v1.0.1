@@ -1,288 +1,194 @@
 # Developer Documentation
 
-This folder contains comprehensive technical documentation for developers working on Fix_Smart_CMS v 1.0.0, including API references, development guides, schema documentation, and state management patterns.
+## Overview
 
-**Navigation**: [← Documentation Index](../README.md) | [← Main README](../../README.md)
+This section contains comprehensive developer documentation for NLC-CMS, including API references, development guides, and technical specifications.
 
-## Purpose
+## Quick Navigation
 
-The developer documentation provides technical teams with detailed information about the codebase structure, API endpoints, development workflows, and implementation patterns used throughout the Fix_Smart_CMS system.
+### 🚀 Getting Started
+- **[Developer Guide](./DEVELOPER_GUIDE.md)** - Complete development setup and guidelines
+- **[New Developer Checklist](../onboarding/NEW_DEVELOPER_CHECKLIST.md)** - Onboarding checklist for new team members
 
-## Contents
+### 📚 API & Technical References
+- **[API Reference](./API_REFERENCE.md)** - Complete REST API documentation
+- **[Schema Reference](./SCHEMA_REFERENCE.md)** - Database schema and relationships
+- **[State Management](./STATE_MANAGEMENT.md)** - Redux store and state management patterns
 
-### [API Reference](./API_REFERENCE.md)
-Complete API documentation including:
-- RESTful endpoint specifications
-- Request/response schemas
-- Authentication requirements
-- Error handling patterns
-- Rate limiting and security considerations
+### 🔧 Development Tools
+- **[Scripts Reference](./SCRIPTS_REFERENCE.md)** - Available npm scripts and their usage
+- **[Server Validation Report](./SERVER_VALIDATION_REPORT.md)** - Server-side validation and testing
 
-### [Developer Guide](./DEVELOPER_GUIDE.md)
-Comprehensive development guide covering:
-- Local development setup
-- Code structure and conventions
-- Testing strategies and frameworks
-- Build and deployment processes
-- Debugging and troubleshooting
+## Development Environment Setup
 
-### [Schema Reference](./SCHEMA_REFERENCE.md)
-Detailed database schema documentation including:
-- Model definitions and relationships
-- Field specifications and constraints
-- Index strategies and performance considerations
-- Migration procedures and best practices
+### Prerequisites
+- Node.js 18+
+- PostgreSQL 14+
+- npm 8+
 
-### [State Management](./STATE_MANAGEMENT.md)
-Frontend state management documentation covering:
-- Redux Toolkit setup and configuration
-- RTK Query for API state management
-- Slice definitions and actions
-- Async thunk patterns and error handling
-
-### [Server Validation Report](./SERVER_VALIDATION_REPORT.md)
-Comprehensive validation report covering:
-- Server files validation and testing
-- Scripts directory validation
-- Package.json commands verification
-- Architecture compliance checks
-
-### [Scripts Reference](./SCRIPTS_REFERENCE.md)
-Complete reference for all application scripts:
-- Root scripts directory documentation
-- Server scripts functionality
-- Package.json commands reference
-- Usage examples and troubleshooting
-
-## Technology Stack
-
-### Frontend Development
-- **Framework**: React 18.2.0 with TypeScript
-- **Build Tool**: Vite 7.1.3 with Hot Module Replacement
-- **State Management**: Redux Toolkit + RTK Query
-- **UI Components**: TailwindCSS + Radix UI
-- **Forms**: React Hook Form + Zod validation
-- **Testing**: Vitest + Testing Library + Cypress
-
-### Backend Development
-- **Runtime**: Node.js (>=18.0.0) with ES Modules
-- **Framework**: Express.js with middleware stack
-- **Database**: Prisma ORM with PostgreSQL
-- **Authentication**: JWT with bcryptjs
-- **File Handling**: Multer with local storage
-- **Testing**: Jest with supertest
-
-### Development Tools
-- **TypeScript**: Strict mode with comprehensive type checking
-- **ESLint**: Code quality and consistency
-- **Prettier**: Code formatting
-- **Husky**: Git hooks for quality gates
-- **PM2**: Process management for development and production
-
-## Development Workflow
-
-### 1. Environment Setup
+### Quick Setup
 ```bash
-# Clone repository
+# Clone and install
 git clone <repository-url>
-cd Fix_Smart_CMS_ 
-
-# Install dependencies
+cd nlc-cms
 npm install
 
-# Setup environment
-cp .env.example .env.development
-# Configure database and other settings
+# Setup development environment
+npm run dev:setup
 
-# Initialize database
-npm run db:setup
-npm run db:seed
-
-# Start development servers
+# Start development server
 npm run dev
 ```
 
-### 2. Code Structure
-```
-Fix_Smart_CMS_ /
-├── client/                 # React frontend application
-│   ├── components/         # Reusable UI components
-│   ├── pages/             # Route-based page components
-│   ├── store/             # Redux store and API slices
-│   ├── hooks/             # Custom React hooks
-│   ├── utils/             # Frontend utilities
-│   └── types/             # TypeScript type definitions
-├── server/                # Node.js backend application
-│   ├── controller/        # Business logic controllers
-│   ├── routes/           # Express route definitions
-│   ├── middleware/       # Custom middleware
-│   ├── model/            # Prisma model utilities
-│   └── utils/            # Backend utilities
-├── prisma/               # Database schema and migrations
-├── shared/               # Shared code between client/server
-└── types/                # Shared TypeScript types
+### Environment Configuration
+Create `.env.development` with development settings:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/nlc_cms_dev"
+NODE_ENV=development
+PORT=4005
+JWT_SECRET=dev-secret-key
 ```
 
-### 3. API Development Patterns
+## Development Workflow
 
-#### Controller Pattern
-```typescript
-// Example controller structure
-export const complaintController = {
-  async getComplaints(req: Request, res: Response) {
-    try {
-      const complaints = await prisma.complaint.findMany({
-        where: { /* filters */ },
-        include: { /* relations */ }
-      });
-      res.json({ success: true, data: complaints });
-    } catch (error) {
-      res.status(500).json({ success: false, error: error.message });
-    }
-  }
-};
+### 1. Database Development
+```bash
+# Generate Prisma client
+npm run db:generate
+
+# Apply migrations
+npm run db:migrate:dev
+
+# Seed development data
+npm run db:seed
+
+# Open Prisma Studio
+npm run db:studio
 ```
 
-#### Route Protection
-```typescript
-// Protected route example
-router.get('/complaints', 
-  authenticateToken,
-  authorizeRoles(['WARD_OFFICER', 'ADMINISTRATOR']),
-  complaintController.getComplaints
-);
+### 2. Frontend Development
+```bash
+# Start client development server
+npm run client:dev
+
+# Run tests
+npm run test
+
+# Run tests with coverage
+npm run test:coverage
 ```
 
-### 4. Frontend Development Patterns
+### 3. Backend Development
+```bash
+# Start server development mode
+npm run server:dev
 
-#### Component Structure
-```typescript
-// Example component pattern
-interface ComponentProps {
-  // Props interface
-}
+# Run TypeScript type checking
+npm run typecheck
 
-const Component: React.FC<ComponentProps> = ({ props }) => {
-  // Hooks
-  const dispatch = useAppDispatch();
-  const { data, isLoading } = useGetDataQuery();
-  
-  // Event handlers
-  const handleAction = useCallback(() => {
-    // Action logic
-  }, []);
-  
-  // Render
-  return (
-    <div>
-      {/* Component JSX */}
-    </div>
-  );
-};
+# Run linting
+npm run lint
 ```
 
-#### State Management Pattern
-```typescript
-// RTK Query API slice
-export const apiSlice = createApi({
-  reducerPath: 'api',
-  baseQuery: fetchBaseQuery({
-    baseUrl: '/api',
-    prepareHeaders: (headers, { getState }) => {
-      // Add auth token
-      return headers;
-    }
-  }),
-  tagTypes: ['Complaint', 'User'],
-  endpoints: (builder) => ({
-    getComplaints: builder.query<Complaint[], void>({
-      query: () => '/complaints',
-      providesTags: ['Complaint']
-    })
-  })
-});
+## Testing
+
+### Unit Tests
+```bash
+# Run all tests
+npm run test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run specific test file
+npm run test -- client/__tests__/specific.test.tsx
 ```
 
-## Code Quality Standards
+### End-to-End Tests
+```bash
+# Open Cypress test runner
+npm run cypress:open
 
-### TypeScript Configuration
-- **Strict Mode**: Enabled for type safety
-- **No Implicit Any**: Enforced throughout codebase
-- **Strict Null Checks**: Enabled for null safety
-- **Path Mapping**: Configured for clean imports
+# Run Cypress tests headlessly
+npm run cypress:run
 
-### Testing Standards
-- **Unit Tests**: Minimum 80% coverage for utilities
-- **Integration Tests**: API endpoint testing
-- **E2E Tests**: Critical user flows with Cypress
-- **Component Tests**: React component testing with Testing Library
+# Run full E2E test suite
+npm run e2e
+```
 
-### Code Style Guidelines
-- **ESLint**: Airbnb configuration with custom rules
-- **Prettier**: Consistent code formatting
-- **Naming Conventions**: camelCase for variables, PascalCase for components
-- **File Organization**: Feature-based folder structure
+### API Testing
+Use the API documentation and test endpoints:
+- Health check: `GET /api/health`
+- API documentation: `GET /api-docs`
 
-## Performance Guidelines
+## Code Standards
 
-### Frontend Performance
-- **Code Splitting**: Route-based and component-based splitting
-- **Lazy Loading**: Dynamic imports for heavy components
-- **Memoization**: React.memo and useMemo for expensive operations
-- **Bundle Analysis**: Regular bundle size monitoring
+### TypeScript
+- Use strict TypeScript configuration
+- Define proper interfaces and types
+- Avoid `any` type usage
 
-### Backend Performance
-- **Database Queries**: Optimized with proper indexing
-- **Caching**: Response caching for static data
-- **Connection Pooling**: Efficient database connections
-- **Error Handling**: Graceful error responses
+### React Components
+- Use functional components with hooks
+- Implement proper prop types
+- Follow component composition patterns
 
-## Security Guidelines
+### Backend Development
+- Use Express.js with TypeScript
+- Implement proper error handling
+- Follow RESTful API conventions
 
-### Authentication & Authorization
-- **JWT Tokens**: Secure token generation and validation
-- **Role-Based Access**: Granular permission system
-- **Input Validation**: Comprehensive request validation
-- **Rate Limiting**: API abuse prevention
+## Deployment for Development
 
-### Data Security
-- **SQL Injection**: Prevention through Prisma ORM
-- **XSS Protection**: Input sanitization and CSP headers
-- **CORS Configuration**: Proper cross-origin settings
-- **Environment Variables**: Secure configuration management
+### Development Build
+```bash
+# Build for development testing
+npm run build
 
-## Related Documentation
+# Start production server locally
+npm run start:prod
+```
 
-- [Architecture Overview](../architecture/README.md) - System architecture and design patterns
-- [Database Documentation](../database/README.md) - Database schema and management
-- [Deployment Guide](../deployment/README.md) - Production deployment procedures
-- [Troubleshooting](../troubleshooting/README.md) - Common issues and solutions
+### Production Deployment
+See [Deployment Guide](../deployment/README.md) for production deployment instructions.
 
-## Contributing Guidelines
+## Troubleshooting
 
-### Pull Request Process
-1. **Feature Branch**: Create feature branch from main
-2. **Code Quality**: Ensure all tests pass and linting is clean
-3. **Documentation**: Update relevant documentation
-4. **Review Process**: Peer review required for all changes
-5. **Deployment**: Automated deployment after merge
+### Common Development Issues
+1. **Database Connection Issues**
+   - Check PostgreSQL is running
+   - Verify DATABASE_URL in .env files
+   - Run `npm run validate:db`
 
-### Issue Reporting
-- **Bug Reports**: Use provided template with reproduction steps
-- **Feature Requests**: Include use case and acceptance criteria
-- **Security Issues**: Report privately to maintainers
+2. **Port Conflicts**
+   - Default ports: 3000 (client), 4005 (server)
+   - Check for running processes: `netstat -tulpn | grep :port`
 
-## Last Synced
+3. **TypeScript Errors**
+   - Run `npm run typecheck`
+   - Check for missing type definitions
+   - Verify import paths
 
-**Date**: $(date)  
-**Schema Version**:    
-**Node.js Version**: >=18.0.0  
-**React Version**: 18.2.0
+### Getting Help
+1. Check [Troubleshooting Guide](../troubleshooting/README.md)
+2. Review [Common Errors](../troubleshooting/COMMON_ERRORS.md)
+3. Check application logs and console output
+
+## Contributing
+
+### Code Review Process
+1. Create feature branch from `main`
+2. Implement changes with tests
+3. Run full test suite
+4. Submit pull request with description
+5. Address review feedback
+
+### Documentation Updates
+- Update relevant documentation for new features
+- Include API documentation updates
+- Update schema documentation for database changes
 
 ---
 
-[← Back to Main Documentation Index](../README.md)
---
--
-
-**Navigation**: [← Documentation Index](../README.md) | [← Main README](../../README.md)
+**Back to Main Documentation**: [← README.md](../README.md)  
+**Deployment Guide**: [→ Deployment](../deployment/README.md)

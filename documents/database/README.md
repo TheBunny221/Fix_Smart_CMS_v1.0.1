@@ -1,149 +1,344 @@
 # Database Documentation
 
-This folder contains comprehensive documentation about the Fix_Smart_CMS database structure, including schema definitions, migration guides, and data management procedures.
+## Overview
 
-## Purpose
+This section contains comprehensive database documentation for NLC-CMS, including schema definitions, migration guides, and database management procedures.
 
-The database documentation provides developers and database administrators with detailed information about the PostgreSQL database schema, relationships between models, and procedures for managing database migrations and data integrity.
+## Quick Navigation
 
-## Contents
+### 📊 Database Setup & Management
+- **[Database Migration Guide](./DB_MIGRATION_GUIDE.md)** - Complete database setup and migration procedures
+- **[Prisma Cleanup Summary](./PRISMA_CLEANUP_SUMMARY.md)** - Database optimization and cleanup procedures
 
-### [Database Migration Guide](./DB_MIGRATION_GUIDE.md)
-Comprehensive guide for database migrations including:
-- Setting up the database environment
-- Running migrations for development and production
-- Schema evolution and version management
-- Data seeding procedures
-- Backup and restore procedures
+### 🗄️ Schema Documentation
+- **[Schema Reference](../developer/SCHEMA_REFERENCE.md)** - Complete database schema and relationships
+- **[Prisma Schema](../../prisma/schema.prisma)** - Current Prisma schema definition
 
-## Current Schema Overview ( )
+## Database Configuration
 
-Fix_Smart_CMS uses PostgreSQL as the production database with Prisma ORM for type-safe database access. The schema includes the following active models:
+### Supported Databases
+- **PostgreSQL 14+** (Recommended for production)
+- **SQLite** (Development only)
 
-### Core Models
-- **User**: System users with role-based access (Citizens, Ward Officers, Maintenance Teams, Administrators)
-- **Ward**: Geographic administrative divisions for complaint routing
-- **SubZone**: Sub-divisions within wards for granular location management
-- **ComplaintType**: Predefined complaint categories with SLA definitions
+### Connection Configuration
 
-### Complaint Management
-- **Complaint**: Central complaint entity with full lifecycle tracking
-- **StatusLog**: Audit trail for all complaint status changes
-- **Attachment**: Unified file attachment system for all entities
-
-### Authentication & Security
-- **OTPSession**: One-time password sessions for guest verification and password resets
-- **Notification**: Multi-channel notification system (Email, SMS, In-App)
-
-### System Configuration
-- **SystemConfig**: Key-value configuration store for system settings
-
-### Key Enums
-```prisma
-enum UserRole {
-  CITIZEN, WARD_OFFICER, MAINTENANCE_TEAM, ADMINISTRATOR, GUEST
-}
-
-enum ComplaintStatus {
-  REGISTERED, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED, REOPENED
-}
-
-enum Priority {
-  LOW, MEDIUM, HIGH, CRITICAL
-}
-
-enum SLAStatus {
-  ON_TIME, WARNING, OVERDUE, COMPLETED
-}
-
-enum AttachmentEntityType {
-  COMPLAINT, CITIZEN, USER, MAINTENANCE_PHOTO
-}
+#### Production Environment
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/nlc_cms_prod"
 ```
 
-## Database Relationships
+#### Development Environment
+```env
+DATABASE_URL="postgresql://username:password@localhost:5432/nlc_cms_dev"
+```
 
-### Primary Relationships
-- **User ↔ Ward**: Many-to-one (users belong to wards)
-- **Ward ↔ SubZone**: One-to-many (wards contain sub-zones)
-- **Complaint ↔ User**: Multiple relationships (submitted by, assigned to, ward officer, maintenance team)
-- **Complaint ↔ StatusLog**: One-to-many (complaints have multiple status updates)
-- **Complaint ↔ Attachment**: One-to-many (complaints can have multiple attachments)
+#### Testing Environment
+```env
+DATABASE_URL="file:./test.db"
+```
 
-### Key Indexes
-The schema includes optimized indexes for:
-- User role and activity queries
-- Complaint status and assignment queries
-- Geographic queries (ward and sub-zone)
-- Temporal queries (creation dates, deadlines)
-- File attachment queries
+## Database Management Commands
 
-## Schema Evolution
+### Development Commands
+```bash
+# Generate Prisma client
+npm run db:generate
 
-### Removed Models ( )
-The following models were deprecated and removed in the current version:
-- **Message**: Replaced by unified notification system
-- **Material**: Simplified to string-based tracking
-- **Tool**: Simplified to string-based tracking
-- **Department**: Integrated into User model
-- **Photo**: Merged into unified Attachment model
+# Apply migrations in development
+npm run db:migrate:dev
 
-### Migration Strategy
-- **Backward Compatibility**: Maintained for critical data fields
-- **Data Migration**: Automated scripts for model consolidation
-- **Index Optimization**: Performance-focused index strategy
-- **Constraint Management**: Proper foreign key relationships with cascade rules
+# Push schema changes (development only)
+npm run db:push
 
-## Performance Considerations
+# Seed development data
+npm run db:seed
+
+# Open Prisma Studio
+npm run db:studio
+
+# Reset database (development only)
+npm run db:reset
+```
+
+### Production Commands
+```bash
+# Apply migrations in production
+npm run db:migrate
+
+# Generate Prisma client
+npm run db:generate
+
+# Validate schema
+npm run db:validate
+
+# Format schema file
+npm run db:format
+```
+
+## Schema Overview
+
+### Core Models
+
+#### User Management
+- **User** - System users (citizens, officers, maintenance teams, admins)
+- **Ward** - Geographic administrative divisions
+- **SubZone** - Sub-divisions within wards
+
+#### Complaint System
+- **ComplaintType** - Categories of complaints
+- **Complaint** - Main complaint records
+- **StatusLog** - Complaint status change history
+- **Attachment** - File attachments for complaints
+
+#### System Features
+- **OTPSession** - OTP verification for guest complaints
+- **Notification** - System notifications and email queue
+- **SystemConfig** - Dynamic system configuration
+
+### Key Relationships
+
+```
+User ──┐
+       ├── Complaint (as citizen)
+       ├── Complaint (as wardOfficer)
+       └── Complaint (as maintenanceTeam)
+
+Ward ──┐
+       ├── SubZone
+       ├── User (wardOfficers)
+       └── Complaint
+
+Complaint ──┐
+            ├── StatusLog
+            ├── Attachment
+            └── ComplaintType
+```
+
+## Migration Management
+
+### Creating Migrations
+
+```bash
+# Create new migration
+npx prisma migrate dev --name migration_name
+
+# Example: Add new field
+npx prisma migrate dev --name add_priority_field
+```
+
+### Applying Migrations
+
+#### Development
+```bash
+# Apply pending migrations
+npm run db:migrate:dev
+
+# Reset and apply all migrations
+npm run db:migrate:reset
+```
+
+#### Production
+```bash
+# Apply migrations (no prompts)
+npm run db:migrate
+
+# Verify migration status
+npx prisma migrate status
+```
+
+### Migration Best Practices
+
+1. **Always backup production data** before applying migrations
+2. **Test migrations** in development environment first
+3. **Use descriptive names** for migrations
+4. **Review generated SQL** before applying to production
+5. **Plan for rollback** procedures if needed
+
+## Database Seeding
+
+### Development Seeding
+```bash
+# Run seed script
+npm run db:seed
+```
+
+### Seed Data Includes
+- Default admin user
+- Sample wards and sub-zones
+- Complaint types
+- System configuration
+- Test complaints (development only)
+
+### Custom Seeding
+Edit `prisma/seed.js` to customize seed data for your environment.
+
+## Performance Optimization
+
+### Indexing Strategy
+- Primary keys (automatic)
+- Foreign keys (automatic)
+- Email fields (unique indexes)
+- Status and date fields for filtering
+- Geographic coordinates for location queries
 
 ### Query Optimization
-- Strategic indexing on frequently queried fields
-- Compound indexes for complex queries
-- Proper use of Prisma's query optimization features
+```typescript
+// Use select to limit fields
+const complaints = await prisma.complaint.findMany({
+  select: {
+    id: true,
+    title: true,
+    status: true,
+    createdAt: true
+  }
+});
 
-### Connection Management
-- Connection pooling with Prisma
-- Environment-specific connection limits
-- Proper connection cleanup and error handling
+// Use include for relations
+const complaint = await prisma.complaint.findUnique({
+  where: { id },
+  include: {
+    citizen: true,
+    ward: true,
+    attachments: true
+  }
+});
 
-### Data Integrity
-- Foreign key constraints with appropriate cascade rules
-- Unique constraints for business logic enforcement
-- Check constraints for data validation
+// Use pagination for large datasets
+const complaints = await prisma.complaint.findMany({
+  skip: (page - 1) * limit,
+  take: limit,
+  orderBy: { createdAt: 'desc' }
+});
+```
 
-## Related Documentation
+## Backup and Recovery
 
-- [Architecture Overview](../architecture/README.md) - System architecture and data flow
-- [Developer Guide](../developer/README.md) - API and development procedures
-- [Deployment Guide](../deployment/README.md) - Production database setup
-- [Schema Reference](../developer/SCHEMA_REFERENCE.md) - Detailed model documentation
+### Database Backup
+```bash
+# PostgreSQL backup
+pg_dump -U username -h localhost nlc_cms_prod > backup.sql
 
-## Database Administration
+# Compressed backup
+pg_dump -U username -h localhost nlc_cms_prod | gzip > backup.sql.gz
+```
 
-### Backup Procedures
-- Automated daily backups in production
-- Point-in-time recovery capabilities
-- Cross-environment data synchronization procedures
+### Database Restore
+```bash
+# Restore from backup
+psql -U username -h localhost nlc_cms_prod < backup.sql
 
-### Monitoring
-- Query performance monitoring
-- Connection pool monitoring
-- Storage usage tracking
-- Index usage analysis
+# Restore compressed backup
+gunzip -c backup.sql.gz | psql -U username -h localhost nlc_cms_prod
+```
 
-### Security
-- Role-based database access
-- Encrypted connections (SSL/TLS)
-- Regular security updates
-- Audit logging for sensitive operations
+### Automated Backups
+Set up automated backups using cron jobs or system schedulers:
 
-## Last Synced
+```bash
+# Daily backup at 2 AM
+0 2 * * * pg_dump -U username nlc_cms_prod | gzip > /backups/nlc_cms_$(date +\%Y\%m\%d).sql.gz
+```
 
-**Date**: $(date)  
-**Schema Version**:    
-**Prisma Version**: 6.16.3  
-**Database**: PostgreSQL (Production), SQLite (Development)
+## Monitoring and Maintenance
+
+### Database Health Checks
+```bash
+# Check database connection
+npm run validate:db
+
+# Check migration status
+npx prisma migrate status
+
+# Validate schema
+npm run db:validate
+```
+
+### Performance Monitoring
+- Monitor query performance using Prisma metrics
+- Use database-specific monitoring tools
+- Set up alerts for slow queries
+- Monitor connection pool usage
+
+### Regular Maintenance
+1. **Update statistics** regularly
+2. **Vacuum and analyze** tables (PostgreSQL)
+3. **Monitor disk usage** and plan for growth
+4. **Review and optimize** slow queries
+5. **Update indexes** as query patterns change
+
+## Security Considerations
+
+### Database Security
+- Use strong passwords for database users
+- Limit database user permissions
+- Enable SSL connections for remote databases
+- Regular security updates for database software
+
+### Application Security
+- Use parameterized queries (Prisma handles this)
+- Validate input data before database operations
+- Implement proper authentication and authorization
+- Log database access for audit trails
+
+## Troubleshooting
+
+### Common Issues
+
+#### Connection Issues
+```bash
+# Test database connection
+psql -U username -h localhost -d nlc_cms_prod
+
+# Check if PostgreSQL is running
+sudo systemctl status postgresql
+```
+
+#### Migration Issues
+```bash
+# Check migration status
+npx prisma migrate status
+
+# Reset migrations (development only)
+npx prisma migrate reset
+
+# Resolve migration conflicts
+npx prisma migrate resolve --applied migration_name
+```
+
+#### Schema Issues
+```bash
+# Regenerate Prisma client
+npm run db:generate
+
+# Validate schema syntax
+npm run db:validate
+
+# Format schema file
+npm run db:format
+```
+
+### Getting Help
+1. Check [Troubleshooting Guide](../troubleshooting/README.md)
+2. Review Prisma documentation
+3. Check database server logs
+4. Validate environment configuration
+
+## Development Workflow
+
+### Schema Changes
+1. Modify `prisma/schema.prisma`
+2. Create migration: `npm run db:migrate:dev`
+3. Test changes in development
+4. Apply to production: `npm run db:migrate`
+
+### Data Model Updates
+1. Update Prisma schema
+2. Generate new client: `npm run db:generate`
+3. Update TypeScript types
+4. Update API endpoints and frontend code
+5. Test thoroughly before deployment
 
 ---
 
-[← Back to Main Documentation Index](../README.md)
+**Back to Main Documentation**: [← README.md](../README.md)  
+**Developer Guide**: [→ Developer](../developer/README.md)

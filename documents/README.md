@@ -29,13 +29,12 @@ Database schema, migrations, and data management
 - [Database Migration Guide](./database/DB_MIGRATION_GUIDE.md)
 - [Prisma Cleanup Summary](./database/PRISMA_CLEANUP_SUMMARY.md)
 
-### [🚀 Deployment](./deployment/README.md)
-Production deployment guides and validation checklists
-- [Deployment Guide](./deployment/DEPLOYMENT_GUIDE.md)
-- [Production Deployment Guide](./deployment/PRODUCTION_DEPLOYMENT_GUIDE.md)
-- [LAN Deployment README](./deployment/LAN_DEPLOYMENT_README.md)
-- [UT Server Deployment Guide](./deployment/UT_SERVER_DEPLOYMENT_GUIDE.md)
-- [QA Validation Checklist](./deployment/QA_VALIDATION_CHECKLIST.md)
+### [🚀 Deployment](./deployment/README.md) ⭐ **STANDARDIZED PROCESS**
+**Three-script deployment system for all environments**
+- **[Main Deployment Guide](./deployment/README.md)** - Complete standardized deployment instructions
+- **[SSL Testing Guide](./deployment/SSL_TESTING_GUIDE.md)** - Comprehensive SSL validation procedures
+- **[Reverse Proxy Setup](./deployment/reverse_proxy_setup.md)** - Nginx, Apache2, and IIS configuration
+- [Legacy Deployment Guides](./deployment/) - Previous deployment documentation (reference only)
 
 ### [👨‍💻 Developer](./developer/README.md)
 API references, development guides, and technical documentation
@@ -83,11 +82,24 @@ Common issues, error resolution, and debugging guides
 
 ## 🚀 Quick Start
 
+### For Deployment (Production Ready)
+1. **Build**: `npm run production-build`
+2. **Deploy Linux**: `npm run deploy:linux` (Debian/Ubuntu with Nginx/Apache2)
+3. **Deploy Windows**: `npm run deploy:windows` (Windows Server with IIS/Nginx/Apache)
+4. **Validate**: Follow [SSL Testing Guide](./deployment/SSL_TESTING_GUIDE.md)
+
+### For Development
 1. **New Developers**: Start with [Onboarding](./onboarding/README.md)
 2. **System Architecture**: Review [Architecture Overview](./architecture/README.md)
 3. **Database Setup**: Follow [Database Migration Guide](./database/README.md)
-4. **Deployment**: Use [Deployment Guide](./deployment/README.md)
-5. **API Development**: Reference [Developer Guide](./developer/README.md)
+4. **API Development**: Reference [Developer Guide](./developer/README.md)
+
+### Standardized Deployment Features
+- ✅ **Cross-Platform**: Linux (Debian) and Windows Server support
+- ✅ **Reverse Proxy**: Automatic Nginx, Apache2, or IIS configuration
+- ✅ **SSL/HTTPS**: Let's Encrypt (VPS) or self-signed (LAN) certificates
+- ✅ **Process Management**: PM2 with auto-restart and monitoring
+- ✅ **Validation**: Comprehensive SSL and connectivity testing
 
 ## 📞 Support & Contribution
 

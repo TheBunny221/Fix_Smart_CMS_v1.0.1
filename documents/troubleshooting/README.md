@@ -1,281 +1,528 @@
-# Troubleshooting Documentation
+# Troubleshooting Guide
 
-This folder contains comprehensive troubleshooting guides for Fix_Smart_CMS, including common error resolutions, debugging procedures, and system maintenance guides.
+## Overview
 
-## Purpose
+This section contains comprehensive troubleshooting guides for NLC-CMS, including common issues, error resolution procedures, and debugging techniques.
 
-The troubleshooting documentation provides developers, system administrators, and support teams with structured approaches to identify, diagnose, and resolve issues in Fix_Smart_CMS across development, staging, and production environments.
+## Quick Navigation
 
-## Contents
+### 🔧 Common Issues
+- **[Common Errors](./COMMON_ERRORS.md)** - Frequently encountered errors and solutions
+- **[Performance Issues](#performance-troubleshooting)** - Performance optimization and debugging
+- **[Deployment Issues](#deployment-troubleshooting)** - Deployment-related problems and fixes
 
-### [Common Errors](./COMMON_ERRORS.md)
-Comprehensive error resolution guide including:
-- Database connection and migration errors
-- Authentication and authorization issues
-- File upload and attachment problems
-- Frontend build and runtime errors
-- API endpoint and server errors
-- Performance and memory issues
+### 🚀 Deployment Troubleshooting
+- **[SSL Issues](../deployment/SSL_TESTING_GUIDE.md)** - SSL certificate and HTTPS problems
+- **[Reverse Proxy Issues](#reverse-proxy-troubleshooting)** - Nginx, Apache2, and IIS problems
+- **[Database Connection Issues](#database-troubleshooting)** - Database connectivity problems
 
-### [Network Access Troubleshooting](./NETWORK_ACCESS_TROUBLESHOOTING.md)
-Network connectivity and access issues:
-- Application binding and port configuration
-- Nginx reverse proxy setup and issues
-- Firewall and security configuration
-- SSL certificate problems
-- External IP access troubleshooting
+## Quick Diagnostic Commands
 
-### [Emergency Deployment Fix](./EMERGENCY_DEPLOYMENT_FIX.md)
-Immediate fixes for critical deployment issues:
-- Port configuration problems (8085 vs 4005)
-- Service startup and connectivity issues
-- Quick diagnostic and repair procedures
-- Automated fix scripts and manual procedures
-- Connection timeout and access problems
-
-## Troubleshooting Framework
-
-### Issue Classification
-1. **Critical**: System down, data loss, security breach
-2. **High**: Major functionality broken, significant user impact
-3. **Medium**: Minor functionality issues, workarounds available
-4. **Low**: Cosmetic issues, enhancement requests
-
-### Resolution Process
-1. **Identification**: Reproduce and document the issue
-2. **Investigation**: Analyze logs, error messages, and system state
-3. **Diagnosis**: Identify root cause and contributing factors
-4. **Resolution**: Implement fix and verify solution
-5. **Prevention**: Update documentation and monitoring
-
-## Common Issue Categories
-
-### Database Issues
-- **Connection Problems**: Database connectivity and authentication
-- **Migration Errors**: Schema migration and rollback issues
-- **Performance Issues**: Slow queries and connection pool problems
-- **Data Integrity**: Constraint violations and data corruption
-- **Backup/Restore**: Backup creation and restoration problems
-
-### Authentication Issues
-- **JWT Token Problems**: Token generation, validation, and expiration
-- **Password Issues**: Hashing, validation, and reset problems
-- **OTP Verification**: OTP generation, delivery, and validation
-- **Role Authorization**: Permission and access control issues
-- **Session Management**: Session creation, maintenance, and cleanup
-
-### Frontend Issues
-- **Build Errors**: Vite build failures and TypeScript errors
-- **Runtime Errors**: Component errors and state management issues
-- **API Integration**: RTK Query and API communication problems
-- **Performance Issues**: Slow rendering and memory leaks
-- **Browser Compatibility**: Cross-browser compatibility issues
-
-### Backend Issues
-- **Server Startup**: Application startup and configuration errors
-- **API Errors**: Endpoint errors and request handling issues
-- **File Upload**: File handling and storage problems
-- **Email Delivery**: SMTP configuration and email sending issues
-- **Process Management**: PM2 and process monitoring issues
-
-### Infrastructure Issues
-- **Server Resources**: CPU, memory, and disk space problems
-- **Network Issues**: Connectivity and firewall problems
-- **SSL/TLS Issues**: Certificate and encryption problems
-- **Load Balancing**: Traffic distribution and scaling issues
-- **Monitoring**: Health check and alerting problems
-
-## Diagnostic Tools
-
-### Application Diagnostics
+### System Health Check
 ```bash
-# Check application health
-curl http://localhost:4005/api/health
+# Check application status
+npm run pm2:status
 
 # View application logs
-tail -f logs/prod/app.log
+npm run pm2:logs
 
-# Check PM2 process status
-pm2 status
-pm2 logs
+# Test database connection
+npm run validate:db
 
-# Monitor system resources
-htop
-df -h
-free -m
+# Check SSL configuration
+curl -Iv https://your-server-ip:443
 ```
 
-### Database Diagnostics
+### Service Status Check
+```bash
+# Linux - Check services
+sudo systemctl status nginx
+sudo systemctl status postgresql
+sudo systemctl status pm2-root
+
+# Windows - Check services
+sc query "nginx"
+sc query "postgresql"
+pm2 status
+```
+
+## Common Issues and Solutions
+
+### 1. Application Won't Start
+
+#### Symptoms
+- PM2 shows app as "errored" or "stopped"
+- Cannot access application on port 4005
+- Error messages in PM2 logs
+
+#### Diagnostic Steps
+```bash
+# Check PM2 status
+npm run pm2:status
+
+# View detailed logs
+npm run pm2:logs
+
+# Check if port is in use
+netstat -tulpn | grep :4005  # Linux
+netstat -an | findstr :4005  # Windows
+```
+
+#### Common Causes & Solutions
+
+**Database Connection Issues:**
+```bash
+# Check database connection
+npm run validate:db
+
+# Verify DATABASE_URL in .env
+cat .env | grep DATABASE_URL
+
+# Test PostgreSQL connection
+psql -U username -h localhost -d database_name
+```
+
+**Missing Dependencies:**
+```bash
+# Reinstall dependencies
+npm ci --production
+
+# Regenerate Prisma client
+npm run db:generate
+```
+
+**Port Conflicts:**
+```bash
+# Kill process using port 4005
+sudo lsof -ti:4005 | xargs kill -9  # Linux
+netstat -ano | findstr :4005        # Windows (note PID and kill)
+```
+
+**Environment Configuration:**
+```bash
+# Check required environment variables
+grep -E "DATABASE_URL|JWT_SECRET|NODE_ENV" .env
+
+# Ensure HOST is set for LAN access
+echo "HOST=0.0.0.0" >> .env
+```
+
+### 2. HTTPS/SSL Issues
+
+#### Symptoms
+- Browser shows "Not Secure" warning
+- SSL certificate errors
+- Cannot access via HTTPS
+
+#### Diagnostic Steps
+```bash
+# Test SSL certificate
+openssl x509 -in /etc/ssl/certs/nlc-cms.crt -noout -dates
+
+# Check certificate chain
+openssl s_client -connect localhost:443 -showcerts
+
+# Test HTTPS connectivity
+curl -Iv https://localhost:443
+```
+
+#### Solutions
+
+**Self-Signed Certificate Issues:**
+```bash
+# Regenerate self-signed certificate
+sudo openssl req -x509 -newkey rsa:2048 \
+  -keyout /etc/ssl/private/nlc-cms.key \
+  -out /etc/ssl/certs/nlc-cms.crt \
+  -days 365 -nodes \
+  -subj "/C=IN/ST=Kerala/L=Kochi/O=NLC CMS/CN=your-server-ip"
+
+# Set proper permissions
+sudo chmod 600 /etc/ssl/private/nlc-cms.key
+sudo chmod 644 /etc/ssl/certs/nlc-cms.crt
+```
+
+**Let's Encrypt Issues:**
+```bash
+# Renew certificate
+sudo certbot renew
+
+# Check certificate expiration
+sudo certbot certificates
+
+# Force renewal
+sudo certbot renew --force-renewal
+```
+
+### 3. Reverse Proxy Issues
+
+#### Symptoms
+- 502 Bad Gateway errors
+- Cannot access application through reverse proxy
+- Proxy returns wrong content
+
+#### Nginx Troubleshooting
+```bash
+# Check Nginx status
+sudo systemctl status nginx
+
+# Test Nginx configuration
+sudo nginx -t
+
+# View Nginx error logs
+sudo tail -f /var/log/nginx/error.log
+
+# Restart Nginx
+sudo systemctl restart nginx
+```
+
+**Common Nginx Fixes:**
+```bash
+# Check upstream configuration
+grep -A 5 "upstream nlc_cms" /etc/nginx/sites-available/nlc-cms
+
+# Verify proxy_pass settings
+grep "proxy_pass" /etc/nginx/sites-available/nlc-cms
+
+# Test backend connectivity
+curl http://localhost:4005/api/health
+```
+
+#### Apache2 Troubleshooting
+```bash
+# Check Apache2 status
+sudo systemctl status apache2
+
+# Test Apache2 configuration
+sudo apache2ctl configtest
+
+# View Apache2 error logs
+sudo tail -f /var/log/apache2/error.log
+
+# Restart Apache2
+sudo systemctl restart apache2
+```
+
+#### IIS Troubleshooting (Windows)
+```cmd
+# Check IIS status
+iisreset /status
+
+# Restart IIS
+iisreset
+
+# Check URL Rewrite module
+powershell "Get-WindowsFeature -Name IIS-HttpRedirect"
+```
+
+### 4. Database Issues
+
+#### Symptoms
+- Database connection errors
+- Migration failures
+- Data inconsistencies
+
+#### Diagnostic Steps
+```bash
+# Test database connection
+npm run validate:db
+
+# Check migration status
+npx prisma migrate status
+
+# Validate schema
+npm run db:validate
+```
+
+#### Solutions
+
+**Connection Issues:**
 ```bash
 # Check PostgreSQL status
 sudo systemctl status postgresql
 
-# Connect to database
-psql -U username -d database_name
+# Test direct connection
+psql -U username -h localhost -d database_name
 
-# Check database connections
-SELECT * FROM pg_stat_activity;
-
-# Check database size
-SELECT pg_size_pretty(pg_database_size('database_name'));
+# Check connection string
+echo $DATABASE_URL
 ```
 
-### Network Diagnostics
+**Migration Issues:**
 ```bash
-# Check port availability
-netstat -tlnp | grep :4005
+# Apply pending migrations
+npm run db:migrate
 
-# Test API connectivity
-curl -I http://localhost:4005/api/health
+# Reset migrations (development only)
+npm run db:migrate:reset
 
-# Check SSL certificate
-openssl s_client -connect domain.com:443
-
-# Test DNS resolution
-nslookup domain.com
+# Resolve migration conflicts
+npx prisma migrate resolve --applied migration_name
 ```
 
-## Error Resolution Procedures
+### 5. Performance Issues
 
-### Database Connection Errors
-1. **Verify Database Status**: Check if PostgreSQL is running
-2. **Check Connection String**: Validate DATABASE_URL format
-3. **Test Credentials**: Verify username and password
-4. **Network Connectivity**: Test database server connectivity
-5. **Connection Pool**: Check connection pool configuration
+#### Symptoms
+- Slow response times
+- High CPU/memory usage
+- Timeouts
 
-### Authentication Failures
-1. **JWT Configuration**: Verify JWT_SECRET and expiration settings
-2. **Password Hashing**: Check bcryptjs configuration
-3. **Token Validation**: Verify token format and signature
-4. **Role Permissions**: Check user roles and permissions
-5. **Session State**: Verify session storage and cleanup
+#### Diagnostic Steps
+```bash
+# Check system resources
+top                    # Linux
+htop                   # Linux (if installed)
+taskmgr               # Windows
 
-### File Upload Issues
-1. **File Permissions**: Check upload directory permissions
-2. **File Size Limits**: Verify MAX_FILE_SIZE configuration
-3. **MIME Type Validation**: Check allowed file types
-4. **Storage Space**: Verify available disk space
-5. **Multer Configuration**: Check file upload middleware
+# Check application performance
+npm run pm2:logs
+npm run pm2:monit
+```
 
-### Performance Issues
-1. **Resource Monitoring**: Check CPU, memory, and disk usage
-2. **Database Queries**: Analyze slow query logs
-3. **Connection Pools**: Monitor database connection usage
-4. **Memory Leaks**: Check for memory leak patterns
-5. **Caching**: Verify caching configuration and effectiveness
+#### Solutions
 
-## Monitoring and Alerting
+**Memory Issues:**
+```bash
+# Restart application
+npm run pm2:restart
 
-### Application Monitoring
-- **Health Checks**: Automated health endpoint monitoring
-- **Error Rates**: Application error rate tracking
-- **Response Times**: API response time monitoring
-- **Resource Usage**: CPU, memory, and disk monitoring
-- **User Activity**: Active user and session monitoring
+# Check memory usage
+free -h                # Linux
+systeminfo            # Windows
 
-### Database Monitoring
-- **Connection Pool**: Database connection monitoring
-- **Query Performance**: Slow query identification and optimization
-- **Lock Monitoring**: Database lock detection and resolution
-- **Backup Status**: Backup success and failure monitoring
-- **Storage Usage**: Database size and growth monitoring
+# Enable PM2 cluster mode (if needed)
+# Edit ecosystem.prod.config.cjs
+```
 
-### Infrastructure Monitoring
-- **Server Health**: System resource and availability monitoring
-- **Network Performance**: Bandwidth and latency monitoring
-- **SSL Certificate**: Certificate expiration monitoring
-- **Log Analysis**: Automated log analysis and alerting
-- **Security Events**: Security incident detection and response
+**Database Performance:**
+```bash
+# Check slow queries (PostgreSQL)
+psql -c "SELECT query, mean_time, calls FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10;"
+
+# Optimize database
+VACUUM ANALYZE;        # PostgreSQL
+```
+
+## Deployment Troubleshooting
+
+### Linux Deployment Issues
+
+#### Permission Issues
+```bash
+# Fix file permissions
+sudo chown -R $USER:$USER /path/to/app
+chmod +x scripts/*.js
+
+# Fix SSL certificate permissions
+sudo chmod 600 /etc/ssl/private/nlc-cms.key
+sudo chmod 644 /etc/ssl/certs/nlc-cms.crt
+```
+
+#### Service Issues
+```bash
+# Check all services
+sudo systemctl status nginx postgresql pm2-root
+
+# Enable services on boot
+sudo systemctl enable nginx postgresql
+
+# Check service logs
+journalctl -u nginx -f
+journalctl -u postgresql -f
+```
+
+### Windows Deployment Issues
+
+#### Firewall Issues
+```cmd
+# Check firewall rules
+netsh advfirewall firewall show rule name="NLC-CMS HTTP"
+netsh advfirewall firewall show rule name="NLC-CMS HTTPS"
+
+# Add firewall rules
+netsh advfirewall firewall add rule name="NLC-CMS HTTP" dir=in action=allow protocol=TCP localport=80
+netsh advfirewall firewall add rule name="NLC-CMS HTTPS" dir=in action=allow protocol=TCP localport=443
+```
+
+#### Service Issues
+```cmd
+# Check Windows services
+sc query "nginx"
+sc query "postgresql"
+
+# Start services
+net start nginx
+net start postgresql
+```
+
+## Network Troubleshooting
+
+### LAN Access Issues
+
+#### Symptoms
+- Cannot access from other devices on LAN
+- Application only accessible from localhost
+
+#### Solutions
+```bash
+# Ensure HOST is set to 0.0.0.0
+grep "HOST=" .env
+# Should show: HOST=0.0.0.0
+
+# Check CORS configuration
+grep "CORS_ORIGIN" .env
+# Should include LAN IP: CORS_ORIGIN=http://192.168.1.100:4005,https://192.168.1.100
+
+# Test from server itself
+curl http://localhost:4005/api/health
+curl http://0.0.0.0:4005/api/health
+
+# Test from another device
+curl http://server-ip:4005/api/health
+```
+
+### Firewall Issues
+```bash
+# Linux - Check firewall status
+sudo ufw status
+sudo iptables -L
+
+# Allow ports through firewall
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Windows - Check firewall
+netsh advfirewall show allprofiles
+```
+
+## Logging and Monitoring
+
+### Application Logs
+```bash
+# PM2 logs
+npm run pm2:logs
+
+# Real-time log monitoring
+npm run pm2:logs --lines 100
+
+# Application-specific logs
+tail -f logs/app.log
+tail -f logs/error.log
+```
+
+### System Logs
+```bash
+# Linux system logs
+journalctl -f
+tail -f /var/log/syslog
+
+# Nginx logs
+tail -f /var/log/nginx/access.log
+tail -f /var/log/nginx/error.log
+
+# Apache2 logs
+tail -f /var/log/apache2/access.log
+tail -f /var/log/apache2/error.log
+```
+
+### Database Logs
+```bash
+# PostgreSQL logs (location varies by system)
+tail -f /var/log/postgresql/postgresql-*.log
+tail -f /var/lib/postgresql/data/log/postgresql-*.log
+```
 
 ## Emergency Procedures
 
-### System Down Scenarios
-1. **Immediate Assessment**: Identify scope and impact
-2. **Communication**: Notify stakeholders and users
-3. **Investigation**: Analyze logs and system state
-4. **Recovery**: Implement recovery procedures
-5. **Post-Incident**: Document lessons learned and improvements
+### Complete System Recovery
 
-### Data Loss Scenarios
-1. **Stop Operations**: Prevent further data loss
-2. **Assess Damage**: Determine extent of data loss
-3. **Recovery Plan**: Implement data recovery procedures
-4. **Validation**: Verify recovered data integrity
-5. **Prevention**: Implement additional safeguards
+#### 1. Stop All Services
+```bash
+# Linux
+npm run pm2:stop
+sudo systemctl stop nginx
+sudo systemctl stop apache2
 
-### Security Incidents
-1. **Isolation**: Isolate affected systems
-2. **Assessment**: Determine breach scope and impact
-3. **Containment**: Prevent further unauthorized access
-4. **Recovery**: Restore secure operations
-5. **Reporting**: Document incident and notify authorities
+# Windows
+npm run pm2:stop
+iisreset /stop
+net stop nginx
+```
 
-## Preventive Measures
+#### 2. Backup Current State
+```bash
+# Backup database
+pg_dump -U username database_name > emergency_backup.sql
 
-### Regular Maintenance
-- **System Updates**: Regular OS and dependency updates
-- **Database Maintenance**: Regular database optimization and cleanup
-- **Log Rotation**: Automated log rotation and archival
-- **Backup Verification**: Regular backup integrity testing
-- **Security Scans**: Regular vulnerability assessments
+# Backup application files
+tar -czf app_backup.tar.gz /path/to/app
+```
 
-### Monitoring Setup
-- **Alerting Rules**: Configure appropriate alerting thresholds
-- **Dashboard Creation**: Create monitoring dashboards
-- **Log Aggregation**: Centralize log collection and analysis
-- **Performance Baselines**: Establish performance benchmarks
-- **Capacity Planning**: Monitor growth trends and plan capacity
+#### 3. Restore from Known Good State
+```bash
+# Restore database
+psql -U username database_name < backup.sql
 
-### Documentation Maintenance
-- **Runbook Updates**: Keep operational procedures current
-- **Error Documentation**: Document new errors and solutions
-- **Process Improvement**: Continuously improve troubleshooting processes
-- **Knowledge Sharing**: Share troubleshooting knowledge across team
-- **Training**: Regular troubleshooting training and drills
+# Restore application
+tar -xzf good_backup.tar.gz
+```
 
-## Escalation Procedures
+#### 4. Restart Services
+```bash
+# Linux
+npm run pm2:start
+sudo systemctl start nginx
 
-### Internal Escalation
-1. **Level 1**: Developer/Administrator (immediate response)
-2. **Level 2**: Senior Developer/Team Lead (30 minutes)
-3. **Level 3**: Technical Manager/Architect (1 hour)
-4. **Level 4**: Executive/External Support (2 hours)
+# Windows
+npm run pm2:start
+iisreset /start
+```
 
-### External Support
-- **Hosting Provider**: Infrastructure and network issues
-- **Database Vendor**: PostgreSQL-specific issues
-- **Security Vendor**: Security incident response
-- **Third-party Services**: External service integration issues
+### Quick Recovery Commands
+```bash
+# Full application restart
+npm run pm2:restart
 
-## Related Documentation
+# Reload reverse proxy configuration
+sudo systemctl reload nginx    # Nginx
+sudo systemctl reload apache2  # Apache2
+iisreset                      # IIS
 
-- [System Documentation](../system/README.md) - System configuration and monitoring
-- [Developer Guide](../developer/README.md) - Development and debugging procedures
-- [Deployment Guide](../deployment/README.md) - Production deployment and operations
-- [Architecture Overview](../architecture/README.md) - System architecture and components
+# Clear application cache
+rm -rf node_modules/.cache
+npm run db:generate
+```
 
-## Support Resources
+## Getting Additional Help
 
-### Internal Resources
-- **Team Knowledge Base**: Internal documentation and procedures
-- **Code Repository**: Source code and issue tracking
-- **Monitoring Dashboards**: Real-time system monitoring
-- **Log Analysis Tools**: Centralized log analysis and search
+### Diagnostic Information to Collect
+1. **System Information**
+   - Operating system and version
+   - Node.js version: `node --version`
+   - npm version: `npm --version`
 
-### External Resources
-- **Node.js Documentation**: Official Node.js troubleshooting guides
-- **PostgreSQL Documentation**: Database troubleshooting and optimization
-- **React Documentation**: Frontend troubleshooting and best practices
-- **Community Forums**: Stack Overflow and community support
+2. **Application Logs**
+   - PM2 logs: `npm run pm2:logs`
+   - Application logs from `logs/` directory
+   - System logs (journalctl, Event Viewer)
 
-## Last Synced
+3. **Configuration Files**
+   - Environment variables (sanitized)
+   - Reverse proxy configuration
+   - Database connection settings
 
-**Date**: $(date)  
-**Schema Version**:    
-**System Version**: Production-ready  
-**Coverage**: Development, staging, and production environments
+4. **Network Information**
+   - Server IP addresses
+   - Port availability: `netstat -tulpn`
+   - Firewall status
+
+### Support Resources
+1. Check [Deployment Guide](../deployment/README.md) for deployment issues
+2. Review [SSL Testing Guide](../deployment/SSL_TESTING_GUIDE.md) for SSL problems
+3. Consult [Developer Guide](../developer/README.md) for development issues
+4. Check application logs and system monitoring
 
 ---
 
-[← Back to Main Documentation Index](../README.md)
+**Back to Main Documentation**: [← README.md](../README.md)  
+**Deployment Guide**: [→ Deployment](../deployment/README.md)
