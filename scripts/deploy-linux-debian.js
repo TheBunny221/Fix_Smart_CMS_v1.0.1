@@ -515,9 +515,9 @@ async function setupApplication() {
     return false;
   }
   
-  // Install dependencies
+  // Install dependencies (production only)
   console.log('📦 Installing application dependencies...');
-  const installResult = execCommand('npm ci --production');
+  const installResult = execCommand('npm ci --omit=dev');
   if (!installResult.success) {
     console.error('❌ Failed to install dependencies');
     return false;

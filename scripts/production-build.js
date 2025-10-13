@@ -358,6 +358,33 @@ function copyConfigFiles() {
     { src: 'package.json', dest: 'package.json', required: true }
   ];
   
+  // After copying, update the .env file for LAN access
+  const envPath = path.join(CONFIG.distDir, '.env');
+  if (fs.existsSync(envPath)) {
+    let envContent = fs.readFileSync(envPath, 'utf8');
+    
+    // Ensure LAN accessibility by updating CORS and CLIENT_URL
+    envContent = envContent.replace(
+      /CLIENT_URL=.*/g, 
+      'CLIENT_URL=http://0.0.0.0:4005'
+    );
+    envContent = envContent.replace(
+      /CORS_ORIGIN=.*/g, 
+      'CORS_ORIGIN=http://0.0.0.0:4005,http://localhost:4005,http://localhost:3000'
+    );
+    
+    // Ensure HOST is set to 0.0.0.0 for LAN access
+    if (!envContent.includes('HOST=0.0.0.0')) {
+      envContent = envContent.replace(/HOST=.*/g, 'HOST=0.0.0.0');
+      if (!envContent.includes('HOST=')) {
+        envContent += '\nHOST=0.0.0.0';
+      }
+    }
+    
+    fs.writeFileSync(envPath, envContent);
+    console.log('✅ Updated .env for LAN accessibility');
+  }
+  
   for (const file of configFiles) {
     const srcPath = path.join(rootDir, file.src);
     const destPath = path.join(CONFIG.distDir, file.dest);
@@ -418,6 +445,67 @@ function copyDeploymentScripts() {
 }
 
 /**
+ * Get production dependencies dynamically from package.json
+ */
+function getProductionDependencies(originalPackage) {
+  // Define server-side dependencies (exclude frontend-only packages)
+  const serverDependencies = [
+    '@prisma/client',
+    'bcryptjs',
+    'compression',
+    'cors',
+    'dotenv',
+    'express',
+    'express-rate-limit',
+    'helmet',
+    'jsonwebtoken',
+    'multer',
+    'nodemailer',
+    'swagger-jsdoc',
+    'swagger-ui-express',
+    'winston',
+    'winston-daily-rotate-file',
+    'zod',
+    'class-variance-authority',
+    'clsx',
+    'date-fns',
+    'i18next'
+  ];
+  
+  const productionDeps = {};
+  
+  // Add all server dependencies that exist in the original package
+  serverDependencies.forEach(dep => {
+    if (originalPackage.dependencies[dep]) {
+      productionDeps[dep] = originalPackage.dependencies[dep];
+    }
+  });
+  
+  // Add any additional dependencies that might be needed for production
+  // but not in our predefined list (dynamic detection)
+  Object.keys(originalPackage.dependencies).forEach(dep => {
+    // Skip frontend-only packages
+    const frontendPackages = [
+      'react', 'react-dom', 'react-router-dom', 'react-redux', 'react-hook-form',
+      'react-leaflet', 'react-window', 'react-i18next', '@reduxjs/toolkit',
+      '@radix-ui/', 'lucide-react', 'recharts', 'leaflet', 'leaflet-draw',
+      'html2canvas', 'jspdf', 'xlsx', 'pdfjs-dist', 'docx-preview',
+      'tailwind-merge', 'tailwindcss-animate'
+    ];
+    
+    const isFrontendPackage = frontendPackages.some(pattern => 
+      dep.startsWith(pattern) || dep.includes('radix-ui')
+    );
+    
+    if (!isFrontendPackage && !productionDeps[dep]) {
+      productionDeps[dep] = originalPackage.dependencies[dep];
+    }
+  });
+  
+  return productionDeps;
+}
+
+/**
  * Create production package.json
  */
 function createProductionPackageJson() {
@@ -433,6 +521,9 @@ function createProductionPackageJson() {
   }
   
   const originalPackage = JSON.parse(fs.readFileSync(originalPackagePath, 'utf8'));
+  
+  // Get production dependencies dynamically
+  const productionDependencies = getProductionDependencies(originalPackage);
   
   // Create production-optimized package.json
   const productionPackage = {
@@ -456,42 +547,30 @@ function createProductionPackageJson() {
       "deploy:linux": "node scripts/deploy-linux-debian.js",
       "deploy:windows": "node scripts/deploy-windows-server.js"
     },
-    dependencies: {
-      "@prisma/client": originalPackage.dependencies["@prisma/client"],
-      "bcryptjs": originalPackage.dependencies["bcryptjs"],
-      "compression": originalPackage.dependencies["compression"],
-      "cors": originalPackage.dependencies["cors"],
-      "dotenv": originalPackage.dependencies["dotenv"],
-      "express": originalPackage.dependencies["express"],
-      "express-rate-limit": originalPackage.dependencies["express-rate-limit"],
-      "helmet": originalPackage.dependencies["helmet"],
-      "jsonwebtoken": originalPackage.dependencies["jsonwebtoken"],
-      "multer": originalPackage.dependencies["multer"],
-      "nodemailer": originalPackage.dependencies["nodemailer"],
-      "swagger-jsdoc": originalPackage.dependencies["swagger-jsdoc"],
-      "swagger-ui-express": originalPackage.dependencies["swagger-ui-express"],
-      "winston": originalPackage.dependencies["winston"],
-      "winston-daily-rotate-file": originalPackage.dependencies["winston-daily-rotate-file"],
-      "zod": originalPackage.dependencies["zod"]
-    },
+    dependencies: productionDependencies,
     devDependencies: {
       "prisma": originalPackage.devDependencies["prisma"]
     },
-    engines: originalPackage.engines,
-    prisma: {
+    engines: originalPackage.engines || {
+      "node": ">=18.0.0",
+      "npm": ">=8.0.0"
+    },
+    prisma: originalPackage.prisma || {
       seed: "node prisma/seed.js"
-    }
+    },
+    keywords: originalPackage.keywords,
+    author: originalPackage.author,
+    license: originalPackage.license
   };
   
-  // Remove undefined dependencies
-  Object.keys(productionPackage.dependencies).forEach(key => {
-    if (!productionPackage.dependencies[key]) {
-      delete productionPackage.dependencies[key];
-    }
+  // Log the dependencies being included
+  console.log(`📦 Including ${Object.keys(productionDependencies).length} production dependencies:`);
+  Object.keys(productionDependencies).forEach(dep => {
+    console.log(`   ✅ ${dep}@${productionDependencies[dep]}`);
   });
   
   fs.writeFileSync(productionPackagePath, JSON.stringify(productionPackage, null, 2));
-  console.log('✅ Production package.json created');
+  console.log('✅ Production package.json created with dynamic dependencies');
   
   return true;
 }
