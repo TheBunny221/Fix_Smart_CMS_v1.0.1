@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to {{APP_NAME}}</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        border-bottom: 3px solid #28a745;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+      }
+      .logo {
+        font-size: 28px;
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 10px;
+      }
+      .welcome-box {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border-radius: 8px;
+        padding: 25px;
+        text-align: center;
+        margin: 20px 0;
+      }
+      .button {
+        display: inline-block;
+        background: #007bff;
+        color: white;
+        padding: 15px 30px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+        font-weight: bold;
+      }
+      .info-box {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        color: #666;
+        font-size: 14px;
+      }
+      .credentials {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 15px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">{{APP_NAME}}</div>
+        <h2>Welcome to the Team!</h2>
+      </div>
+
+      <div class="welcome-box">
+        <h3>🎉 Account Created Successfully!</h3>
+        <p>Hello <strong>{{USERNAME}}</strong>, welcome to {{APP_NAME}}!</p>
+      </div>
+
+      <p>
+        Your account has been successfully created with the following details:
+      </p>
+
+      <div class="credentials">
+        <p><strong>📧 Email:</strong> {{EMAIL}}</p>
+        <p><strong>👤 Role:</strong> {{ROLE}}</p>
+        <p><strong>🏢 Ward:</strong> {{WARD_NAME}}</p>
+        <p><strong>📅 Account Created:</strong> {{CREATED_DATE}}</p>
+      </div>
+
+      <div class="info-box">
+        <h4>🔐 First-Time Password Setup</h4>
+        <p>
+          To secure your account, you need to set up your password. Click the
+          button below to create your password:
+        </p>
+        <p style="text-align: center">
+          <a href="{{SETUP_URL}}" class="button">Set Up Password</a>
+        </p>
+        <p>
+          <small
+            ><strong>Note:</strong> This link will expire in 24 hours for
+            security reasons.</small
+          >
+        </p>
+      </div>
+
+      <div class="info-box">
+        <h4>📱 Getting Started</h4>
+        <p>Once you've set up your password, you can:</p>
+        <ul>
+          <li>Access the system at: <a href="{{APP_URL}}">{{APP_URL}}</a></li>
+          <li>View and manage complaints in your assigned ward</li>
+          <li>Update your profile and preferences</li>
+          <li>Collaborate with your team members</li>
+        </ul>
+      </div>
+
+      <div class="info-box">
+        <h4>🆘 Need Help?</h4>
+        <p>If you have any questions or need assistance:</p>
+        <ul>
+          <li>Contact your system administrator</li>
+          <li>Check the help documentation in the system</li>
+          <li>Email support (if available)</li>
+        </ul>
+      </div>
+
+      <div class="footer">
+        <p>
+          This is an automated message from {{APP_NAME}}.<br />
+          Please do not reply to this email.
+        </p>
+        <p><small>Sent from: {{WHOST}}:{{WPORT}}</small></p>
+      </div>
+    </div>
+  </body>
+</html>

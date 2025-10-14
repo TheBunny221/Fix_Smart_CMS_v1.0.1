@@ -375,7 +375,7 @@ export default function AttachmentPreview({
         onOpenChange(o);
       }}
     >
-      <DialogContent className="max-w-[92vw] w-[92vw] h-[86vh] p-0">
+      <DialogContent className="max-w-[92vw] w-[92vw] h-[86vh] p-0 [&>button]:hidden">
         <DialogHeader className="px-4 pt-4 pb-2 border-b bg-background/60">
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">

@@ -3,21 +3,11 @@ import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "./ui/dropdown-menu";
-import {
-  MoreHorizontal,
   Eye,
-  Edit,
   UserPlus,
   CheckCircle,
   Clock,
   AlertTriangle,
-  FileText,
   MapPin,
 } from "lucide-react";
 
@@ -191,50 +181,7 @@ const ComplaintQuickActions: React.FC<ComplaintQuickActionsProps> = ({
             </>
           )}
 
-          {/* More Actions Dropdown */}
-          {(canManageComplaint || isMaintenanceTeam) && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button size="sm" variant="outline">
-                  <MoreHorizontal className="h-3 w-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {onShowUpdateModal && canManageComplaint && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => onShowUpdateModal(complaint)}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Update Complaint
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
 
-                {onShowUpdateModal && isMaintenanceTeam && (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => onShowUpdateModal(complaint)}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Update Status
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem asChild>
-                  <Link to={isMaintenanceTeam ? `/tasks/${complaint.id}` : `/complaints/${complaint.id}`}>
-                    <FileText className="h-4 w-4 mr-2" />
-                    View Full Details
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
       </div>
     </>

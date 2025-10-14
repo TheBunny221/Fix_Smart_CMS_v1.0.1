@@ -239,8 +239,9 @@ const Profile: React.FC = () => {
       } else {
         // Regular password change
         await changePassword({
-          currentPassword: passwordData.currentPassword,
+          oldPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
+          confirmPassword: passwordData.confirmPassword,
         }).unwrap();
       }
 

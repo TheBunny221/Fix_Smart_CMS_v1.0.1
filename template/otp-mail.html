@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification - {{APP_NAME}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .otp-box {
+            background: #f8f9fa;
+            border: 2px dashed #007bff;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .otp-code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #007bff;
+            letter-spacing: 8px;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">{{APP_NAME}}</div>
+            <h2>OTP Verification</h2>
+        </div>
+        
+        <p>Hello <strong>{{USERNAME}}</strong>,</p>
+        
+        <p>You have requested to reset your password. Please use the following One-Time Password (OTP) to verify your identity:</p>
+        
+        <div class="otp-box">
+            <p>Your OTP Code:</p>
+            <div class="otp-code">{{OTP}}</div>
+            <p><small>Valid for 10 minutes</small></p>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ Security Notice:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>This OTP is valid for 10 minutes only</li>
+                <li>Do not share this code with anyone</li>
+                <li>If you didn't request this, please ignore this email</li>
+                <li>For security, this OTP can only be used once</li>
+            </ul>
+        </div>
+        
+        <p>If you're having trouble, you can also access the password reset page directly:</p>
+        <p style="text-align: center;">
+            <a href="{{RESET_URL}}" class="button">Reset Password</a>
+        </p>
+        
+        <div class="footer">
+            <p>This is an automated message from {{APP_NAME}}.<br>
+            Please do not reply to this email.</p>
+            <p><small>Sent from: {{WHOST}}:{{WPORT}}</small></p>
+        </div>
+    </div>
+</body>
+</html>

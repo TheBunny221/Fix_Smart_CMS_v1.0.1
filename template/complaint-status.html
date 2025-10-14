@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Status Update - {{APP_NAME}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .status-box {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .complaint-details {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .status-submitted { background: #e3f2fd; color: #1976d2; }
+        .status-assigned { background: #fff3e0; color: #f57c00; }
+        .status-in-progress { background: #e8f5e9; color: #388e3c; }
+        .status-resolved { background: #e8f5e9; color: #2e7d32; }
+        .status-closed { background: #f3e5f5; color: #7b1fa2; }
+        .button {
+            display: inline-block;
+            background: #007bff;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .timeline {
+            border-left: 3px solid #007bff;
+            padding-left: 20px;
+            margin: 20px 0;
+        }
+        .timeline-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">{{APP_NAME}}</div>
+            <h2>Complaint Status Update</h2>
+        </div>
+        
+        <div class="status-box">
+            <h3>📋 Complaint #{{COMPLAINT_ID}}</h3>
+            <p>Status: <span class="status-badge status-{{STATUS_CLASS}}">{{STATUS}}</span></p>
+        </div>
+        
+        <p>Hello <strong>{{CITIZEN_NAME}}</strong>,</p>
+        
+        <p>Your complaint has been updated. Here are the current details:</p>
+        
+        <div class="complaint-details">
+            <h4>📝 Complaint Details</h4>
+            <p><strong>Complaint ID:</strong> {{COMPLAINT_ID}}</p>
+            <p><strong>Title:</strong> {{COMPLAINT_TITLE}}</p>
+            <p><strong>Category:</strong> {{COMPLAINT_TYPE}}</p>
+            <p><strong>Location:</strong> {{LOCATION}}</p>
+            <p><strong>Ward:</strong> {{WARD_NAME}}</p>
+            <p><strong>Submitted:</strong> {{SUBMITTED_DATE}}</p>
+            <p><strong>Current Status:</strong> <span class="status-badge status-{{STATUS_CLASS}}">{{STATUS}}</span></p>
+        </div>
+        
+        {{#if ASSIGNED_TO}}
+        <div class="complaint-details">
+            <h4>👤 Assignment Details</h4>
+            <p><strong>Assigned To:</strong> {{ASSIGNED_TO}}</p>
+            <p><strong>Contact:</strong> {{ASSIGNED_CONTACT}}</p>
+        </div>
+        {{/if}}
+        
+        {{#if STATUS_MESSAGE}}
+        <div class="complaint-details">
+            <h4>💬 Latest Update</h4>
+            <p>{{STATUS_MESSAGE}}</p>
+            <p><small><strong>Updated by:</strong> {{UPDATED_BY}} on {{UPDATE_TIME}}</small></p>
+        </div>
+        {{/if}}
+        
+        <div class="timeline">
+            <h4>📅 Status Timeline</h4>
+            {{#each TIMELINE}}
+            <div class="timeline-item">
+                <p><strong>{{this.status}}</strong> - {{this.date}}</p>
+                {{#if this.message}}<p><small>{{this.message}}</small></p>{{/if}}
+            </div>
+            {{/each}}
+        </div>
+        
+        <p>You can track your complaint and view more details online:</p>
+        
+        <p style="text-align: center;">
+            <a href="{{COMPLAINT_URL}}" class="button">View Complaint Details</a>
+        </p>
+        
+        <div class="complaint-details">
+            <h4>📞 Need Help?</h4>
+            <p>If you have any questions about your complaint:</p>
+            <ul>
+                <li>Visit our online portal: <a href="{{APP_URL}}">{{APP_URL}}</a></li>
+                <li>Use your complaint ID: <strong>{{COMPLAINT_ID}}</strong></li>
+                {{#if CONTACT_INFO}}
+                <li>Contact us: {{CONTACT_INFO}}</li>
+                {{/if}}
+            </ul>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated message from {{APP_NAME}}.<br>
+            Please do not reply to this email.</p>
+            <p><small>Sent from: {{WHOST}}:{{WPORT}}</small></p>
+        </div>
+    </div>
+</body>
+</html>

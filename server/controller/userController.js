@@ -859,3 +859,139 @@ export const deleteSubZone = asyncHandler(async (req, res) => {
     message: "Sub-zone deleted successfully",
   });
 });
+
+// Helper function to validate password strength
+const validatePasswordStrength = (password) => {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  const errors = [];
+  
+  if (password.length < minLength) {
+    errors.push(`Password must be at least ${minLength} characters long`);
+  }
+  if (!hasUpperCase) {
+    errors.push("Password must contain at least one uppercase letter");
+  }
+  if (!hasLowerCase) {
+    errors.push("Password must contain at least one lowercase letter");
+  }
+  if (!hasNumbers) {
+    errors.push("Password must contain at least one number");
+  }
+  if (!hasSpecialChar) {
+    errors.push("Password must contain at least one special character");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+};
+
+// @desc    Change password (Authenticated users)
+// @route   POST /api/users/change-password
+// @access  Private
+export const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword, confirmPassword } = req.body;
+  const userId = req.user.id;
+
+  // Validation
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "All fields are required",
+    });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "New password and confirm password do not match",
+    });
+  }
+
+  // Validate password strength
+  const passwordValidation = validatePasswordStrength(newPassword);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Password does not meet security requirements",
+      errors: passwordValidation.errors,
+    });
+  }
+
+  // Get user with password
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      password: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      status: "error",
+      code: 404,
+      message: "User not found",
+    });
+  }
+
+  // Check if user has a valid password (not a JSON object from verification flow)
+  let isValidCurrentPassword = false;
+  try {
+    if (user.password && typeof user.password === 'string') {
+      // Try to parse as JSON - if it succeeds, it's a verification token
+      JSON.parse(user.password);
+      // If we reach here, it's a JSON object (verification token)
+      isValidCurrentPassword = false;
+    } else {
+      isValidCurrentPassword = true;
+    }
+  } catch {
+    // If JSON.parse fails, it's a regular hashed password
+    isValidCurrentPassword = true;
+  }
+
+  if (!isValidCurrentPassword) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Account not yet verified. Please complete account verification first.",
+    });
+  }
+
+  // Verify old password
+  const isOldPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+  if (!isOldPasswordCorrect) {
+    return res.status(401).json({
+      status: "error",
+      code: 401,
+      message: "Incorrect current password",
+    });
+  }
+
+  // Hash new password
+  const hashedNewPassword = await hashPassword(newPassword);
+
+  // Update password
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedNewPassword },
+  });
+
+  res.status(200).json({
+    status: "success",
+    code: 200,
+    message: "Password updated successfully",
+  });
+});

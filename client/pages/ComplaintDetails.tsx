@@ -34,6 +34,7 @@ import {
   File,
 } from "lucide-react";
 import { SafeRenderer, safeRenderValue } from "../components/SafeRenderer";
+import TruncatedTextWithTooltip from "../components/TruncatedTextWithTooltip";
 
 const ComplaintDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,14 +42,7 @@ const ComplaintDetails: React.FC = () => {
   const { translations } = useAppSelector((state) => state.language);
   const { config } = useSystemConfig();
 
-  // Utility function to truncate file names
-  const truncateFileName = (fileName: string, maxLength: number = 25): string => {
-    if (!fileName || fileName.length <= maxLength) return fileName;
-    const extension = fileName.split('.').pop();
-    const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
-    const truncatedName = nameWithoutExt.substring(0, maxLength - extension!.length - 4) + '...';
-    return `${truncatedName}.${extension}`;
-  };
+
 
   // Utility function to safely format dates
   const formatDate = (dateValue: any, format: 'date' | 'datetime' = 'datetime'): string => {
@@ -533,7 +527,11 @@ const ComplaintDetails: React.FC = () => {
                               </p>
                               {!isCitizen && log.user && (
                                 <Badge variant="outline" className="text-xs">
-                                  {log.user.fullName} ({log.user.role})
+                                  <TruncatedTextWithTooltip
+                                    text={`${log.user?.fullName || "Unknown"} (${log.user?.role || "Unknown"})`}
+                                    maxLength={25}
+                                    className="inline"
+                                  />
                                 </Badge>
                               )}
                             </div>
@@ -546,7 +544,12 @@ const ComplaintDetails: React.FC = () => {
                               <>
                                 {log.comment && (
                                   <p className="text-sm text-gray-600 mb-1">
-                                    <strong>Remarks:</strong> {log.comment}
+                                    <strong>Remarks:</strong>{" "}
+                                    <TruncatedTextWithTooltip
+                                      text={log.comment || "No comment"}
+                                      maxLength={100}
+                                      className="inline"
+                                    />
                                   </p>
                                 )}
                               </>
@@ -605,38 +608,94 @@ const ComplaintDetails: React.FC = () => {
                       {complaint.submittedBy && (
                         <p className="text-gray-600">
                           <strong>Submitted By:</strong>{" "}
-                          {complaint.submittedBy.fullName}
-                          {complaint.submittedBy.email &&
-                            ` (${complaint.submittedBy.email})`}
+                          <TruncatedTextWithTooltip
+                            text={complaint.submittedBy?.fullName || "Unknown"}
+                            maxLength={25}
+                            className="font-medium"
+                          />
+                          {complaint.submittedBy.email && (
+                            <span>
+                              {" ("}
+                              <TruncatedTextWithTooltip
+                                text={complaint.submittedBy?.email || "No email"}
+                                responsive={true}
+                                maxWidth="calc(100% - 8rem)"
+                                className="text-blue-600"
+                              />
+                              {")"}
+                            </span>
+                          )}
                         </p>
                       )}
                       {complaint.wardOfficer && (
                         <p className="text-gray-600">
                           <strong>Ward Officer:</strong>{" "}
-                          {complaint.wardOfficer.fullName}
-                          {complaint.wardOfficer.email &&
-                            ` (${complaint.wardOfficer.email})`}
+                          <TruncatedTextWithTooltip
+                            text={complaint.wardOfficer?.fullName || "Unknown"}
+                            maxLength={25}
+                            className="font-medium"
+                          />
+                          {complaint.wardOfficer?.email && (
+                            <span>
+                              {" ("}
+                              <TruncatedTextWithTooltip
+                                text={complaint.wardOfficer?.email || "No email"}
+                                responsive={true}
+                                maxWidth="calc(100% - 8rem)"
+                                className="text-blue-600"
+                              />
+                              {")"}
+                            </span>
+                          )}
                         </p>
                       )}
                       {complaint.maintenanceTeam && (
                         <p className="text-gray-600">
                           <strong>Maintenance Team:</strong>{" "}
-                          {complaint.maintenanceTeam.fullName}
-                          {complaint.maintenanceTeam.email &&
-                            ` (${complaint.maintenanceTeam.email})`}
+                          <TruncatedTextWithTooltip
+                            text={complaint.maintenanceTeam?.fullName || "Unknown"}
+                            maxLength={25}
+                            className="font-medium"
+                          />
+                          {complaint.maintenanceTeam?.email && (
+                            <span>
+                              {" ("}
+                              <TruncatedTextWithTooltip
+                                text={complaint.maintenanceTeam?.email || "No email"}
+                                responsive={true}
+                                maxWidth="calc(100% - 8rem)"
+                                className="text-blue-600"
+                              />
+                              {")"}
+                            </span>
+                          )}
                         </p>
                       )}
                       {complaint.assignedTo && (
                         <p className="text-gray-600">
                           <strong>Assigned To:</strong>{" "}
-                          {complaint.assignedTo.fullName}
-                          {complaint.assignedTo.email &&
-                            ` (${complaint.assignedTo.email})`}
+                          <TruncatedTextWithTooltip
+                            text={complaint.assignedTo?.fullName || "Unknown"}
+                            maxLength={25}
+                            className="font-medium"
+                          />
+                          {complaint.assignedTo.email && (
+                            <span>
+                              {" ("}
+                              <TruncatedTextWithTooltip
+                                text={complaint.assignedTo?.email || "No email"}
+                                responsive={true}
+                                maxWidth="calc(100% - 8rem)"
+                                className="text-blue-600"
+                              />
+                              {")"}
+                            </span>
+                          )}
                         </p>
                       )}
                       {complaint.resolvedById && (
                         <p className="text-gray-600">
-                          <strong>Resolved By:</strong> {complaint.resolvedById}
+                          <strong>Resolved By:</strong> {typeof complaint.resolvedById === 'string' ? complaint.resolvedById : complaint.resolvedById?.fullName || complaint.resolvedById?.name || "Unknown"}
                         </p>
                       )}
                     </div>
@@ -701,9 +760,14 @@ const ComplaintDetails: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-gray-700 whitespace-pre-wrap">
-                    {complaint.remarks}
-                  </p>
+                  <div className="text-gray-700">
+                    <TruncatedTextWithTooltip
+                      text={complaint.remarks}
+                      maxLength={200}
+                      className="whitespace-pre-wrap leading-relaxed"
+                      tooltipClassName="max-w-md"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -755,25 +819,29 @@ const ComplaintDetails: React.FC = () => {
                 Contact Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 p-4 sm:p-6">
               {complaint.submittedBy && (
-                <div className="flex items-center">
-                  <User className="h-4 w-4 mr-2 text-gray-400" />
-                  <div className="flex flex-col">
+                <div className="flex items-center min-w-0">
+                  <User className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                  <div className="flex flex-col min-w-0 flex-1">
                     <span className="font-medium">Complaint Submitter</span>
                     {(user?.role === "ADMINISTRATOR" ||
                       user?.role === "WARD_OFFICER") &&
                       complaint.submittedBy && (
                         <span className="text-xs text-gray-500">
-                          Registered User: {complaint.submittedBy.fullName}
+                          Registered User: <TruncatedTextWithTooltip
+                            text={complaint.submittedBy?.fullName || "Unknown"}
+                            maxLength={20}
+                            className="inline"
+                          />
                         </span>
                       )}
                   </div>
                 </div>
               )}
-              <div className="flex items-center">
-                <Phone className="h-4 w-4 mr-2 text-gray-400" />
-                <div className="flex flex-col">
+              <div className="flex items-center min-w-0">
+                <Phone className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                <div className="flex flex-col min-w-0 flex-1">
                   <SafeRenderer fallback="No phone provided">
                     {safeRenderValue(complaint.contactPhone, "No phone provided")}
                   </SafeRenderer>
@@ -783,25 +851,50 @@ const ComplaintDetails: React.FC = () => {
                     complaint.submittedBy.phoneNumber !==
                     complaint.contactPhone && (
                       <span className="text-xs text-gray-500">
-                        User Phone: {complaint.submittedBy.phoneNumber}
+                        User Phone: {complaint.submittedBy?.phoneNumber || "Not provided"}
                       </span>
                     )}
                 </div>
               </div>
               {complaint.contactEmail && (
-                <div className="flex items-center">
-                  <Mail className="h-4 w-4 mr-2 text-gray-400" />
-                  <div className="flex flex-col">
-                    <SafeRenderer fallback="No email provided">
-                      {safeRenderValue(complaint.contactEmail, "No email provided")}
-                    </SafeRenderer>
+                <div className="flex items-center min-w-0">
+                  <Mail className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <div className="group relative min-w-0 w-full">
+                      <span 
+                        className="block truncate text-blue-600 cursor-help hover:text-blue-700 transition-colors w-full text-sm sm:text-base"
+                        title={complaint.contactEmail || "No email provided"}
+                        style={{ 
+                          maxWidth: 'calc(100% - 0.5rem)', // Account for padding
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {complaint.contactEmail || "No email provided"}
+                      </span>
+                    </div>
                     {(user?.role === "ADMINISTRATOR" ||
                       user?.role === "WARD_OFFICER") &&
                       complaint.submittedBy?.email &&
                       complaint.submittedBy.email !==
                       complaint.contactEmail && (
                         <span className="text-xs text-gray-500">
-                          User Email: {complaint.submittedBy.email}
+                          <span className="inline-flex items-center min-w-0 w-full">
+                            <span className="text-gray-500 flex-shrink-0">User Email: </span>
+                            <span 
+                              className="inline-block truncate text-blue-600 cursor-help hover:text-blue-700 transition-colors ml-1 flex-1 min-w-0"
+                              title={complaint.submittedBy?.email || "No email"}
+                              style={{ 
+                                maxWidth: 'calc(100% - 5rem)', // Account for "User Email: " text and padding
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {complaint.submittedBy?.email || "No email"}
+                            </span>
+                          </span>
                         </span>
                       )}
                   </div>
@@ -823,170 +916,291 @@ const ComplaintDetails: React.FC = () => {
 
           {/* Attachments */}
           {complaint.attachments && complaint.attachments.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Upload className="h-5 w-5 mr-2" />
-                  Attachments ({complaint?.attachments?.length || 0} files)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {user?.role === "ADMINISTRATOR" || user?.role === "WARD_OFFICER" ? (
-                  // Admin/Ward Officer view - List format like TaskDetails
-                  <div className="space-y-2">
-                    {complaint.attachments.map((att: any) => (
-                      <div
-                        key={att.id}
-                        className="border-l-4 border-blue-300 pl-4 py-2 flex items-start justify-between"
-                      >
-                        <div>
-                          <p className="text-xs text-gray-500">
-                            {formatDate(att.createdAt)}
-                          </p>
-                          <p className="text-sm text-gray-800">
-                            {att.originalName || att.fileName}
-                            <span className="text-xs text-gray-500">
-                              {" "}
-                              • {att.mimeType} •{" "}
-                              {(att.size / 1024).toFixed(1)} KB
-                            </span>
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setPreviewItem({
-                                url: att.url,
-                                mimeType: att.mimeType,
-                                name: att.originalName || att.fileName,
-                                size: att.size,
-                              });
-                              setIsPreviewOpen(true);
-                            }}
-                          >
-                            Preview
-                          </Button>
-                          <a href={att.url} target="_blank" rel="noreferrer">
-                            <Button size="sm" variant="outline">
-                              <Download className="h-4 w-4 mr-1" />
-                              Download
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  // Citizen view - Grid format
-                  <div className="grid grid-cols-1 gap-4">
-                    {complaint.attachments.map((attachment: any) => {
-                      const isImage = attachment.mimeType?.startsWith("image/");
-                      const displayName = truncateFileName(attachment.fileName || attachment.originalName, 20);
-                      const fullName = attachment.fileName || attachment.originalName;
+            <>
+              {/* Maintenance Photos - Only visible to non-citizens */}
+              {user?.role !== "CITIZEN" &&
+                complaint.attachments.filter((att: any) => att.entityType === "MAINTENANCE_PHOTO").length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Wrench className="h-5 w-5 mr-2 text-blue-600" />
+                        Maintenance Photos ({complaint.attachments.filter((att: any) => att.entityType === "MAINTENANCE_PHOTO").length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 gap-4">
+                        {complaint.attachments
+                          .filter((att: any) => att.entityType === "MAINTENANCE_PHOTO")
+                          .map((att: any) => {
+                            const isImage = att.mimeType?.startsWith("image/") ||
+                              (att.fileName || att.originalName)?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+                            const fullName = att.fileName || att.originalName;
 
-                      return (
-                        <div
-                          key={attachment.id}
-                          className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                        >
-                          <div className="mb-3">
-                            {isImage ? (
-                              <div className="relative group">
-                                <img
-                                  src={attachment.url}
-                                  alt={fullName}
-                                  className="w-full h-32 object-cover rounded-md cursor-pointer"
+                            // Debug logging
+                            console.log('Maintenance Photo Debug:', {
+                              id: att.id,
+                              url: att.url,
+                              mimeType: att.mimeType,
+                              fileName: att.fileName,
+                              originalName: att.originalName,
+                              isImage,
+                              fullName
+                            });
+
+                            return (
+                              <div
+                                key={att.id}
+                                className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                              >
+                                <div className="mb-3">
+                                  {isImage ? (
+                                    <div className="relative group">
+                                      <div className="w-full h-32 bg-gray-200 rounded-md flex items-center justify-center animate-pulse">
+                                        <Image className="h-8 w-8 text-gray-400" />
+                                      </div>
+                                      <img
+                                        src={att.url}
+                                        alt={fullName}
+                                        className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                        onClick={() => {
+                                          setPreviewItem({
+                                            url: att.url,
+                                            mimeType: att.mimeType,
+                                            name: fullName,
+                                            size: att.size,
+                                          });
+                                          setIsPreviewOpen(true);
+                                        }}
+                                        onLoad={(e) => {
+                                          console.log('Image loaded successfully:', att.url);
+                                          e.currentTarget.previousElementSibling?.classList.add('hidden');
+                                        }}
+                                        onError={(e) => {
+                                          console.error('Image failed to load:', att.url, 'MIME type:', att.mimeType);
+                                          e.currentTarget.style.display = 'none';
+                                          e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                        }}
+                                      />
+                                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                          <div className="bg-white rounded-full p-2 shadow-lg">
+                                            <Image className="h-5 w-5 text-blue-600" />
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="hidden w-full h-32 bg-gray-100 rounded-md flex items-center justify-center">
+                                        <File className="h-8 w-8 text-gray-400" />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="w-full h-32 bg-gray-100 rounded-md flex items-center justify-center">
+                                      <File className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="space-y-2">
+                                  <h4 className="font-medium text-sm text-gray-900">
+                                    <TruncatedTextWithTooltip
+                                      text={fullName || "Unknown file"}
+                                      maxLength={20}
+                                      className="font-medium"
+                                    />
+                                  </h4>
+                                  <div className="flex items-center justify-between text-xs text-gray-500">
+                                    <span>By: {typeof att.uploadedBy === 'string' ? att.uploadedBy : att.uploadedBy?.fullName || att.uploadedBy?.name || "Unknown"}</span>
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    {formatDate(att.createdAt, 'date')}
+                                  </div>
+                                  {att.description && (
+                                    <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                                      <span className="font-medium">Note:</span> {typeof att.description === 'string' ? att.description : att.description?.text || att.description?.content || "No description"}
+                                    </div>
+                                  )}
+                                </div>
+
+                                <div className="mt-3 flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="flex-1 text-xs"
+                                    onClick={() => {
+                                      setPreviewItem({
+                                        url: att.url,
+                                        mimeType: att.mimeType,
+                                        name: fullName,
+                                        size: att.size,
+                                      });
+                                      setIsPreviewOpen(true);
+                                    }}
+                                  >
+                                    Preview
+                                  </Button>
+                                  <a href={att.url} download={fullName} className="flex-1">
+                                    <Button size="sm" className="w-full text-xs bg-primary hover:bg-primary/90">
+                                      Download
+                                    </Button>
+                                  </a>
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+              {/* Complaint Attachments */}
+              {complaint.attachments && complaint.attachments.filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO").length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Upload className="h-5 w-5 mr-2" />
+                      Complaint Attachments ({complaint.attachments.filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO").length})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-1 gap-4">
+                      {complaint.attachments
+                        .filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO")
+                        .map((attachment: any) => {
+                          const isImage = attachment.mimeType?.startsWith("image/") ||
+                            (attachment.fileName || attachment.originalName)?.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
+                          const fullName = attachment.fileName || attachment.originalName;
+
+                          // Debug logging
+                          console.log('Complaint Attachment Debug:', {
+                            id: attachment.id,
+                            url: attachment.url,
+                            mimeType: attachment.mimeType,
+                            fileName: attachment.fileName,
+                            originalName: attachment.originalName,
+                            isImage,
+                            fullName
+                          });
+
+                          return (
+                            <div
+                              key={attachment.id}
+                              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                            >
+                              <div className="mb-3">
+                                {isImage ? (
+                                  <div className="relative group">
+                                    <div className="w-full h-32 bg-gray-200 rounded-md flex items-center justify-center animate-pulse">
+                                      <Image className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                    <img
+                                      src={attachment.url}
+                                      alt={fullName}
+                                      className="w-full h-32 object-cover rounded-md cursor-pointer"
+                                      onClick={() => {
+                                        setPreviewItem({
+                                          url: attachment.url,
+                                          mimeType: attachment.mimeType,
+                                          name: fullName,
+                                          size: attachment.size,
+                                        });
+                                        setIsPreviewOpen(true);
+                                      }}
+                                      onLoad={(e) => {
+                                        console.log('Image loaded successfully:', attachment.url);
+                                        e.currentTarget.previousElementSibling?.classList.add('hidden');
+                                      }}
+                                      onError={(e) => {
+                                        console.error('Image failed to load:', attachment.url, 'MIME type:', attachment.mimeType);
+                                        e.currentTarget.style.display = 'none';
+                                        e.currentTarget.parentElement?.nextElementSibling?.classList.remove('hidden');
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <div className="bg-white rounded-full p-2 shadow-lg">
+                                          <Image className="h-5 w-5 text-gray-600" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="hidden w-full h-32 bg-gray-100 rounded-md flex items-center justify-center">
+                                      <File className="h-8 w-8 text-gray-400" />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                                    <div className="text-center">
+                                      <File className="h-12 w-12 text-gray-600 mx-auto mb-2" />
+                                      <span className="text-xs text-gray-700 font-medium">Document</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="space-y-3">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                                    <TruncatedTextWithTooltip
+                                      text={attachment.fileName || attachment.originalName || "Unknown file"}
+                                      maxLength={25}
+                                      className="font-semibold"
+                                    />
+                                  </h4>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                      {attachment.size ? (attachment.size / 1024).toFixed(1) + 'KB' : 'Unknown size'}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {formatDate(attachment.createdAt, 'date')}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {attachment.description && (
+                                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                                    <div className="flex items-start gap-2">
+                                      <FileText className="h-4 w-4 text-gray-600 mt-0.5 flex-shrink-0" />
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-medium text-gray-800 mb-1">Note:</p>
+                                        <p className="text-xs text-gray-700 break-words leading-relaxed">{typeof attachment.description === 'string' ? attachment.description : attachment.description?.text || attachment.description?.content || "No description"}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {attachment.uploadedBy && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 rounded-lg p-2">
+                                    <User className="h-3 w-3 flex-shrink-0" />
+                                    <span className="truncate">Uploaded by {typeof attachment.uploadedBy === 'string' ? attachment.uploadedBy : attachment.uploadedBy?.fullName || attachment.uploadedBy?.name || "Unknown"}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="mt-4 flex flex-col gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="flex-1 p-2 text-xs border-gray-300 hover:bg-gray-50 hover:border-gray-400"
                                   onClick={() => {
                                     setPreviewItem({
                                       url: attachment.url,
                                       mimeType: attachment.mimeType,
-                                      name: fullName,
+                                      name: attachment.originalName || attachment.fileName,
                                       size: attachment.size,
                                     });
                                     setIsPreviewOpen(true);
                                   }}
-                                />
-                                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <div className="bg-white rounded-full p-2 shadow-lg">
-                                      <Image className="h-5 w-5 text-gray-600" />
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                                <div className="text-center">
-                                  <File className="h-12 w-12 text-gray-600 mx-auto mb-2" />
-                                  <span className="text-xs text-gray-700 font-medium">Document</span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-3">
-                            <div>
-                              <h4 className="font-semibold text-gray-900 text-sm leading-tight break-words" title={attachment.fileName || attachment.originalName}>
-                                {truncateFileName(attachment.fileName || attachment.originalName, 25)}
-                              </h4>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                  {attachment.size ? (attachment.size / 1024).toFixed(1) + 'KB' : 'Unknown size'}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {formatDate(attachment.uploadedAt, 'date')}
-                                </span>
+                                >
+                                  <Image className="h-3 w-3 mr-1" />
+                                  Preview
+                                </Button>
                               </div>
                             </div>
-
-                            {attachment.description && (
-                              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                                <div className="flex items-start gap-2">
-                                  <FileText className="h-4 w-4 text-gray-600 mt-0.5 flex-shrink-0" />
-                                  <div className="min-w-0">
-                                    <p className="text-xs font-medium text-gray-800 mb-1">Note:</p>
-                                    <p className="text-xs text-gray-700 break-words leading-relaxed">{attachment.description}</p>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
-                            {attachment.uploadedBy && (
-                              <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 rounded-lg p-2">
-                                <User className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">Uploaded by {attachment.uploadedBy?.fullName || attachment.uploadedBy}</span>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="mt-4 flex flex-col gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 p-2 text-xs border-gray-300 hover:bg-gray-50 hover:border-gray-400"
-                              onClick={() => {
-                                setPreviewItem({
-                                  url: attachment.url,
-                                  mimeType: attachment.mimeType,
-                                  name: attachment.originalName || attachment.fileName,
-                                  size: attachment.size,
-                                });
-                                setIsPreviewOpen(true);
-                              }}
-                            >
-                              <Image className="h-3 w-3 mr-1" />
-                              Preview
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                          );
+                        })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
 
           {/* Assignment Information */}
@@ -1014,11 +1228,16 @@ const ComplaintDetails: React.FC = () => {
                       {complaint.wardOfficer ? (
                         <>
                           <p className="text-blue-800 font-medium">
-                            {complaint.wardOfficer.fullName}
+                            {complaint.wardOfficer?.fullName || "Unknown"}
                           </p>
-                          {complaint.wardOfficer.email && (
+                          {complaint.wardOfficer?.email && (
                             <p className="text-blue-600 text-sm">
-                              {complaint.wardOfficer.email}
+                              <TruncatedTextWithTooltip
+                                text={complaint.wardOfficer?.email || "No email"}
+                                responsive={true}
+                                maxWidth="100%"
+                                className="text-blue-600"
+                              />
                             </p>
                           )}
                         </>
@@ -1031,11 +1250,16 @@ const ComplaintDetails: React.FC = () => {
                       {complaint.maintenanceTeam ? (
                         <>
                           <p className="text-green-800 font-medium">
-                            {complaint.maintenanceTeam.fullName}
+                            {complaint.maintenanceTeam?.fullName || "Unknown"}
                           </p>
-                          {complaint.maintenanceTeam.email && (
+                          {complaint.maintenanceTeam?.email && (
                             <p className="text-green-700 text-sm">
-                              {complaint.maintenanceTeam.email}
+                              <TruncatedTextWithTooltip
+                                text={complaint.maintenanceTeam?.email || "No email"}
+                                responsive={true}
+                                maxWidth="100%"
+                                className="text-green-700"
+                              />
                             </p>
                           )}
                           {complaint.assignedOn && (
@@ -1125,182 +1349,6 @@ const ComplaintDetails: React.FC = () => {
               </Card>
             )}
 
-          {/* Duplicaents Section */}
-          {complaint && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Upload className="h-5 w-5 mr-2" />
-                  Complaint Attachments
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="bg-gradient-to-br from-gray-50 via-gray-100 to-slate-100 rounded-xl p-6 border-2 border-gray-200 shadow-lg">
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gray-600 rounded-lg shadow-md">
-                          <Upload className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900">Complaint Files</h3>
-                          <p className="text-sm text-gray-700">Original files submitted with the complaint</p>
-                        </div>
-                      </div>
-                      <Badge variant="secondary" className="bg-gray-600 text-white px-3 py-1 text-sm font-semibold">
-                        {complaint.attachments?.length || 0} files
-                      </Badge>
-                    </div>
-
-                    {complaint.attachments && complaint.attachments.length > 0 ? (
-                      <div className="grid grid-cols-1  gap-4">
-                        {complaint.attachments.map((attachment: any) => {
-                          const isImage = attachment.mimeType?.startsWith("image/");
-                          const canDownload = [
-                            "ADMINISTRATOR",
-                            "WARD_OFFICER",
-                            "MAINTENANCE_TEAM",
-                          ].includes(user?.role || "");
-                          const displayName = truncateFileName(attachment.fileName || attachment.originalName, 20);
-                          const fullName = attachment.fileName || attachment.originalName;
-
-                          return (
-                            <div
-                              key={attachment.id}
-                              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                            >
-                              <div className="mb-3">
-                                {isImage ? (
-                                  <div className="relative group">
-                                    <img
-                                      src={attachment.url}
-                                      alt={fullName}
-                                      className="w-full h-32 object-cover rounded-md cursor-pointer"
-                                      onClick={() => {
-                                        setPreviewItem({
-                                          url: attachment.url,
-                                          mimeType: attachment.mimeType,
-                                          name: fullName,
-                                          size: attachment.size,
-                                        });
-                                        setIsPreviewOpen(true);
-                                      }}
-                                    />
-                                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-                                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <div className="bg-white rounded-full p-2 shadow-lg">
-                                          <Image className="h-5 w-5 text-gray-600" />
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
-                                    <div className="text-center">
-                                      <File className="h-12 w-12 text-gray-600 mx-auto mb-2" />
-                                      <span className="text-xs text-gray-700 font-medium">Document</span>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* File Information */}
-                              <div className="space-y-3">
-                                <div>
-                                  <h4 className="font-semibold text-gray-900 text-sm leading-tight break-words" title={attachment.fileName || attachment.originalName}>
-                                    {truncateFileName(attachment.fileName || attachment.originalName, 25)}
-                                  </h4>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                      {attachment.size ? (attachment.size / 1024).toFixed(1) + 'KB' : 'Unknown size'}
-                                    </span>
-                                    <span className="text-xs text-gray-500">
-                                      {formatDate(attachment.createdAt, 'date')}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {/* Description */}
-                                {attachment.description && (
-                                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                                    <div className="flex items-start gap-2">
-                                      <FileText className="h-4 w-4 text-gray-600 mt-0.5 flex-shrink-0" />
-                                      <div className="min-w-0">
-                                        <p className="text-xs font-medium text-gray-800 mb-1">Note:</p>
-                                        <p className="text-xs text-gray-700 break-words leading-relaxed">{attachment.description}</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Uploader Info */}
-                                {attachment.uploadedBy && (
-                                  <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 rounded-lg p-2">
-                                    <User className="h-3 w-3 flex-shrink-0" />
-                                    <span className="truncate">Uploaded by {attachment.uploadedBy?.fullName || attachment.uploadedBy}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Action Buttons */}
-                              <div className="mt-4 flex flex-col gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="flex-1 p-2 text-xs border-gray-300 hover:bg-gray-50 hover:border-gray-400"
-                                  onClick={() => {
-                                    setPreviewItem({
-                                      url: attachment.url,
-                                      mimeType: attachment.mimeType,
-                                      name: attachment.originalName || attachment.fileName,
-                                      size: attachment.size,
-                                    });
-                                    setIsPreviewOpen(true);
-                                  }}
-                                >
-                                  <Image className="h-3 w-3 mr-1" />
-                                  Preview
-                                </Button>
-                                {canDownload ? (
-                                  <a
-                                    href={attachment.url}
-                                    download={attachment.originalName || attachment.fileName}
-                                    className="flex-1"
-                                  >
-                                    <Button size="sm" className="w-full text-xs bg-gray-600 hover:bg-gray-700 shadow-md">
-                                      <Download className="h-3 w-3 mr-1" />
-                                      Download
-                                    </Button>
-                                  </a>
-                                ) : (
-                                  <Button size="sm" disabled className="flex-1 text-xs">
-                                    <Download className="h-3 w-3 mr-1" />
-                                    Restricted
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border-2 border-dashed border-gray-300">
-                        <div className="bg-gray-100 rounded-full p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                          <Upload className="h-10 w-10 text-gray-500" />
-                        </div>
-                        <h4 className="text-lg font-semibold text-gray-800 mb-2">No Attachments</h4>
-                        <p className="text-sm text-gray-600 mb-4">No files were submitted with this complaint</p>
-                        <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                          <FileText className="h-4 w-4" />
-                          <span>Documents and images would appear here</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
 
@@ -1333,3 +1381,4 @@ const ComplaintDetails: React.FC = () => {
 };
 
 export default ComplaintDetails;
+// default ComplaintDetails;

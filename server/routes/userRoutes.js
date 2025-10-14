@@ -14,7 +14,13 @@ import {
   createSubZone,
   updateSubZone,
   deleteSubZone,
+  changePassword,
 } from "../controller/userController.js";
+import {
+  requestResetOTP,
+  verifyResetOTP,
+  resetPassword,
+} from "../controller/authController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import {
   validateUserRegistration,
@@ -34,8 +40,16 @@ const router = express.Router();
 // Public routes
 router.post("/verify-account/:token", verifyAccount);
 
+// Password reset routes (public)
+router.post("/request-reset-otp", requestResetOTP);
+router.post("/verify-reset-otp", verifyResetOTP);
+router.post("/reset-password", resetPassword);
+
 // Protected routes
 router.use(protect);
+
+// Password management (accessible to all authenticated users)
+router.post("/change-password", changePassword);
 
 // Ward management (accessible to all authenticated users for ward list)
 router.get("/wards", getWards);

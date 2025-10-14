@@ -36,7 +36,22 @@ interface SetPasswordRequest {
 }
 
 interface ChangePasswordRequest {
-  currentPassword: string;
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface RequestResetOTPRequest {
+  email: string;
+}
+
+interface VerifyResetOTPRequest {
+  email: string;
+  otp: string;
+}
+
+interface ResetPasswordRequest {
+  email: string;
   newPassword: string;
 }
 
@@ -194,11 +209,11 @@ export const authApi = baseApi.injectEndpoints({
     // Change password
     changePassword: builder.mutation<
       ApiResponse<{ message: string }>,
-      ChangePasswordRequest
+      { oldPassword: string; newPassword: string; confirmPassword: string }
     >({
       query: (data) => ({
-        url: "/auth/change-password",
-        method: "PUT",
+        url: "/users/change-password",
+        method: "POST",
         body: data,
         headers: {
           "Content-Type": "application/json",
@@ -213,6 +228,42 @@ export const authApi = baseApi.injectEndpoints({
           console.error("Change password error details:", error);
         }
       },
+    }),
+
+    // Request password reset OTP
+    requestResetOTP: builder.mutation<
+      ApiResponse<{ email: string; expiresAt: string }>,
+      RequestResetOTPRequest
+    >({
+      query: (data) => ({
+        url: "/users/request-reset-otp",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    // Verify password reset OTP
+    verifyResetOTP: builder.mutation<
+      ApiResponse<{ email: string; verified: boolean }>,
+      VerifyResetOTPRequest
+    >({
+      query: (data) => ({
+        url: "/users/verify-reset-otp",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    // Reset password after OTP verification
+    resetPassword: builder.mutation<
+      ApiResponse<{ message: string }>,
+      ResetPasswordRequest
+    >({
+      query: (data) => ({
+        url: "/users/reset-password",
+        method: "POST",
+        body: data,
+      }),
     }),
 
     // Get current user

@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { sendEmail, sendOTPEmail } from "../utils/emailService.js";
+import { sendOTPEmail as sendTemplatedOTPEmail, sendPasswordResetSuccessEmail } from "../utils/mailService.js";
 import logger from "../utils/logger.js";
 
 const prisma = getPrisma();
@@ -982,5 +983,340 @@ export const resendRegistrationOTP = asyncHandler(async (req, res) => {
       email: user.email,
       expiresAt,
     },
+  });
+});
+
+// Use the templated mail service functions
+
+// Helper function to validate password strength
+const validatePasswordStrength = (password) => {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+  const errors = [];
+  
+  if (password.length < minLength) {
+    errors.push(`Password must be at least ${minLength} characters long`);
+  }
+  if (!hasUpperCase) {
+    errors.push("Password must contain at least one uppercase letter");
+  }
+  if (!hasLowerCase) {
+    errors.push("Password must contain at least one lowercase letter");
+  }
+  if (!hasNumbers) {
+    errors.push("Password must contain at least one number");
+  }
+  if (!hasSpecialChar) {
+    errors.push("Password must contain at least one special character");
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+};
+
+// @desc    Request password reset OTP
+// @route   POST /api/users/request-reset-otp
+// @access  Public
+export const requestResetOTP = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Email is required",
+    });
+  }
+
+  // Find user by email
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      isActive: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      status: "error",
+      code: 404,
+      message: "No account found with this email address",
+    });
+  }
+
+  if (!user.isActive) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Account is deactivated. Please contact support.",
+    });
+  }
+
+  // Invalidate existing password reset OTP sessions
+  await prisma.oTPSession.updateMany({
+    where: {
+      email,
+      purpose: "PASSWORD_RESET",
+      isVerified: false,
+    },
+    data: {
+      expiresAt: new Date(), // Expire immediately
+    },
+  });
+
+  // Generate new OTP
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  // Create new OTP session
+  await prisma.oTPSession.create({
+    data: {
+      userId: user.id,
+      email: user.email,
+      otpCode,
+      purpose: "PASSWORD_RESET",
+      expiresAt,
+    },
+  });
+
+  // Send OTP email using new mail service
+  try {
+    await sendTemplatedOTPEmail(user.email, user.fullName, otpCode);
+    
+    logger.info(`Password reset OTP sent to ${user.email}`, {
+      module: "auth",
+      userId: user.id,
+      purpose: "PASSWORD_RESET",
+    });
+
+    res.status(200).json({
+      status: "success",
+      code: 200,
+      message: "OTP sent successfully",
+      data: {
+        email: user.email,
+        expiresAt,
+      },
+    });
+  } catch (error) {
+    logger.error(`Failed to send password reset OTP to ${user.email}:`, error);
+    
+    // Clean up the OTP session if email fails
+    await prisma.oTPSession.updateMany({
+      where: {
+        email,
+        purpose: "PASSWORD_RESET",
+        otpCode,
+      },
+      data: {
+        expiresAt: new Date(),
+      },
+    });
+
+    res.status(500).json({
+      status: "error",
+      code: 500,
+      message: "Failed to send OTP. Please try again.",
+    });
+  }
+});
+
+// @desc    Verify password reset OTP
+// @route   POST /api/users/verify-reset-otp
+// @access  Public
+export const verifyResetOTP = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Email and OTP are required",
+    });
+  }
+
+  // Find valid OTP session
+  const otpSession = await prisma.oTPSession.findFirst({
+    where: {
+      email,
+      otpCode: otp,
+      purpose: "PASSWORD_RESET",
+      isVerified: false,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          isActive: true,
+        },
+      },
+    },
+  });
+
+  if (!otpSession) {
+    return res.status(401).json({
+      status: "error",
+      code: 401,
+      message: "Invalid or expired OTP",
+    });
+  }
+
+  if (!otpSession.user.isActive) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Account is deactivated. Please contact support.",
+    });
+  }
+
+  // Mark OTP as verified
+  await prisma.oTPSession.update({
+    where: { id: otpSession.id },
+    data: {
+      isVerified: true,
+      verifiedAt: new Date(),
+    },
+  });
+
+  logger.info(`Password reset OTP verified for ${email}`, {
+    module: "auth",
+    userId: otpSession.user.id,
+    purpose: "PASSWORD_RESET",
+  });
+
+  res.status(200).json({
+    status: "success",
+    code: 200,
+    message: "OTP verified successfully",
+    data: {
+      email,
+      verified: true,
+    },
+  });
+});
+
+// @desc    Reset password after OTP verification
+// @route   POST /api/users/reset-password
+// @access  Public
+export const resetPassword = asyncHandler(async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Email and new password are required",
+    });
+  }
+
+  // Validate password strength
+  const passwordValidation = validatePasswordStrength(newPassword);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Password does not meet security requirements",
+      errors: passwordValidation.errors,
+    });
+  }
+
+  // Find verified OTP session (within last 30 minutes)
+  const verifiedOTPSession = await prisma.oTPSession.findFirst({
+    where: {
+      email,
+      purpose: "PASSWORD_RESET",
+      isVerified: true,
+      verifiedAt: {
+        gt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes
+      },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          fullName: true,
+          isActive: true,
+        },
+      },
+    },
+    orderBy: {
+      verifiedAt: "desc",
+    },
+  });
+
+  if (!verifiedOTPSession) {
+    return res.status(401).json({
+      status: "error",
+      code: 401,
+      message: "OTP verification required or expired. Please request a new OTP.",
+    });
+  }
+
+  if (!verifiedOTPSession.user.isActive) {
+    return res.status(400).json({
+      status: "error",
+      code: 400,
+      message: "Account is deactivated. Please contact support.",
+    });
+  }
+
+  // Hash new password
+  const hashedPassword = await hashPassword(newPassword);
+
+  // Update user password
+  await prisma.user.update({
+    where: { id: verifiedOTPSession.user.id },
+    data: { password: hashedPassword },
+  });
+
+  // Invalidate all OTP sessions for this user
+  await prisma.oTPSession.updateMany({
+    where: {
+      email,
+      purpose: "PASSWORD_RESET",
+    },
+    data: {
+      expiresAt: new Date(), // Expire immediately
+    },
+  });
+
+  // Send confirmation email
+  try {
+    const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown';
+    await sendPasswordResetSuccessEmail(
+      verifiedOTPSession.user.email,
+      verifiedOTPSession.user.fullName,
+      ipAddress
+    );
+  } catch (emailError) {
+    logger.error(`Failed to send password reset confirmation email:`, emailError);
+    // Don't fail the request if email fails
+  }
+
+  logger.info(`Password reset completed for ${email}`, {
+    module: "auth",
+    userId: verifiedOTPSession.user.id,
+    purpose: "PASSWORD_RESET",
+  });
+
+  res.status(200).json({
+    status: "success",
+    code: 200,
+    message: "Password reset successfully",
   });
 });

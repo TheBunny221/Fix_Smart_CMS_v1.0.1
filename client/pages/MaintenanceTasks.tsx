@@ -657,7 +657,7 @@ const MaintenanceTasks: React.FC = () => {
           ].join(" ")}
           id="mobile-filters"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
             {[
               // {
               //   id: "all",

@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import PhotoUploadModal from "../components/PhotoUploadModal";
 import AttachmentPreview from "../components/AttachmentPreview";
+import TruncatedTextWithTooltip from "../components/TruncatedTextWithTooltip";
 
 const TaskDetails: React.FC = () => {
   const { id } = useParams();
@@ -60,14 +61,7 @@ const TaskDetails: React.FC = () => {
     return String(value);
   };
 
-  // Utility function to truncate file names
-  const truncateFileName = (fileName: string, maxLength: number = 25): string => {
-    if (!fileName || fileName.length <= maxLength) return fileName;
-    const extension = fileName.split('.').pop();
-    const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
-    const truncatedName = nameWithoutExt.substring(0, maxLength - extension!.length - 4) + '...';
-    return `${truncatedName}.${extension}`;
-  };
+
 
   // Utility function to safely format dates
   const formatDate = (dateValue: any, format: 'date' | 'datetime' = 'datetime'): string => {
@@ -493,7 +487,11 @@ const TaskDetails: React.FC = () => {
                                 </p>
                                 {log.user && (
                                   <Badge variant="outline" className="text-xs">
-                                    {log.user?.fullName || "Unknown"} ({log.user?.role || "Unknown"})
+                                    <TruncatedTextWithTooltip 
+                                      text={`${log.user?.fullName || "Unknown"} (${log.user?.role || "Unknown"})`}
+                                      maxLength={25}
+                                      className="inline"
+                                    />
                                   </Badge>
                                 )}
                               </div>
@@ -570,7 +568,6 @@ const TaskDetails: React.FC = () => {
                           .filter((att: any) => att.entityType === "MAINTENANCE_PHOTO")
                           .map((att: any) => {
                             const isImage = att.mimeType?.startsWith("image/");
-                            const displayName = truncateFileName(att.fileName || att.originalName, 20);
                             const fullName = att.fileName || att.originalName;
                             
                             return (
@@ -602,8 +599,12 @@ const TaskDetails: React.FC = () => {
                                 </div>
                                 
                                 <div className="space-y-2">
-                                  <h4 className="font-medium text-sm text-gray-900 truncate" title={fullName}>
-                                    {displayName}
+                                  <h4 className="font-medium text-sm text-gray-900">
+                                    <TruncatedTextWithTooltip 
+                                      text={fullName || "Unknown file"}
+                                      maxLength={20}
+                                      className="font-medium"
+                                    />
                                   </h4>
                                   <div className="flex items-center justify-between text-xs text-gray-500">
                                     <span>By: {att.uploadedBy || "Unknown"}</span>
@@ -666,7 +667,6 @@ const TaskDetails: React.FC = () => {
                           .filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO")
                           .map((att: any) => {
                             const isImage = att.mimeType?.startsWith("image/");
-                            const displayName = truncateFileName(att.fileName || att.originalName, 20);
                             const fullName = att.fileName || att.originalName;
                             
                             return (
@@ -698,8 +698,12 @@ const TaskDetails: React.FC = () => {
                                 </div>
                                 
                                 <div className="space-y-2">
-                                  <h4 className="font-medium text-sm text-gray-900 truncate" title={fullName}>
-                                    {displayName}
+                                  <h4 className="font-medium text-sm text-gray-900">
+                                    <TruncatedTextWithTooltip 
+                                      text={fullName || "Unknown file"}
+                                      maxLength={20}
+                                      className="font-medium"
+                                    />
                                   </h4>
                                   <div className="flex items-center justify-between text-xs text-gray-500">
                                     <span>By: {att.uploadedBy || "Citizen"}</span>
@@ -791,7 +795,6 @@ const TaskDetails: React.FC = () => {
                               "WARD_OFFICER",
                               "MAINTENANCE_TEAM",
                             ].includes(user?.role || "");
-                            const displayName = truncateFileName(att.fileName || att.originalName, 20);
                             const fullName = att.fileName || att.originalName;
 
                             return (
@@ -837,8 +840,12 @@ const TaskDetails: React.FC = () => {
                                 {/* File Information */}
                                 <div className="space-y-3">
                                   <div>
-                                    <h4 className="font-semibold text-gray-900 text-sm leading-tight break-words" title={att.fileName || att.originalName}>
-                                      {truncateFileName(att.fileName || att.originalName, 25)}
+                                    <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                                      <TruncatedTextWithTooltip 
+                                        text={att.fileName || att.originalName || "Unknown file"}
+                                        maxLength={25}
+                                        className="font-semibold"
+                                      />
                                     </h4>
                                     <div className="flex items-center gap-2 mt-1">
                                       <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
@@ -1005,8 +1012,12 @@ const TaskDetails: React.FC = () => {
 
                                 {/* File Information */}
                                 <div className="flex-1 space-y-2">
-                                  <div className="text-sm font-medium text-gray-900 text-center break-words" title={att.fileName || att.originalName}>
-                                    {truncateFileName(att.fileName || att.originalName, 20)}
+                                  <div className="text-sm font-medium text-gray-900 text-center">
+                                    <TruncatedTextWithTooltip 
+                                      text={att.fileName || att.originalName || "Unknown file"}
+                                      maxLength={20}
+                                      className="font-medium"
+                                    />
                                   </div>
 
                                   {/* Description */}
@@ -1166,10 +1177,10 @@ const TaskDetails: React.FC = () => {
                 Contact Information
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center">
-                <User className="h-4 w-4 mr-2 text-gray-400" />
-                <div className="flex flex-col">
+            <CardContent className="space-y-3 p-4 sm:p-6">
+              <div className="flex items-center min-w-0">
+                <User className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                <div className="flex flex-col min-w-0 flex-1">
                   <span className="font-medium">
                     {safeRender(raw?.contactName || task.contactName, 'Unknown Contact')}
                   </span>
@@ -1180,16 +1191,29 @@ const TaskDetails: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div className="flex items-center">
-                <Phone className="h-4 w-4 mr-2 text-gray-400" />
-                <div className="flex flex-col">
+              <div className="flex items-center min-w-0">
+                <Phone className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                <div className="flex flex-col min-w-0 flex-1">
                   <span>{safeRender(raw?.contactPhone || task.contactPhone, 'No phone provided')}</span>
                 </div>
               </div>
-              <div className="flex items-center">
-                <Mail className="h-4 w-4 mr-2 text-gray-400" />
-                <div className="flex flex-col wrap-text">
-                  <span>{safeRender(raw?.contactEmail || task.contactEmail, 'No email provided')}</span>
+              <div className="flex items-center min-w-0">
+                <Mail className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
+                <div className="flex flex-col min-w-0 flex-1">
+                  <div className="group relative min-w-0 w-full">
+                    <span 
+                      className="block truncate text-gray-900 cursor-help hover:text-blue-600 transition-colors w-full text-sm sm:text-base"
+                      title={safeRender(raw?.contactEmail || task.contactEmail, 'No email provided')}
+                      style={{ 
+                        maxWidth: 'calc(100% - 0.5rem)', // Account for padding
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {safeRender(raw?.contactEmail || task.contactEmail, 'No email provided')}
+                    </span>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -1213,7 +1237,6 @@ const TaskDetails: React.FC = () => {
                         .filter((att: any) => att.entityType === "MAINTENANCE_PHOTO")
                         .map((att: any) => {
                           const isImage = att.mimeType?.startsWith("image/");
-                          const displayName = truncateFileName(att.fileName || att.originalName, 20);
                           const fullName = att.fileName || att.originalName;
 
                           return (
@@ -1258,8 +1281,12 @@ const TaskDetails: React.FC = () => {
 
                               <div className="space-y-3">
                                 <div>
-                                  <h4 className="font-semibold text-gray-900 text-sm leading-tight break-words" title={att.fileName || att.originalName}>
-                                    {truncateFileName(att.fileName || att.originalName, 25)}
+                                  <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                                    <TruncatedTextWithTooltip 
+                                      text={att.fileName || att.originalName || "Unknown file"}
+                                      maxLength={25}
+                                      className="font-semibold"
+                                    />
                                   </h4>
                                   <div className="flex items-center gap-2 mt-1">
                                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
@@ -1343,7 +1370,6 @@ const TaskDetails: React.FC = () => {
                         .filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO")
                         .map((att: any) => {
                           const isImage = att.mimeType?.startsWith("image/");
-                          const displayName = truncateFileName(att.fileName || att.originalName, 20);
                           const fullName = att.fileName || att.originalName;
 
                           return (
@@ -1388,8 +1414,12 @@ const TaskDetails: React.FC = () => {
 
                               <div className="space-y-3">
                                 <div>
-                                  <h4 className="font-semibold text-gray-900 text-sm leading-tight break-words" title={att.fileName || att.originalName}>
-                                    {truncateFileName(att.fileName || att.originalName, 25)}
+                                  <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                                    <TruncatedTextWithTooltip 
+                                      text={att.fileName || att.originalName || "Unknown file"}
+                                      maxLength={25}
+                                      className="font-semibold"
+                                    />
                                   </h4>
                                   <div className="flex items-center gap-2 mt-1">
                                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">

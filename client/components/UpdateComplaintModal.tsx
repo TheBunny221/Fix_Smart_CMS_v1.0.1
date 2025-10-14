@@ -41,6 +41,8 @@ import {
   Settings,
   RotateCcw,
 } from "lucide-react";
+import UserSelectDropdown from "./UserSelectDropdown";
+import { cn } from "../lib/utils";
 
 type AssignmentUser = BaseComplaintUser & {
   ward?: { name: string } | null;
@@ -272,7 +274,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
     const availableStatuses = getAvailableStatusOptions();
     const complaintStatus = complaint?.status ?? "REGISTERED";
     const complaintPriority = complaint?.priority ?? "MEDIUM";
-    
+
     if (formData.status && !availableStatuses.includes(formData.status)) {
       errors.push(
         `You don't have permission to set status to '${formData.status}'. Available options: ${availableStatuses.join(", ")}`,
@@ -368,7 +370,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
         } else {
           reopenData.comment = "Complaint reopened by administrator";
         }
-        
+
         const reopenResponse = await reopenComplaint({
           id: complaint.id,
           ...reopenData,
@@ -493,140 +495,205 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <FileText className="h-5 w-5 mr-2" />
-            {user?.role === "MAINTENANCE_TEAM"
-              ? "Update Task Status"
-              : user?.role === "WARD_OFFICER"
-                ? "Manage Complaint"
-                : "Update Complaint"}
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
+        <DialogHeader className="pb-4 border-b border-gray-200">
+          <DialogTitle className="flex items-center text-lg">
+            <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+              <FileText className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-gray-900">
+                {user?.role === "MAINTENANCE_TEAM"
+                  ? "Update Task Status"
+                  : user?.role === "WARD_OFFICER"
+                    ? "Manage Complaint"
+                    : "Update Complaint"}
+              </h2>
+              <DialogDescription className="text-sm text-gray-600 mt-1">
+                <SafeRenderer fallback="Update complaint status">
+                  {(() => {
+                    const complaintId = safeRenderValue(complaint.complaintId) ||
+                      (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : 'Unknown');
+
+                    if (user?.role === "MAINTENANCE_TEAM") {
+                      return `Update your work status for complaint #${complaintId}`;
+                    } else if (user?.role === "WARD_OFFICER") {
+                      return `Assign and manage complaint #${complaintId}`;
+                    } else {
+                      return `Update the status and assignment of complaint #${complaintId}`;
+                    }
+                  })()}
+                </SafeRenderer>
+              </DialogDescription>
+            </div>
           </DialogTitle>
-          <DialogDescription>
-            <SafeRenderer fallback="Update complaint status">
-              {(() => {
-                const complaintId = safeRenderValue(complaint.complaintId) || 
-                  (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : 'Unknown');
-                
-                if (user?.role === "MAINTENANCE_TEAM") {
-                  return `Update your work status for complaint #${complaintId}`;
-                } else if (user?.role === "WARD_OFFICER") {
-                  return `Assign and manage complaint #${complaintId}`;
-                } else {
-                  return `Update the status and assignment of complaint #${complaintId}`;
-                }
-              })()}
-            </SafeRenderer>
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-3">
+          {/* User Role Banner */}
+          <div className="flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
             <div className="flex items-center">
-              <Users className="h-4 w-4 text-blue-600 mr-2" />
-              <span className="text-sm font-medium text-blue-800">
-                Acting as: {user?.role?.replace("_", " ")}
-              </span>
+              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                <Users className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-blue-900">
+                  Acting as: {user?.role?.replace("_", " ")}
+                </p>
+                <p className="text-xs text-blue-700">
+                  {user?.role === "MAINTENANCE_TEAM"
+                    ? "You can update work status and add progress notes"
+                    : user?.role === "WARD_OFFICER"
+                      ? "You can assign complaints and manage their status"
+                      : "You have full administrative control over this complaint"
+                  }
+                </p>
+              </div>
             </div>
             {user?.role === "MAINTENANCE_TEAM" && (
               <Badge
                 variant="outline"
-                className="text-xs text-blue-600 border-blue-300"
+                className="text-xs text-blue-600 border-blue-300 bg-white"
               >
                 Limited Permissions
               </Badge>
             )}
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="font-medium mb-2">Complaint Summary</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-gray-600">Type:</span>{" "}
-                <SafeRenderer fallback="UNKNOWN">
-                  {(complaint.type ?? "UNKNOWN").replace("_", " ")}
-                </SafeRenderer>
+          {/* Complaint Summary */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-5 border border-gray-200">
+            <div className="flex items-center mb-4">
+              <FileText className="h-5 w-5 text-gray-600 mr-2" />
+              <h3 className="font-semibold text-gray-900">Complaint Summary</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 font-medium">Type:</span>
+                  <span className="text-gray-900">
+                    <SafeRenderer fallback="UNKNOWN">
+                      {(complaint.type ?? "UNKNOWN").replace("_", " ")}
+                    </SafeRenderer>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 font-medium">Area:</span>
+                  <span className="text-gray-900">
+                    <SafeRenderer fallback="Unknown Area">
+                      {safeRenderValue(complaint.area, "Unknown Area")}
+                    </SafeRenderer>
+                  </span>
+                </div>
               </div>
-              <div>
-                <span className="text-gray-600">Area:</span>{" "}
-                <SafeRenderer fallback="Unknown Area">
-                  {safeRenderValue(complaint.area, "Unknown Area")}
-                </SafeRenderer>
-              </div>
-              <div>
-                <span className="text-gray-600">Current Status:</span>{" "}
-                <Badge
-                  className={`ml-2 ${getStatusColor(complaint.status ?? "REGISTERED")}`}
-                >
-                  <SafeRenderer fallback="REGISTERED">
-                    {(complaint.status ?? "REGISTERED").replace("_", " ")}
-                  </SafeRenderer>
-                </Badge>
-              </div>
-              <div>
-                <span className="text-gray-600">Current Priority:</span>{" "}
-                <Badge
-                  className={`ml-2 ${getPriorityColor(complaint.priority ?? "MEDIUM")}`}
-                >
-                  <SafeRenderer fallback="MEDIUM">
-                    {safeRenderValue(complaint.priority, "MEDIUM")}
-                  </SafeRenderer>
-                </Badge>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 font-medium">Status:</span>
+                  <Badge
+                    className={`${getStatusColor(complaint.status ?? "REGISTERED")}`}
+                  >
+                    <SafeRenderer fallback="REGISTERED">
+                      {(complaint.status ?? "REGISTERED").replace("_", " ")}
+                    </SafeRenderer>
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 font-medium">Priority:</span>
+                  <Badge
+                    className={`${getPriorityColor(complaint.priority ?? "MEDIUM")}`}
+                  >
+                    <SafeRenderer fallback="MEDIUM">
+                      {safeRenderValue(complaint.priority, "MEDIUM")}
+                    </SafeRenderer>
+                  </Badge>
+                </div>
               </div>
             </div>
-            <div className="mt-2">
-              <span className="text-gray-600">Description:</span>
-              <p className="text-sm mt-1">
+
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <span className="text-gray-600 font-medium">Description:</span>
+              <p className="text-sm mt-2 text-gray-700 leading-relaxed">
                 <SafeRenderer fallback="No description available">
                   {safeRenderValue(complaint.description, "No description available")}
                 </SafeRenderer>
               </p>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <h4 className="font-medium text-sm mb-2">Current Assignments</h4>
-              <div className="grid grid-cols-1 gap-2 text-sm">
-                {process.env.NODE_ENV === "development" && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-xs">
-                    <strong>Debug:</strong>
-                    <br />
-                    wardOfficer:{" "}
-                    {JSON.stringify(complaint.wardOfficer) || "null"}
-                    <br />
-                    maintenanceTeam:{" "}
-                    {JSON.stringify(complaint.maintenanceTeam) || "null"}
-                    <br />
-                    needsTeamAssignment:{" "}
-                    {String((complaint as any).needsTeamAssignment)}
-                  </div>
-                )}
+            <div className="mt-5 pt-4 border-t border-gray-200">
+              <div className="flex items-center mb-3">
+                <Users className="h-4 w-4 text-gray-600 mr-2" />
+                <h4 className="font-medium text-sm text-gray-900">Current Assignments</h4>
+              </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Ward Officer:</span>
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 mr-1" />
-                    {wardOfficerName ? (
-                      <span className="text-blue-600">{wardOfficerName}</span>
-                    ) : (
-                      <span className="text-gray-400">Not assigned</span>
-                    )}
+              {process.env.NODE_ENV === "development" && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs my-3">
+                  <strong className="text-yellow-800">Debug Info:</strong>
+                  <div className="mt-1 space-y-1 text-yellow-700">
+                    <div>wardOfficer: {JSON.stringify(complaint.wardOfficer) || "null"}</div>
+                    <div>maintenanceTeam: {JSON.stringify(complaint.maintenanceTeam) || "null"}</div>
+                    <div>needsTeamAssignment: {String((complaint as any).needsTeamAssignment)}</div>
+                  </div>
+                </div>
+              )}
+              <div className="flex gap-3 items-center">
+                <div className="flex-1 bg-white rounded-lg border border-gray-200 p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                        <User className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Ward Officer</p>
+                        <p className="text-xs text-gray-500">Complaint oversight</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {wardOfficerName ? (
+                        <div>
+                          <p className="text-sm font-medium text-blue-600">{wardOfficerName}</p>
+                          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                            Assigned
+                          </Badge>
+                        </div>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-gray-500">
+                          Not assigned
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Maintenance Team:</span>
-                  <div className="flex items-center">
-                    <Settings className="h-4 w-4 mr-1" />
-                    {maintenanceTeamName ? (
-                      <span className="text-green-600">{maintenanceTeamName}</span>
-                    ) : (complaint as any).needsTeamAssignment ? (
-                      <Badge className="bg-orange-100 text-orange-800 text-xs">
-                        Needs Assignment
-                      </Badge>
-                    ) : (
-                      <span className="text-gray-400">Not assigned</span>
-                    )}
+                <div className="flex-1 bg-white rounded-lg border border-gray-200 p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                        <Settings className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">Maintenance Team</p>
+                        <p className="text-xs text-gray-500">Field work execution</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {maintenanceTeamName ? (
+                        <div>
+                          <p className="text-sm font-medium text-green-600">{maintenanceTeamName}</p>
+                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                            Assigned
+                          </Badge>
+                        </div>
+                      ) : (complaint as any).needsTeamAssignment ? (
+                        <Badge className="bg-orange-100 text-orange-800 text-xs">
+                          Needs Assignment
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-gray-500">
+                          Not assigned
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -641,7 +708,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                 <div className="text-sm">
                   <p className="text-amber-800 font-medium">Status Transition Notice</p>
                   <p className="text-amber-700 mt-1">
-                    When you reopen this complaint, it will automatically transition to <strong>ASSIGNED</strong> status 
+                    When you reopen this complaint, it will automatically transition to <strong>ASSIGNED</strong> status
                     and require reassignment to a maintenance team member.
                   </p>
                 </div>
@@ -649,144 +716,165 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             </div>
           )}
 
-          <div
-            className={`grid gap-4 ${user?.role === "MAINTENANCE_TEAM" ? "grid-cols-1" : "grid-cols-2"}`}
-          >
-            <div>
-              <Label htmlFor="status">Status</Label>
-              {user?.role === "MAINTENANCE_TEAM" && (
-                <p className="text-xs text-gray-500 mb-1">
-                  You can update status to In Progress or mark as Resolved
-                </p>
-              )}
-              {/* Validation error display for status */}
-              {validationErrors.some(error => error.includes('status') || error.includes('Assigned')) && (
-                <div className="text-xs text-red-600 mb-1">
-                  {validationErrors.find(error => error.includes('status') || error.includes('Assigned'))}
-                </div>
-              )}
-              <Select
-                value={formData.status}
-                onValueChange={(value) => {
-                  setFormData((prev) => ({ ...prev, status: value }));
-                  setValidationErrors([]);
-                }}
-              >
-                <SelectTrigger className={validationErrors.some(error => error.includes('status') || error.includes('Assigned')) ? "border-red-300" : ""}>
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getAvailableStatusOptions().map((status: string) => {
-                    const statusConfig: Record<string, any> = {
-                      REGISTERED: { icon: Clock, label: "Registered" },
-                      ASSIGNED: { icon: User, label: "Assigned" },
-                      IN_PROGRESS: { icon: Settings, label: "In Progress" },
-                      RESOLVED: { icon: CheckCircle, label: "Resolved" },
-                      CLOSED: { icon: FileText, label: "Closed" },
-                      REOPENED: { icon: RotateCcw, label: "Reopened" },
-                    };
-                    const config = statusConfig[status];
-                    if (!config) return null;
-                    const IconComponent = config.icon;
-                    return (
-                      <SelectItem key={status} value={status}>
-                        <div className="flex items-center">
-                          <IconComponent className="h-4 w-4 mr-2" />
-                          {config.label}
-                          {status === "REOPENED" && user?.role === "ADMINISTRATOR" && (
-                            <span className="ml-2 text-xs text-amber-600">→ Assigned</span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+          {/* Status and Priority Section */}
+          <div className="space-y-4">
+            <div className="flex items-center mb-2">
+              <Settings className="h-4 w-4 text-gray-600 mr-2" />
+              <h4 className="text-sm font-medium text-gray-900">Status & Priority</h4>
             </div>
 
-            {user?.role !== "MAINTENANCE_TEAM" && (
-              <div>
-                <Label htmlFor="priority">Priority</Label>
-                {/* <p className="text-xs text-gray-500 mb-1">Set complaint priority level</p> */}
+            <div
+              className={`grid gap-6 ${user?.role === "MAINTENANCE_TEAM" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+
+                {user?.role === "ADMINISTRATOR" && (
+                  <p className="text-xs text-gray-500">Set complaint priority level</p>
+                )}
+                {user?.role === "MAINTENANCE_TEAM" && (
+                  <p className="text-xs text-gray-500">
+                    You can update status to In Progress or mark as Resolved
+                  </p>
+                )}
+                {/* Validation error display for status */}
+                {validationErrors.some(error => error.includes('status') || error.includes('Assigned')) && (
+                  <div className="text-xs text-red-600">
+                    {validationErrors.find(error => error.includes('status') || error.includes('Assigned'))}
+                  </div>
+                )}
                 <Select
-                  value={formData.priority}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, priority: value }))
-                  }
+                  value={formData.status}
+                  onValueChange={(value) => {
+                    setFormData((prev) => ({ ...prev, status: value }));
+                    setValidationErrors([]);
+                  }}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select priority" />
+                  <SelectTrigger className={cn(
+                    "h-11",
+                    validationErrors.some(error => error.includes('status') || error.includes('Assigned')) && "border-red-300 focus:border-red-500"
+                  )}>
+                    <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="LOW">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                        Low
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="MEDIUM">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                        Medium
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="HIGH">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
-                        High
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="CRITICAL">
-                      <div className="flex items-center">
-                        <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                        Critical
-                      </div>
-                    </SelectItem>
+                    {getAvailableStatusOptions().map((status: string) => {
+                      const statusConfig: Record<string, any> = {
+                        REGISTERED: { icon: Clock, label: "Registered", color: "text-yellow-600" },
+                        ASSIGNED: { icon: User, label: "Assigned", color: "text-blue-600" },
+                        IN_PROGRESS: { icon: Settings, label: "In Progress", color: "text-orange-600" },
+                        RESOLVED: { icon: CheckCircle, label: "Resolved", color: "text-green-600" },
+                        CLOSED: { icon: FileText, label: "Closed", color: "text-gray-600" },
+                        REOPENED: { icon: RotateCcw, label: "Reopened", color: "text-amber-600" },
+                      };
+                      const config = statusConfig[status];
+                      if (!config) return null;
+                      const IconComponent = config.icon;
+                      return (
+                        <SelectItem key={status} value={status}>
+                          <div className="flex items-center">
+                            <IconComponent className={cn("h-4 w-4 mr-3", config.color)} />
+                            <span className="font-medium">{config.label}</span>
+                            {status === "REOPENED" && user?.role === "ADMINISTRATOR" && (
+                              <span className="ml-2 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
+                                → Assigned
+                              </span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
               </div>
-            )}
+
+              {user?.role !== "MAINTENANCE_TEAM" && (
+                <div className="space-y-2">
+                  <Label htmlFor="priority" className="text-sm font-medium">Priority</Label>
+                  <p className="text-xs text-gray-500">Set complaint priority level</p>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, priority: value }))
+                    }
+                  >
+                    <SelectTrigger className="h-11">
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LOW">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                          <span className="font-medium">Low</span>
+                          <span className="ml-2 text-xs text-gray-500">Non-urgent</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="MEDIUM">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                          <span className="font-medium">Medium</span>
+                          <span className="ml-2 text-xs text-gray-500">Standard</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="HIGH">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
+                          <span className="font-medium">High</span>
+                          <span className="ml-2 text-xs text-gray-500">Urgent</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="CRITICAL">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                          <span className="font-medium">Critical</span>
+                          <span className="ml-2 text-xs text-gray-500">Emergency</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
           </div>
 
           {(user?.role === "WARD_OFFICER" ||
             user?.role === "ADMINISTRATOR") && (
-              <div>
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="assignedTo">{getDropdownLabel()}</Label>
-                  {user?.role === "WARD_OFFICER" &&
-                    (complaint as any)?.needsTeamAssignment &&
-                    !["RESOLVED", "CLOSED"].includes(
-                      complaint.status ?? "REGISTERED",
-                    ) && (
-                      <Badge className="bg-blue-100 text-blue-800 text-xs">
-                        Assignment Required
-                      </Badge>
-                    )}
-                </div>
-
+              <div className="space-y-4">
+                {/* Assignment Required Notice */}
                 {user?.role === "WARD_OFFICER" &&
                   (complaint as any)?.needsTeamAssignment &&
                   !["RESOLVED", "CLOSED"].includes(
                     complaint.status ?? "REGISTERED",
                   ) && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                       <div className="flex items-center">
-                        <AlertTriangle className="h-4 w-4 text-blue-500 mr-2" />
-                        <span className="text-sm text-blue-700">
-                          This complaint needs to be assigned to a maintenance
-                          team member to proceed.
-                        </span>
+                        <AlertTriangle className="h-4 w-4 text-blue-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-blue-800">
+                            Assignment Required
+                          </p>
+                          <p className="text-sm text-blue-700 mt-1">
+                            This complaint needs to be assigned to a maintenance team member to proceed.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
 
-                <div className="space-y-2">
-                  {/* Admin: show two columns - Ward Officer + Maintenance Team; Others: single select */}
+                {/* User Assignment Section */}
+                <div className="space-y-4">
                   {user?.role === "ADMINISTRATOR" ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <Label>Ward Officer</Label>
-                        <Select
+                    // Admin: Two-column layout for Ward Officer + Maintenance Team
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium text-gray-900">User Assignments</h4>
+                        <Badge variant="outline" className="text-xs">
+                          Admin Controls
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <UserSelectDropdown
+                          users={wardOfficerUsers}
                           value={formData.wardOfficerId}
                           onValueChange={(value) => {
                             setFormData((prev) => ({
@@ -795,48 +883,16 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                             }));
                             setValidationErrors([]);
                           }}
-                          disabled={
-                            isLoadingWardOfficers || wardOfficerUsers.length === 0
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Ward Officer" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">No Assignment</SelectItem>
-                            {wardOfficerUsers.map((u: any) => (
-                              <SelectItem key={u.id} value={u.id}>
-                                <div className="flex items-center justify-between w-full gap-2">
-                                  <div className="flex items-center">
-                                    {getUserRoleIcon(u.role ?? "WARD_OFFICER")}
-                                    <div className="ml-2 text-left">
-                                      <div className="font-medium">
-                                        {u.fullName}
-                                      </div>
-                                      <div className="text-xs text-gray-500">
-                                        {u.email}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <Badge variant="outline" className="text-xs">
-                                    {(u.role ?? "WARD_OFFICER").replace("_", " ")}
-                                  </Badge>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                          label="Ward Officer"
+                          placeholder="Select Ward Officer"
+                          disabled={isLoadingWardOfficers}
+                          isLoading={isLoadingWardOfficers}
+                          error={validationErrors.find(error => error.includes('Ward Officer'))}
+                          allowNone={true}
+                        />
 
-                      <div>
-                        <Label>Maintenance Team</Label>
-                        {/* Validation error display for maintenance team */}
-                        {validationErrors.some(error => error.includes('maintenance team') || error.includes('team member')) && (
-                          <div className="text-xs text-red-600 mb-1">
-                            {validationErrors.find(error => error.includes('maintenance team') || error.includes('team member'))}
-                          </div>
-                        )}
-                        <Select
+                        <UserSelectDropdown
+                          users={maintenanceUsers}
                           value={formData.maintenanceTeamId}
                           onValueChange={(value) => {
                             setFormData((prev) => ({
@@ -845,112 +901,77 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                             }));
                             setValidationErrors([]);
                           }}
-                          disabled={
-                            isLoadingMaintenance || maintenanceUsers.length === 0
-                          }
-                        >
-                          <SelectTrigger className={validationErrors.some(error => error.includes('maintenance team') || error.includes('team member')) ? "border-red-300" : ""}>
-                            <SelectValue placeholder="Select Maintenance Team" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">No Assignment</SelectItem>
-                            {maintenanceUsers.map((u: any) => (
-                              <SelectItem key={u.id} value={u.id}>
-                                <div className="flex items-center justify-between w-full gap-2">
-                                  <div className="flex items-center">
-                                    {getUserRoleIcon(u.role ?? "MAINTENANCE_TEAM")}
-                                    <div className="ml-2 text-left">
-                                      <div className="font-medium">
-                                        {u.fullName}
-                                      </div>
-                                      <div className="text-xs text-gray-500">
-                                        {u.email}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <Badge variant="outline" className="text-xs">
-                                    {(u.role ?? "MAINTENANCE_TEAM").replace("_", " ")}
-                                  </Badge>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          label="Maintenance Team"
+                          placeholder="Select Maintenance Team"
+                          disabled={isLoadingMaintenance}
+                          isLoading={isLoadingMaintenance}
+                          error={validationErrors.find(error =>
+                            error.includes('maintenance team') || error.includes('team member')
+                          )}
+                          allowNone={true}
+                        />
                       </div>
                     </div>
                   ) : (
-                    <>
-                      {/* Validation error display for single select */}
-                      {validationErrors.some(error => error.includes('maintenance team') || error.includes('team member') || error.includes('Ward Officer')) && (
-                        <div className="text-xs text-red-600 mb-1">
-                          {validationErrors.find(error => error.includes('maintenance team') || error.includes('team member') || error.includes('Ward Officer'))}
-                        </div>
-                      )}
-                      <Select
+                    // Ward Officer: Single dropdown for Maintenance Team
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-sm font-medium text-gray-900">
+                          {getDropdownLabel()}
+                        </h4>
+                        {(complaint as any)?.needsTeamAssignment &&
+                          !["RESOLVED", "CLOSED"].includes(
+                            complaint.status ?? "REGISTERED",
+                          ) && (
+                            <Badge className="bg-orange-100 text-orange-800 text-xs">
+                              Assignment Required
+                            </Badge>
+                          )}
+                      </div>
+
+                      <UserSelectDropdown
+                        users={availableUsers}
                         value={
                           user?.role === "WARD_OFFICER"
                             ? formData.maintenanceTeamId
                             : formData.wardOfficerId
                         }
                         onValueChange={(value) => {
-                          if (user?.role === "WARD_OFFICER")
+                          if (user?.role === "WARD_OFFICER") {
                             setFormData((prev) => ({
                               ...prev,
                               maintenanceTeamId: value,
                             }));
-                          else
+                          } else {
                             setFormData((prev) => ({
                               ...prev,
                               wardOfficerId: value,
                             }));
+                          }
                           setValidationErrors([]);
                         }}
+                        placeholder={getDropdownLabel()}
                         disabled={availableUsers.length === 0}
-                      >
-                        <SelectTrigger className={validationErrors.some(error => error.includes('maintenance team') || error.includes('team member') || error.includes('Ward Officer')) ? "border-red-300" : ""}>
-                          <SelectValue placeholder={getDropdownLabel()} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">
-                            <div className="flex items-center">
-                              <User className="h-4 w-4 mr-2" />
-                              No Assignment
-                            </div>
-                          </SelectItem>
-                          {filteredUsers.map((u: any) => (
-                            <SelectItem key={u.id} value={u.id}>
-                              <div className="flex items-center justify-between w-full gap-2">
-                                <div className="flex items-center">
-                                  {getUserRoleIcon(u.role ?? "WARD_OFFICER")}
-                                  <div className="ml-2 text-left">
-                                    <div className="font-medium">{u.fullName}</div>
-                                    <div className="text-xs text-gray-500">
-                                      {u.email}
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs">
-                                  {(u.role ?? "WARD_OFFICER").replace("_", " ")}
-                                </Badge>
-                                {u.ward && (
-                                  <div className="text-xs text-blue-600">
-                                    {u.ward.name}
-                                  </div>
-                                )}
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </>
+                        isLoading={isLoadingMaintenance || isLoadingWardOfficers}
+                        error={validationErrors.find(error =>
+                          error.includes('maintenance team') ||
+                          error.includes('team member') ||
+                          error.includes('Ward Officer')
+                        )}
+                        allowNone={true}
+                      />
+                    </div>
                   )}
 
-                  {(isLoadingWardOfficers || isLoadingMaintenance) && (
-                    <div className="text-sm text-gray-500">Loading users...</div>
-                  )}
+                  {/* Loading and Error States */}
                   {(wardOfficersError || maintenanceError) && (
-                    <div className="text-sm text-red-500">
-                      Error loading users. Please try again.
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <div className="flex items-center">
+                        <AlertTriangle className="h-4 w-4 text-red-500 mr-2" />
+                        <span className="text-sm text-red-700">
+                          Error loading users. Please try again.
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -977,12 +998,16 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             </div>
           )}
 
-          <div>
-            <Label htmlFor="remarks">
-              {user?.role === "MAINTENANCE_TEAM"
-                ? "Work Notes (Optional)"
-                : "Remarks (Optional)"}
-            </Label>
+          {/* Remarks Section */}
+          <div className="space-y-2">
+            <div className="flex items-center mb-2">
+              <FileText className="h-4 w-4 text-gray-600 mr-2" />
+              <Label htmlFor="remarks" className="text-sm font-medium">
+                {user?.role === "MAINTENANCE_TEAM"
+                  ? "Work Notes (Optional)"
+                  : "Remarks (Optional)"}
+              </Label>
+            </div>
             <Textarea
               id="remarks"
               placeholder={
@@ -996,23 +1021,65 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, remarks: e.target.value }))
               }
-              rows={3}
+              rows={4}
+              className="resize-none"
             />
+            <p className="text-xs text-gray-500">
+              {user?.role === "MAINTENANCE_TEAM"
+                ? "Document your work progress and any issues for future reference"
+                : "Add context or instructions that will help with complaint resolution"
+              }
+            </p>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose}>
+          <DialogFooter className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
+              className="w-full sm:w-auto order-2 sm:order-1"
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={isUpdating || isReopening}>
-              {isUpdating || isReopening
-                ? formData.status === "REOPENED" ? "Reopening..." : "Updating..."
-                : formData.status === "REOPENED" ? "Reopen Complaint"
-                : user?.role === "MAINTENANCE_TEAM"
-                  ? "Update Status"
-                  : user?.role === "WARD_OFFICER"
-                    ? "Save Changes"
-                    : "Update Complaint"}
+            <Button
+              type="submit"
+              disabled={isUpdating || isReopening}
+              className={cn(
+                "w-full sm:w-auto order-1 sm:order-2",
+                formData.status === "REOPENED" && "bg-amber-600 hover:bg-amber-700",
+                user?.role === "MAINTENANCE_TEAM" && "bg-green-600 hover:bg-green-700"
+              )}
+            >
+              {isUpdating || isReopening ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  {formData.status === "REOPENED" ? "Reopening..." : "Updating..."}
+                </div>
+              ) : (
+                <>
+                  {formData.status === "REOPENED" ? (
+                    <>
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                      Reopen Complaint
+                    </>
+                  ) : user?.role === "MAINTENANCE_TEAM" ? (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Update Status
+                    </>
+                  ) : user?.role === "WARD_OFFICER" ? (
+                    <>
+                      <Settings className="h-4 w-4 mr-2" />
+                      Save Changes
+                    </>
+                  ) : (
+                    <>
+                      <FileText className="h-4 w-4 mr-2" />
+                      Update Complaint
+                    </>
+                  )}
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

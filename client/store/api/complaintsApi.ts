@@ -582,6 +582,8 @@ export const complaintsApi = baseApi.injectEndpoints({
         if (isMaintenancePhoto) {
           formData.append("isMaintenancePhoto", "true");
         }
+        
+
         return {
           url: `/complaints/${complaintId}/photos`,
           method: "POST",
@@ -591,6 +593,7 @@ export const complaintsApi = baseApi.injectEndpoints({
       invalidatesTags: (result, error, { complaintId }) => [
         { type: "Photo", id: "LIST" },
         { type: "Photo", id: complaintId },
+        { type: "Complaint", id: complaintId }, // Also invalidate complaint data to refresh attachments
       ],
     }),
   }),

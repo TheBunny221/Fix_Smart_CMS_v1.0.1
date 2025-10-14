@@ -292,6 +292,8 @@ const PhotoUploadModal: React.FC<PhotoUploadModalProps> = ({
       };
       const trimmed = description.trim();
       if (trimmed) payload.description = trimmed;
+      
+
       await uploadPhotos(payload).unwrap();
 
       // Clean up and close
