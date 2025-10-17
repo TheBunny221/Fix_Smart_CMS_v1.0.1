@@ -105,18 +105,20 @@ export const validateUserProfileUpdate = [
 // Complaint validation rules
 export const validateComplaintCreation = [
   body("type")
-    .isIn([
-      "WATER_SUPPLY",
-      "ELECTRICITY",
-      "ROAD_REPAIR",
-      "GARBAGE_COLLECTION",
-      "STREET_LIGHTING",
-      "SEWERAGE",
-      "PUBLIC_HEALTH",
-      "TRAFFIC",
-      "OTHERS",
-    ])
-    .withMessage("Invalid complaint type"),
+    .custom(async (value) => {
+      // Dynamic validation using complaint type helper
+      const { isValidComplaintType } = await import("../utils/complaintTypeHelper.js");
+      
+      try {
+        const isValid = await isValidComplaintType(value);
+        if (!isValid) {
+          throw new Error(`Invalid complaint type: ${value}`);
+        }
+        return true;
+      } catch (error) {
+        throw new Error(`Complaint type validation failed: ${error.message}`);
+      }
+    }),
 
   body("description")
     .trim()

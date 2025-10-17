@@ -113,14 +113,30 @@ const uiSlice = createSlice({
     // Loading
     setLoading: (
       state,
-      action: PayloadAction<{ isLoading: boolean; text?: string }>,
+      action: PayloadAction<{ isLoading: boolean; text?: string; silent?: boolean }>,
     ) => {
-        state.isLoading = action.payload.isLoading;
-        if (action.payload.text !== undefined) {
-          state.loadingText = action.payload.text;
-        } else {
-          delete state.loadingText;
+        // Only update if not silent mode
+        if (!action.payload.silent) {
+          state.isLoading = action.payload.isLoading;
+          if (action.payload.text !== undefined) {
+            state.loadingText = action.payload.text;
+          } else {
+            delete state.loadingText;
+          }
         }
+    },
+
+    // Quick loader actions
+    showLoader: (state, action: PayloadAction<string | undefined>) => {
+      state.isLoading = true;
+      if (action.payload) {
+        state.loadingText = action.payload;
+      }
+    },
+
+    hideLoader: (state) => {
+      state.isLoading = false;
+      delete state.loadingText;
     },
 
     // Sidebar
@@ -346,6 +362,8 @@ const uiSlice = createSlice({
 
 export const {
   setLoading,
+  showLoader,
+  hideLoader,
   toggleSidebar,
   setSidebarOpen,
   toggleSidebarCollapsed,

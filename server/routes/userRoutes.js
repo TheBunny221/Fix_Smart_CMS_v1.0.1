@@ -8,6 +8,7 @@ import {
   getUserStats,
   verifyAccount,
   getWards,
+  getOfficers,
   createWard,
   updateWard,
   deleteWard,
@@ -53,6 +54,9 @@ router.post("/change-password", changePassword);
 
 // Ward management (accessible to all authenticated users for ward list)
 router.get("/wards", getWards);
+
+// Officers list (accessible to all authenticated users for officer selection)
+router.get("/officers", getOfficers);
 
 // Admin only routes
 router.use(authorize("ADMINISTRATOR"));

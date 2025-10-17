@@ -585,6 +585,63 @@ export const getWards = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get officers (for dropdown/selection)
+// @route   GET /api/users/officers
+// @access  Private
+export const getOfficers = asyncHandler(async (req, res) => {
+  const { role, wardId, all } = req.query;
+
+  const fetchAll = all === "true";
+  const where = {};
+
+  // Filter by active status unless explicitly requesting all
+  if (!fetchAll) {
+    where.isActive = true;
+  }
+
+  // Filter by role if specified
+  if (role) {
+    where.role = role;
+  }
+
+  // Filter by ward if specified
+  if (wardId) {
+    where.wardId = wardId;
+  }
+
+  // Default to officer roles if no specific role is requested
+  if (!role) {
+    where.role = {
+      in: ["WARD_OFFICER", "MAINTENANCE_TEAM", "ADMINISTRATOR"]
+    };
+  }
+
+  const officers = await prisma.user.findMany({
+    where,
+    orderBy: { fullName: "asc" },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      role: true,
+      wardId: true,
+      isActive: true,
+      ward: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Officers retrieved successfully",
+    data: { officers },
+  });
+});
+
 // @desc    Create ward (Admin only)
 // @route   POST /api/users/wards
 // @access  Private (Admin)

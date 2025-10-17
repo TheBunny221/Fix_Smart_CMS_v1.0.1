@@ -1,5 +1,10 @@
 import { useMemo } from "react";
-import { useGetComplaintTypesQuery } from "../store/api/complaintTypesApi";
+import { useAppSelector } from "../store/hooks";
+import { 
+  selectComplaintTypes, 
+  selectSystemConfigLoading, 
+  selectSystemConfigError 
+} from "../store/slices/systemConfigSlice";
 
 export interface ComplaintTypeOption {
   value: string;
@@ -10,26 +15,19 @@ export interface ComplaintTypeOption {
 }
 
 export const useComplaintTypes = () => {
-  const { data: response, isLoading, error } = useGetComplaintTypesQuery();
-
-  const complaintTypes = useMemo(() => {
-    if (!response?.data) return [];
-    return response.data;
-  }, [response]);
+  const complaintTypes = useAppSelector(selectComplaintTypes);
+  const isLoading = useAppSelector(selectSystemConfigLoading);
+  const error = useAppSelector(selectSystemConfigError);
 
   const complaintTypeOptions = useMemo(() => {
-    if (!response?.data) return [];
-
-    return response.data
-      .filter((type) => type.isActive)
-      .map((type) => ({
-        value: type.id.toUpperCase(),
-        label: type.name,
-        description: type.description,
-        priority: type.priority,
-        slaHours: type.slaHours,
-      }));
-  }, [response]);
+    return complaintTypes.map((type) => ({
+      value: type.id,
+      label: type.name,
+      description: type.description,
+      priority: type.priority,
+      slaHours: type.slaHours,
+    }));
+  }, [complaintTypes]);
 
   const getComplaintTypeById = (id: string) => {
     return complaintTypes.find((type) => type.id === id);

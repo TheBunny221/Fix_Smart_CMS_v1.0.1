@@ -2,6 +2,7 @@ import { getPrisma } from "../db/connection.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { sendEmail, sendOTPEmail } from "../utils/emailService.js";
 import { verifyCaptchaForComplaint } from "./captchaController.js";
+import { getActiveSystemConfig } from "./systemConfigController.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
@@ -241,11 +242,9 @@ export const submitGuestComplaintWithAttachments = asyncHandler(
       }
     }
 
-    // Check auto-assignment setting
-    const autoAssignSetting = await prisma.systemConfig.findUnique({
-      where: { key: "AUTO_ASSIGN_COMPLAINTS" },
-    });
-    const isAutoAssignEnabled = autoAssignSetting?.value === "true";
+    // Check auto-assignment setting (only if active)
+    const autoAssignEnabled = await getActiveSystemConfig("AUTO_ASSIGN_COMPLAINTS", "false");
+    const isAutoAssignEnabled = autoAssignEnabled === "true";
 
     // Resolve ward officer when auto-assign is enabled
     let wardOfficerId = null;
@@ -539,11 +538,9 @@ export const verifyOTPAndRegister = asyncHandler(async (req, res) => {
     Date.now() + (priorityHours[priority || "MEDIUM"] || 48) * 60 * 60 * 1000,
   );
 
-  // Check auto-assignment setting and optionally pick a ward officer
-  const autoAssignSetting = await prisma.systemConfig.findUnique({
-    where: { key: "AUTO_ASSIGN_COMPLAINTS" },
-  });
-  const isAutoAssignEnabled = autoAssignSetting?.value === "true";
+  // Check auto-assignment setting and optionally pick a ward officer (only if active)
+  const autoAssignEnabled = await getActiveSystemConfig("AUTO_ASSIGN_COMPLAINTS", "false");
+  const isAutoAssignEnabled = autoAssignEnabled === "true";
   let wardOfficerId = null;
   if (isAutoAssignEnabled) {
     const wardOfficer = await prisma.user.findFirst({

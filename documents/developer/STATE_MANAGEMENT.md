@@ -5,6 +5,7 @@ Guide to Redux store structure, RTK Query usage, and state management patterns i
 ## Overview
 
 NLC-CMS uses **Redux Toolkit (RTK)** with **RTK Query** for state management:
+
 - **Redux Toolkit**: Modern Redux with simplified syntax
 - **RTK Query**: Data fetching and caching solution
 - **React-Redux**: React bindings for Redux
@@ -15,12 +16,12 @@ NLC-CMS uses **Redux Toolkit (RTK)** with **RTK Query** for state management:
 ### Store Configuration (`client/store/index.ts`)
 
 ```typescript
-import { configureStore } from '@reduxjs/toolkit';
-import { setupListeners } from '@reduxjs/toolkit/query';
-import { authSlice } from './slices/authSlice';
-import { uiSlice } from './slices/uiSlice';
-import { complaintSlice } from './slices/complaintSlice';
-import { apiSlice } from './api/apiSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import { setupListeners } from "@reduxjs/toolkit/query";
+import { authSlice } from "./slices/authSlice";
+import { uiSlice } from "./slices/uiSlice";
+import { complaintSlice } from "./slices/complaintSlice";
+import { apiSlice } from "./api/apiSlice";
 
 export const store = configureStore({
   reducer: {
@@ -32,10 +33,10 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
       },
     }).concat(apiSlice.middleware),
-  devTools: process.env.NODE_ENV !== 'production',
+  devTools: process.env.NODE_ENV !== "production",
 });
 
 // Enable listener behavior for the store
@@ -46,10 +47,10 @@ export type AppDispatch = typeof store.dispatch;
 ```
 
 ### Typed Hooks (`client/store/hooks.ts`)
-
+  
 ```typescript
-import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
-import type { RootState, AppDispatch } from './index';
+import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
+import type { RootState, AppDispatch } from "./index";
 
 // Use throughout your app instead of plain `useDispatch` and `useSelector`
 export const useAppDispatch = () => useDispatch<AppDispatch>();
@@ -61,13 +62,13 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 ### Authentication Slice (`client/store/slices/authSlice.ts`)
 
 ```typescript
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface User {
   id: string;
   email: string;
   fullName: string;
-  role: 'CITIZEN' | 'WARD_OFFICER' | 'MAINTENANCE_TEAM' | 'ADMINISTRATOR';
+  role: "CITIZEN" | "WARD_OFFICER" | "MAINTENANCE_TEAM" | "ADMINISTRATOR";
   wardId?: string;
   hasPassword: boolean;
 }
@@ -82,27 +83,30 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('token'),
+  token: localStorage.getItem("token"),
   isAuthenticated: false,
   isLoading: false,
   error: null,
 };
 
 export const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     loginStart: (state) => {
       state.isLoading = true;
       state.error = null;
     },
-    loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+    loginSuccess: (
+      state,
+      action: PayloadAction<{ user: User; token: string }>,
+    ) => {
       state.isLoading = false;
       state.isAuthenticated = true;
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.error = null;
-      localStorage.setItem('token', action.payload.token);
+      localStorage.setItem("token", action.payload.token);
     },
     loginFailure: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -110,14 +114,14 @@ export const authSlice = createSlice({
       state.user = null;
       state.token = null;
       state.error = action.payload;
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     },
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;
       state.token = null;
       state.error = null;
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
@@ -142,19 +146,21 @@ export const {
 // Selectors
 export const selectAuth = (state: { auth: AuthState }) => state.auth;
 export const selectUser = (state: { auth: AuthState }) => state.auth.user;
-export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;
-export const selectAuthLoading = (state: { auth: AuthState }) => state.auth.isLoading;
+export const selectIsAuthenticated = (state: { auth: AuthState }) =>
+  state.auth.isAuthenticated;
+export const selectAuthLoading = (state: { auth: AuthState }) =>
+  state.auth.isLoading;
 export const selectAuthError = (state: { auth: AuthState }) => state.auth.error;
 ```
 
 ### UI Slice (`client/store/slices/uiSlice.ts`)
 
 ```typescript
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface Notification {
   id: string;
-  type: 'success' | 'error' | 'warning' | 'info';
+  type: "success" | "error" | "warning" | "info";
   title: string;
   message: string;
   duration?: number;
@@ -162,8 +168,8 @@ interface Notification {
 
 interface UIState {
   sidebarOpen: boolean;
-  theme: 'light' | 'dark';
-  language: 'en' | 'hi' | 'ml';
+  theme: "light" | "dark";
+  language: "en" | "hi" | "ml";
   notifications: Notification[];
   loading: {
     global: boolean;
@@ -173,14 +179,19 @@ interface UIState {
   modals: {
     complaintDetails: { open: boolean; complaintId: string | null };
     userProfile: { open: boolean };
-    confirmDialog: { open: boolean; title: string; message: string; onConfirm?: () => void };
+    confirmDialog: {
+      open: boolean;
+      title: string;
+      message: string;
+      onConfirm?: () => void;
+    };
   };
 }
 
 const initialState: UIState = {
   sidebarOpen: true,
-  theme: 'light',
-  language: 'en',
+  theme: "light",
+  language: "en",
   notifications: [],
   loading: {
     global: false,
@@ -190,12 +201,12 @@ const initialState: UIState = {
   modals: {
     complaintDetails: { open: false, complaintId: null },
     userProfile: { open: false },
-    confirmDialog: { open: false, title: '', message: '' },
+    confirmDialog: { open: false, title: "", message: "" },
   },
 };
 
 export const uiSlice = createSlice({
-  name: 'ui',
+  name: "ui",
   initialState,
   reducers: {
     toggleSidebar: (state) => {
@@ -204,13 +215,16 @@ export const uiSlice = createSlice({
     setSidebarOpen: (state, action: PayloadAction<boolean>) => {
       state.sidebarOpen = action.payload;
     },
-    setTheme: (state, action: PayloadAction<'light' | 'dark'>) => {
+    setTheme: (state, action: PayloadAction<"light" | "dark">) => {
       state.theme = action.payload;
     },
-    setLanguage: (state, action: PayloadAction<'en' | 'hi' | 'ml'>) => {
+    setLanguage: (state, action: PayloadAction<"en" | "hi" | "ml">) => {
       state.language = action.payload;
     },
-    addNotification: (state, action: PayloadAction<Omit<Notification, 'id'>>) => {
+    addNotification: (
+      state,
+      action: PayloadAction<Omit<Notification, "id">>,
+    ) => {
       const notification: Notification = {
         ...action.payload,
         id: Date.now().toString(),
@@ -219,23 +233,29 @@ export const uiSlice = createSlice({
     },
     removeNotification: (state, action: PayloadAction<string>) => {
       state.notifications = state.notifications.filter(
-        (notification) => notification.id !== action.payload
+        (notification) => notification.id !== action.payload,
       );
     },
     clearNotifications: (state) => {
       state.notifications = [];
     },
-    setLoading: (state, action: PayloadAction<{ key: keyof UIState['loading']; value: boolean }>) => {
+    setLoading: (
+      state,
+      action: PayloadAction<{ key: keyof UIState["loading"]; value: boolean }>,
+    ) => {
       state.loading[action.payload.key] = action.payload.value;
     },
-    openModal: (state, action: PayloadAction<{ modal: keyof UIState['modals']; data?: any }>) => {
+    openModal: (
+      state,
+      action: PayloadAction<{ modal: keyof UIState["modals"]; data?: any }>,
+    ) => {
       const { modal, data } = action.payload;
       (state.modals[modal] as any).open = true;
       if (data) {
         Object.assign(state.modals[modal], data);
       }
     },
-    closeModal: (state, action: PayloadAction<keyof UIState['modals']>) => {
+    closeModal: (state, action: PayloadAction<keyof UIState["modals"]>) => {
       (state.modals[action.payload] as any).open = false;
     },
   },
@@ -256,10 +276,12 @@ export const {
 
 // Selectors
 export const selectUI = (state: { ui: UIState }) => state.ui;
-export const selectSidebarOpen = (state: { ui: UIState }) => state.ui.sidebarOpen;
+export const selectSidebarOpen = (state: { ui: UIState }) =>
+  state.ui.sidebarOpen;
 export const selectTheme = (state: { ui: UIState }) => state.ui.theme;
 export const selectLanguage = (state: { ui: UIState }) => state.ui.language;
-export const selectNotifications = (state: { ui: UIState }) => state.ui.notifications;
+export const selectNotifications = (state: { ui: UIState }) =>
+  state.ui.notifications;
 export const selectLoading = (state: { ui: UIState }) => state.ui.loading;
 export const selectModals = (state: { ui: UIState }) => state.ui.modals;
 ```
@@ -269,36 +291,36 @@ export const selectModals = (state: { ui: UIState }) => state.ui.modals;
 ### Base API Slice (`client/store/api/apiSlice.ts`)
 
 ```typescript
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { RootState } from '../index';
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import type { RootState } from "../index";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: '/api',
+  baseUrl: "/api",
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.token;
     if (token) {
-      headers.set('authorization', `Bearer ${token}`);
+      headers.set("authorization", `Bearer ${token}`);
     }
-    headers.set('content-type', 'application/json');
+    headers.set("content-type", "application/json");
     return headers;
   },
 });
 
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);
-  
+
   if (result.error && result.error.status === 401) {
     // Token expired, logout user
-    api.dispatch({ type: 'auth/logout' });
+    api.dispatch({ type: "auth/logout" });
   }
-  
+
   return result;
 };
 
 export const apiSlice = createApi({
-  reducerPath: 'api',
+  reducerPath: "api",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['User', 'Complaint', 'Ward', 'Attachment', 'Notification'],
+  tagTypes: ["User", "Complaint", "Ward", "Attachment", "Notification"],
   endpoints: () => ({}),
 });
 ```
@@ -306,7 +328,7 @@ export const apiSlice = createApi({
 ### Auth API (`client/store/api/authApi.ts`)
 
 ```typescript
-import { apiSlice } from './apiSlice';
+import { apiSlice } from "./apiSlice";
 
 export interface LoginRequest {
   email: string;
@@ -335,56 +357,65 @@ export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
-        url: '/auth/login',
-        method: 'POST',
+        url: "/auth/login",
+        method: "POST",
         body: credentials,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
-    
-    loginWithOTP: builder.mutation<{ success: boolean; message: string }, { email: string }>({
+
+    loginWithOTP: builder.mutation<
+      { success: boolean; message: string },
+      { email: string }
+    >({
       query: (data) => ({
-        url: '/auth/login-otp',
-        method: 'POST',
+        url: "/auth/login-otp",
+        method: "POST",
         body: data,
       }),
     }),
-    
-    verifyOTP: builder.mutation<LoginResponse, { email: string; otpCode: string }>({
+
+    verifyOTP: builder.mutation<
+      LoginResponse,
+      { email: string; otpCode: string }
+    >({
       query: (data) => ({
-        url: '/auth/verify-otp',
-        method: 'POST',
+        url: "/auth/verify-otp",
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
-    
+
     register: builder.mutation<any, any>({
       query: (userData) => ({
-        url: '/auth/register',
-        method: 'POST',
+        url: "/auth/register",
+        method: "POST",
         body: userData,
       }),
     }),
-    
+
     getMe: builder.query<{ success: boolean; data: { user: User } }, void>({
-      query: () => '/auth/me',
-      providesTags: ['User'],
+      query: () => "/auth/me",
+      providesTags: ["User"],
     }),
-    
+
     updateProfile: builder.mutation<any, Partial<User>>({
       query: (updates) => ({
-        url: '/auth/profile',
-        method: 'PUT',
+        url: "/auth/profile",
+        method: "PUT",
         body: updates,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
     }),
-    
-    changePassword: builder.mutation<any, { currentPassword: string; newPassword: string }>({
+
+    changePassword: builder.mutation<
+      any,
+      { currentPassword: string; newPassword: string }
+    >({
       query: (data) => ({
-        url: '/auth/change-password',
-        method: 'PUT',
+        url: "/auth/change-password",
+        method: "PUT",
         body: data,
       }),
     }),
@@ -405,15 +436,15 @@ export const {
 ### Complaints API (`client/store/api/complaintsApi.ts`)
 
 ```typescript
-import { apiSlice } from './apiSlice';
+import { apiSlice } from "./apiSlice";
 
 export interface Complaint {
   id: string;
   complaintId: string;
   title: string;
   description: string;
-  status: 'REGISTERED' | 'ASSIGNED' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+  status: "REGISTERED" | "ASSIGNED" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+  priority: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   submittedOn: string;
   ward: {
     id: string;
@@ -433,7 +464,7 @@ export interface ComplaintFilters {
   wardId?: string;
   search?: string;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
 }
 
 export const complaintsApi = apiSlice.injectEndpoints({
@@ -454,63 +485,63 @@ export const complaintsApi = apiSlice.injectEndpoints({
       ComplaintFilters
     >({
       query: (filters) => ({
-        url: '/complaints',
+        url: "/complaints",
         params: filters,
       }),
-      providesTags: ['Complaint'],
+      providesTags: ["Complaint"],
     }),
-    
+
     getComplaint: builder.query<
       { success: boolean; data: { complaint: Complaint } },
       string
     >({
       query: (id) => `/complaints/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Complaint', id }],
+      providesTags: (result, error, id) => [{ type: "Complaint", id }],
     }),
-    
+
     createComplaint: builder.mutation<any, any>({
       query: (complaintData) => ({
-        url: '/complaints',
-        method: 'POST',
+        url: "/complaints",
+        method: "POST",
         body: complaintData,
       }),
-      invalidatesTags: ['Complaint'],
+      invalidatesTags: ["Complaint"],
     }),
-    
+
     updateComplaintStatus: builder.mutation<
       any,
       { id: string; status: string; comment?: string }
     >({
       query: ({ id, ...data }) => ({
         url: `/complaints/${id}/status`,
-        method: 'PUT',
+        method: "PUT",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Complaint', id }],
+      invalidatesTags: (result, error, { id }) => [{ type: "Complaint", id }],
     }),
-    
+
     assignComplaint: builder.mutation<
       any,
       { id: string; assignedToId: string; comment?: string }
     >({
       query: ({ id, ...data }) => ({
         url: `/complaints/${id}/assign`,
-        method: 'PUT',
+        method: "PUT",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Complaint', id }],
+      invalidatesTags: (result, error, { id }) => [{ type: "Complaint", id }],
     }),
-    
+
     addComplaintFeedback: builder.mutation<
       any,
       { id: string; citizenFeedback: string; rating: number }
     >({
       query: ({ id, ...data }) => ({
         url: `/complaints/${id}/feedback`,
-        method: 'POST',
+        method: "POST",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Complaint', id }],
+      invalidatesTags: (result, error, { id }) => [{ type: "Complaint", id }],
     }),
   }),
 });
@@ -531,58 +562,64 @@ export const {
 
 ```typescript
 // Example: ComplaintsList component
-import React, { useState } from 'react';
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { useGetComplaintsQuery } from '@/store/api/complaintsApi';
-import { setLoading, addNotification } from '@/store/slices/uiSlice';
+import React, { useState } from "react";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useGetComplaintsQuery } from "@/store/api/complaintsApi";
+import { setLoading, addNotification } from "@/store/slices/uiSlice";
 
 export const ComplaintsList: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const { language } = useAppSelector((state) => state.ui);
-  
+
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
-    status: '',
+    status: "",
   });
-  
+
   const {
     data: complaintsData,
     error,
     isLoading,
     refetch,
   } = useGetComplaintsQuery(filters);
-  
+
   const handleStatusFilter = (status: string) => {
-    setFilters(prev => ({ ...prev, status, page: 1 }));
+    setFilters((prev) => ({ ...prev, status, page: 1 }));
   };
-  
+
   const handleRefresh = () => {
     refetch();
-    dispatch(addNotification({
-      type: 'success',
-      title: 'Refreshed',
-      message: 'Complaints list updated',
-    }));
+    dispatch(
+      addNotification({
+        type: "success",
+        title: "Refreshed",
+        message: "Complaints list updated",
+      }),
+    );
   };
-  
+
   if (isLoading) {
     return <div>Loading complaints...</div>;
   }
-  
+
   if (error) {
     return <div>Error loading complaints</div>;
   }
-  
+
   return (
     <div>
       <div className="filters">
-        <button onClick={() => handleStatusFilter('')}>All</button>
-        <button onClick={() => handleStatusFilter('REGISTERED')}>Registered</button>
-        <button onClick={() => handleStatusFilter('IN_PROGRESS')}>In Progress</button>
+        <button onClick={() => handleStatusFilter("")}>All</button>
+        <button onClick={() => handleStatusFilter("REGISTERED")}>
+          Registered
+        </button>
+        <button onClick={() => handleStatusFilter("IN_PROGRESS")}>
+          In Progress
+        </button>
       </div>
-      
+
       <div className="complaints-list">
         {complaintsData?.data.complaints.map((complaint) => (
           <div key={complaint.id} className="complaint-card">
@@ -592,7 +629,7 @@ export const ComplaintsList: React.FC = () => {
           </div>
         ))}
       </div>
-      
+
       <button onClick={handleRefresh}>Refresh</button>
     </div>
   );
@@ -603,15 +640,20 @@ export const ComplaintsList: React.FC = () => {
 
 ```typescript
 // hooks/useAuth.ts
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { useLoginMutation, useGetMeQuery } from '@/store/api/authApi';
-import { loginStart, loginSuccess, loginFailure, logout } from '@/store/slices/authSlice';
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { useLoginMutation, useGetMeQuery } from "@/store/api/authApi";
+import {
+  loginStart,
+  loginSuccess,
+  loginFailure,
+  logout,
+} from "@/store/slices/authSlice";
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
   const auth = useAppSelector((state) => state.auth);
   const [loginMutation] = useLoginMutation();
-  
+
   const login = async (email: string, password: string) => {
     try {
       dispatch(loginStart());
@@ -619,15 +661,15 @@ export const useAuth = () => {
       dispatch(loginSuccess(result.data));
       return result;
     } catch (error: any) {
-      dispatch(loginFailure(error.data?.message || 'Login failed'));
+      dispatch(loginFailure(error.data?.message || "Login failed"));
       throw error;
     }
   };
-  
+
   const logoutUser = () => {
     dispatch(logout());
   };
-  
+
   return {
     ...auth,
     login,
@@ -638,38 +680,42 @@ export const useAuth = () => {
 
 ```typescript
 // hooks/useNotifications.ts
-import { useAppSelector, useAppDispatch } from '@/store/hooks';
-import { addNotification, removeNotification, clearNotifications } from '@/store/slices/uiSlice';
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import {
+  addNotification,
+  removeNotification,
+  clearNotifications,
+} from "@/store/slices/uiSlice";
 
 export const useNotifications = () => {
   const dispatch = useAppDispatch();
   const notifications = useAppSelector(selectNotifications);
-  
+
   const showNotification = (
-    type: 'success' | 'error' | 'warning' | 'info',
+    type: "success" | "error" | "warning" | "info",
     title: string,
     message: string,
-    duration?: number
+    duration?: number,
   ) => {
     dispatch(addNotification({ type, title, message, duration }));
   };
-  
+
   const showSuccess = (title: string, message: string) => {
-    showNotification('success', title, message);
+    showNotification("success", title, message);
   };
-  
+
   const showError = (title: string, message: string) => {
-    showNotification('error', title, message);
+    showNotification("error", title, message);
   };
-  
+
   const dismissNotification = (id: string) => {
     dispatch(removeNotification(id));
   };
-  
+
   const clearAll = () => {
     dispatch(clearNotifications());
   };
-  
+
   return {
     notifications,
     showNotification,
@@ -690,8 +736,8 @@ export const useNotifications = () => {
 export const complaintsApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getComplaints: builder.query({
-      query: (filters) => ({ url: '/complaints', params: filters }),
-      providesTags: ['Complaint'],
+      query: (filters) => ({ url: "/complaints", params: filters }),
+      providesTags: ["Complaint"],
       // Cache for 5 minutes
       keepUnusedDataFor: 300,
       // Refetch on focus
@@ -709,19 +755,19 @@ export const complaintsApi = apiSlice.injectEndpoints({
 // Use specific selectors to prevent unnecessary re-renders
 const ComplaintCount: React.FC = () => {
   // Only re-renders when complaints count changes
-  const complaintsCount = useAppSelector((state) => 
-    state.complaints.items.length
+  const complaintsCount = useAppSelector(
+    (state) => state.complaints.items.length,
   );
-  
+
   return <span>Total: {complaintsCount}</span>;
 };
 
 // Use createSelector for complex derived state
-import { createSelector } from '@reduxjs/toolkit';
+import { createSelector } from "@reduxjs/toolkit";
 
 const selectComplaintsByStatus = createSelector(
   [(state) => state.complaints.items, (state, status) => status],
-  (complaints, status) => complaints.filter(c => c.status === status)
+  (complaints, status) => complaints.filter((c) => c.status === status),
 );
 ```
 
@@ -730,8 +776,8 @@ const selectComplaintsByStatus = createSelector(
 ```typescript
 // Custom middleware for logging
 const loggerMiddleware: Middleware = (store) => (next) => (action) => {
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Dispatching:', action);
+  if (process.env.NODE_ENV === "development") {
+    console.log("Dispatching:", action);
   }
   return next(action);
 };
@@ -742,9 +788,7 @@ export const store = configureStore({
     // ... reducers
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware()
-      .concat(apiSlice.middleware)
-      .concat(loggerMiddleware),
+    getDefaultMiddleware().concat(apiSlice.middleware).concat(loggerMiddleware),
 });
 ```
 
@@ -754,9 +798,9 @@ export const store = configureStore({
 
 ```typescript
 // authSlice.test.ts
-import { authSlice, loginSuccess, logout } from '../slices/authSlice';
+import { authSlice, loginSuccess, logout } from "../slices/authSlice";
 
-describe('authSlice', () => {
+describe("authSlice", () => {
   const initialState = {
     user: null,
     token: null,
@@ -764,30 +808,30 @@ describe('authSlice', () => {
     isLoading: false,
     error: null,
   };
-  
-  it('should handle login success', () => {
-    const user = { id: '1', email: 'test@example.com', fullName: 'Test User' };
-    const token = 'test-token';
-    
+
+  it("should handle login success", () => {
+    const user = { id: "1", email: "test@example.com", fullName: "Test User" };
+    const token = "test-token";
+
     const action = loginSuccess({ user, token });
     const state = authSlice.reducer(initialState, action);
-    
+
     expect(state.isAuthenticated).toBe(true);
     expect(state.user).toEqual(user);
     expect(state.token).toBe(token);
   });
-  
-  it('should handle logout', () => {
+
+  it("should handle logout", () => {
     const loggedInState = {
       ...initialState,
       isAuthenticated: true,
-      user: { id: '1', email: 'test@example.com' },
-      token: 'test-token',
+      user: { id: "1", email: "test@example.com" },
+      token: "test-token",
     };
-    
+
     const action = logout();
     const state = authSlice.reducer(loggedInState, action);
-    
+
     expect(state.isAuthenticated).toBe(false);
     expect(state.user).toBe(null);
     expect(state.token).toBe(null);
@@ -799,11 +843,11 @@ describe('authSlice', () => {
 
 ```typescript
 // ComplaintsList.test.tsx
-import { render, screen } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import { ComplaintsList } from '../ComplaintsList';
-import { authSlice } from '../../store/slices/authSlice';
+import { render, screen } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
+import { ComplaintsList } from "../ComplaintsList";
+import { authSlice } from "../../store/slices/authSlice";
 
 const createTestStore = (initialState = {}) => {
   return configureStore({
@@ -814,22 +858,22 @@ const createTestStore = (initialState = {}) => {
   });
 };
 
-describe('ComplaintsList', () => {
-  it('renders complaints list for authenticated user', () => {
+describe("ComplaintsList", () => {
+  it("renders complaints list for authenticated user", () => {
     const store = createTestStore({
       auth: {
         isAuthenticated: true,
-        user: { id: '1', role: 'CITIZEN' },
+        user: { id: "1", role: "CITIZEN" },
       },
     });
-    
+
     render(
       <Provider store={store}>
         <ComplaintsList />
-      </Provider>
+      </Provider>,
     );
-    
-    expect(screen.getByText('Complaints')).toBeInTheDocument();
+
+    expect(screen.getByText("Complaints")).toBeInTheDocument();
   });
 });
 ```
@@ -837,24 +881,28 @@ describe('ComplaintsList', () => {
 ## Best Practices
 
 ### 1. State Structure
+
 - Keep state normalized (avoid nested objects)
 - Use separate slices for different domains
 - Store derived state in selectors, not in state
 - Keep UI state separate from data state
 
 ### 2. RTK Query Usage
+
 - Use RTK Query for server state management
 - Leverage automatic caching and invalidation
 - Use optimistic updates for better UX
 - Handle loading and error states consistently
 
 ### 3. Performance
+
 - Use specific selectors to prevent unnecessary re-renders
 - Implement proper cache invalidation strategies
 - Use `createSelector` for expensive computations
 - Avoid storing non-serializable data in state
 
 ### 4. Error Handling
+
 - Handle API errors consistently across the app
 - Provide user-friendly error messages
 - Implement retry mechanisms where appropriate

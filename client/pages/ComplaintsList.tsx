@@ -5,6 +5,8 @@ import { useGetComplaintsQuery, type Complaint } from "../store/api/complaintsAp
 import { getApiErrorMessage } from "../store/api/baseApi";
 import { useGetWardsForFilteringQuery } from "../store/api/adminApi";
 import { useDataManager } from "../hooks/useDataManager";
+import { useComplaintPriorities, useComplaintStatuses } from "../hooks/useSystemConfig";
+import { useComplaintTypes } from "../hooks/useComplaintTypes";
 import {
   Card,
   CardContent,
@@ -39,6 +41,8 @@ import {
   MapPin,
   Eye,
   Edit,
+  ChevronDown,
+  X,
 } from "lucide-react";
 import ComplaintQuickActions from "../components/ComplaintQuickActions";
 import QuickComplaintModal from "../components/QuickComplaintModal";
@@ -81,6 +85,7 @@ const ComplaintsList: React.FC = () => {
   const [isQuickFormOpen, setIsQuickFormOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -101,47 +106,10 @@ const ComplaintsList: React.FC = () => {
   const selectedWard = wards.find((ward) => ward.id === wardFilter);
   const availableSubZones = selectedWard?.subZones || [];
 
-  // Get system config from context (avoids duplicate API calls)
-  const { getConfig } = useSystemConfig();
-  const getSettingValue = (key: string) => getConfig(key);
-
-  const configuredPriorities: string[] = useMemo(() => {
-    const raw = getSettingValue("COMPLAINT_PRIORITIES");
-    try {
-      const parsed = raw ? JSON.parse(raw) : null;
-      return Array.isArray(parsed) && parsed.length
-        ? parsed
-        : ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
-    } catch {
-      return ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
-    }
-  }, [getSettingValue]);
-
-  const configuredStatuses: string[] = useMemo(() => {
-    const raw = getSettingValue("COMPLAINT_STATUSES");
-    try {
-      const parsed = raw ? JSON.parse(raw) : null;
-      return Array.isArray(parsed) && parsed.length
-        ? parsed
-        : [
-            "REGISTERED",
-            "ASSIGNED",
-            "IN_PROGRESS",
-            "RESOLVED",
-            "CLOSED",
-            "REOPENED",
-          ];
-    } catch {
-      return [
-        "REGISTERED",
-        "ASSIGNED",
-        "IN_PROGRESS",
-        "RESOLVED",
-        "CLOSED",
-        "REOPENED",
-      ];
-    }
-  }, [getSettingValue]);
+  // Get system config from centralized Redux store
+  const { priorities: configuredPriorities } = useComplaintPriorities();
+  const { statuses: configuredStatuses } = useComplaintStatuses();
+  const { getComplaintTypeById } = useComplaintTypes();
 
   const prettyLabel = (v: string) =>
     v
@@ -242,8 +210,8 @@ const ComplaintsList: React.FC = () => {
   const complaints: Complaint[] = Array.isArray(complaintsData?.complaints)
     ? complaintsData.complaints
     : Array.isArray(complaintsData)
-    ? complaintsData
-    : [];
+      ? complaintsData
+      : [];
 
   // Cache complaints data when loaded
   useEffect(() => {
@@ -327,7 +295,7 @@ const ComplaintsList: React.FC = () => {
   const totalPages = Math.max(
     1,
     complaintsData?.pagination?.totalPages ??
-      Math.ceil((totalItems || 0) / recordsPerPage || 1),
+    Math.ceil((totalItems || 0) / recordsPerPage || 1),
   );
 
   // Ensure currentPage stays within bounds when totalPages or totalItems change
@@ -364,77 +332,67 @@ const ComplaintsList: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => refetch()}>
-            <FileText className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
           {(user?.role === "CITIZEN" ||
             user?.role === "MAINTENANCE_TEAM" ||
             user?.role === "ADMINISTRATOR" ||
             user?.role === "WARD_OFFICER") && (
-            <Button onClick={() => setIsQuickFormOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              New Complaint
-            </Button>
-          )}
+              <Button onClick={() => setIsQuickFormOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Complaint
+              </Button>
+            )}
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Ultra Compact Filters */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 items-start">
-            <div className="space-y-1 col-span-1 sm:col-span-2 xl:col-span-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search by ID, description, or location..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                  title="Search by complaint ID (e.g., KSC0001), description, or location"
-                />
-                {searchTerm && (
-                  <div className="absolute right-3 top-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSearchTerm("")}
-                      className="h-4 w-4 p-0 hover:bg-gray-200"
-                    >
-                      ×
-                    </Button>
-                  </div>
-                )}
-              </div>
+        <CardContent className="p-3">
+          {/* Primary Filter Row */}
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            {/* Search Bar - Expandable */}
+            <div className="relative flex-1 min-w-[180px] max-w-sm">
+              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+              <Input
+                placeholder="Search complaints..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 pr-7 h-8 text-sm"
+                title="Search by complaint ID, description, or location"
+              />
               {searchTerm && (
-                <p className="text-xs text-gray-500">
-                  {searchTerm.match(/^[A-Za-z]/)
-                    ? `Searching for : ${searchTerm}`
-                    : `Searching in descriptions and locations`}
-                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-0.5 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-gray-200"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
               )}
             </div>
+
+            {/* Primary Filters */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by status" />
+              <SelectTrigger className="w-[120px] h-8 text-sm">
+                <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
-                {configuredStatuses.map((s) => (
+                {configuredStatuses.map((s: string) => (
                   <SelectItem key={s} value={s}>
                     {prettyLabel(s)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by priority" />
+              <SelectTrigger className="w-[120px] h-8 text-sm">
+                <SelectValue placeholder="Priority" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Priority</SelectItem>
-                {configuredPriorities.map((p) => (
+                {configuredPriorities.map((p: string) => (
                   <SelectItem key={p} value={p}>
                     {prettyLabel(p)}
                   </SelectItem>
@@ -449,14 +407,10 @@ const ComplaintsList: React.FC = () => {
             </Select>
 
             {/* Ward Filter - Only for administrators */}
-            {user?.role == "ADMINISTRATOR" && (
-              <Select
-                value={wardFilter}
-                onValueChange={handleWardChange}
-                // disabled
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Filter by ward" />
+            {user?.role === "ADMINISTRATOR" && (
+              <Select value={wardFilter} onValueChange={handleWardChange}>
+                <SelectTrigger className="w-[120px] h-8 text-sm">
+                  <SelectValue placeholder="Ward" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Wards</SelectItem>
@@ -469,60 +423,95 @@ const ComplaintsList: React.FC = () => {
               </Select>
             )}
 
-            {/* Sub-Zone Filter - Only for admin and when ward is selected */}
-            {user?.role === "ADMINISTRATOR" &&
-              wardFilter !== "all" &&
-              availableSubZones.length > 0 && (
-                <Select value={subZoneFilter} onValueChange={setSubZoneFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filter by sub-zone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Sub-Zones</SelectItem>
-                    {availableSubZones.map((subZone) => (
-                      <SelectItem key={subZone.id} value={subZone.id}>
-                        {subZone.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-
-            {/* SLA Status Filter */}
-            <Select value={slaStatusFilter} onValueChange={setSlaStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by SLA" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All SLA Status</SelectItem>
-                <SelectItem value="ON_TIME">On Time</SelectItem>
-                <SelectItem value="WARNING">Warning</SelectItem>
-                <SelectItem value="OVERDUE">Overdue</SelectItem>
-                <SelectItem value="COMPLETED">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Assignment Filter - Only for Ward Officers */}
-            {user?.role === "WARD_OFFICER" && (
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="needsMaintenanceAssignment"
-                  checked={needsMaintenanceAssignment}
-                  onCheckedChange={(checked) => setNeedsMaintenanceAssignment(checked === true)}
-                />
-                <label
-                  htmlFor="needsMaintenanceAssignment"
-                  className="text-sm cursor-pointer"
-                >
-                  Needs Maintenance Assignment
-                </label>
-              </div>
-            )}
-            <Button variant="outline" onClick={clearFilters}>
-              <Filter className="h-4 w-4 mr-2" />
-              Clear Filters
+            {/* Advanced Filters Toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+              className="h-8 px-2 text-sm"
+            >
+              <Filter className="h-3.5 w-3.5 mr-1" />
+              More
+              <ChevronDown className={`h-3.5 w-3.5 ml-1 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
             </Button>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-1 ml-auto">
+              <Button variant="outline" size="sm" onClick={clearFilters} className="h-8 px-2 text-sm">
+                <X className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => refetch()} className="h-8 px-2 text-sm">
+                <FileText className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
+
+          {/* Advanced Filters - Collapsible */}
+          {showAdvancedFilters && (
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-200">
+              {/* Sub-Zone Filter - Only for admin and when ward is selected */}
+              {user?.role === "ADMINISTRATOR" &&
+                wardFilter !== "all" &&
+                availableSubZones.length > 0 && (
+                  <Select value={subZoneFilter} onValueChange={setSubZoneFilter}>
+                    <SelectTrigger className="w-[120px] h-8 text-sm">
+                      <SelectValue placeholder="Sub-Zone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Sub-Zones</SelectItem>
+                      {availableSubZones.map((subZone) => (
+                        <SelectItem key={subZone.id} value={subZone.id}>
+                          {subZone.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+              {/* SLA Status Filter */}
+              <Select value={slaStatusFilter} onValueChange={setSlaStatusFilter}>
+                <SelectTrigger className="w-[120px] h-8 text-sm">
+                  <SelectValue placeholder="SLA" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All SLA</SelectItem>
+                  <SelectItem value="ON_TIME">On Time</SelectItem>
+                  <SelectItem value="WARNING">Warning</SelectItem>
+                  <SelectItem value="OVERDUE">Overdue</SelectItem>
+                  <SelectItem value="COMPLETED">Done</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Assignment Filter - Only for Ward Officers */}
+              {user?.role === "WARD_OFFICER" && (
+                <div className="flex items-center space-x-1.5 px-2 py-1 border border-gray-200 rounded-md h-8">
+                  <Checkbox
+                    id="needsMaintenanceAssignment"
+                    checked={needsMaintenanceAssignment}
+                    onCheckedChange={(checked) => setNeedsMaintenanceAssignment(checked === true)}
+                    className="h-3.5 w-3.5"
+                  />
+                  <label
+                    htmlFor="needsMaintenanceAssignment"
+                    className="text-xs cursor-pointer whitespace-nowrap"
+                  >
+                    Needs Assignment
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Search Helper Text */}
+          {searchTerm && (
+            <div className="mt-1.5">
+              <p className="text-xs text-gray-500">
+                {searchTerm.match(/^[A-Za-z]/)
+                  ? `Searching for: ${searchTerm}`
+                  : `Searching in descriptions and locations`}
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -572,8 +561,8 @@ const ComplaintsList: React.FC = () => {
               <p className="text-gray-500 mb-2">No complaints found</p>
               <p className="text-sm text-gray-400">
                 {searchTerm ||
-                statusFilter !== "all" ||
-                priorityFilter !== "all"
+                  statusFilter !== "all" ||
+                  priorityFilter !== "all"
                   ? "Try adjusting your filters or search terms"
                   : "Submit your first complaint to get started"}
               </p>
@@ -590,8 +579,8 @@ const ComplaintsList: React.FC = () => {
                     <TableHead>Priority</TableHead>
                     {(user?.role === "ADMINISTRATOR" ||
                       user?.role === "WARD_OFFICER") && (
-                      <TableHead>Team</TableHead>
-                    )}
+                        <TableHead>Team</TableHead>
+                      )}
                     {user?.role === "ADMINISTRATOR" && (
                       <TableHead>Officer</TableHead>
                     )}
@@ -623,7 +612,8 @@ const ComplaintsList: React.FC = () => {
                         <div className="max-w-xs">
                           <p className="truncate">{complaint.description}</p>
                           <p className="text-sm text-gray-500">
-                            {complaint.type.replace("_", " ")}
+                            {getComplaintTypeById(complaint.complaintTypeId)?.name ||
+                              (typeof complaint.type === 'string' ? complaint.type.replace("_", " ") : complaint.type?.name || "Unknown Type")}
                           </p>
                         </div>
                       </TableCell>
@@ -657,16 +647,16 @@ const ComplaintsList: React.FC = () => {
                       </TableCell>
                       {(user?.role === "ADMINISTRATOR" ||
                         user?.role === "WARD_OFFICER") && (
-                        <TableCell>
-                          {complaint.maintenanceTeam?.fullName ? (
-                            <span className="text-sm">
-                              {complaint.maintenanceTeam.fullName}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-gray-500">-</span>
-                          )}
-                        </TableCell>
-                      )}
+                          <TableCell>
+                            {complaint.maintenanceTeam?.fullName ? (
+                              <span className="text-sm">
+                                {complaint.maintenanceTeam.fullName}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-gray-500">-</span>
+                            )}
+                          </TableCell>
+                        )}
                       {user?.role === "ADMINISTRATOR" && (
                         <TableCell>
                           {complaint.wardOfficer?.fullName ? (
@@ -682,7 +672,7 @@ const ComplaintsList: React.FC = () => {
                         <>
                           <TableCell>
                             {typeof complaint.rating === "number" &&
-                            complaint.rating > 0 ? (
+                              complaint.rating > 0 ? (
                               <span className="text-sm font-medium">
                                 {complaint.rating}/5
                               </span>

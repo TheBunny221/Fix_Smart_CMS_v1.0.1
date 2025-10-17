@@ -21,7 +21,7 @@ async function main() {
     console.log("🌱 Starting database seeding...");
     
     // Read seed data from JSON file
-    const seedDataPath = join(__dirname, "seed.json");
+    const seedDataPath = join(__dirname,"seeds" , "seed.json");
     const seedData = JSON.parse(readFileSync(seedDataPath, "utf8"));
     
     // Get environment variables

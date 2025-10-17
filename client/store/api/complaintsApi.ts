@@ -171,13 +171,26 @@ export const complaintsApi = baseApi.injectEndpoints({
     // Create new complaint
     createComplaint: builder.mutation<
       ApiResponse<Complaint>,
-      CreateComplaintRequest
+      CreateComplaintRequest | FormData
     >({
-      query: (data) => ({
-        url: "/complaints",
-        method: "POST",
-        body: data,
-      }),
+      query: (data) => {
+        // If data is FormData, send as multipart/form-data
+        if (data instanceof FormData) {
+          return {
+            url: "/complaints",
+            method: "POST",
+            body: data,
+            // Don't set Content-Type header, let browser set it with boundary
+          };
+        }
+        
+        // Otherwise, send as JSON (backward compatibility)
+        return {
+          url: "/complaints",
+          method: "POST",
+          body: data,
+        };
+      },
       // Let RTK Query handle response naturally
       invalidatesTags: [{ type: "Complaint", id: "LIST" }],
       // Optimistic update for immediate feedback
@@ -596,6 +609,24 @@ export const complaintsApi = baseApi.injectEndpoints({
         { type: "Complaint", id: complaintId }, // Also invalidate complaint data to refresh attachments
       ],
     }),
+
+    // Get daily complaint limit status for citizens
+    getDailyLimitStatus: builder.query<
+      ApiResponse<{
+        allowed: boolean;
+        todayCount: number;
+        limit: number;
+        remaining: number;
+        resetTime: string;
+      }>,
+      void
+    >({
+      query: () => ({
+        url: "/complaints/daily-limit-status",
+        method: "GET",
+      }),
+      providesTags: [{ type: "Complaint", id: "DAILY_LIMIT" }],
+    }),
   }),
   overrideExisting: true,
 });
@@ -619,4 +650,5 @@ export const {
   useAddComplaintMaterialMutation,
   useGetComplaintPhotosQuery,
   useUploadComplaintPhotosMutation,
+  useGetDailyLimitStatusQuery,
 } = complaintsApi;

@@ -5,6 +5,7 @@ import languageSlice from "./slices/languageSlice";
 import uiSlice from "./slices/uiSlice";
 import guestSlice from "./slices/guestSlice";
 import dataSlice from "./slices/dataSlice";
+import systemConfigSlice from "./slices/systemConfigSlice";
 import { baseApi } from "./api/baseApi";
 
 export const store = configureStore({
@@ -15,6 +16,7 @@ export const store = configureStore({
     ui: uiSlice,
     guest: guestSlice,
     data: dataSlice,
+    systemConfig: systemConfigSlice,
     // Add RTK Query reducer
     [baseApi.reducerPath]: baseApi.reducer,
   },

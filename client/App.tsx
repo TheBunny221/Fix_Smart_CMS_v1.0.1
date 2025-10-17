@@ -14,12 +14,14 @@ import { ContextErrorBoundary } from "./components/ContextErrorBoundary";
 import AppInitializer from "./components/AppInitializer";
 import GlobalMessageHandler from "./components/GlobalMessageHandler";
 import AuthErrorHandler from "./components/AuthErrorHandler";
+import SystemConfigInitializer from "./components/SystemConfigInitializer";
 import UnifiedLayout from "./components/layouts/UnifiedLayout";
 import OtpProvider from "./contexts/OtpContext";
 import OtpErrorBoundary from "./components/OtpErrorBoundary";
 import { SystemConfigProvider } from "./contexts/SystemConfigContext";
 import RoleBasedRoute from "./components/RoleBasedRoute";
 import RoleBasedDashboard from "./components/RoleBasedDashboard";
+import GlobalLoader from "./components/GlobalLoader";
 import { Loader2 } from "lucide-react";
 
 // Lazy load components for better performance
@@ -59,7 +61,7 @@ const TaskDetails = lazy(() => import("./pages/TaskDetails"));
 
 // Admin pages
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
-const UnifiedReports = lazy(() => import("./pages/UnifiedReports"));
+const UnifiedReportsRevamped = lazy(() => import("./pages/UnifiedReportsRevamped"));
 const AdminConfig = lazy(() => import("./pages/AdminConfig"));
 const AdminLanguages = lazy(() => import("./pages/AdminLanguages"));
 
@@ -80,107 +82,108 @@ const LoadingFallback: React.FC = () => (
 );
 
 const App: React.FC = () => {
-    return (
+  return (
     <Provider store={store}>
       <ErrorBoundary>
         <ContextErrorBoundary contextName="SystemConfig">
           <SystemConfigProvider>
             <ContextErrorBoundary contextName="AppInitializer">
               <AppInitializer>
-                <ContextErrorBoundary contextName="OtpProvider">
-                  <OtpErrorBoundary>
-                    <OtpProvider>
-                    <TooltipProvider>
-                <Router>
-                  <div className="min-h-screen bg-gray-50">
-                    <Suspense fallback={<LoadingFallback />}>
-                      <Routes>
-                        {/* Public routes */}
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route
-                          path="/set-password/:token"
-                          element={<SetPassword />}
-                        />
-                        <Route
-                          path="/set-password"
-                          element={<SetPassword />}
-                        />
-                        {/* <Route
+                <SystemConfigInitializer>
+                  <ContextErrorBoundary contextName="OtpProvider">
+                    <OtpErrorBoundary>
+                      <OtpProvider>
+                        <TooltipProvider>
+                          <Router>
+                            <div className="min-h-screen bg-gray-50">
+                              <Suspense fallback={<LoadingFallback />}>
+                                <Routes>
+                                  {/* Public routes */}
+                                  <Route path="/login" element={<Login />} />
+                                  <Route path="/register" element={<Register />} />
+                                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                                  <Route
+                                    path="/set-password/:token"
+                                    element={<SetPassword />}
+                                  />
+                                  <Route
+                                    path="/set-password"
+                                    element={<SetPassword />}
+                                  />
+                                  {/* <Route
                           path="/guest/complaint"
                           element={<GuestComplaintForm />}
                         /> */}
-                        {/* <Route
+                                  {/* <Route
                           path="/complaint"
                           element={<QuickComplaintPage />}
                         /> */}
-                        <Route
-                          path="/guest/track"
-                          element={<GuestTrackComplaint />}
-                        />
-                        {/* <Route
+                                  <Route
+                                    path="/guest/track"
+                                    element={<GuestTrackComplaint />}
+                                  />
+                                  {/* <Route
                           path="/guest/service-request"
                           element={<GuestServiceRequest />}
                         /> */}
-                        <Route
-                          path="/guest/dashboard"
-                          element={<GuestDashboard />}
-                        />
-                        <Route
-                          path="/unauthorized"
-                          element={<Unauthorized />}
-                        />
+                                  <Route
+                                    path="/guest/dashboard"
+                                    element={<GuestDashboard />}
+                                  />
+                                  <Route
+                                    path="/unauthorized"
+                                    element={<Unauthorized />}
+                                  />
 
-                        {/* Protected and Public Routes */}
-                        {/* Home route */}
-                        <Route
-                          path="/"
-                          element={
-                            <UnifiedLayout>
-                              <Index />
-                            </UnifiedLayout>
-                          }
-                        />
+                                  {/* Protected and Public Routes */}
+                                  {/* Home route */}
+                                  <Route
+                                    path="/"
+                                    element={
+                                      <UnifiedLayout>
+                                        <Index />
+                                      </UnifiedLayout>
+                                    }
+                                  />
 
-                        {/* Dashboard routes - Unified role-based routing */}
-                        <Route
-                          path="/dashboard"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute
-                                allowedRoles={[
-                                  "CITIZEN",
-                                  "WARD_OFFICER",
-                                  "MAINTENANCE_TEAM",
-                                  "ADMINISTRATOR",
-                                ]}
-                              >
-                                <RoleBasedDashboard />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
+                                  {/* Dashboard routes - Unified role-based routing */}
+                                  <Route
+                                    path="/dashboard"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute
+                                          allowedRoles={[
+                                            "CITIZEN",
+                                            "WARD_OFFICER",
+                                            "MAINTENANCE_TEAM",
+                                            "ADMINISTRATOR",
+                                          ]}
+                                        >
+                                          <RoleBasedDashboard />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
 
-                        {/* Complaint routes */}
-                        <Route
-                          path="/complaints"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute
-                                allowedRoles={[
-                                  "CITIZEN",
-                                  "WARD_OFFICER",
-                                  "MAINTENANCE_TEAM",
-                                  "ADMINISTRATOR",
-                                ]}
-                              >
-                                <ComplaintsList />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
-                       {/* <Route
+                                  {/* Complaint routes */}
+                                  <Route
+                                    path="/complaints"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute
+                                          allowedRoles={[
+                                            "CITIZEN",
+                                            "WARD_OFFICER",
+                                            "MAINTENANCE_TEAM",
+                                            "ADMINISTRATOR",
+                                          ]}
+                                        >
+                                          <ComplaintsList />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
+                                  {/* <Route
                           path="/complaints/create"
                           element={
                             <UnifiedLayout>
@@ -217,90 +220,90 @@ const App: React.FC = () => {
                             </UnifiedLayout>
                           }
                         />*/}
-                        <Route
-                          path="/complaints/:id"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute
-                                allowedRoles={[
-                                  "CITIZEN",
-                                  "WARD_OFFICER",
-                                  "MAINTENANCE_TEAM",
-                                  "ADMINISTRATOR",
-                                ]}
-                              >
-                                <ComplaintDetails />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
-                        <Route
-                          path="/complaint/:id"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute
-                                allowedRoles={[
-                                  "CITIZEN",
-                                  "WARD_OFFICER",
-                                  "MAINTENANCE_TEAM",
-                                  "ADMINISTRATOR",
-                                ]}
-                              >
-                                <ComplaintDetails />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
+                                  <Route
+                                    path="/complaints/:id"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute
+                                          allowedRoles={[
+                                            "CITIZEN",
+                                            "WARD_OFFICER",
+                                            "MAINTENANCE_TEAM",
+                                            "ADMINISTRATOR",
+                                          ]}
+                                        >
+                                          <ComplaintDetails />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
+                                  <Route
+                                    path="/complaint/:id"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute
+                                          allowedRoles={[
+                                            "CITIZEN",
+                                            "WARD_OFFICER",
+                                            "MAINTENANCE_TEAM",
+                                            "ADMINISTRATOR",
+                                          ]}
+                                        >
+                                          <ComplaintDetails />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
 
-                        {/* Ward Officer routes */}
-                        <Route
-                          path="/tasks"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute allowedRoles={["WARD_OFFICER"]}>
-                                <WardTasks />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
-                        <Route
-                          path="/ward"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute allowedRoles={["WARD_OFFICER"]}>
-                                <WardManagement />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
+                                  {/* Ward Officer routes */}
+                                  <Route
+                                    path="/tasks"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute allowedRoles={["WARD_OFFICER"]}>
+                                          <WardTasks />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
+                                  <Route
+                                    path="/ward"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute allowedRoles={["WARD_OFFICER"]}>
+                                          <WardManagement />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
 
-                        {/* Maintenance Team routes */}
-                        <Route
-                          path="/maintenance"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute
-                                allowedRoles={["MAINTENANCE_TEAM"]}
-                              >
-                                <MaintenanceTasks />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
-                        <Route
-                          path="/tasks/:id"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute
-                                allowedRoles={["MAINTENANCE_TEAM"]}
-                              >
-                                <TaskDetails />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
+                                  {/* Maintenance Team routes */}
+                                  <Route
+                                    path="/maintenance"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute
+                                          allowedRoles={["MAINTENANCE_TEAM"]}
+                                        >
+                                          <MaintenanceTasks />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
+                                  <Route
+                                    path="/tasks/:id"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute
+                                          allowedRoles={["MAINTENANCE_TEAM"]}
+                                        >
+                                          <TaskDetails />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
 
-                        {/* Communication routes
+                                  {/* Communication routes
                         <Route
                           path="/messages"
                           element={
@@ -317,84 +320,84 @@ const App: React.FC = () => {
                           }
                         /> */}
 
-                        {/* Unified Reports route */}
-                        <Route
-                          path="/reports"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute
-                                allowedRoles={[
-                                  "WARD_OFFICER",
-                                  "ADMINISTRATOR",
-                                  "MAINTENANCE_TEAM",
-                                ]}
-                              >
-                                <UnifiedReports />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
+                                  {/* Unified Reports route */}
+                                  <Route
+                                    path="/reports"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute
+                                          allowedRoles={[
+                                            "WARD_OFFICER",
+                                            "ADMINISTRATOR",
+                                            "MAINTENANCE_TEAM",
+                                          ]}
+                                        >
+                                          <UnifiedReportsRevamped />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
 
-                        {/* Admin routes */}
-                        <Route
-                          path="/admin/users"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute allowedRoles={["ADMINISTRATOR"]}>
-                                <AdminUsers />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
-                        <Route
-                          path="/admin/config"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute allowedRoles={["ADMINISTRATOR"]}>
-                                <AdminConfig />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
-                        <Route
-                          path="/admin/languages"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute allowedRoles={["ADMINISTRATOR"]}>
-                                <AdminLanguages />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
-                        {/* Redirect old analytics routes to unified reports */}
-                        <Route
-                          path="/admin/analytics"
-                          element={<Navigate to="/reports" replace />}
-                        />
-                        <Route
-                          path="/admin/reports-analytics"
-                          element={<Navigate to="/reports" replace />}
-                        />
+                                  {/* Admin routes */}
+                                  <Route
+                                    path="/admin/users"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute allowedRoles={["ADMINISTRATOR"]}>
+                                          <AdminUsers />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
+                                  <Route
+                                    path="/admin/config"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute allowedRoles={["ADMINISTRATOR"]}>
+                                          <AdminConfig />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
+                                  <Route
+                                    path="/admin/languages"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute allowedRoles={["ADMINISTRATOR"]}>
+                                          <AdminLanguages />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
+                                  {/* Redirect old analytics routes to unified reports */}
+                                  <Route
+                                    path="/admin/analytics"
+                                    element={<Navigate to="/reports" replace />}
+                                  />
+                                  <Route
+                                    path="/admin/reports-analytics"
+                                    element={<Navigate to="/reports" replace />}
+                                  />
 
-                        {/* Profile and Settings */}
-                        <Route
-                          path="/profile"
-                          element={
-                            <UnifiedLayout>
-                              <RoleBasedRoute
-                                allowedRoles={[
-                                  "CITIZEN",
-                                  "WARD_OFFICER",
-                                  "MAINTENANCE_TEAM",
-                                  "ADMINISTRATOR",
-                                ]}
-                              >
-                                <Profile />
-                              </RoleBasedRoute>
-                            </UnifiedLayout>
-                          }
-                        />
-                        {/* <Route
+                                  {/* Profile and Settings */}
+                                  <Route
+                                    path="/profile"
+                                    element={
+                                      <UnifiedLayout>
+                                        <RoleBasedRoute
+                                          allowedRoles={[
+                                            "CITIZEN",
+                                            "WARD_OFFICER",
+                                            "MAINTENANCE_TEAM",
+                                            "ADMINISTRATOR",
+                                          ]}
+                                        >
+                                          <Profile />
+                                        </RoleBasedRoute>
+                                      </UnifiedLayout>
+                                    }
+                                  />
+                                  {/* <Route
                           path="/settings"
                           element={
                             <UnifiedLayout>
@@ -412,19 +415,21 @@ const App: React.FC = () => {
                           }
                         /> */}
 
-                        {/* Catch all route */}
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                      </Routes>
-                    </Suspense>
-                  </div>
-                  <Toaster />
-                  <GlobalMessageHandler />
-                  <AuthErrorHandler />
-                </Router>
-                    </TooltipProvider>
-                    </OtpProvider>
-                  </OtpErrorBoundary>
-                </ContextErrorBoundary>
+                                  {/* Catch all route */}
+                                  <Route path="*" element={<Navigate to="/" replace />} />
+                                </Routes>
+                              </Suspense>
+                            </div>
+                            <Toaster />
+                            <GlobalMessageHandler />
+                            <AuthErrorHandler />
+                            <GlobalLoader />
+                          </Router>
+                        </TooltipProvider>
+                      </OtpProvider>
+                    </OtpErrorBoundary>
+                  </ContextErrorBoundary>
+                </SystemConfigInitializer>
               </AppInitializer>
             </ContextErrorBoundary>
           </SystemConfigProvider>

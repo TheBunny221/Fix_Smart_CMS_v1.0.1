@@ -4,6 +4,7 @@ interface Ward {
   id: string;
   name: string;
   description?: string;
+  isActive: boolean;
   boundaries?: string;
   centerLat?: number;
   centerLng?: number;
@@ -16,6 +17,7 @@ interface SubZone {
   name: string;
   wardId: string;
   description?: string;
+  isActive: boolean;
   boundaries?: string;
   centerLat?: number;
   centerLng?: number;
@@ -81,11 +83,104 @@ interface WardTeamMembersResponse {
   };
 }
 
+interface CreateWardRequest {
+  name: string;
+  description?: string;
+}
+
+interface UpdateWardRequest {
+  name?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+interface CreateSubZoneRequest {
+  name: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+interface UpdateSubZoneRequest {
+  name?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
 export const wardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Get all wards (with optional subzones)
+    getWards: builder.query<ApiResponse<{ wards: Ward[] }>, { includeSubzones?: boolean; all?: boolean }>({
+      query: ({ includeSubzones = false, all = false }) => ({
+        url: "/users/wards",
+        params: {
+          include: includeSubzones ? "subzones" : undefined,
+          all: all ? "true" : undefined,
+        },
+      }),
+      providesTags: ["Ward"],
+    }),
+
     getWardsWithBoundaries: builder.query<ApiResponse<Ward[]>, void>({
       query: () => "/wards/boundaries",
       providesTags: ["Ward"],
+    }),
+
+    // Create ward
+    createWard: builder.mutation<ApiResponse<{ ward: Ward }>, CreateWardRequest>({
+      query: (body) => ({
+        url: "/users/wards",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Ward"],
+    }),
+
+    // Update ward
+    updateWard: builder.mutation<ApiResponse<{ ward: Ward }>, { id: string; data: UpdateWardRequest }>({
+      query: ({ id, data }) => ({
+        url: `/users/wards/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Ward"],
+    }),
+
+    // Delete ward
+    deleteWard: builder.mutation<ApiResponse<void>, string>({
+      query: (id) => ({
+        url: `/users/wards/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Ward"],
+    }),
+
+    // Create subzone
+    createSubZone: builder.mutation<ApiResponse<SubZone>, { wardId: string; data: CreateSubZoneRequest }>({
+      query: ({ wardId, data }) => ({
+        url: `/users/wards/${wardId}/subzones`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Ward"],
+    }),
+
+    // Update subzone
+    updateSubZone: builder.mutation<ApiResponse<SubZone>, { wardId: string; id: string; data: UpdateSubZoneRequest }>({
+      query: ({ wardId, id, data }) => ({
+        url: `/users/wards/${wardId}/subzones/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Ward"],
+    }),
+
+    // Delete subzone
+    deleteSubZone: builder.mutation<ApiResponse<void>, { wardId: string; id: string }>({
+      query: ({ wardId, id }) => ({
+        url: `/users/wards/${wardId}/subzones/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Ward"],
     }),
 
     updateWardBoundaries: builder.mutation<
@@ -123,7 +218,14 @@ export const wardApi = baseApi.injectEndpoints({
 });
 
 export const {
+  useGetWardsQuery,
   useGetWardsWithBoundariesQuery,
+  useCreateWardMutation,
+  useUpdateWardMutation,
+  useDeleteWardMutation,
+  useCreateSubZoneMutation,
+  useUpdateSubZoneMutation,
+  useDeleteSubZoneMutation,
   useUpdateWardBoundariesMutation,
   useDetectLocationAreaMutation,
   useGetWardTeamMembersQuery,

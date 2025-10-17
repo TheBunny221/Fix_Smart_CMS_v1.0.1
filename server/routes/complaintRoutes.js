@@ -1,4 +1,8 @@
 import express from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 import { protect, authorize } from "../middleware/auth.js";
 import { uploadComplaintAttachment } from "../controller/uploadController.js";
 import {
@@ -12,9 +16,63 @@ import {
   getComplaintStats,
   getWardUsers,
   getWardDashboardStats,
+  getDailyLimitStatus,
 } from "../controller/complaintController.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const router = express.Router();
+
+// Configure multer for complaint attachments
+const complaintUploadDir = path.join(process.env.UPLOAD_PATH || "./uploads", "complaints");
+
+// Ensure upload directory exists
+if (!fs.existsSync(complaintUploadDir)) {
+  fs.mkdirSync(complaintUploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, complaintUploadDir);
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    const extension = path.extname(file.originalname);
+    const baseName = path.basename(file.originalname, extension);
+    cb(null, `complaint-${baseName}-${uniqueSuffix}${extension}`);
+  },
+});
+
+// File filter for complaint attachments
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif|webp|pdf|doc|docx|txt/;
+  const fileExtension = path
+    .extname(file.originalname)
+    .toLowerCase()
+    .substring(1);
+
+  if (allowedTypes.test(fileExtension)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error(
+        "Invalid file type. Only images (JPEG, PNG, GIF, WebP) and documents (PDF, DOC, DOCX, TXT) are allowed",
+      ),
+      false,
+    );
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    files: 5, // Max 5 files
+  },
+  fileFilter: fileFilter,
+});
 
 /**
  * @swagger
@@ -22,6 +80,49 @@ const router = express.Router();
  *   name: Complaints
  *   description: Complaint management operations
  */
+
+/**
+ * @swagger
+ * /api/complaints/daily-limit-status:
+ *   get:
+ *     summary: Get citizen's daily complaint limit status
+ *     tags: [Complaints]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Get the current daily complaint submission status for the authenticated citizen
+ *     responses:
+ *       200:
+ *         description: Daily limit status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     allowed:
+ *                       type: boolean
+ *                       description: Whether the citizen can submit more complaints today
+ *                     todayCount:
+ *                       type: integer
+ *                       description: Number of complaints submitted today
+ *                     limit:
+ *                       type: integer
+ *                       description: Maximum complaints allowed per day
+ *                     remaining:
+ *                       type: integer
+ *                       description: Remaining complaints allowed today
+ *                     resetTime:
+ *                       type: string
+ *                       format: date-time
+ *                       description: When the daily limit resets
+ *       403:
+ *         description: Access denied - Citizens only
+ */
+router.get("/daily-limit-status", protect, authorize("CITIZEN"), getDailyLimitStatus);
 
 /**
  * @swagger
@@ -200,7 +301,9 @@ router.get("/", getComplaints);
  */
 router.post(
   "/",
+  protect,
   authorize("CITIZEN", "ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"),
+  upload.array("attachments", 5),
   createComplaint,
 );
 
@@ -607,18 +710,20 @@ router.post("/:id/feedback", authorize("CITIZEN"), addComplaintFeedback);
  *         schema:
  *           type: string
  *     requestBody:
- *       required: true
+ *       required: false
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - reason
  *             properties:
  *               reason:
  *                 type: string
  *                 description: Reason for reopening the complaint
  *                 example: "Issue not fully resolved, requires additional work"
+ *               comment:
+ *                 type: string
+ *                 description: Comment for reopening the complaint (alternative to reason)
+ *                 example: "Complaint reopened by administrator"
  *     responses:
  *       200:
  *         description: Complaint reopened successfully

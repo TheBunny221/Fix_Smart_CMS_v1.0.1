@@ -7,7 +7,10 @@ import {
   getDashboardRouteForRole,
   setCredentials,
 } from "../store/slices/authSlice";
-import { useCreateComplaintMutation } from "../store/api/complaintsApi";
+import { 
+  useCreateComplaintMutation,
+  useGetDailyLimitStatusQuery 
+} from "../store/api/complaintsApi";
 import {
   selectGuestState,
   submitGuestComplaint,
@@ -98,54 +101,6 @@ import { useToast } from "../hooks/use-toast";
 import { useSystemConfig } from "../contexts/SystemConfigContext";
 import { prewarmMapAssets } from "../utils/mapTilePrefetch";
 
-const COMPLAINT_TYPES = [
-  {
-    value: "WATER_SUPPLY",
-    label: "Water Supply",
-    description: "Issues with water supply, quality, or pressure",
-  },
-  {
-    value: "ELECTRICITY",
-    label: "Electricity",
-    description: "Power outages, faulty connections, or street lighting",
-  },
-  {
-    value: "ROAD_REPAIR",
-    label: "Road Repair",
-    description: "Potholes, broken roads, or pedestrian issues",
-  },
-  {
-    value: "GARBAGE_COLLECTION",
-    label: "Garbage Collection",
-    description: "Waste management and cleanliness issues",
-  },
-  {
-    value: "STREET_LIGHTING",
-    label: "Street Lighting",
-    description: "Non-functioning or damaged street lights",
-  },
-  {
-    value: "SEWERAGE",
-    label: "Sewerage",
-    description: "Drainage problems, blockages, or overflow",
-  },
-  {
-    value: "PUBLIC_HEALTH",
-    label: "Public Health",
-    description: "Health and sanitation concerns",
-  },
-  {
-    value: "TRAFFIC",
-    label: "Traffic",
-    description: "Traffic management and road safety issues",
-  },
-  {
-    value: "OTHERS",
-    label: "Others",
-    description: "Any other civic issues not listed above",
-  },
-];
-
 const PRIORITIES = [
   {
     value: "LOW",
@@ -188,6 +143,15 @@ const UnifiedComplaintForm: React.FC = () => {
   const [resendGuestOtp] = useResendGuestOtpMutation();
   const { isAuthenticated, user } = useAppSelector(selectAuth);
 
+  // Daily limit status for citizens (only fetch if authenticated as citizen)
+  const { 
+    data: dailyLimitData, 
+    isLoading: isDailyLimitLoading,
+    error: dailyLimitError 
+  } = useGetDailyLimitStatusQuery(undefined, {
+    skip: !isAuthenticated || user?.role !== "CITIZEN"
+  });
+
   // Fetch wards from API
   const {
     data: wardsResponse,
@@ -195,6 +159,9 @@ const UnifiedComplaintForm: React.FC = () => {
     error: wardsError,
   } = useGetWardsQuery();
   const wards = Array.isArray(wardsResponse?.data) ? wardsResponse.data : [];
+
+  // Get complaint types from centralized config
+  const { complaintTypeOptions: COMPLAINT_TYPES, isLoading: complaintTypesLoading } = useComplaintTypes();
 
   // Use guest form state as the canonical source for form management
   const currentStep = useAppSelector(selectCurrentStep);
@@ -464,26 +431,53 @@ const UnifiedComplaintForm: React.FC = () => {
 
     try {
       if (submissionMode === "citizen" && isAuthenticated) {
-        // Citizen flow: Submit directly to authenticated API
-        const complaintData = {
-          title: `${COMPLAINT_TYPES.find((t) => t.value === formData.type)?.label} - ${formData.area}`,
-          description: formData.description,
-          complaintTypeId: formData.type as any,
-          type: formData.type as any,
-          priority: formData.priority as any,
-          wardId: formData.wardId,
-          ...(formData.subZoneId && { subZoneId: formData.subZoneId }),
-          area: formData.area,
-          ...(formData.landmark && { landmark: formData.landmark }),
-          ...(formData.address && { address: formData.address }),
-          coordinates: formData.coordinates,
-          contactName: formData.fullName,
-          contactEmail: formData.email,
-          contactPhone: formData.phoneNumber,
-          isAnonymous: false,
-        };
+        // Citizen flow: Submit directly to authenticated API with FormData
+        const complaintFormData = new FormData();
+        
+        complaintFormData.append("title", `${COMPLAINT_TYPES.find((t) => t.value === formData.type)?.label || 'Complaint'} - ${formData.area || 'Unknown Area'}`);
+        complaintFormData.append("description", formData.description || '');
+        complaintFormData.append("complaintTypeId", formData.type || '');
+        complaintFormData.append("type", formData.type || '');
+        complaintFormData.append("priority", formData.priority || 'MEDIUM');
+        complaintFormData.append("wardId", formData.wardId || '');
+        
+        if (formData.subZoneId) {
+          complaintFormData.append("subZoneId", formData.subZoneId);
+        }
+        
+        complaintFormData.append("area", formData.area || '');
+        
+        if (formData.landmark) {
+          complaintFormData.append("landmark", formData.landmark);
+        }
+        
+        if (formData.address) {
+          complaintFormData.append("address", formData.address);
+        }
+        
+        if (formData.coordinates) {
+          complaintFormData.append("coordinates", JSON.stringify(formData.coordinates));
+        }
+        
+        complaintFormData.append("contactName", formData.fullName || '');
+        complaintFormData.append("contactEmail", formData.email || '');
+        complaintFormData.append("contactPhone", formData.phoneNumber || '');
+        complaintFormData.append("isAnonymous", "false");
 
-        const result = await createComplaintMutation(complaintData).unwrap();
+        // Add attachments
+        const filesToSend: FileAttachment[] =
+          formData.attachments
+            ?.map((a) => {
+              const f = fileMap.get(a.id);
+              return f ? { id: a.id, file: f } : null;
+            })
+            .filter((f): f is FileAttachment => f !== null) || [];
+            
+        for (const fa of filesToSend) {
+          complaintFormData.append("attachments", fa.file);
+        }
+
+        const result = await createComplaintMutation(complaintFormData).unwrap();
 
         toast({
           title: "Complaint Submitted Successfully!",
@@ -525,12 +519,22 @@ const UnifiedComplaintForm: React.FC = () => {
       }
     } catch (error: any) {
       console.error("Complaint submission error:", error);
-      toast({
-        title: "Submission Failed",
-        description:
-          error.message || "Failed to submit complaint. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Handle daily limit exceeded error specifically
+      if (error?.data?.code === "LIMIT_EXCEEDED") {
+        toast({
+          title: "Daily Limit Reached",
+          description: error.data.message || "You have reached the maximum number of complaints allowed for today. Please try again tomorrow.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Submission Failed",
+          description:
+            error.message || "Failed to submit complaint. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   }, [
     dispatch,
@@ -695,6 +699,34 @@ const UnifiedComplaintForm: React.FC = () => {
               <strong>Guest Submission:</strong> After submitting, you'll
               receive an email with a verification code. Verifying will
               automatically create your citizen account for future use.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Daily Limit Status Alert for Citizens */}
+        {submissionMode === "citizen" && !isDailyLimitLoading && dailyLimitData?.data && (
+          <Alert className={
+            dailyLimitData.data.remaining > 0 
+              ? "border-green-200 bg-green-50" 
+              : "border-red-200 bg-red-50"
+          }>
+            <Info className="h-4 w-4" />
+            <AlertDescription className={
+              dailyLimitData.data.remaining > 0 
+                ? "text-green-800" 
+                : "text-red-800"
+            }>
+              {dailyLimitData.data.remaining > 0 ? (
+                <>
+                  <strong>Daily Limit:</strong> You can submit {dailyLimitData.data.remaining} more complaint{dailyLimitData.data.remaining !== 1 ? 's' : ''} today 
+                  ({dailyLimitData.data.todayCount} of {dailyLimitData.data.limit} used).
+                </>
+              ) : (
+                <>
+                  <strong>Daily Limit Reached:</strong> You have reached the maximum number of complaints allowed for today ({dailyLimitData.data.limit}). 
+                  Please try again tomorrow.
+                </>
+              )}
             </AlertDescription>
           </Alert>
         )}
@@ -1606,7 +1638,10 @@ const UnifiedComplaintForm: React.FC = () => {
                     <Button
                       type="button"
                       onClick={handleSendOtp}
-                      disabled={isSubmitting}
+                      disabled={
+                        isSubmitting || 
+                        (dailyLimitData?.data && dailyLimitData.data.remaining <= 0)
+                      }
                     >
                       {isSubmitting ? (
                         <>

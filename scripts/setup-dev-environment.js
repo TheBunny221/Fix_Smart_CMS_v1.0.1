@@ -27,7 +27,7 @@ async function setupDevelopmentEnvironment() {
 
     // 2. Generate Prisma client for development
     console.log('🔧 Generating Prisma client for development...');
-    await execAsync(`npx prisma generate --schema=${DEV_SCHEMA}`);
+    await execAsync(`npx prisma generate --schema=${SCHEMA}`);
     console.log('✅ Development Prisma client generated');
 
     // 3. Create development database and run migrations
@@ -35,11 +35,11 @@ async function setupDevelopmentEnvironment() {
     process.env.DATABASE_URL = 'file:./dev.db';
     
     try {
-      await execAsync(`npx prisma db push --schema=${DEV_SCHEMA}`);
+      await execAsync(`npx prisma db push --schema=${SCHEMA}`);
       console.log('✅ Development database schema created');
     } catch (dbError) {
       console.warn('⚠️ Database push failed, attempting reset...');
-      await execAsync(`npx prisma db push --schema=${DEV_SCHEMA} --accept-data-loss`);
+      await execAsync(`npx prisma db push --schema=${SCHEMA} --accept-data-loss`);
       console.log('✅ Development database schema created (with reset)');
     }
 

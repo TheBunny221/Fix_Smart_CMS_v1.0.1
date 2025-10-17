@@ -2,6 +2,7 @@ import { getPrisma } from "../db/connection.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { sendEmail } from "../utils/emailService.js";
 import { verifyCaptchaForComplaint } from "./captchaController.js";
+import { getActiveSystemConfig, getActiveSystemConfigs } from "./systemConfigController.js";
 import {
   onComplaintCreated,
   onComplaintStatusUpdated,
@@ -297,6 +298,7 @@ export const createComplaint = asyncHandler(async (req, res) => {
     JSON.stringify(req.body, null, 2),
   );
   console.log("🔥 [createComplaint] User:", req.user?.id, req.user?.role);
+  console.log("🔥 [createComplaint] Files:", req.files?.length || 0);
 
   const {
     title,
@@ -318,6 +320,55 @@ export const createComplaint = asyncHandler(async (req, res) => {
     captchaId,
     captchaText,
   } = req.body;
+
+  // Check daily complaint limit for citizens
+  if (req.user.role === "CITIZEN") {
+    try {
+      const dailyLimitCheck = await checkDailyComplaintLimit(req.user.id);
+      if (!dailyLimitCheck.allowed) {
+        console.log(
+          "🔥 [createComplaint] Daily limit exceeded for citizen:",
+          req.user.id,
+          "Count:",
+          dailyLimitCheck.todayCount,
+          "Limit:",
+          dailyLimitCheck.limit
+        );
+
+        // Log the blocked attempt for audit
+        await logComplaintAttempt(req.user.id, "BLOCKED_LIMIT_EXCEEDED", {
+          todayCount: dailyLimitCheck.todayCount,
+          limit: dailyLimitCheck.limit,
+          reason: "Daily complaint limit exceeded"
+        });
+
+        return res.status(429).json({
+          success: false,
+          code: "LIMIT_EXCEEDED",
+          message: "You have reached the maximum number of complaints allowed for today. Please try again tomorrow.",
+          data: {
+            remaining: 0,
+            todayCount: dailyLimitCheck.todayCount,
+            limit: dailyLimitCheck.limit,
+            resetTime: dailyLimitCheck.resetTime
+          }
+        });
+      }
+
+      console.log(
+        "🔥 [createComplaint] Daily limit check passed:",
+        "Count:",
+        dailyLimitCheck.todayCount,
+        "Limit:",
+        dailyLimitCheck.limit,
+        "Remaining:",
+        dailyLimitCheck.remaining
+      );
+    } catch (error) {
+      console.error("🔥 [createComplaint] Daily limit check failed:", error);
+      // Continue with complaint creation if limit check fails (fail-safe)
+    }
+  }
 
   // Verify CAPTCHA for all complaint submissions
   try {
@@ -428,11 +479,9 @@ export const createComplaint = asyncHandler(async (req, res) => {
 
   const deadline = new Date(Date.now() + resolvedSlaHours * 60 * 60 * 1000);
 
-  // Check auto-assignment setting
-  const autoAssignSetting = await prisma.systemConfig.findUnique({
-    where: { key: "AUTO_ASSIGN_COMPLAINTS" },
-  });
-  const isAutoAssignEnabled = autoAssignSetting?.value === "true";
+  // Check auto-assignment setting (only if active)
+  const autoAssignEnabled = await getActiveSystemConfig("AUTO_ASSIGN_COMPLAINTS", "false");
+  const isAutoAssignEnabled = autoAssignEnabled === "true";
 
   let wardOfficerId = null;
   let initialStatus = "REGISTERED";
@@ -529,6 +578,76 @@ export const createComplaint = asyncHandler(async (req, res) => {
           message: `A new ${resolvedTypeName} complaint requires manual assignment in your ward.`,
         },
       });
+    }
+  }
+
+  // Handle uploaded attachments if any
+  const files = req.files || [];
+  console.log("🔥 [createComplaint] Processing attachments:", files.length);
+
+  for (const file of files) {
+    try {
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+      if (file.size > maxSize) {
+        console.warn(`File ${file.originalname} exceeds size limit, skipping`);
+        continue;
+      }
+
+      // Validate mime type (images and documents only)
+      const allowedMimeTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+        "image/webp",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "text/plain",
+      ];
+
+      if (!allowedMimeTypes.includes(file.mimetype)) {
+        console.warn(`File ${file.originalname} has invalid type ${file.mimetype}, skipping`);
+        continue;
+      }
+
+      await prisma.attachment.create({
+        data: {
+          fileName: file.filename,
+          originalName: file.originalname,
+          mimeType: file.mimetype,
+          size: file.size,
+          url: `/api/uploads/${file.filename}`,
+          complaintId: complaint.id,
+          entityType: "COMPLAINT",
+          entityId: complaint.id,
+          uploadedById: req.user.id,
+        },
+      });
+
+      console.log(`🔥 [createComplaint] Attachment created: ${file.originalname}`);
+    } catch (error) {
+      console.error(`Failed to create attachment for ${file.originalname}:`, error);
+      // Continue processing other files even if one fails
+    }
+  }
+
+  // Log successful complaint submission for audit (especially for citizens)
+  if (req.user.role === "CITIZEN") {
+    try {
+      const limitStatus = await checkDailyComplaintLimit(req.user.id);
+      await logComplaintAttempt(req.user.id, "SUCCESS", {
+        complaintId: complaint.id,
+        complaintIdDisplay: complaint.complaintId,
+        todayCount: limitStatus.todayCount + 1, // Include this submission
+        limit: limitStatus.limit,
+        remaining: limitStatus.remaining - 1,
+        type: resolvedTypeName,
+        priority: priority || "MEDIUM"
+      });
+    } catch (error) {
+      console.error("Error logging successful complaint submission:", error);
     }
   }
 
@@ -817,7 +936,36 @@ export const getComplaints = asyncHandler(async (req, res) => {
       filters.priority = priority;
     }
   }
-  if (type) filters.type = type;
+  // Dynamic complaint type filtering
+  if (type) {
+    // Try to resolve complaint type from new table first
+    try {
+      const complaintType = await prisma.complaintType.findFirst({
+        where: {
+          OR: [
+            { name: type },
+            { id: isNaN(type) ? undefined : parseInt(type) }
+          ],
+          isActive: true
+        }
+      });
+      
+      if (complaintType) {
+        // Filter by both new complaintTypeId and legacy type field for compatibility
+        filters.OR = [
+          { complaintTypeId: complaintType.id },
+          { type: complaintType.name },
+          { type: type } // Also include direct match for legacy data
+        ];
+      } else {
+        // Fallback to legacy type filtering
+        filters.type = type;
+      }
+    } catch (error) {
+      dbg("complaint type resolution failed, using direct filter", error.message);
+      filters.type = type;
+    }
+  }
 
   // Handle maintenance assignment filter (supports legacy param)
   const needsTeamAssignmentParam =
@@ -1265,7 +1413,7 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
       REOPENED: ["ASSIGNED"],
     };
 
-    // Handle REOPENED status - automatically transition to ASSIGNED
+    // Handle REOPENED status - conditionally transition to ASSIGNED based on configuration
     if (status === "REOPENED") {
       // Only administrators can reopen complaints
       if (req.user.role !== "ADMINISTRATOR") {
@@ -1285,6 +1433,9 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
         });
       }
 
+      // Check if auto-assignment on reopen is enabled
+      const autoAssignOnReopen = await getActiveSystemConfig("AUTO_ASSIGN_ON_REOPEN", "false");
+
       // Log the reopening action first
       await prisma.statusLog.create({
         data: {
@@ -1292,13 +1443,15 @@ export const updateComplaintStatus = asyncHandler(async (req, res) => {
           userId: req.user.id,
           fromStatus: complaint.status,
           toStatus: "REOPENED",
-          comment: remarks || "Complaint reopened by administrator - transitioning to ASSIGNED",
+          comment: remarks || "Complaint reopened by administrator",
         },
       });
 
-      // Automatically transition REOPENED to ASSIGNED
-      // This ensures proper workflow and requires reassignment
-      status = "ASSIGNED";
+      // Conditionally transition REOPENED to ASSIGNED based on configuration
+      if (autoAssignOnReopen === "true") {
+        status = "ASSIGNED";
+      }
+      // If auto-assignment is disabled, keep status as REOPENED
 
       // Reset assignment fields to force reassignment
       updateData.maintenanceTeamId = null;
@@ -1801,8 +1954,14 @@ export const addComplaintFeedback = asyncHandler(async (req, res) => {
 // @route   PUT /api/complaints/:id/reopen
 // @access  Private (Admin only)
 export const reopenComplaint = asyncHandler(async (req, res) => {
-  const { comment } = req.body;
+  const { comment, reason } = req.body;
   const complaintId = req.params.id;
+  
+  // Accept both 'comment' and 'reason' for backward compatibility
+  const reopenComment = comment || reason;
+
+  // Check if auto-assignment on reopen is enabled
+  const autoAssignOnReopen = await getActiveSystemConfig("AUTO_ASSIGN_ON_REOPEN", "false");
 
   if (req.user.role !== "ADMINISTRATOR") {
     return res.status(403).json({
@@ -1814,6 +1973,30 @@ export const reopenComplaint = asyncHandler(async (req, res) => {
 
   const complaint = await prisma.complaint.findUnique({
     where: { id: complaintId },
+    include: {
+      complaintType: { select: { id: true, name: true } },
+      submittedBy: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+        },
+      },
+      wardOfficer: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+        },
+      },
+      maintenanceTeam: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+        },
+      },
+    },
   });
 
   if (!complaint) {
@@ -1832,54 +2015,145 @@ export const reopenComplaint = asyncHandler(async (req, res) => {
     });
   }
 
-  const updatedComplaint = await prisma.complaint.update({
-    where: { id: complaintId },
-    data: {
-      status: "REOPENED",
-      slaStatus: calculateSLAStatus(
-        complaint.submittedOn,
-        complaint.deadline,
-        "REOPENED",
-      ),
-      // Reset assignment so it goes through assignment workflow again
-      maintenanceTeamId: null,
-      assignedOn: null,
-      resolvedOn: null,
-      resolvedById: null,
-      closedOn: null,
-    },
-    include: {
-      complaintType: { select: { id: true, name: true } },
-    },
-  });
+  // Use a transaction to ensure both complaint update and status log creation succeed together
+  const result = await prisma.$transaction(async (tx) => {
+    // First, create status log for the reopen action (CLOSED -> REOPENED)
+    const reopenStatusLog = await tx.statusLog.create({
+      data: {
+        complaintId,
+        userId: req.user.id,
+        fromStatus: "CLOSED",
+        toStatus: "REOPENED",
+        comment: reopenComment || "Complaint reopened by administrator",
+      },
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            role: true,
+          },
+        },
+      },
+    });
 
-  // Create status log
-  await prisma.statusLog.create({
-    data: {
-      complaintId,
-      userId: req.user.id,
-      fromStatus: "CLOSED",
-      toStatus: "REOPENED",
-      comment: comment || "Complaint reopened by administrator",
-    },
+    // Determine final status based on configuration
+    const finalStatus = autoAssignOnReopen === "true" ? "ASSIGNED" : "REOPENED";
+    const statusComment = autoAssignOnReopen === "true" 
+      ? "Complaint reopened and awaiting reassignment"
+      : "Complaint reopened and awaiting manual assignment";
+
+    // Update complaint status 
+    const updatedComplaint = await tx.complaint.update({
+      where: { id: complaintId },
+      data: {
+        status: finalStatus,
+        slaStatus: calculateSLAStatus(
+          complaint.submittedOn,
+          complaint.deadline,
+          finalStatus,
+        ),
+        // Reset assignment fields only if auto-assigning
+        ...(autoAssignOnReopen === "true" && {
+          maintenanceTeamId: null,
+          assignedOn: null,
+        }),
+        resolvedOn: null,
+        resolvedById: null,
+        closedOn: null,
+      },
+      include: {
+        complaintType: { select: { id: true, name: true } },
+        submittedBy: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        wardOfficer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+        maintenanceTeam: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    // Create second status log only if auto-assignment is enabled
+    let assignedStatusLog = null;
+    if (autoAssignOnReopen === "true") {
+      assignedStatusLog = await tx.statusLog.create({
+        data: {
+          complaintId,
+          userId: req.user.id,
+          fromStatus: "REOPENED",
+          toStatus: "ASSIGNED",
+          comment: "Complaint automatically set to ASSIGNED status after reopening - requires reassignment",
+        },
+        include: {
+          user: {
+            select: {
+              fullName: true,
+              role: true,
+            },
+          },
+        },
+      });
+    }
+
+    return { updatedComplaint, reopenStatusLog, assignedStatusLog };
   });
 
   // Trigger email broadcast for complaint reopening
-  await onComplaintReopened({
-    complaintId,
-    reopenReason: comment || "Complaint reopened by administrator",
-    reopenedByUserId: req.user.id
-  });
+  try {
+    await onComplaintReopened({
+      complaintId,
+      reopenReason: reopenComment || "Complaint reopened by administrator",
+      reopenedByUserId: req.user.id,
+      complaintData: {
+        complaintId: complaint.complaintId || complaintId,
+        type: complaint.complaintType?.name || complaint.type,
+        description: complaint.description,
+        area: complaint.area,
+        submittedBy: complaint.submittedBy,
+        wardOfficer: complaint.wardOfficer,
+        maintenanceTeam: complaint.maintenanceTeam,
+      }
+    });
+  } catch (emailError) {
+    // Log email error but don't fail the request
+    console.error("Failed to send reopen notification email:", emailError);
+  }
+
+  // Prepare status logs array
+  const statusLogs = [result.reopenStatusLog];
+  if (result.assignedStatusLog) {
+    statusLogs.push(result.assignedStatusLog);
+  }
+
+  const message = autoAssignOnReopen === "true" 
+    ? "Complaint reopened and automatically assigned. Status logs created and notifications sent."
+    : "Complaint reopened successfully and awaiting manual assignment. Status logs created and notifications sent.";
 
   res.status(200).json({
     success: true,
-    message: "Complaint reopened successfully",
+    message,
     data: {
       complaint: {
-        ...updatedComplaint,
+        ...result.updatedComplaint,
         // Ensure type field contains the complaint type name instead of ID
-        type: updatedComplaint.complaintType?.name || updatedComplaint.type,
-      }
+        type: result.updatedComplaint.complaintType?.name || result.updatedComplaint.type,
+      },
+      statusLogs,
+      autoAssignOnReopen: autoAssignOnReopen === "true",
     },
   });
 });
@@ -2251,5 +2525,222 @@ export const getWardDashboardStats = asyncHandler(async (req, res) => {
     success: true,
     message: "Ward dashboard statistics retrieved successfully",
     data: { stats, wardId },
+  });
+});
+
+// Helper function to check if a point is inside a polygon using ray-casting algorithm
+const isPointInPolygon = (point, polygon) => {
+  const [x, y] = point;
+  let inside = false;
+  
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [xi, yi] = polygon[i];
+    const [xj, yj] = polygon[j];
+    
+    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  
+  return inside;
+};
+
+// Helper function to validate if location is within service area boundary
+const validateLocationWithinServiceArea = async (latitude, longitude) => {
+  try {
+    // Get service area validation configuration (only active configs)
+    const configs = await getActiveSystemConfigs([
+      "SERVICE_AREA_BOUNDARY",
+      "SERVICE_AREA_VALIDATION_ENABLED"
+    ]);
+
+    // Check if location validation is enabled
+    const isValidationEnabled = configs.SERVICE_AREA_VALIDATION_ENABLED === "true";
+    
+    // If validation is disabled, allow all locations
+    if (!isValidationEnabled) {
+      return {
+        allowed: true,
+        reason: "Location validation disabled",
+        validationEnabled: false,
+      };
+    }
+
+    // If no boundary is configured, allow all locations (fail-safe)
+    if (!configs.SERVICE_AREA_BOUNDARY) {
+      console.warn("Service area boundary not configured, allowing all locations");
+      return {
+        allowed: true,
+        reason: "No boundary configured",
+        validationEnabled: true,
+      };
+    }
+
+    // Parse GeoJSON boundary
+    let geoJsonBoundary;
+    try {
+      geoJsonBoundary = JSON.parse(configs.SERVICE_AREA_BOUNDARY);
+    } catch (parseError) {
+      console.error("Invalid GeoJSON boundary configuration:", parseError);
+      return {
+        allowed: true,
+        reason: "Invalid boundary configuration",
+        validationEnabled: true,
+      };
+    }
+
+    // Validate GeoJSON structure
+    if (!geoJsonBoundary.type || geoJsonBoundary.type !== "Polygon" || !geoJsonBoundary.coordinates) {
+      console.error("Invalid GeoJSON polygon structure");
+      return {
+        allowed: true,
+        reason: "Invalid polygon structure",
+        validationEnabled: true,
+      };
+    }
+
+    // Get the outer ring of the polygon (first element in coordinates array)
+    const outerRing = geoJsonBoundary.coordinates[0];
+    
+    // Check if point is within the polygon
+    const isInside = isPointInPolygon([longitude, latitude], outerRing);
+
+    return {
+      allowed: isInside,
+      reason: isInside ? "Within service area" : "Outside service area",
+      validationEnabled: true,
+      boundary: geoJsonBoundary,
+    };
+  } catch (error) {
+    console.error("Error validating location within service area:", error);
+    // Fail-safe: allow complaint creation if validation fails
+    return {
+      allowed: true,
+      reason: "Validation error - fail-safe mode",
+      validationEnabled: true,
+    };
+  }
+};
+
+// Helper function to check daily complaint limit for citizens
+const checkDailyComplaintLimit = async (userId) => {
+  try {
+    // Get the daily complaint limit configuration using active configs only
+    const configs = await getActiveSystemConfigs([
+      "CITIZEN_DAILY_COMPLAINT_LIMIT",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED"
+    ]);
+
+    // Check if daily limit enforcement is enabled
+    const isLimitEnabled = configs.CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED === "true";
+    
+    // If limit enforcement is disabled, allow unlimited complaints
+    if (!isLimitEnabled) {
+      return {
+        allowed: true,
+        todayCount: 0,
+        limit: -1, // -1 indicates unlimited
+        remaining: -1, // -1 indicates unlimited
+        resetTime: null,
+        limitEnabled: false,
+      };
+    }
+
+    // Default to 5 complaints per day if not configured
+    const dailyLimit = parseInt(configs.CITIZEN_DAILY_COMPLAINT_LIMIT || "5");
+
+    // Calculate start of today (server local time)
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const endOfToday = new Date(startOfToday);
+    endOfToday.setDate(endOfToday.getDate() + 1);
+
+    // Count complaints submitted by this user today
+    const todayCount = await prisma.complaint.count({
+      where: {
+        submittedById: userId,
+        submittedOn: {
+          gte: startOfToday,
+          lt: endOfToday,
+        },
+      },
+    });
+
+    const remaining = Math.max(0, dailyLimit - todayCount);
+    const allowed = todayCount < dailyLimit;
+
+    // Calculate reset time (start of next day)
+    const resetTime = new Date(endOfToday);
+
+    return {
+      allowed,
+      todayCount,
+      limit: dailyLimit,
+      remaining,
+      resetTime: resetTime.toISOString(),
+      limitEnabled: true,
+    };
+  } catch (error) {
+    console.error("Error checking daily complaint limit:", error);
+    // Fail-safe: allow complaint creation if check fails
+    return {
+      allowed: true,
+      todayCount: 0,
+      limit: 5,
+      remaining: 5,
+      resetTime: new Date().toISOString(),
+      limitEnabled: true,
+    };
+  }
+};
+
+// Helper function to log complaint submission attempts for audit
+const logComplaintAttempt = async (userId, status, metadata = {}) => {
+  try {
+    // For now, use console logging with structured format for audit trail
+    // This can be replaced with proper audit table when available
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      userId,
+      action: "COMPLAINT_SUBMISSION_ATTEMPT",
+      status,
+      metadata,
+    };
+
+    console.log("🔍 [AUDIT] Complaint Submission Attempt:", JSON.stringify(logEntry, null, 2));
+
+    // TODO: Replace with proper audit table when schema is available
+    // await prisma.auditLog.create({
+    //   data: {
+    //     userId,
+    //     action: "COMPLAINT_SUBMISSION_ATTEMPT",
+    //     entityType: "COMPLAINT",
+    //     status,
+    //     metadata: JSON.stringify(logEntry),
+    //   },
+    // });
+  } catch (error) {
+    console.error("Error logging complaint attempt:", error);
+    // Don't throw error - logging failure shouldn't block complaint creation
+  }
+};
+
+// @desc    Get citizen's daily complaint limit status
+// @route   GET /api/complaints/daily-limit-status
+// @access  Private (Citizen only)
+export const getDailyLimitStatus = asyncHandler(async (req, res) => {
+  if (req.user.role !== "CITIZEN") {
+    return res.status(403).json({
+      success: false,
+      message: "This endpoint is only available for citizens",
+    });
+  }
+
+  const limitStatus = await checkDailyComplaintLimit(req.user.id);
+
+  res.status(200).json({
+    success: true,
+    message: "Daily complaint limit status retrieved successfully",
+    data: limitStatus,
   });
 });

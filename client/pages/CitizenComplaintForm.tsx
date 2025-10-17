@@ -7,6 +7,7 @@ import { useToast } from "../hooks/use-toast";
 import {
   useUploadComplaintAttachmentMutation,
   useCreateComplaintMutation,
+  useGetDailyLimitStatusQuery,
 } from "../store/api/complaintsApi";
 import type { CreateComplaintRequest } from "../store/api/complaintsApi";
 
@@ -174,6 +175,13 @@ const CitizenComplaintForm: React.FC = () => {
   // API mutation hooks
   const [createComplaint] = useCreateComplaintMutation();
   const [uploadAttachment] = useUploadComplaintAttachmentMutation();
+  
+  // Daily limit status for citizens
+  const { 
+    data: dailyLimitData, 
+    isLoading: isDailyLimitLoading,
+    error: dailyLimitError 
+  } = useGetDailyLimitStatusQuery();
 
   const steps = [
     { id: 1, title: "Details", icon: FileText, isCompleted: false },
@@ -364,26 +372,29 @@ const CitizenComplaintForm: React.FC = () => {
     if (!validateStep(2)) return;
 
     setIsSubmitting(true);
+    setUploadingFiles(true);
+    
     try {
-      // Create complaint
-      const apiPriority: ApiPriority = formData.priority
-        .toLowerCase() as ApiPriority;
+      // Create FormData for multipart submission
+      const formDataToSubmit = new FormData();
+      
+      // Add complaint data
+      formDataToSubmit.append("description", formData.description);
+      formDataToSubmit.append("complaintTypeId", formData.type);
+      formDataToSubmit.append("type", formData.type);
+      formDataToSubmit.append("priority", formData.priority.toLowerCase());
+      formDataToSubmit.append("wardId", formData.wardId);
+      formDataToSubmit.append("area", formData.area);
+      formDataToSubmit.append("contactName", formData.fullName);
+      formDataToSubmit.append("contactEmail", formData.email);
+      formDataToSubmit.append("contactPhone", formData.phoneNumber);
+      formDataToSubmit.append("isAnonymous", "false");
 
-      const complaintData: CreateComplaintRequest = {
-        description: formData.description,
-        complaintTypeId: formData.type,
-        type: formData.type,
-        priority: apiPriority,
-        wardId: formData.wardId,
-        area: formData.area,
-        contactName: formData.fullName,
-        contactEmail: formData.email,
-        contactPhone: formData.phoneNumber,
-        isAnonymous: false,
-      };
+      if (formData.subZoneId) {
+        formDataToSubmit.append("subZoneId", formData.subZoneId);
+      }
 
-      if (formData.subZoneId) complaintData.subZoneId = formData.subZoneId;
-
+      // Handle address and landmark
       let addressValue = formData.address?.trim() || "";
       if (formData.landmark) {
         const landmarkText = `Landmark: ${formData.landmark}`;
@@ -391,31 +402,30 @@ const CitizenComplaintForm: React.FC = () => {
           ? `${addressValue} (${landmarkText})`
           : landmarkText;
       }
-      if (addressValue) complaintData.address = addressValue;
-
-      if (formData.slaHours != null) complaintData.slaHours = formData.slaHours;
-      if (formData.coordinates)
-        complaintData.location = JSON.stringify(formData.coordinates);
-
-      const complaintResponse = await createComplaint(complaintData).unwrap();
-      const complaint = complaintResponse.data;
-      const complaintId = complaint.id;
-      const displayId =
-        complaint.complaintId || complaintId.slice(-6).toUpperCase();
-
-      // Upload attachments if any
-      if (formData.attachments && formData.attachments.length > 0) {
-        setUploadingFiles(true);
-        for (const file of formData.attachments ?? []) {
-          try {
-            await uploadAttachment({ complaintId, file }).unwrap();
-          } catch (uploadError) {
-            console.error("Failed to upload file:", file.name, uploadError);
-            // Don't fail the entire submission for file upload errors
-          }
-        }
-        setUploadingFiles(false);
+      if (addressValue) {
+        formDataToSubmit.append("address", addressValue);
       }
+
+      if (formData.slaHours != null) {
+        formDataToSubmit.append("slaHours", formData.slaHours.toString());
+      }
+      
+      if (formData.coordinates) {
+        formDataToSubmit.append("coordinates", JSON.stringify(formData.coordinates));
+      }
+
+      // Add attachments
+      if (formData.attachments && formData.attachments.length > 0) {
+        for (const file of formData.attachments) {
+          formDataToSubmit.append("attachments", file);
+        }
+      }
+
+      // Submit complaint with attachments
+      const complaintResponse = await createComplaint(formDataToSubmit).unwrap();
+      const complaint = complaintResponse.data;
+      const displayId =
+        complaint.complaintId || complaint.id.slice(-6).toUpperCase();
 
       toast({
         title: "Complaint Submitted Successfully!",
@@ -425,13 +435,23 @@ const CitizenComplaintForm: React.FC = () => {
       navigate("/complaints");
     } catch (error: any) {
       console.error("Submission error:", error);
-      toast({
-        title: "Submission Failed",
-        description:
-          error?.data?.message ||
-          "There was an error submitting your complaint. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Handle daily limit exceeded error specifically
+      if (error?.data?.code === "LIMIT_EXCEEDED") {
+        toast({
+          title: "Daily Limit Reached",
+          description: error.data.message || "You have reached the maximum number of complaints allowed for today. Please try again tomorrow.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Submission Failed",
+          description:
+            error?.data?.message ||
+            "There was an error submitting your complaint. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
       setUploadingFiles(false);
@@ -554,6 +574,34 @@ const CitizenComplaintForm: React.FC = () => {
             .
           </AlertDescription>
         </Alert>
+
+        {/* Daily Limit Status Alert */}
+        {!isDailyLimitLoading && dailyLimitData?.data && (
+          <Alert className={
+            dailyLimitData.data.remaining > 0 
+              ? "border-green-200 bg-green-50" 
+              : "border-red-200 bg-red-50"
+          }>
+            <Info className="h-4 w-4" />
+            <AlertDescription className={
+              dailyLimitData.data.remaining > 0 
+                ? "text-green-800" 
+                : "text-red-800"
+            }>
+              {dailyLimitData.data.remaining > 0 ? (
+                <>
+                  <strong>Daily Limit:</strong> You can submit {dailyLimitData.data.remaining} more complaint{dailyLimitData.data.remaining !== 1 ? 's' : ''} today 
+                  ({dailyLimitData.data.todayCount} of {dailyLimitData.data.limit} used).
+                </>
+              ) : (
+                <>
+                  <strong>Daily Limit Reached:</strong> You have reached the maximum number of complaints allowed for today ({dailyLimitData.data.limit}). 
+                  Please try again tomorrow.
+                </>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Progress Indicator */}
         <Card>
@@ -1240,7 +1288,11 @@ const CitizenComplaintForm: React.FC = () => {
                 <Button
                   type="button"
                   onClick={handleSubmit}
-                  disabled={isSubmitting || uploadingFiles}
+                  disabled={
+                    isSubmitting || 
+                    uploadingFiles || 
+                    (dailyLimitData?.data && dailyLimitData.data.remaining <= 0)
+                  }
                 >
                   {isSubmitting || uploadingFiles ? (
                     <>

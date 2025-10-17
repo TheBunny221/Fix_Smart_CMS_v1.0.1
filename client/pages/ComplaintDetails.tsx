@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useAppSelector } from "../store/hooks";
 import { useGetComplaintQuery } from "../store/api/complaintsApi";
 import { useDataManager } from "../hooks/useDataManager";
+import { useComplaintTypes } from "../hooks/useComplaintTypes";
 import ComplaintFeedbackDialog from "../components/ComplaintFeedbackDialog";
 import UpdateComplaintModal from "../components/UpdateComplaintModal";
 import AttachmentPreview from "../components/AttachmentPreview";
@@ -68,6 +69,7 @@ const ComplaintDetails: React.FC = () => {
 
   // Data management hooks
   const { cacheComplaintDetails, getComplaintDetails } = useDataManager();
+  const { getComplaintTypeById } = useComplaintTypes();
 
   // Use RTK Query to fetch complaint details
   const {
@@ -195,17 +197,15 @@ const ComplaintDetails: React.FC = () => {
 
     const typeHours = getTypeSlaHours(c.type);
 
-    const reopenAt = getLastReopenAt(c.statusLogs);
-    const registeredAt = c.submittedOn
-      ? new Date(c.submittedOn)
-      : c.createdAt
-        ? new Date(c.createdAt)
-        : null;
-    const startAt = reopenAt || registeredAt;
+    // SLA calculation starts from submittedOn
+    const submittedAt = c.submittedOn ? new Date(c.submittedOn) : null;
 
+    if (!submittedAt) return { status: "N/A", deadline: null } as const;
+
+    // Calculate SLA deadline from submission time
     let deadline: Date | null = null;
-    if (startAt && Number.isFinite(typeHours)) {
-      deadline = addHours(startAt, typeHours as number);
+    if (Number.isFinite(typeHours)) {
+      deadline = addHours(submittedAt, typeHours as number);
     } else if (c.deadline) {
       deadline = new Date(c.deadline);
     }
@@ -214,22 +214,28 @@ const ComplaintDetails: React.FC = () => {
 
     const now = new Date();
     const isResolved = c.status === "RESOLVED" || c.status === "CLOSED";
-    const resolvedAt = c.resolvedOn
-      ? new Date(c.resolvedOn)
-      : c.closedOn
-        ? new Date(c.closedOn)
-        : null;
 
-    if (isResolved && resolvedAt) {
+    // For resolved complaints, use closedOn as the end time
+    const closedAt = c.closedOn ? new Date(c.closedOn) : null;
+
+    if (isResolved && closedAt) {
+      // SLA is met if complaint was closed before the deadline
       return {
-        status: resolvedAt <= deadline ? "ON_TIME" : "OVERDUE",
+        status: closedAt <= deadline ? "ON_TIME" : "OVERDUE",
         deadline,
+        submittedAt,
+        closedAt,
+        actualResolutionTime: Math.round((closedAt.getTime() - submittedAt.getTime()) / (1000 * 60 * 60)), // hours
       } as const;
     }
 
+    // For ongoing complaints, check if current time has exceeded deadline
     return {
       status: now > deadline ? "OVERDUE" : "ON_TIME",
       deadline,
+      submittedAt,
+      closedAt: null,
+      actualResolutionTime: null,
     } as const;
   };
 
@@ -346,7 +352,8 @@ const ComplaintDetails: React.FC = () => {
                 <h3 className="font-medium mb-2">Type</h3>
                 <p className="text-gray-600">
                   <SafeRenderer fallback="Unknown Type">
-                    {complaint?.type ? complaint.type.replace("_", " ") : "Unknown Type"}
+                    {getComplaintTypeById(complaint?.complaintTypeId)?.name || 
+                     (complaint?.type ? (typeof complaint.type === 'string' ? complaint.type.replace("_", " ") : complaint.type?.name) : "Unknown Type")}
                   </SafeRenderer>
                 </p>
               </div>
@@ -412,11 +419,12 @@ const ComplaintDetails: React.FC = () => {
                     {(user?.role === "ADMINISTRATOR" ||
                       user?.role === "WARD_OFFICER") &&
                       (() => {
-                        const { status, deadline } = computeSla(complaint);
+                        const slaInfo = computeSla(complaint);
+                        const { status, deadline, submittedAt, closedAt, actualResolutionTime } = slaInfo;
                         return (
                           <>
                             <p className="text-gray-600">
-                              <strong>Deadline:</strong>{" "}
+                              <strong>SLA Deadline:</strong>{" "}
                               {deadline
                                 ? new Date(deadline).toLocaleString()
                                 : "N/A"}
@@ -436,6 +444,19 @@ const ComplaintDetails: React.FC = () => {
                                   ? "Overdue"
                                   : "N/A"}
                             </p>
+
+
+                            {actualResolutionTime !== null && actualResolutionTime !== undefined && (
+                              <p className="text-gray-600 text-sm">
+                                <strong>Resolution Time:</strong>{" "}
+                                {actualResolutionTime} hours
+                                {actualResolutionTime >= 24 && (
+                                  <span className="text-gray-500">
+                                    {" "}({Math.round(actualResolutionTime / 24 * 10) / 10} days)
+                                  </span>
+                                )}
+                              </p>
+                            )}
                           </>
                         );
                       })()}
@@ -457,8 +478,14 @@ const ComplaintDetails: React.FC = () => {
                   : "Status Updates & Comments"}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="relative">
+              <div
+                className="max-h-96 overflow-y-auto pr-2 space-y-4"
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#d1d5db #f3f4f6'
+                }}
+              >
                 {complaint.statusLogs && complaint.statusLogs.length > 0 ? (
                   complaint.statusLogs.map((log: any, index: number) => {
                     const getStatusColor = (status: string) => {
@@ -576,7 +603,7 @@ const ComplaintDetails: React.FC = () => {
                     );
                   })
                 ) : (
-                  <div className="text-center py-4 text-gray-500">
+                  <div className="text-center py-8 text-gray-500">
                     <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p>
                       {user?.role === "CITIZEN"
@@ -586,6 +613,10 @@ const ComplaintDetails: React.FC = () => {
                   </div>
                 )}
               </div>
+              {/* Scroll indicator - shows when content is scrollable */}
+              {complaint.statusLogs && complaint.statusLogs.length > 3 && (
+                <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+              )}
             </CardContent>
           </Card>
 
@@ -861,10 +892,10 @@ const ComplaintDetails: React.FC = () => {
                   <Mail className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
                   <div className="flex flex-col min-w-0 flex-1">
                     <div className="group relative min-w-0 w-full">
-                      <span 
+                      <span
                         className="block truncate text-blue-600 cursor-help hover:text-blue-700 transition-colors w-full text-sm sm:text-base"
                         title={complaint.contactEmail || "No email provided"}
-                        style={{ 
+                        style={{
                           maxWidth: 'calc(100% - 0.5rem)', // Account for padding
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -882,10 +913,10 @@ const ComplaintDetails: React.FC = () => {
                         <span className="text-xs text-gray-500">
                           <span className="inline-flex items-center min-w-0 w-full">
                             <span className="text-gray-500 flex-shrink-0">User Email: </span>
-                            <span 
+                            <span
                               className="inline-block truncate text-blue-600 cursor-help hover:text-blue-700 transition-colors ml-1 flex-1 min-w-0"
                               title={complaint.submittedBy?.email || "No email"}
-                              style={{ 
+                              style={{
                                 maxWidth: 'calc(100% - 5rem)', // Account for "User Email: " text and padding
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
@@ -913,6 +944,177 @@ const ComplaintDetails: React.FC = () => {
                 )}
             </CardContent>
           </Card>
+
+          {/* Assignment & Status Information */}
+          {(user?.role === "ADMINISTRATOR" || user?.role === "WARD_OFFICER" || user?.role === "MAINTENANCE_TEAM") && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Assignment & Status Information
+                  <span className="ml-2 text-xs">
+                    <Badge className={getStatusColor(complaint.status)}>
+                      {complaint.status?.replace("_", " ") || "Unknown"}
+                    </Badge>
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
+                  <div className="bg-blue-50 rounded-lg p-3">
+                    <p className="text-sm font-medium mb-1">Ward Officer</p>
+                    {complaint.wardOfficer ? (
+                      <>
+                        <p className="text-blue-800 font-medium">
+                          {complaint.wardOfficer?.fullName || "Unknown"}
+                        </p>
+                        {complaint.wardOfficer?.email && (
+                          <p className="text-blue-600 text-sm">
+                            <TruncatedTextWithTooltip
+                              text={complaint.wardOfficer?.email || "No email"}
+                              responsive={true}
+                              maxWidth="100%"
+                              className="text-blue-600"
+                            />
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-blue-700 text-sm">Not assigned</p>
+                    )}
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-3">
+                    <p className="text-sm font-medium mb-1">Maintenance Team</p>
+                    {complaint.maintenanceTeam ? (
+                      <>
+                        <p className="text-green-800 font-medium">
+                          {complaint.maintenanceTeam?.fullName || "Unknown"}
+                        </p>
+                        {complaint.maintenanceTeam?.email && (
+                          <p className="text-green-700 text-sm">
+                            <TruncatedTextWithTooltip
+                              text={complaint.maintenanceTeam?.email || "No email"}
+                              responsive={true}
+                              maxWidth="100%"
+                              className="text-green-700"
+                            />
+                          </p>
+                        )}
+                        {complaint.assignedOn && (
+                          <p className="text-green-700 text-xs mt-1">
+                            Assigned on:{" "}
+                            {new Date(complaint.assignedOn).toLocaleString()}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-green-700 text-sm">Unassigned</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Show computed SLA info for admin/ward managers */}
+                {(user?.role === "ADMINISTRATOR" ||
+                  user?.role === "WARD_OFFICER") &&
+                  (() => {
+                    const slaInfo = computeSla(complaint);
+                    const { status, deadline, submittedAt, closedAt, actualResolutionTime } = slaInfo;
+                    return (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm font-medium mb-1">
+                              SLA Deadline
+                            </p>
+                            <p
+                              className={`text-sm ${deadline && new Date() > deadline ? "text-red-600 font-medium" : "text-gray-600"}`}
+                            >
+                              {deadline
+                                ? new Date(deadline).toLocaleString()
+                                : "N/A"}
+                            </p>
+                          </div>
+
+                          <div>
+                            <p className="text-sm font-medium mb-1">SLA Status</p>
+                            <Badge
+                              className={
+                                status === "OVERDUE"
+                                  ? "bg-red-100 text-red-800"
+                                  : status === "ON_TIME"
+                                    ? "bg-green-100 text-green-800"
+                                    : "bg-gray-100 text-gray-800"
+                              }
+                            >
+                              {status === "ON_TIME"
+                                ? "On Time"
+                                : status === "OVERDUE"
+                                  ? "Overdue"
+                                  : "N/A"}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* SLA Timeline */}
+                        <div className="bg-gray-50 rounded-lg p-3">
+                          <p className="text-sm font-medium mb-2">SLA Timeline</p>
+                          <div className="space-y-1 text-xs text-gray-600">
+
+                            {deadline && (
+                              <div className="flex justify-between">
+                                <span>SLA Deadline:</span>
+                                <span className={deadline && new Date() > deadline ? "text-red-600 font-medium" : ""}>
+                                  {deadline.toLocaleString()}
+                                </span>
+                              </div>
+                            )}
+
+                            {actualResolutionTime !== null && actualResolutionTime !== undefined && (
+                              <div className="flex justify-between font-medium">
+                                <span>Resolution Time:</span>
+                                <span className={actualResolutionTime > (getTypeSlaHours(complaint.type) || 0) ? "text-red-600" : "text-green-600"}>
+                                  {actualResolutionTime}h
+                                  {actualResolutionTime >= 24 && (
+                                    <span className="text-gray-500 font-normal">
+                                      {" "}({Math.round(actualResolutionTime / 24 * 10) / 10}d)
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                {(user?.role === "ADMINISTRATOR" ||
+                  user?.role === "WARD_OFFICER") && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
+                      <div>
+                        <p className="text-sm font-medium mb-1">Priority Level</p>
+                        <Badge className={getPriorityColor(complaint.priority)}>
+                          <SafeRenderer fallback="Unknown Priority">
+                            {safeRenderValue(complaint.priority, "Unknown")} Priority
+                          </SafeRenderer>
+                        </Badge>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium mb-1">Complaint Type</p>
+                        <Badge variant="outline">
+                          <SafeRenderer fallback="Unknown Type">
+                            {getComplaintTypeById(complaint.complaintTypeId)?.name || 
+                             (typeof complaint.type === 'string'
+                               ? complaint.type.replace("_", " ")
+                               : complaint.type?.name || "Unknown Type")}
+                          </SafeRenderer>
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Attachments */}
           {complaint.attachments && complaint.attachments.length > 0 && (
@@ -1203,151 +1405,7 @@ const ComplaintDetails: React.FC = () => {
             </>
           )}
 
-          {/* Assignment Information */}
-          {((complaint.wardOfficer ||
-            complaint.maintenanceTeam ||
-            user?.role === "ADMINISTRATOR" ||
-            user?.role === "WARD_OFFICER" ||
-            user?.role === "MAINTENANCE_TEAM") && user?.role !== "CITIZEN") && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Assignment & Status Information
-                    <span className="ml-2 text-xs">
-                      <Badge className={getStatusColor(complaint.status)}>
-                        {complaint.status?.replace("_", " ") || "Unknown"}
-                      </Badge>
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
-                    <div className="bg-blue-50 rounded-lg p-3">
-                      <p className="text-sm font-medium mb-1">Ward Officer</p>
-                      {complaint.wardOfficer ? (
-                        <>
-                          <p className="text-blue-800 font-medium">
-                            {complaint.wardOfficer?.fullName || "Unknown"}
-                          </p>
-                          {complaint.wardOfficer?.email && (
-                            <p className="text-blue-600 text-sm">
-                              <TruncatedTextWithTooltip
-                                text={complaint.wardOfficer?.email || "No email"}
-                                responsive={true}
-                                maxWidth="100%"
-                                className="text-blue-600"
-                              />
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <p className="text-blue-700 text-sm">Not assigned</p>
-                      )}
-                    </div>
-                    <div className="bg-green-50 rounded-lg p-3">
-                      <p className="text-sm font-medium mb-1">Maintenance Team</p>
-                      {complaint.maintenanceTeam ? (
-                        <>
-                          <p className="text-green-800 font-medium">
-                            {complaint.maintenanceTeam?.fullName || "Unknown"}
-                          </p>
-                          {complaint.maintenanceTeam?.email && (
-                            <p className="text-green-700 text-sm">
-                              <TruncatedTextWithTooltip
-                                text={complaint.maintenanceTeam?.email || "No email"}
-                                responsive={true}
-                                maxWidth="100%"
-                                className="text-green-700"
-                              />
-                            </p>
-                          )}
-                          {complaint.assignedOn && (
-                            <p className="text-green-700 text-xs mt-1">
-                              Assigned on:{" "}
-                              {new Date(complaint.assignedOn).toLocaleString()}
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        <p className="text-green-700 text-sm">Unassigned</p>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Show computed SLA info for admin/ward managers */}
-                  {(user?.role === "ADMINISTRATOR" ||
-                    user?.role === "WARD_OFFICER") &&
-                    (() => {
-                      const { status, deadline } = computeSla(complaint);
-                      return (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-sm font-medium mb-1">
-                              SLA Deadline
-                            </p>
-                            <p
-                              className={`text-sm ${deadline && new Date() > deadline ? "text-red-600 font-medium" : "text-gray-600"}`}
-                            >
-                              {deadline
-                                ? new Date(deadline).toLocaleString()
-                                : "N/A"}
-                            </p>
-                          </div>
-
-                          <div>
-                            <p className="text-sm font-medium mb-1">SLA Status</p>
-                            <Badge
-                              className={
-                                status === "OVERDUE"
-                                  ? "bg-red-100 text-red-800"
-                                  : status === "ON_TIME"
-                                    ? "bg-green-100 text-green-800"
-                                    : "bg-gray-100 text-gray-800"
-                              }
-                            >
-                              {status === "ON_TIME"
-                                ? "On Time"
-                                : status === "OVERDUE"
-                                  ? "Overdue"
-                                  : "N/A"}
-                            </Badge>
-                            {deadline && (
-                              <p className="text-xs text-gray-500 mt-1">
-                                by {new Date(deadline).toLocaleString()}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                  {(user?.role === "ADMINISTRATOR" ||
-                    user?.role === "WARD_OFFICER") && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
-                        <div>
-                          <p className="text-sm font-medium mb-1">Priority Level</p>
-                          <Badge className={getPriorityColor(complaint.priority)}>
-                            <SafeRenderer fallback="Unknown Priority">
-                              {safeRenderValue(complaint.priority, "Unknown")} Priority
-                            </SafeRenderer>
-                          </Badge>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium mb-1">Complaint Type</p>
-                          <Badge variant="outline">
-                            <SafeRenderer fallback="Unknown Type">
-                              {typeof complaint.type === 'string'
-                                ? complaint.type.replace("_", " ")
-                                : complaint.type?.name || "Unknown Type"}
-                            </SafeRenderer>
-                          </Badge>
-                        </div>
-                      </div>
-                    )}
-                </CardContent>
-              </Card>
-            )}
 
         </div>
       </div>

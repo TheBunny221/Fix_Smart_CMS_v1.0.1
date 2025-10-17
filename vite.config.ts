@@ -220,7 +220,10 @@ export default defineConfig(({ mode }) => {
       host: clientHost,
       port: clientPort,
       fs: {
-        allow: fsAllow,
+        allow: [
+          ...fsAllow,
+          path.resolve(projectRoot, "client/templates"), // Allow access to templates
+        ],
         deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
       },
       proxy: {
@@ -304,7 +307,59 @@ export default defineConfig(({ mode }) => {
     ssr: {
       noExternal: ["react", "react-dom"], // ensures server build bundles these
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      // Template plugin to copy templates to public folder and enable hot reload
+      {
+        name: 'template-plugin',
+        configureServer(server) {
+          // Watch template files for changes
+          server.watcher.add(path.resolve(projectRoot, 'client/templates/**/*.html'));
+          
+          server.middlewares.use('/templates', (req, res, next) => {
+            // Serve template files from client/templates
+            const templatePath = path.join(projectRoot, 'client', req.url || '');
+            
+            if (templatePath.endsWith('.html')) {
+              try {
+                const fs = require('fs');
+                const content = fs.readFileSync(templatePath, 'utf-8');
+                res.setHeader('Content-Type', 'text/html');
+                res.end(content);
+              } catch (error) {
+                res.statusCode = 404;
+                res.end('Template not found');
+              }
+            } else {
+              next();
+            }
+          });
+        },
+        generateBundle() {
+          // Copy templates to dist folder during build
+          const fs = require('fs');
+          const glob = require('glob');
+          
+          try {
+            const templateDir = path.resolve(projectRoot, 'client/templates');
+            const templates = glob.sync('**/*.html', { cwd: templateDir });
+            
+            templates.forEach(template => {
+              const templatePath = path.join(templateDir, template);
+              const content = fs.readFileSync(templatePath, 'utf-8');
+              
+              this.emitFile({
+                type: 'asset',
+                fileName: `templates/${template}`,
+                source: content
+              });
+            });
+          } catch (error) {
+            console.warn('Failed to copy templates:', error.message);
+          }
+        }
+      }
+    ],
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./client"),

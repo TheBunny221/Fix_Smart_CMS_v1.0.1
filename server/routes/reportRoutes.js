@@ -3,6 +3,7 @@ import { protect, authorize } from "../middleware/auth.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import { getPrisma } from "../db/connection.js";
 import { computeSlaComplianceClosed, getTypeSlaMap } from "../utils/sla.js";
+import { getComplaintTypeById, getComplaintTypes } from "../utils/complaintTypeHelper.js";
 
 const router = express.Router();
 const prisma = getPrisma();
@@ -474,7 +475,26 @@ const getComprehensiveAnalytics = asyncHandler(async (req, res) => {
     if (to) where.submittedOn.lte = new Date(to);
   }
 
-  if (type && type !== "all") where.type = type;
+  // Dynamic complaint type filtering
+  if (type && type !== "all") {
+    try {
+      const complaintType = await getComplaintTypeById(type);
+      if (complaintType) {
+        // Filter by both new complaintTypeId and legacy type field for compatibility
+        where.OR = [
+          { complaintTypeId: parseInt(complaintType.id) },
+          { type: complaintType.name },
+          { type: type } // Also include direct match for legacy data
+        ];
+      } else {
+        // Fallback to direct type filtering for legacy data
+        where.type = type;
+      }
+    } catch (error) {
+      console.warn("Complaint type resolution failed in analytics, using direct filter:", error.message);
+      where.type = type;
+    }
+  }
   const normalizedStatus = normalizeStatus(status);
   if (normalizedStatus) where.status = normalizedStatus;
   const normalizedPriority = normalizePriority(priority);
@@ -671,7 +691,7 @@ const getComprehensiveAnalytics = asyncHandler(async (req, res) => {
       });
     }
 
-    // Categories breakdown
+    // Categories breakdown with dynamic complaint type names
     const categoriesGroup = await prisma.complaint.groupBy({
       by: ["type"],
       where,
@@ -694,16 +714,41 @@ const getComprehensiveAnalytics = asyncHandler(async (req, res) => {
         timeByType.set(r.type, acc);
       }
     }
-    const categories = categoriesGroup.map((g) => ({
-      name: g.type || "Others",
-      count: g._count._all,
-      avgTime: timeByType.get(g.type)
-        ? Math.round(
-            (timeByType.get(g.type).sum / timeByType.get(g.type).count) * 10,
-          ) / 10
-        : 0,
-      color: `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`,
-    }));
+    
+    // Get all complaint types for proper name resolution
+    const allComplaintTypes = await getComplaintTypes();
+    const typeNameMap = new Map();
+    for (const ct of allComplaintTypes) {
+      typeNameMap.set(ct.name, ct.name);
+      typeNameMap.set(ct.id, ct.name);
+    }
+    
+    const categories = categoriesGroup.map((g) => {
+      const typeName = typeNameMap.get(g.type) || g.type || "Others";
+      return {
+        name: typeName,
+        count: g._count._all,
+        avgTime: timeByType.get(g.type)
+          ? Math.round(
+              (timeByType.get(g.type).sum / timeByType.get(g.type).count) * 10,
+            ) / 10
+          : 0,
+        color: `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`,
+      };
+    });
+
+    // Calculate previous period metrics for trend comparison
+    const currentPeriodMetrics = {
+      total: totalComplaints,
+      resolved: resolvedComplaints,
+      pending: pendingComplaints,
+      overdue: overdueComplaints,
+      slaCompliance: Math.round(slaCompliance * 10) / 10,
+      avgResolutionTime: Math.round(avgResolutionTime * 10) / 10,
+    };
+
+    const performanceMetrics = await calculatePerformanceMetrics(prisma, where, closedWhere);
+    const previousPeriodMetrics = await calculatePreviousPeriodMetrics(prisma, where, closedWhere, from, to, req.user);
 
     const analyticsData = {
       complaints: {
@@ -720,7 +765,12 @@ const getComprehensiveAnalytics = asyncHandler(async (req, res) => {
       trends,
       wards,
       categories,
-      performance: await calculatePerformanceMetrics(prisma, where, closedWhere),
+      performance: performanceMetrics,
+      comparison: {
+        current: currentPeriodMetrics,
+        previous: previousPeriodMetrics,
+        trends: calculateTrendPercentages(currentPeriodMetrics, previousPeriodMetrics, performanceMetrics),
+      },
       metadata: {
         totalRecords: totalComplaints,
         pageSize,
@@ -787,7 +837,27 @@ const exportReports = asyncHandler(async (req, res) => {
     if (from) where.submittedOn.gte = new Date(from);
     if (to) where.submittedOn.lte = new Date(to);
   }
-  if (type && type !== "all") where.type = type;
+  
+  // Dynamic complaint type filtering for export
+  if (type && type !== "all") {
+    try {
+      const complaintType = await getComplaintTypeById(type);
+      if (complaintType) {
+        // Filter by both new complaintTypeId and legacy type field for compatibility
+        where.OR = [
+          { complaintTypeId: parseInt(complaintType.id) },
+          { type: complaintType.name },
+          { type: type } // Also include direct match for legacy data
+        ];
+      } else {
+        // Fallback to direct type filtering for legacy data
+        where.type = type;
+      }
+    } catch (error) {
+      console.warn("Complaint type resolution failed in export, using direct filter:", error.message);
+      where.type = type;
+    }
+  }
   const st = normalizeStatus(status);
   if (st) where.status = st;
   const pr = normalizePriority(priority);
@@ -1111,7 +1181,27 @@ router.get(
       if (from) where.submittedOn.gte = new Date(from);
       if (to) where.submittedOn.lte = new Date(to);
     }
-    if (type && type !== "all") where.type = type;
+    
+    // Dynamic complaint type filtering for heatmap
+    if (type && type !== "all") {
+      try {
+        const complaintType = await getComplaintTypeById(type);
+        if (complaintType) {
+          // Filter by both new complaintTypeId and legacy type field for compatibility
+          where.OR = [
+            { complaintTypeId: parseInt(complaintType.id) },
+            { type: complaintType.name },
+            { type: type } // Also include direct match for legacy data
+          ];
+        } else {
+          // Fallback to direct type filtering for legacy data
+          where.type = type;
+        }
+      } catch (error) {
+        console.warn("Complaint type resolution failed in heatmap, using direct filter:", error.message);
+        where.type = type;
+      }
+    }
     const st = normalizeStatus(status);
     if (st) where.status = st;
     const pr = normalizePriority(priority);
@@ -1457,12 +1547,15 @@ async function calculatePerformanceMetrics(prisma, where, closedWhere) {
     const userSatisfaction = satisfactionResult._avg.rating || 0;
     const totalRatings = satisfactionResult._count.rating || 0;
 
-    // Calculate escalation rate (complaints that were escalated)
+    // Calculate escalation rate (complaints that were escalated or reopened)
     const totalComplaints = await prisma.complaint.count({ where });
     const escalatedComplaints = await prisma.complaint.count({
       where: {
         ...where,
-        escalationLevel: { gt: 0 }
+        OR: [
+          { status: "REOPENED" },
+          { priority: "CRITICAL" }
+        ]
       }
     });
     const escalationRate = totalComplaints > 0 ? (escalatedComplaints / totalComplaints) * 100 : 0;
@@ -1496,20 +1589,28 @@ async function calculatePerformanceMetrics(prisma, where, closedWhere) {
       : 0;
 
     // Calculate repeat complaints (same citizen submitting multiple complaints)
-    const repeatComplaintsResult = await prisma.complaint.groupBy({
-      by: ["contactPhone"],
-      where: {
-        ...where,
-        contactPhone: { not: null }
-      },
-      having: {
-        contactPhone: {
+    let repeatComplaintsResult = [];
+    try {
+      repeatComplaintsResult = await prisma.complaint.groupBy({
+        by: ["contactPhone"],
+        where: {
+          ...where,
+          AND: [
+            { contactPhone: { not: null } },
+            { contactPhone: { not: "" } }
+          ]
+        },
+        having: {
           _count: {
             gt: 1
           }
         }
-      }
-    });
+      });
+    } catch (error) {
+      console.warn("Repeat complaints calculation failed, using fallback:", error.message);
+      // Fallback: simple count of complaints with duplicate phone numbers
+      repeatComplaintsResult = [];
+    }
 
     const repeatComplaints = repeatComplaintsResult.length;
 
@@ -1538,6 +1639,138 @@ async function calculatePerformanceMetrics(prisma, where, closedWhere) {
       repeatComplaints: 0,
     };
   }
+}
+
+// Helper function to calculate previous period metrics for trend comparison
+async function calculatePreviousPeriodMetrics(prisma, currentWhere, currentClosedWhere, from, to, user) {
+  try {
+    // Calculate the previous period date range
+    const currentStart = from ? new Date(from) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const currentEnd = to ? new Date(to) : new Date();
+    const periodDuration = currentEnd.getTime() - currentStart.getTime();
+    
+    const previousStart = new Date(currentStart.getTime() - periodDuration);
+    const previousEnd = new Date(currentStart.getTime());
+
+    // Build previous period where conditions
+    const previousWhere = { ...currentWhere };
+    delete previousWhere.submittedOn; // Remove current date filter
+    previousWhere.submittedOn = {
+      gte: previousStart,
+      lte: previousEnd
+    };
+
+    const previousClosedWhere = { ...currentClosedWhere };
+    delete previousClosedWhere.closedOn; // Remove current date filter
+    delete previousClosedWhere.submittedOn; // Remove current date filter
+    previousClosedWhere.status = "CLOSED";
+    previousClosedWhere.closedOn = {
+      gte: previousStart,
+      lte: previousEnd
+    };
+
+    // Calculate previous period metrics
+    const [
+      prevTotalComplaints,
+      prevResolvedComplaints,
+      prevPendingComplaints,
+      prevOverdueComplaints
+    ] = await Promise.all([
+      prisma.complaint.count({ where: previousWhere }),
+      prisma.complaint.count({ where: { ...previousWhere, status: "RESOLVED" } }),
+      prisma.complaint.count({
+        where: {
+          ...previousWhere,
+          status: { in: ["REGISTERED", "ASSIGNED", "IN_PROGRESS", "REOPENED"] }
+        }
+      }),
+      prisma.complaint.count({
+        where: {
+          ...previousWhere,
+          status: { in: ["REGISTERED", "ASSIGNED", "IN_PROGRESS", "REOPENED"] },
+          deadline: { lt: previousEnd }
+        }
+      })
+    ]);
+
+    // Calculate previous SLA compliance
+    const { compliance: prevSlaCompliance } = await computeSlaComplianceClosed(prisma, previousClosedWhere);
+
+    // Calculate previous average resolution time
+    const prevClosedRows = await prisma.complaint.findMany({
+      where: { ...previousClosedWhere, closedOn: { not: null } },
+      select: { submittedOn: true, closedOn: true }
+    });
+
+    let prevTotalResolutionDays = 0;
+    for (const c of prevClosedRows) {
+      if (c.closedOn && c.submittedOn) {
+        const days = Math.ceil(
+          (new Date(c.closedOn).getTime() - new Date(c.submittedOn).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        prevTotalResolutionDays += days;
+      }
+    }
+    const prevAvgResolutionTime = prevClosedRows.length ? prevTotalResolutionDays / prevClosedRows.length : 0;
+
+    // Calculate previous satisfaction
+    const prevSatisfactionResult = await prisma.complaint.aggregate({
+      where: {
+        ...previousClosedWhere,
+        rating: { gt: 0 }
+      },
+      _avg: { rating: true }
+    });
+
+    return {
+      total: prevTotalComplaints,
+      resolved: prevResolvedComplaints,
+      pending: prevPendingComplaints,
+      overdue: prevOverdueComplaints,
+      slaCompliance: Math.round(prevSlaCompliance * 10) / 10,
+      avgResolutionTime: Math.round(prevAvgResolutionTime * 10) / 10,
+      userSatisfaction: Math.round((prevSatisfactionResult._avg.rating || 0) * 100) / 100,
+    };
+
+  } catch (error) {
+    console.error('❌ Error calculating previous period metrics:', error);
+    // Return zeros if calculation fails
+    return {
+      total: 0,
+      resolved: 0,
+      pending: 0,
+      overdue: 0,
+      slaCompliance: 0,
+      avgResolutionTime: 0,
+      userSatisfaction: 0,
+    };
+  }
+}
+
+// Helper function to calculate trend percentages
+function calculateTrendPercentages(current, previous, performance) {
+  const calculateChange = (currentVal, previousVal) => {
+    if (previousVal === 0) {
+      return currentVal > 0 ? "+100%" : "0%";
+    }
+    const change = ((currentVal - previousVal) / previousVal) * 100;
+    const sign = change >= 0 ? "+" : "";
+    return `${sign}${Math.round(change * 10) / 10}%`;
+  };
+
+  const calculateAbsoluteChange = (currentVal, previousVal) => {
+    const change = currentVal - previousVal;
+    const sign = change >= 0 ? "+" : "";
+    return `${sign}${Math.round(change * 100) / 100}`;
+  };
+
+  return {
+    totalComplaints: calculateChange(current.total, previous.total),
+    resolvedComplaints: calculateChange(current.resolved, previous.resolved),
+    slaCompliance: calculateChange(current.slaCompliance, previous.slaCompliance),
+    avgResolutionTime: calculateChange(current.avgResolutionTime, previous.avgResolutionTime),
+    userSatisfaction: calculateAbsoluteChange(performance.userSatisfaction, previous.userSatisfaction),
+  };
 }
 
 router.get(

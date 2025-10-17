@@ -1,4 +1,5 @@
 {
+    "config-of":"kochi-city",
     "systemConfig": [
         {
             "key": "APP_NAME",
@@ -58,12 +59,6 @@
             "key": "ADMIN_EMAIL",
             "value": "admin@cochinsmart.gov.in",
             "description": "Administrator email address",
-            "isActive": true
-        },
-        {
-            "key": "SYSTEM_MAINTENANCE",
-            "value": "false",
-            "description": "System maintenance mode",
             "isActive": true
         },
         {
@@ -170,7 +165,7 @@
         },
         {
             "key": "SYSTEM_VERSION",
-            "value": " 1.0.0",
+            "value": "1.0.0",
             "description": "Current system version",
             "isActive": true
         },
@@ -220,6 +215,36 @@
             "key": "AUTO_CLOSE_DAYS",
             "value": "7",
             "description": "Number of days after which resolved complaints are auto-closed",
+            "isActive": true
+        },
+        {
+            "key": "CITIZEN_DAILY_COMPLAINT_LIMIT",
+            "value": "5",
+            "description": "Maximum number of complaints a citizen can submit per day",
+            "isActive": true
+        },
+        {
+            "key": "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+            "value": "true",
+            "description": "Enable or disable daily complaint limit enforcement for citizens",
+            "isActive": true
+        },
+        {
+            "key": "SERVICE_AREA_BOUNDARY",
+            "value": "{\"type\":\"Polygon\",\"coordinates\":[[[76.20,9.85],[76.39,9.85],[76.39,10.05],[76.20,10.05],[76.20,9.85]]]}",
+            "description": "GeoJSON polygon defining the service area boundary for complaint submissions",
+            "isActive": true
+        },
+        {
+            "key": "SERVICE_AREA_VALIDATION_ENABLED",
+            "value": "true",
+            "description": "Enable or disable location-based validation for complaint submissions",
+            "isActive": true
+        },
+        {
+            "key": "AUTO_ASSIGN_ON_REOPEN",
+            "value": "false",
+            "description": "If enabled, the system automatically assigns a complaint after reopening. Default should be false.",
             "isActive": true
         }
     ],

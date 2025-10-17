@@ -1,5 +1,6 @@
 import { getPrisma } from "../db/connection.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
+import { clearComplaintTypesCache } from "../utils/complaintTypeHelper.js";
 
 const prisma = getPrisma();
 
@@ -169,6 +170,9 @@ export const createComplaintType = asyncHandler(async (req, res) => {
       },
     });
 
+    // Clear cache after creating new complaint type
+    clearComplaintTypesCache();
+    
     return res.status(201).json({
       success: true,
       message: "Complaint type created successfully",
@@ -214,6 +218,9 @@ export const createComplaintType = asyncHandler(async (req, res) => {
         isActive: isActive !== undefined ? !!isActive : true,
       },
     });
+    // Clear cache after creating new complaint type
+    clearComplaintTypesCache();
+    
     return res.status(201).json({
       success: true,
       message: "Complaint type created successfully (legacy)",
@@ -276,6 +283,9 @@ export const updateComplaintType = asyncHandler(async (req, res) => {
       },
     });
 
+    // Clear cache after updating complaint type
+    clearComplaintTypesCache();
+    
     return res.status(200).json({
       success: true,
       message: "Complaint type updated successfully",
@@ -314,6 +324,9 @@ export const updateComplaintType = asyncHandler(async (req, res) => {
         isActive: isActive !== undefined ? !!isActive : existingType.isActive,
       },
     });
+    // Clear cache after updating complaint type
+    clearComplaintTypesCache();
+    
     return res.status(200).json({
       success: true,
       message: "Complaint type updated successfully (legacy)",

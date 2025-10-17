@@ -7,47 +7,8 @@ const prisma = getPrisma();
 // @route   GET /api/system-config
 // @access  Private (Admin only)
 export const getSystemSettings = asyncHandler(async (req, res) => {
-  // First, ensure essential settings exist
-  const essentialSettings = [
-    {
-      key: "APP_LOGO_SIZE",
-      value: "medium",
-      description: "Size of the application logo (small, medium, large)",
-    },
-    {
-      key: "CONTACT_HELPLINE",
-      value: "1800-XXX-XXXX",
-      description: "Helpline phone number for customer support",
-    },
-    {
-      key: "CONTACT_EMAIL",
-      value: "support@cochinsmartcity.in",
-      description: "Email address for customer support",
-    },
-    {
-      key: "CONTACT_OFFICE_HOURS",
-      value: "Monday - Friday: 9 AM - 6 PM",
-      description: "Office hours for customer support",
-    },
-    {
-      key: "CONTACT_OFFICE_ADDRESS",
-      value: "Cochin Corporation Office",
-      description: "Physical address of the office",
-    },
-  ];
-
-  for (const setting of essentialSettings) {
-    const exists = await prisma.systemConfig.findUnique({
-      where: { key: setting.key },
-    });
-
-    if (!exists) {
-      await prisma.systemConfig.create({
-        data: setting,
-      });
-      console.log(`✅ Added missing system setting: ${setting.key}`);
-    }
-  }
+  // Sync configurations from seed.json to ensure all are available
+  await syncConfigurationsFromSeed();
 
   const settings = await prisma.systemConfig.findMany({
     where: {
@@ -225,6 +186,18 @@ export const updateSystemSetting = asyncHandler(async (req, res) => {
     });
   }
 
+  // Validate JSON fields if they contain JSON data
+  if (value !== undefined && (key === "SERVICE_AREA_BOUNDARY" || key === "NOTIFICATION_SETTINGS" || key === "COMPLAINT_PRIORITIES" || key === "COMPLAINT_STATUSES")) {
+    try {
+      JSON.parse(value);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid JSON format for ${key}`,
+      });
+    }
+  }
+
   const setting = await prisma.systemConfig.update({
     where: { key },
     data: {
@@ -386,6 +359,11 @@ export const resetSystemSettings = asyncHandler(async (req, res) => {
       value:
         '["REGISTERED","ASSIGNED","IN_PROGRESS","RESOLVED","CLOSED","REOPENED"]',
       description: "Available complaint statuses",
+    },
+    {
+      key: "CITIZEN_DAILY_COMPLAINT_LIMIT",
+      value: "5",
+      description: "Maximum number of complaints a citizen can submit per day",
     },
   ];
 
@@ -626,7 +604,10 @@ export const getPublicSystemSettings = asyncHandler(async (req, res) => {
       success: true,
       message:
         "Public system settings retrieved (default values - database unavailable)",
-      data: defaultSettings,
+      data: {
+        config: defaultSettings,
+        complaintTypes: [], // Empty array as fallback
+      },
       meta: {
         source: "defaults",
         databaseAvailable: false,
@@ -635,47 +616,8 @@ export const getPublicSystemSettings = asyncHandler(async (req, res) => {
   }
 
   try {
-    // First, ensure essential settings exist
-    const essentialSettings = [
-      {
-        key: "APP_LOGO_SIZE",
-        value: "medium",
-        description: "Size of the application logo (small, medium, large)",
-      },
-      {
-        key: "CONTACT_HELPLINE",
-        value: "1800-XXX-XXXX",
-        description: "Helpline phone number for customer support",
-      },
-      {
-        key: "CONTACT_EMAIL",
-        value: "support@cochinsmartcity.in",
-        description: "Email address for customer support",
-      },
-      {
-        key: "CONTACT_OFFICE_HOURS",
-        value: "Monday - Friday: 9 AM - 6 PM",
-        description: "Office hours for customer support",
-      },
-      {
-        key: "CONTACT_OFFICE_ADDRESS",
-        value: "Cochin Corporation Office",
-        description: "Physical address of the office",
-      },
-    ];
-
-    for (const setting of essentialSettings) {
-      const exists = await prisma.systemConfig.findUnique({
-        where: { key: setting.key },
-      });
-
-      if (!exists) {
-        await prisma.systemConfig.create({
-          data: setting,
-        });
-        console.log(`✅ Added missing system setting: ${setting.key}`);
-      }
-    }
+    // Sync configurations from seed.json to ensure all are available
+    await syncConfigurationsFromSeed();
 
     // Only return non-sensitive settings
     const publicKeys = [
@@ -700,6 +642,21 @@ export const getPublicSystemSettings = asyncHandler(async (req, res) => {
       "NOTIFICATION_SETTINGS",
       "COMPLAINT_PRIORITIES",
       "COMPLAINT_STATUSES",
+      "AUTO_ASSIGN_COMPLAINTS",
+      "AUTO_ASSIGN_ON_REOPEN",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+      "SERVICE_AREA_BOUNDARY",
+      "SERVICE_AREA_VALIDATION_ENABLED",
+      "MAINTENANCE_MODE",
+      "GUEST_COMPLAINT_ENABLED",
+      "EMAIL_NOTIFICATIONS_ENABLED",
+      "SMS_NOTIFICATIONS_ENABLED",
+      "COMPLAINT_PHOTO_MAX_SIZE",
+      "COMPLAINT_PHOTO_MAX_COUNT",
+      "AUTO_CLOSE_RESOLVED_COMPLAINTS",
+      "AUTO_CLOSE_DAYS",
+      "SYSTEM_VERSION",
       // Map & Location settings
       "MAP_SEARCH_PLACE",
       "MAP_COUNTRY_CODES",
@@ -742,13 +699,37 @@ export const getPublicSystemSettings = asyncHandler(async (req, res) => {
         value: setting.value,
         description: setting.description,
         type: type,
+        enabled: setting.isActive, // Include enabled status
       };
     });
+
+    // Also include complaint types in the response for convenience
+    let complaintTypes = [];
+    try {
+      const types = await prisma.complaintType.findMany({
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+      });
+      complaintTypes = types.map((type) => ({
+        id: String(type.id),
+        name: type.name,
+        description: type.description,
+        priority: type.priority,
+        slaHours: type.slaHours,
+        isActive: type.isActive,
+        updatedAt: type.updatedAt,
+      }));
+    } catch (error) {
+      console.warn("Could not fetch complaint types:", error.message);
+    }
 
     res.status(200).json({
       success: true,
       message: "Public system settings retrieved successfully",
-      data: transformedSettings,
+      data: {
+        config: transformedSettings,
+        complaintTypes: complaintTypes,
+      },
       meta: {
         source: "database",
         databaseAvailable: true,
@@ -766,7 +747,10 @@ export const getPublicSystemSettings = asyncHandler(async (req, res) => {
       success: true,
       message:
         "Public system settings retrieved (default values - database error)",
-      data: defaultSettings,
+      data: {
+        config: defaultSettings,
+        complaintTypes: [], // Empty array as fallback
+      },
       meta: {
         source: "defaults_fallback",
         databaseAvailable: false,
@@ -807,3 +791,166 @@ export const getSystemHealth = asyncHandler(async (req, res) => {
     },
   });
 });
+
+// @desc    Bulk update system settings
+// @route   PUT /api/system-config/bulk
+// @access  Private (Admin only)
+export const bulkUpdateSystemSettings = asyncHandler(async (req, res) => {
+  const { settings } = req.body;
+
+  if (!Array.isArray(settings)) {
+    return res.status(400).json({
+      success: false,
+      message: "Settings must be an array",
+    });
+  }
+
+  const updatedSettings = [];
+  const errors = [];
+
+  for (const setting of settings) {
+    try {
+      const { key, value, description, isActive } = setting;
+
+      if (!key) {
+        errors.push(`Missing key for setting`);
+        continue;
+      }
+
+      // Validate JSON fields
+      if (value !== undefined && (key === "SERVICE_AREA_BOUNDARY" || key === "NOTIFICATION_SETTINGS" || key === "COMPLAINT_PRIORITIES" || key === "COMPLAINT_STATUSES")) {
+        try {
+          JSON.parse(value);
+        } catch (error) {
+          errors.push(`Invalid JSON format for ${key}`);
+          continue;
+        }
+      }
+
+      const existingSetting = await prisma.systemConfig.findUnique({
+        where: { key },
+      });
+
+      if (!existingSetting) {
+        errors.push(`Setting ${key} not found`);
+        continue;
+      }
+
+      const updatedSetting = await prisma.systemConfig.update({
+        where: { key },
+        data: {
+          ...(value !== undefined && { value }),
+          ...(description !== undefined && { description }),
+          ...(isActive !== undefined && { isActive }),
+        },
+      });
+
+      updatedSettings.push(updatedSetting);
+    } catch (error) {
+      errors.push(`Error updating ${setting.key}: ${error.message}`);
+    }
+  }
+
+  res.status(200).json({
+    success: true,
+    message: `Updated ${updatedSettings.length} settings successfully`,
+    data: {
+      updated: updatedSettings.length,
+      errors: errors,
+    },
+  });
+});
+
+// Helper function to get active system configuration value
+export const getActiveSystemConfig = async (key, defaultValue = null) => {
+  try {
+    const config = await prisma.systemConfig.findUnique({
+      where: { key },
+    });
+    
+    if (!config || !config.isActive) {
+      return defaultValue;
+    }
+    
+    return config.value;
+  } catch (error) {
+    console.error(`Error getting system config ${key}:`, error);
+    return defaultValue;
+  }
+};
+
+// Helper function to get multiple active system configurations
+export const getActiveSystemConfigs = async (keys) => {
+  try {
+    const configs = await prisma.systemConfig.findMany({
+      where: {
+        key: { in: keys },
+        isActive: true,
+      },
+    });
+    
+    const configMap = {};
+    configs.forEach(config => {
+      configMap[config.key] = config.value;
+    });
+    
+    return configMap;
+  } catch (error) {
+    console.error('Error getting system configs:', error);
+    return {};
+  }
+};
+
+// Helper function to sync configurations from seed.json
+const syncConfigurationsFromSeed = async () => {
+  try {
+    // Import seed data dynamically
+    const fs = await import('fs');
+    const path = await import('path');
+    const { fileURLToPath } = await import('url');
+    
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const seedPath = path.join(__dirname, '../../prisma/seed.json');
+    
+    if (!fs.existsSync(seedPath)) {
+      console.log('⚠️ seed.json not found, skipping configuration sync');
+      return;
+    }
+    
+    const seedData = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+    const seedConfigs = seedData.systemConfig || [];
+    
+    console.log(`📋 Syncing ${seedConfigs.length} configurations from seed.json`);
+    
+    for (const seedConfig of seedConfigs) {
+      const existingConfig = await prisma.systemConfig.findUnique({
+        where: { key: seedConfig.key }
+      });
+      
+      if (!existingConfig) {
+        // Insert missing configuration with isActive from seed or true by default
+        await prisma.systemConfig.create({
+          data: {
+            key: seedConfig.key,
+            value: seedConfig.value,
+            description: seedConfig.description,
+            isActive: seedConfig.isActive !== undefined ? seedConfig.isActive : true,
+          }
+        });
+        console.log(`✅ Added missing configuration: ${seedConfig.key}`);
+      } else if (!existingConfig.description && seedConfig.description) {
+        // Update description if missing
+        await prisma.systemConfig.update({
+          where: { key: seedConfig.key },
+          data: { description: seedConfig.description }
+        });
+        console.log(`📝 Updated description for: ${seedConfig.key}`);
+      }
+    }
+    
+    console.log('✅ Configuration sync completed');
+  } catch (error) {
+    console.error('❌ Error syncing configurations from seed.json:', error);
+  }
+};

@@ -478,6 +478,98 @@ export const adminApi = baseApi.injectEndpoints({
       query: () => "/users/wards?include=subzones",
       providesTags: ["Ward"],
     }),
+
+    // Get all wards (including inactive) for management
+    getAllWardsForManagement: builder.query<
+      ApiResponse<{
+        wards: Array<{
+          id: string;
+          name: string;
+          description?: string;
+          isActive: boolean;
+          subZones?: Array<{
+            id: string;
+            name: string;
+            wardId: string;
+            description?: string;
+            isActive: boolean;
+          }>;
+        }>;
+      }>,
+      void
+    >({
+      query: () => "/users/wards?include=subzones&all=true",
+      providesTags: ["Ward"],
+    }),
+
+    // Ward Management
+    createWard: builder.mutation<
+      ApiResponse<{ ward: Ward }>,
+      { name: string; description?: string }
+    >({
+      query: (wardData) => ({
+        url: "/users/wards",
+        method: "POST",
+        body: wardData,
+      }),
+      invalidatesTags: ["Ward", "User"],
+    }),
+
+    updateWard: builder.mutation<
+      ApiResponse<{ ward: Ward }>,
+      { id: string; data: { name?: string; description?: string; isActive?: boolean } }
+    >({
+      query: ({ id, data }) => ({
+        url: `/users/wards/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Ward", "User"],
+    }),
+
+    deleteWard: builder.mutation<ApiResponse<void>, string>({
+      query: (id) => ({
+        url: `/users/wards/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Ward", "User"],
+    }),
+
+    // SubZone Management
+    createSubZone: builder.mutation<
+      ApiResponse<SubZone>,
+      { wardId: string; data: { name: string; description?: string; isActive?: boolean } }
+    >({
+      query: ({ wardId, data }) => ({
+        url: `/users/wards/${wardId}/subzones`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Ward", "User"],
+    }),
+
+    updateSubZone: builder.mutation<
+      ApiResponse<SubZone>,
+      { wardId: string; id: string; data: { name?: string; description?: string; isActive?: boolean } }
+    >({
+      query: ({ wardId, id, data }) => ({
+        url: `/users/wards/${wardId}/subzones/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["Ward", "User"],
+    }),
+
+    deleteSubZone: builder.mutation<
+      ApiResponse<void>,
+      { wardId: string; id: string }
+    >({
+      query: ({ wardId, id }) => ({
+        url: `/users/wards/${wardId}/subzones/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Ward", "User"],
+    }),
   }),
 });
 
@@ -501,6 +593,14 @@ export const {
   useGetUserActivityQuery,
   useGetSystemHealthQuery,
   useGetWardsForFilteringQuery,
+  useGetAllWardsForManagementQuery,
+  // Ward Management
+  useCreateWardMutation,
+  useUpdateWardMutation,
+  useDeleteWardMutation,
+  useCreateSubZoneMutation,
+  useUpdateSubZoneMutation,
+  useDeleteSubZoneMutation,
 } = adminApi;
 
 // Re-export for convenience

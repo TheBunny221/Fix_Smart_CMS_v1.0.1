@@ -24,6 +24,7 @@ import guestRoutes from "./routes/guestRoutes.js";
 import wardRoutes from "./routes/wardRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import reportRoutesRevamped from "./routes/reportRoutesRevamped.js";
 import maintenanceAnalyticsRoutes from "./routes/maintenanceAnalyticsRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
 import complaintTypeRoutes from "./routes/complaintTypeRoutes.js";
@@ -253,6 +254,7 @@ export function createApp() {
   app.use("/api/wards", wardRoutes);
   app.use("/api/admin", adminRoutes);
   app.use("/api/reports", reportRoutes);
+  app.use("/api/reports-revamped", reportRoutesRevamped);
   app.use("/api/maintenance", maintenanceAnalyticsRoutes);
   app.use("/api/uploads", uploadRoutes);
   app.use("/api/complaint-types", complaintTypeRoutes);

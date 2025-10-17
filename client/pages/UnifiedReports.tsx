@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useAppSelector } from "../store/hooks";
 import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useSystemConfig as useSystemConfigRedux } from "../hooks/useSystemConfig";
 import { Button } from "../components/ui/button";
 import { Link } from "react-router-dom";
 import { Input } from "../components/ui/input";
@@ -123,21 +124,44 @@ const UnifiedReports: React.FC = () => {
     loadDynamicLibraries();
   }, []); // Empty dependency array since loadDynamicLibraries is memoized with useCallback
 
-  // Date filters are initialized to the current month using native Date APIs
-  // This avoids race conditions where the first fetch used only today's date
-  // and resulted in empty analytics when there was no data for that single day.
+  // Helper function to format dates as dd/mm/yy for display
+  const formatDateDisplay = useCallback((dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear().toString().slice(-2);
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      return dateString;
+    }
+  }, []);
 
-  // State for filters - initialize with current month (YYYY-MM-DD)
-  const [filters, setFilters] = useState<FilterOptions>(() => {
-    const now = new Date();
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
-      .toISOString()
-      .split("T")[0] || "";
-    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-      .toISOString()
-      .split("T")[0] || "";
+  // Helper function to get default date range (one month ago to today)
+  const getDefaultDateRange = useCallback(() => {
+    const currentDate = new Date();
+    const pastDate = new Date(currentDate);
+    pastDate.setMonth(currentDate.getMonth() - 1);
+    
+    // Format dates as YYYY-MM-DD for API compatibility
+    const formatDateForAPI = (date: Date): string => {
+      return date.toISOString().split("T")[0] || "";
+    };
+    
     return {
-      dateRange: { from: firstDay, to: lastDay },
+      from: formatDateForAPI(pastDate),
+      to: formatDateForAPI(currentDate)
+    };
+  }, []);
+
+  // Date filters are initialized to one month before current date to current date
+  // This provides a default range of recent data for better user experience
+  // and avoids empty analytics when there's no data for a single day.
+
+  // State for filters - initialize with one month ago to today (YYYY-MM-DD)
+  const [filters, setFilters] = useState<FilterOptions>(() => {
+    return {
+      dateRange: getDefaultDateRange(),
       ward: "all",
       complaintType: "all",
       status: "all",
@@ -517,21 +541,15 @@ const UnifiedReports: React.FC = () => {
 
   // Calculate time period for chart titles
   const getTimePeriodLabel = useCallback(() => {
-    if (!dateFnsLoaded || !dynamicLibraries.dateFns) {
-      return `${filters.dateRange.from} - ${filters.dateRange.to}`;
-    }
-
     try {
-      const { format } = dynamicLibraries.dateFns;
       const fromDate = new Date(filters.dateRange.from);
       const toDate = new Date(filters.dateRange.to);
       const diffTime = Math.abs(toDate.getTime() - fromDate.getTime());
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      // Format dates for display
-      const formatDate = (date: Date) => format(date, "MMM dd, yyyy");
-      const fromFormatted = formatDate(fromDate);
-      const toFormatted = formatDate(toDate);
+      // Format dates for display as dd/mm/yy
+      const fromFormatted = formatDateDisplay(filters.dateRange.from);
+      const toFormatted = formatDateDisplay(filters.dateRange.to);
 
       // Determine period type
       if (diffDays <= 1) {
@@ -547,9 +565,9 @@ const UnifiedReports: React.FC = () => {
       }
     } catch (error) {
       console.error("Error formatting date period:", error);
-      return `${filters.dateRange.from} - ${filters.dateRange.to}`;
+      return `${formatDateDisplay(filters.dateRange.from)} - ${formatDateDisplay(filters.dateRange.to)}`;
     }
-  }, [filters.dateRange, dateFnsLoaded, dynamicLibraries.dateFns]);
+  }, [filters.dateRange, formatDateDisplay]);
 
   // Chart colors
   const COLORS = [
@@ -569,47 +587,19 @@ const UnifiedReports: React.FC = () => {
 
     let trendsData: any[] = [];
     if (analyticsData.trends) {
-      if (dateFnsLoaded && dynamicLibraries.dateFns) {
-        try {
-          const { format } = dynamicLibraries.dateFns;
-          trendsData = analyticsData.trends.map((trend) => ({
-            ...trend,
-            date: format(new Date(trend.date), "MMM dd"),
-            fullDate: format(new Date(trend.date), "MMM dd, yyyy"),
-            rawDate: trend.date,
-          }));
-        } catch (error) {
-          console.error("Error formatting trend dates:", error);
-          trendsData = analyticsData.trends.map((trend) => ({
-            ...trend,
-            date: new Date(trend.date).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            }),
-            fullDate: new Date(trend.date).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            }),
-            rawDate: trend.date,
-          }));
-        }
-      } else {
-        // Fallback formatting without date-fns
-        trendsData = analyticsData.trends.map((trend) => ({
+      trendsData = analyticsData.trends.map((trend) => {
+        const trendDate = new Date(trend.date);
+        const day = trendDate.getDate().toString().padStart(2, '0');
+        const month = (trendDate.getMonth() + 1).toString().padStart(2, '0');
+        const year = trendDate.getFullYear().toString().slice(-2);
+        
+        return {
           ...trend,
-          date: new Date(trend.date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          }),
-          fullDate: new Date(trend.date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          }),
+          date: `${day}/${month}`, // Short format for chart axis
+          fullDate: `${day}/${month}/${year}`, // Full format for tooltips
           rawDate: trend.date,
-        }));
-      }
+        };
+      });
     }
 
     return {
@@ -931,7 +921,7 @@ const UnifiedReports: React.FC = () => {
                     size="sm"
                   >
                     <span>
-                      {filters.dateRange.from} → {filters.dateRange.to}
+                      {formatDateDisplay(filters.dateRange.from)} → {formatDateDisplay(filters.dateRange.to)}
                     </span>
                     <Calendar className="h-4 w-4 opacity-70" />
                   </Button>
@@ -1037,11 +1027,17 @@ const UnifiedReports: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="water">Water Supply</SelectItem>
-                  <SelectItem value="electricity">Electricity</SelectItem>
-                  <SelectItem value="road">Road Repair</SelectItem>
-                  <SelectItem value="garbage">Garbage Collection</SelectItem>
-                  <SelectItem value="lighting">Street Lighting</SelectItem>
+                  {complaintTypesLoading ? (
+                    <SelectItem value="" disabled>Loading types...</SelectItem>
+                  ) : complaintTypes.length === 0 ? (
+                    <SelectItem value="" disabled>No types available</SelectItem>
+                  ) : (
+                    complaintTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.id}>
+                        {type.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -1074,52 +1070,15 @@ const UnifiedReports: React.FC = () => {
             <Button
               variant="outline"
               onClick={() => {
-                console.log("Resetting filters...");
-                // Reset to original data range if available
-                if (analyticsData?.trends && analyticsData.trends.length > 0) {
-                  const dates = analyticsData.trends
-                    .map((t) => new Date(t.date))
-                    .sort((a, b) => a.getTime() - b.getTime());
-                  // Use fallback date formatting
-                  const earliestDate = dates[0]?.toISOString().split("T")[0] || "";
-                  const latestDate = dates[dates.length - 1]
-                    ?.toISOString().split("T")[0] || "";
-
-                  setFilters({
-                    dateRange: {
-                      from: earliestDate,
-                      to: latestDate,
-                    },
-                    ward: permissions.defaultWard || "all",
-                    complaintType: "all",
-                    status: "all",
-                    priority: "all",
-                  });
-                } else {
-                  // Fallback to current month if no data
-                  const now = new Date();
-                  const firstDay = new Date(
-                    now.getFullYear(),
-                    now.getMonth(),
-                    1,
-                  );
-                  const lastDay = new Date(
-                    now.getFullYear(),
-                    now.getMonth() + 1,
-                    0,
-                  );
-
-                  setFilters({
-                    dateRange: {
-                      from: firstDay.toISOString().split("T")[0] || "",
-                      to: lastDay.toISOString().split("T")[0] || "",
-                    },
-                    ward: permissions.defaultWard || "all",
-                    complaintType: "all",
-                    status: "all",
-                    priority: "all",
-                  });
-                }
+                console.log("Resetting filters to default date range...");
+                // Reset to default date range (one month ago to today)
+                setFilters({
+                  dateRange: getDefaultDateRange(),
+                  ward: permissions.defaultWard || "all",
+                  complaintType: "all",
+                  status: "all",
+                  priority: "all",
+                });
               }}
             >
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -1186,8 +1145,23 @@ const UnifiedReports: React.FC = () => {
                   {analyticsData.complaints.total}
                 </div>
                 <div className="flex items-center text-xs text-muted-foreground">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +12% from last month
+                  {analyticsData.comparison?.trends?.totalComplaints ? (
+                    <>
+                      {analyticsData.comparison.trends.totalComplaints.startsWith('+') ? (
+                        <TrendingUp className="h-3 w-3 mr-1 text-green-600" />
+                      ) : analyticsData.comparison.trends.totalComplaints.startsWith('-') ? (
+                        <TrendingDown className="h-3 w-3 mr-1 text-red-600" />
+                      ) : (
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                      )}
+                      {analyticsData.comparison.trends.totalComplaints} from last period
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      No previous data
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1213,14 +1187,26 @@ const UnifiedReports: React.FC = () => {
                   {analyticsData.complaints.resolved}
                 </div>
                 <div className="flex items-center text-xs text-muted-foreground">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  {(analyticsData.complaints.total > 0
-                    ? (analyticsData.complaints.resolved /
-                      analyticsData.complaints.total) *
-                    100
-                    : 0
-                  ).toFixed(1)}
-                  % resolution rate
+                  {analyticsData.comparison?.trends?.resolvedComplaints ? (
+                    <>
+                      {analyticsData.comparison.trends.resolvedComplaints.startsWith('+') ? (
+                        <TrendingUp className="h-3 w-3 mr-1 text-green-600" />
+                      ) : analyticsData.comparison.trends.resolvedComplaints.startsWith('-') ? (
+                        <TrendingDown className="h-3 w-3 mr-1 text-red-600" />
+                      ) : (
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                      )}
+                      {analyticsData.comparison.trends.resolvedComplaints} from last period
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      {(analyticsData.complaints.total > 0
+                        ? (analyticsData.complaints.resolved / analyticsData.complaints.total) * 100
+                        : 0
+                      ).toFixed(1)}% resolution rate
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1249,9 +1235,23 @@ const UnifiedReports: React.FC = () => {
                   value={analyticsData.sla.compliance}
                   className="mt-2"
                 />
-                <div className="flex items-center text-xs text-muted-foreground mt-2">
-                  <Clock className="h-3 w-3 mr-1" />
-                  Avg: {analyticsData.sla.avgResolutionTime} days
+                <div className="flex items-center justify-between text-xs text-muted-foreground mt-2">
+                  <div className="flex items-center">
+                    <Clock className="h-3 w-3 mr-1" />
+                    Avg: {analyticsData.sla.avgResolutionTime} days
+                  </div>
+                  {analyticsData.comparison?.trends?.slaCompliance && (
+                    <div className="flex items-center">
+                      {analyticsData.comparison.trends.slaCompliance.startsWith('+') ? (
+                        <TrendingUp className="h-3 w-3 mr-1 text-green-600" />
+                      ) : analyticsData.comparison.trends.slaCompliance.startsWith('-') ? (
+                        <TrendingDown className="h-3 w-3 mr-1 text-red-600" />
+                      ) : (
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                      )}
+                      {analyticsData.comparison.trends.slaCompliance}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1277,8 +1277,23 @@ const UnifiedReports: React.FC = () => {
                   {analyticsData.performance.userSatisfaction.toFixed(2)}/5
                 </div>
                 <div className="flex items-center text-xs text-muted-foreground">
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  +0.2 from last month
+                  {analyticsData.comparison?.trends?.userSatisfaction ? (
+                    <>
+                      {analyticsData.comparison.trends.userSatisfaction.startsWith('+') ? (
+                        <TrendingUp className="h-3 w-3 mr-1 text-green-600" />
+                      ) : analyticsData.comparison.trends.userSatisfaction.startsWith('-') ? (
+                        <TrendingDown className="h-3 w-3 mr-1 text-red-600" />
+                      ) : (
+                        <TrendingUp className="h-3 w-3 mr-1" />
+                      )}
+                      {analyticsData.comparison.trends.userSatisfaction} from last period
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      No previous data
+                    </>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1777,7 +1792,9 @@ const UnifiedReports: React.FC = () => {
                 {filters.complaintType !== "all" && (
                   <div className="flex justify-between">
                     <span>Type:</span>
-                    <span className="font-medium">{filters.complaintType}</span>
+                    <span className="font-medium">
+                      {getComplaintTypeById(filters.complaintType)?.name || filters.complaintType}
+                    </span>
                   </div>
                 )}
                 {filters.status !== "all" && (

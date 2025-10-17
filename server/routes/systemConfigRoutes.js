@@ -8,6 +8,7 @@ import {
   resetSystemSettings,
   getSystemHealth,
   getPublicSystemSettings,
+  bulkUpdateSystemSettings,
 } from "../controller/systemConfigController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import { body, param } from "express-validator";
@@ -131,6 +132,31 @@ router.get("/health", getSystemHealth);
  *         description: Settings reset successfully
  */
 router.post("/reset", resetSystemSettings);
+
+/**
+ * @swagger
+ * /api/system-config/bulk:
+ *   put:
+ *     summary: Bulk update system settings
+ *     tags: [System Config]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               settings:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/SystemSetting'
+ *     responses:
+ *       200:
+ *         description: Settings updated successfully
+ */
+router.put("/bulk", bulkUpdateSystemSettings);
 
 /**
  * @swagger

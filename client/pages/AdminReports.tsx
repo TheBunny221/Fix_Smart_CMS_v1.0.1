@@ -33,11 +33,15 @@ import {
   MapPin,
   Filter,
 } from "lucide-react";
+import { useComplaintTypes } from "../hooks/useComplaintTypes";
 
 const AdminReports: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedWard, setSelectedWard] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
+
+  // Get complaint types from system configuration
+  const { complaintTypes, isLoading: complaintTypesLoading } = useComplaintTypes();
 
   const reportMetrics = {
     totalComplaints: 1247,
@@ -162,11 +166,15 @@ const AdminReports: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="water">Water Supply</SelectItem>
-                  <SelectItem value="electricity">Electricity</SelectItem>
-                  <SelectItem value="road">Road Repair</SelectItem>
-                  <SelectItem value="garbage">Garbage Collection</SelectItem>
-                  <SelectItem value="lighting">Street Lighting</SelectItem>
+                  {complaintTypes.length === 0 ? (
+                    <SelectItem value="" disabled>No types available</SelectItem>
+                  ) : (
+                    complaintTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.id}>
+                        {type.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -293,7 +301,10 @@ const AdminReports: React.FC = () => {
                     <div className="flex justify-between">
                       <span>Type Filter:</span>
                       <span className="font-medium">
-                        {selectedType === "all" ? "All Types" : selectedType}
+                        {selectedType === "all" 
+                          ? "All Types" 
+                          : complaintTypes.find(type => type.id === selectedType)?.name || selectedType
+                        }
                       </span>
                     </div>
                     <div className="flex justify-between">

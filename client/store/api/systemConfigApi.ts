@@ -6,12 +6,22 @@ export interface SystemConfigItem {
   key: string;
   value: string;
   description?: string;
-  type: string;
-  isPublic: boolean;
+  type: "string" | "number" | "boolean" | "json";
+  isActive: boolean;
+  updatedAt?: string;
 }
 
 export interface SystemConfigResponse {
   settings: SystemConfigItem[];
+}
+
+export interface BulkUpdateRequest {
+  settings: Array<{
+    key: string;
+    value?: string;
+    description?: string;
+    isActive?: boolean;
+  }>;
 }
 
 // System Config API slice
@@ -36,12 +46,25 @@ export const systemConfigApi = baseApi.injectEndpoints({
     // Update system configuration (admin only)
     updateSystemConfig: builder.mutation<
       ApiResponse<SystemConfigItem>,
-      { key: string; value: string; description?: string }
+      { key: string; value?: string; description?: string; isActive?: boolean }
     >({
-      query: (configData) => ({
-        url: "/system-config",
+      query: ({ key, ...configData }) => ({
+        url: `/system-config/${key}`,
         method: "PUT",
         body: configData,
+      }),
+      invalidatesTags: ["SystemConfig"],
+    }),
+
+    // Bulk update system configurations (admin only)
+    bulkUpdateSystemConfig: builder.mutation<
+      ApiResponse<{ updated: number; errors: string[] }>,
+      BulkUpdateRequest
+    >({
+      query: (bulkData) => ({
+        url: "/system-config/bulk",
+        method: "PUT",
+        body: bulkData,
       }),
       invalidatesTags: ["SystemConfig"],
     }),
@@ -53,4 +76,5 @@ export const {
   useGetPublicSystemConfigQuery,
   useGetAllSystemConfigQuery,
   useUpdateSystemConfigMutation,
+  useBulkUpdateSystemConfigMutation,
 } = systemConfigApi;

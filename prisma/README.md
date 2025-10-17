@@ -6,7 +6,7 @@ This directory contains the database schema and seeding configuration for the NL
 
 - **`schema.prisma`** - Main database schema (PostgreSQL)
 - **`seed.js`** - Database seeding script
-- **`seed.json`** - Seed data configuration
+- **`seeds/seed.json`** - Seed data configuration
 - **`migrations/`** - Database migration files
 
 ## Quick Setup

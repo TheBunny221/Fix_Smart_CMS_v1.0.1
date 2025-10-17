@@ -1,3 +1,4 @@
+// Updated interface to include comparison data for trend analysis
 export interface AnalyticsData {
   complaints: {
     total: number;
@@ -35,6 +36,32 @@ export interface AnalyticsData {
     escalationRate: number;
     firstCallResolution: number;
     repeatComplaints: number;
+  };
+  comparison?: {
+    current: {
+      total: number;
+      resolved: number;
+      pending: number;
+      overdue: number;
+      slaCompliance: number;
+      avgResolutionTime: number;
+    };
+    previous: {
+      total: number;
+      resolved: number;
+      pending: number;
+      overdue: number;
+      slaCompliance: number;
+      avgResolutionTime: number;
+      userSatisfaction: number;
+    };
+    trends: {
+      totalComplaints: string;
+      resolvedComplaints: string;
+      slaCompliance: string;
+      avgResolutionTime: string;
+      userSatisfaction: string;
+    };
   };
 }
 
