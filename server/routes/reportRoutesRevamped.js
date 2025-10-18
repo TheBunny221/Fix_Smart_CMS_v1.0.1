@@ -4,7 +4,6 @@ import { asyncHandler } from "../middleware/errorHandler.js";
 import {
   getUnifiedAnalytics,
   getComprehensiveAnalyticsRevamped,
-  exportReportsRevamped,
   getHeatmapDataRevamped,
 } from "../controller/reportsControllerRevamped.js";
 
@@ -641,11 +640,7 @@ router.get(
  *       500:
  *         description: Internal server error during export
  */
-router.get(
-  "/export",
-  authorize("ADMINISTRATOR", "WARD_OFFICER"),
-  exportReportsRevamped,
-);
+// Export route removed - using frontend-only export implementation
 
 /**
  * @swagger

@@ -237,84 +237,22 @@ const AdminDashboard: React.FC = () => {
   return (
     <TooltipProvider>
       <div className="space-y-6">
-        {/* Welcome Header */}
-        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-white">
+      {/* Modern Welcome Header */}
+        <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 text-white shadow-xl">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
                 🛡️ Administrator Dashboard 🛠️
               </h1>
-              <p className="text-primary-foreground/80">
+              <p className="text-primary-foreground/90 text-base md:text-lg">
                 Complete system overview and management controls for {appName}
               </p>
             </div>
-            <Shield className="h-16 w-16 text-primary-foreground/60" />
+            <Shield className="h-16 w-16 md:h-20 md:w-20 text-primary-foreground/40 hidden sm:block" />
           </div>
-          {/* <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg p-3 shadow">
-              <div className="text-2xl font-bold text-gray-900">
-                {systemStats.totalComplaints}
-              </div>
-              <div className="text-sm text-gray-600 flex items-center gap-1">
-                Total Complaints
-                <UITooltip>
-                  <TooltipTrigger>
-                    <Info className="h-3.5 w-3.5 text-gray-500" />
-                  </TooltipTrigger>
-                  <TooltipContent>All complaints in the system.</TooltipContent>
-                </UITooltip>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-3 shadow">
-              <div className="text-2xl font-bold text-gray-900">
-                {systemStats.activeUsers || 0}
-              </div>
-              <div className="text-sm text-gray-600 flex items-center gap-1">
-                Active Users
-                <UITooltip>
-                  <TooltipTrigger>
-                    <Info className="h-3.5 w-3.5 text-gray-500" />
-                  </TooltipTrigger>
-                  <TooltipContent>Users who have logged in recently.</TooltipContent>
-                </UITooltip>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-3 shadow">
-              <div className="text-2xl font-bold text-gray-900">
-                {metrics?.slaCompliance || 0}%
-              </div>
-              <div className="text-sm text-gray-600 flex items-center gap-1">
-                SLA Compliance
-                <UITooltip>
-                  <TooltipTrigger>
-                    <Info className="h-3.5 w-3.5 text-gray-500" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Average on-time performance across complaint types, using each
-                    type’s configured SLA hours.
-                  </TooltipContent>
-                </UITooltip>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-3 shadow">
-              <div className="text-2xl font-bold text-gray-900">
-                {(metrics?.citizenSatisfaction || 0).toFixed(1)}/5
-              </div>
-              <div className="text-sm text-gray-600 flex items-center gap-1">
-                Satisfaction
-                <UITooltip>
-                  <TooltipTrigger>
-                    <Info className="h-3.5 w-3.5 text-gray-500" />
-                  </TooltipTrigger>
-                  <TooltipContent>Average citizen feedback score.</TooltipContent>
-                </UITooltip>
-              </div>
-            </div>
-          </div>*/}
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-6">
+          
+          {/* Stats Grid - Modern Cards */}
+          <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {[
               {
                 value: systemStats.totalComplaints,
@@ -330,7 +268,7 @@ const AdminDashboard: React.FC = () => {
                 value: `${metrics?.slaCompliance || 0}%`,
                 label: "SLA Compliance",
                 tooltip:
-                  "Average on-time performance across complaint types, using each type’s configured SLA hours.",
+                  "Average on-time performance across complaint types, using each type's configured SLA hours.",
               },
               {
                 value: `${(metrics?.citizenSatisfaction || 0).toFixed(1)}/5`,
@@ -340,24 +278,34 @@ const AdminDashboard: React.FC = () => {
             ].map((item, i) => (
               <div
                 key={i}
-                className="relative z-0 rounded-3xl p-5 bg-gradient-to-br from-white/80 to-gray-50/40
-                 backdrop-blur-xl border border-white/30 shadow-sm
-                 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                className="group relative overflow-hidden rounded-2xl p-5 md:p-6 
+                bg-gradient-to-br from-white/95 to-white/85 
+                backdrop-blur-xl border border-white/50 shadow-lg
+                transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:border-white/80"
               >
-                <div className="text-3xl font-semibold text-gray-900">
-                  {item.value}
+                {/* Gradient Overlay on Hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                {/* Content */}
+                <div className="relative z-10">
+                  <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
+                    {item.value}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-sm text-slate-700">
+                    <span className="font-medium">{item.label}</span>
+                    <UITooltip>
+                      <TooltipTrigger>
+                        <Info className="h-4 w-4 text-slate-500 hover:text-primary transition-colors cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="z-50 relative max-w-xs rounded-xl">
+                        {item.tooltip}
+                      </TooltipContent>
+                    </UITooltip>
+                  </div>
                 </div>
-                <div className="mt-2 text-sm text-gray-700 flex items-center gap-1">
-                  {item.label}
-                  <UITooltip>
-                    <TooltipTrigger>
-                      <Info className="h-4 w-4 text-gray-500 hover:text-gray-700 transition-colors" />
-                    </TooltipTrigger>
-                    <TooltipContent className="z-50 relative">
-                      {item.tooltip}
-                    </TooltipContent>
-                  </UITooltip>
-                </div>
+
+                {/* Bottom Accent Line */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-primary/60 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
               </div>
             ))}
           </div>

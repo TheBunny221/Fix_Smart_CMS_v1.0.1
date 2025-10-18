@@ -55,6 +55,8 @@ import {
   FileText,
   User,
   BarChart3,
+  RefreshCw,
+  Filter,
 } from "lucide-react";
 
 const MaintenanceTasks: React.FC = () => {
@@ -576,47 +578,58 @@ const MaintenanceTasks: React.FC = () => {
         </div>
       </div>*/}
 
-      {/* Welcome Hero */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold mb-1">Maintenance Dashboard</h2>
-            <p className="text-blue-100">
-              Welcome back! Here's your current workload.
-            </p>
-          </div>
-          <div className="text-right">
-            <Card
-              className={`inline-flex items-center p-1 rounded-xl cursor-pointer transition-all ${activeFilter === "all" ? "ring-2 ring-primary bg-primary/10 scale-105" : "bg-white/10 hover:bg-white/20"}`}
-              onClick={() => setActiveFilter("all")}
-            >
-              <CardHeader className="flex items-center p-2 py-1 justify-between space-x-3">
-                <div>
-                  <CardTitle className="text-sm font-medium text-white/90 flex items-center gap-2">
-                    <ListTodo className="h-4 w-4 text-white/90" />
-                    All
-                  </CardTitle>
-                </div>
-                <div className="text-right">
-                  <div className="text-3xl font-extrabold text-white">
-                    {taskCounts.total}
-                  </div>
-                  <div className="text-xs text-white/80">Total Tasks</div>
-                </div>
-              </CardHeader>
-            </Card>
-          </div>
+      {/* Modern Maintenance Welcome Hero - Ward Officer Style */}
+      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
+            🚧 Maintenance Dashboard 🛠️
+          </h1>
+          <p className="text-primary-foreground/90 text-sm md:text-base">
+            Welcome back! Here's your current workload.
+          </p>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-11 md:h-9 rounded-full px-4 border border-blue-200/40 bg-white text-blue-700 hover:bg-blue-50"
-            onClick={() => refetchComplaints()}
-          >
-            Refresh
-          </Button>
-        </div>
+
+        <Card
+          className={`w-full md:w-48 p-4 cursor-pointer rounded-2xl transition-all duration-300 ${activeFilter === "all"
+              ? "ring-2 ring-white bg-white/20 scale-105 shadow-2xl border-white/50"
+              : "bg-white/10 hover:bg-white/20 border-white/30 hover:border-white/50 shadow-lg hover:shadow-xl"
+            } backdrop-blur-sm border`}
+          onClick={() => setActiveFilter("all")}
+        >
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-3 space-y-0">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
+              <div className="p-1.5 rounded-lg bg-white/20">
+                <ListTodo className="h-4 w-4 text-white" />
+              </div>
+              All Tasks
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="p-0">
+            <div className="text-3xl md:text-4xl font-bold text-white mb-1">
+              {taskCounts.total}
+            </div>
+            <p className="text-xs text-white/80">Total tasks assigned</p>
+          </CardContent>
+
+          {/* Active Indicator */}
+          {activeFilter === "all" && (
+            <div className="absolute top-2 right-2 h-3 w-3 rounded-full bg-white shadow-lg animate-pulse"></div>
+          )}
+        </Card>
+      </div>
+
+      {/* Quick Actions Row */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9 rounded-xl px-4 border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm hover:shadow transition-all"
+          onClick={() => refetchComplaints()}
+        >
+          <RefreshCw className="h-3.5 w-3.5 mr-2" />
+          Refresh
+        </Button>
       </div>
 
       {/* Total card + StatusOverviewGrid (reuse WardOfficer components for consistent UI) */}
@@ -635,17 +648,19 @@ const MaintenanceTasks: React.FC = () => {
           )}
         </div>
 
-        {/* Modern status grid (All, Pending, Overdue, In Progress, Resolved, Reopened, Closed) */}
-        <div className="md:hidden sticky top-16 z-10 bg-gray-50/80 backdrop-blur border-b rounded-b-lg">
+       {/* Compact Modern Status Grid - 50% Smaller */}
+        <div className="md:hidden sticky top-16 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700 rounded-b-xl shadow-sm">
           <div className="p-2">
             <Button
               variant="outline"
-              className="w-full h-11 justify-center"
+              className="w-full h-9 justify-center rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-sm font-medium"
               aria-expanded={mobileFiltersOpen}
               aria-controls="mobile-filters"
               onClick={() => setMobileFiltersOpen((o) => !o)}
             >
-              Filter
+              <Filter className="h-3.5 w-3.5 mr-2" />
+              Filter Tasks
+              <ChevronDown className={`h-3.5 w-3.5 ml-2 transition-transform ${mobileFiltersOpen ? 'rotate-180' : ''}`} />
             </Button>
           </div>
         </div>
@@ -657,22 +672,8 @@ const MaintenanceTasks: React.FC = () => {
           ].join(" ")}
           id="mobile-filters"
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-2 sm:gap-3">
             {[
-              // {
-              //   id: "all",
-              //   label: "All",
-              //   subtitle: "All tasks",
-              //   icon: ListTodo,
-              //   value: taskCounts.total,
-              //   style: {
-              //     ring: "ring-blue-500",
-              //     text: "text-blue-700",
-              //     textSoft: "text-blue-600",
-              //     bgSoft: "bg-blue-50",
-              //     chipRing: "ring-blue-200",
-              //   },
-              // },
               {
                 id: "pending",
                 label: "Pending",
@@ -777,42 +778,56 @@ const MaintenanceTasks: React.FC = () => {
                     }
                   }}
                   className={[
-                    "group relative cursor-pointer select-none rounded-2xl border bg-white shadow-sm transition-all",
+                    "group relative cursor-pointer select-none rounded-xl border bg-white dark:bg-slate-800 shadow-sm transition-all",
                     "hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                     active
-                      ? `ring-2 ${m.style.ring} ${m.style.bgSoft} border-transparent`
-                      : "hover:border-neutral-200",
+                      ? `ring-2 ${m.style.ring} ${m.style.bgSoft} border-transparent scale-105`
+                      : "hover:border-neutral-200 dark:hover:border-slate-600 hover:-translate-y-0.5",
                   ].join(" ")}
                 >
-                  <CardHeader className="flex flex-col items-center justify-center p-3 pb-1">
+                  {/* Subtle decorative highlight */}
+                  <div
+                    className="pointer-events-none absolute -right-4 -top-4 h-16 w-16 rounded-full opacity-0 blur-xl transition-opacity group-hover:opacity-30"
+                    style={{
+                      background:
+                        "radial-gradient(40% 40% at 50% 50%, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 70%)",
+                    }}
+                  />
+
+                  <CardHeader className="flex flex-col items-center justify-center p-2 pb-1">
                     <div
                       className={[
-                        "mb-2 grid h-10 w-10 place-items-center rounded-full ring-1 ring-inset",
+                        "mb-1.5 grid h-8 w-8 place-items-center rounded-lg ring-1 ring-inset transition-all",
                         active
                           ? `${m.style.bgSoft} ${m.style.textSoft} ${m.style.chipRing}`
-                          : "bg-neutral-50 text-neutral-600 ring-neutral-200",
+                          : "bg-neutral-50 dark:bg-slate-700 text-neutral-600 dark:text-slate-300 ring-neutral-200 dark:ring-slate-600",
                       ].join(" ")}
                     >
-                      <Icon className="h-5 w-5" />
+                      <Icon className="h-4 w-4" />
                     </div>
-                    <CardTitle className="text-sm font-semibold text-neutral-800">
+                    <CardTitle className="text-xs font-semibold text-neutral-800 dark:text-slate-100 text-center leading-tight">
                       {m.label}
                     </CardTitle>
                   </CardHeader>
 
-                  <CardContent className="flex flex-col items-center p-2 pt-0">
+                  <CardContent className="flex flex-col items-center p-2 pt-0 pb-2">
                     <div
                       className={[
-                        "text-2xl font-bold leading-none tracking-tight",
-                        active ? m.style.text : "text-neutral-900",
+                        "text-xl font-bold leading-none tracking-tight",
+                        active ? m.style.text : "text-neutral-900 dark:text-slate-100",
                       ].join(" ")}
                     >
                       {m.value}
                     </div>
-                    <p className="mt-1 text-xs text-neutral-500">
+                    <p className="mt-0.5 text-[10px] text-neutral-500 dark:text-slate-400 text-center leading-tight">
                       {m.subtitle}
                     </p>
                   </CardContent>
+
+                  {/* Active Indicator Dot */}
+                  {active && (
+                    <div className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-current animate-pulse" style={{ color: m.style.text }}></div>
+                  )}
                 </Card>
               );
             })}

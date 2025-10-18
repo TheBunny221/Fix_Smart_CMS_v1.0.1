@@ -43,10 +43,13 @@ import {
   Edit,
   ChevronDown,
   X,
+  Download,
+  RefreshCw,
 } from "lucide-react";
 import ComplaintQuickActions from "../components/ComplaintQuickActions";
 import QuickComplaintModal from "../components/QuickComplaintModal";
 import UpdateComplaintModal from "../components/UpdateComplaintModal";
+import { ExportButton } from "../components/ExportButton";
 import { useSystemConfig } from "../contexts/SystemConfigContext";
 
 const ComplaintsList: React.FC = () => {
@@ -86,6 +89,7 @@ const ComplaintsList: React.FC = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  // Export functionality moved to ExportButton component
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -110,6 +114,7 @@ const ComplaintsList: React.FC = () => {
   const { priorities: configuredPriorities } = useComplaintPriorities();
   const { statuses: configuredStatuses } = useComplaintStatuses();
   const { getComplaintTypeById } = useComplaintTypes();
+  const { appName, appLogoUrl, getConfig } = useSystemConfig();
 
   const prettyLabel = (v: string) =>
     v
@@ -290,6 +295,8 @@ const ComplaintsList: React.FC = () => {
     setSubZoneFilter("all");
   };
 
+  // Export functionality moved to ExportButton component
+
   // Pagination helpers
   const totalItems = complaintsData?.pagination?.totalItems ?? 0;
   const totalPages = Math.max(
@@ -344,19 +351,19 @@ const ComplaintsList: React.FC = () => {
         </div>
       </div>
 
-      {/* Ultra Compact Filters */}
-      <Card>
-        <CardContent className="p-3">
-          {/* Primary Filter Row */}
-          <div className="flex flex-wrap items-center gap-2 mb-2">
+    {/* Ultra Compact Filters - Modern Single Line */}
+      <Card className="rounded-2xl shadow-lg border-slate-200 dark:border-slate-700">
+        <CardContent className="p-4">
+          {/* Primary Filter Row - Single Line Layout */}
+          <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
             {/* Search Bar - Expandable */}
-            <div className="relative flex-1 min-w-[180px] max-w-sm">
-              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 placeholder="Search complaints..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 pr-7 h-8 text-sm"
+                className="pl-10 pr-10 h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                 title="Search by complaint ID, description, or location"
               />
               {searchTerm && (
@@ -364,19 +371,19 @@ const ComplaintsList: React.FC = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSearchTerm("")}
-                  className="absolute right-0.5 top-1/2 transform -translate-y-1/2 h-5 w-5 p-0 hover:bg-gray-200"
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </Button>
               )}
             </div>
 
-            {/* Primary Filters */}
+            {/* Primary Filters - Compact Pills */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[120px] h-8 text-sm">
+              <SelectTrigger className="w-[130px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value="all">All Status</SelectItem>
                 {configuredStatuses.map((s: string) => (
                   <SelectItem key={s} value={s}>
@@ -387,10 +394,10 @@ const ComplaintsList: React.FC = () => {
             </Select>
 
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-              <SelectTrigger className="w-[120px] h-8 text-sm">
+              <SelectTrigger className="w-[130px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
                 <SelectValue placeholder="Priority" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value="all">All Priority</SelectItem>
                 {configuredPriorities.map((p: string) => (
                   <SelectItem key={p} value={p}>
@@ -409,10 +416,10 @@ const ComplaintsList: React.FC = () => {
             {/* Ward Filter - Only for administrators */}
             {user?.role === "ADMINISTRATOR" && (
               <Select value={wardFilter} onValueChange={handleWardChange}>
-                <SelectTrigger className="w-[120px] h-8 text-sm">
+                <SelectTrigger className="w-[130px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
                   <SelectValue placeholder="Ward" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl">
                   <SelectItem value="all">All Wards</SelectItem>
                   {wards.map((ward) => (
                     <SelectItem key={ward.id} value={ward.id}>
@@ -423,41 +430,62 @@ const ComplaintsList: React.FC = () => {
               </Select>
             )}
 
-            {/* Advanced Filters Toggle */}
+            {/* Advanced Filters Toggle with Badge */}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className="h-8 px-2 text-sm"
+              className={`relative h-10 px-4 text-sm rounded-xl transition-all ${
+                showAdvancedFilters 
+                  ? 'border-primary bg-primary text-white hover:bg-primary/90' 
+                  : 'border-slate-200 dark:border-slate-600 hover:border-primary/50'
+              }`}
             >
-              <Filter className="h-3.5 w-3.5 mr-1" />
-              More
-              <ChevronDown className={`h-3.5 w-3.5 ml-1 transition-transform ${showAdvancedFilters ? 'rotate-180' : ''}`} />
+              <Filter className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">More</span>
+              {(subZoneFilter !== 'all' || slaStatusFilter !== 'all' || needsMaintenanceAssignment) && (
+                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold shadow-lg">
+                  {[subZoneFilter !== 'all', slaStatusFilter !== 'all', needsMaintenanceAssignment].filter(Boolean).length}
+                </span>
+              )}
+              <ChevronDown className={`h-4 w-4 ml-1.5 transition-transform duration-300 ${showAdvancedFilters ? 'rotate-180' : ''}`} />
             </Button>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-1 ml-auto">
-              <Button variant="outline" size="sm" onClick={clearFilters} className="h-8 px-2 text-sm">
-                <X className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-2 ml-auto">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={clearFilters} 
+                className="h-10 px-3 text-sm rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                title="Clear all filters"
+              >
+                <X className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={() => refetch()} className="h-8 px-2 text-sm">
-                <FileText className="h-3.5 w-3.5" />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => refetch()} 
+                className="h-10 px-3 text-sm rounded-xl bg-primary hover:bg-primary/90 text-white border-transparent shadow-lg shadow-primary/30 transition-all"
+                title="Refresh data"
+              >
+                <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
           {/* Advanced Filters - Collapsible */}
           {showAdvancedFilters && (
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-200">
+            <div className="flex flex-wrap items-center gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-2">
               {/* Sub-Zone Filter - Only for admin and when ward is selected */}
               {user?.role === "ADMINISTRATOR" &&
                 wardFilter !== "all" &&
                 availableSubZones.length > 0 && (
                   <Select value={subZoneFilter} onValueChange={setSubZoneFilter}>
-                    <SelectTrigger className="w-[120px] h-8 text-sm">
+                    <SelectTrigger className="w-[140px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-750 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
                       <SelectValue placeholder="Sub-Zone" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-xl">
                       <SelectItem value="all">All Sub-Zones</SelectItem>
                       {availableSubZones.map((subZone) => (
                         <SelectItem key={subZone.id} value={subZone.id}>
@@ -470,10 +498,10 @@ const ComplaintsList: React.FC = () => {
 
               {/* SLA Status Filter */}
               <Select value={slaStatusFilter} onValueChange={setSlaStatusFilter}>
-                <SelectTrigger className="w-[120px] h-8 text-sm">
+                <SelectTrigger className="w-[140px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-750 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
                   <SelectValue placeholder="SLA" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-xl">
                   <SelectItem value="all">All SLA</SelectItem>
                   <SelectItem value="ON_TIME">On Time</SelectItem>
                   <SelectItem value="WARNING">Warning</SelectItem>
@@ -484,16 +512,16 @@ const ComplaintsList: React.FC = () => {
 
               {/* Assignment Filter - Only for Ward Officers */}
               {user?.role === "WARD_OFFICER" && (
-                <div className="flex items-center space-x-1.5 px-2 py-1 border border-gray-200 rounded-md h-8">
+                <div className="flex items-center space-x-2 px-4 py-2 border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-750 rounded-xl h-10 hover:border-primary/50 transition-all cursor-pointer">
                   <Checkbox
                     id="needsMaintenanceAssignment"
                     checked={needsMaintenanceAssignment}
                     onCheckedChange={(checked) => setNeedsMaintenanceAssignment(checked === true)}
-                    className="h-3.5 w-3.5"
+                    className="h-4 w-4 rounded border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <label
                     htmlFor="needsMaintenanceAssignment"
-                    className="text-xs cursor-pointer whitespace-nowrap"
+                    className="text-sm font-medium cursor-pointer whitespace-nowrap text-slate-900 dark:text-slate-100"
                   >
                     Needs Assignment
                   </label>
@@ -502,28 +530,116 @@ const ComplaintsList: React.FC = () => {
             </div>
           )}
 
+          {/* Active Filters Display */}
+          {(searchTerm || statusFilter !== 'all' || priorityFilter !== 'all' || wardFilter !== 'all' || subZoneFilter !== 'all' || slaStatusFilter !== 'all' || needsMaintenanceAssignment) && (
+            <div className="flex flex-wrap gap-2 items-center mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Active Filters:</span>
+              
+              {searchTerm && (
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium border border-blue-200 dark:border-blue-800">
+                  Search: {searchTerm.slice(0, 20)}{searchTerm.length > 20 ? '...' : ''}
+                  <button onClick={() => setSearchTerm('')} className="hover:bg-blue-100 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              
+              {statusFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium border border-green-200 dark:border-green-800">
+                  Status: {prettyLabel(statusFilter)}
+                  <button onClick={() => setStatusFilter('all')} className="hover:bg-green-100 dark:hover:bg-green-800 rounded-full p-0.5 transition-colors">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              
+              {priorityFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-medium border border-orange-200 dark:border-orange-800">
+                  Priority: {prettyLabel(priorityFilter)}
+                  <button onClick={() => setPriorityFilter('all')} className="hover:bg-orange-100 dark:hover:bg-orange-800 rounded-full p-0.5 transition-colors">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              
+              {wardFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium border border-purple-200 dark:border-purple-800">
+                  Ward: {wards.find(w => w.id === wardFilter)?.name || wardFilter}
+                  <button onClick={() => handleWardChange('all')} className="hover:bg-purple-100 dark:hover:bg-purple-800 rounded-full p-0.5 transition-colors">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              
+              {subZoneFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium border border-indigo-200 dark:border-indigo-800">
+                  Sub-Zone: {availableSubZones.find(z => z.id === subZoneFilter)?.name || subZoneFilter}
+                  <button onClick={() => setSubZoneFilter('all')} className="hover:bg-indigo-100 dark:hover:bg-indigo-800 rounded-full p-0.5 transition-colors">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              
+              {slaStatusFilter !== 'all' && (
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 text-xs font-medium border border-pink-200 dark:border-pink-800">
+                  SLA: {prettyLabel(slaStatusFilter)}
+                  <button onClick={() => setSlaStatusFilter('all')} className="hover:bg-pink-100 dark:hover:bg-pink-800 rounded-full p-0.5 transition-colors">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+              
+              {needsMaintenanceAssignment && (
+                <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs font-medium border border-yellow-200 dark:border-yellow-800">
+                  Needs Assignment
+                  <button onClick={() => setNeedsMaintenanceAssignment(false)} className="hover:bg-yellow-100 dark:hover:bg-yellow-800 rounded-full p-0.5 transition-colors">
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Search Helper Text */}
           {searchTerm && (
-            <div className="mt-1.5">
-              <p className="text-xs text-gray-500">
+            <div className="mt-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 {searchTerm.match(/^[A-Za-z]/)
-                  ? `Searching for: ${searchTerm}`
+                  ? `Searching for: "${searchTerm}"`
                   : `Searching in descriptions and locations`}
               </p>
             </div>
           )}
         </CardContent>
       </Card>
-
       {/* Complaints Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="h-5 w-5 mr-2" />
-            Complaints (
-            {complaintsData?.pagination?.totalItems ??
-              filteredComplaints.length}
-            )
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              Complaints (
+              {complaintsData?.pagination?.totalItems ??
+                filteredComplaints.length}
+              )
+            </div>
+            {/* Export Button */}
+            {(user?.role === "ADMINISTRATOR" || user?.role === "WARD_OFFICER") && (
+              <ExportButton
+                complaints={filteredComplaints}
+                systemConfig={{
+                  appName: appName || 'Smart CMS',
+                  appLogoUrl: appLogoUrl || '/logo.png',
+                  complaintIdPrefix: getConfig("COMPLAINT_ID_PREFIX", "CMS")
+                }}
+                user={{
+                  role: user?.role || 'GUEST',
+                  ...(user?.wardId && { wardId: user.wardId })
+                }}
+                disabled={filteredComplaints.length === 0}
+                className="flex items-center gap-2"
+              />
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>

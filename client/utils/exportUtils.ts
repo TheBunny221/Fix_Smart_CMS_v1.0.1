@@ -1,912 +1,430 @@
-// Dependencies will be loaded dynamically to prevent module loading issues
+/**
+ * Unified Export System
+ * Supports PDF, Excel, and CSV exports with complete complaint details
+ * Frontend-only implementation with RBAC integration
+ */
 
-interface ExportData {
-  complaints: any[];
-  summary: {
-    total: number;
-    resolved: number;
-    pending: number;
-    overdue?: number;
-  };
-  filters: any;
-  exportedAt: string;
+// Export data interface
+interface ComplaintData {
+  id: string;
+  complaintId?: string;
+  type: string;
+  description: string;
+  status: string;
+  priority: string;
+  ward?: { name: string };
+  submittedOn: string;
+  resolvedOn?: string;
+  assignedTo?: { fullName: string };
+  submittedBy?: { fullName: string };
+  citizenName?: string;
+  contactPhone?: string;
+  contactEmail?: string;
+  location?: string;
+  landmark?: string;
+  deadline?: string;
+  complaintType?: { name: string };
 }
 
-interface ChartDataPoint {
-  date: string;
-  complaints: number;
-  resolved: number;
-  slaCompliance: number;
-}
-
-interface CategoryData {
-  name: string;
-  count: number;
-  avgTime: number;
-  color?: string;
-}
-
-interface SystemConfigData {
+interface SystemConfig {
   appName: string;
   appLogoUrl?: string;
-  complaintIdPrefix?: string;
+  complaintIdPrefix: string;
 }
 
 interface ExportOptions {
-  systemConfig: SystemConfigData;
+  systemConfig: SystemConfig;
   userRole: string;
   userWard?: string;
-  includeCharts?: boolean;
-  maxRecords?: number;
+  filters?: any;
 }
 
-// Utility function to format complaint ID from database ID
-const formatComplaintId = (
-  dbId: string | number,
-  prefix: string = "KSC",
-): string => {
-  if (!dbId) return `${prefix}-000000`;
-
+// Utility function to format complaint ID
+const formatComplaintId = (id: string, prefix: string = "CMS"): string => {
+  if (!id) return `${prefix}-000000`;
+  
   let numericId: number;
-  if (typeof dbId === "string") {
-    // Extract numeric part if it's a string like "cm-123" or just "123"
-    const match = dbId.match(/\d+/);
+  if (typeof id === "string") {
+    const match = id.match(/\d+/);
     numericId = match ? parseInt(match[0]) : 0;
   } else {
-    numericId = dbId;
+    numericId = id;
   }
-
+  
   return `${prefix}-${numericId.toString().padStart(6, "0")}`;
 };
 
-// Enhanced PDF export with modern formatting and charts
+// Calculate SLA status
+const calculateSLAStatus = (complaint: ComplaintData): string => {
+  if (complaint.status === 'RESOLVED' || complaint.status === 'CLOSED') {
+    if (complaint.deadline && complaint.resolvedOn) {
+      return new Date(complaint.resolvedOn) <= new Date(complaint.deadline) ? 'Met' : 'Breached';
+    }
+    return 'Completed';
+  }
+  
+  if (complaint.deadline && new Date() > new Date(complaint.deadline)) {
+    return 'Overdue';
+  }
+  
+  return 'Active';
+};
+
+// Format complaint data for export
+const formatComplaintForExport = (complaint: ComplaintData, options: ExportOptions) => {
+  const complaintId = complaint.complaintId || 
+    formatComplaintId(complaint.id, options.systemConfig.complaintIdPrefix);
+  
+  const slaStatus = calculateSLAStatus(complaint);
+  
+  return {
+    'Complaint ID': complaintId,
+    'Complaint Type': complaint.complaintType?.name || complaint.type || 'N/A',
+    'Ward / Subzone': complaint.ward?.name || 'N/A',
+    'Citizen Name': options.userRole === 'CITIZEN' ? 'Hidden' : 
+      (complaint.submittedBy?.fullName || complaint.citizenName || 'Anonymous'),
+    'Description': complaint.description || 'N/A',
+    'Status': complaint.status || 'N/A',
+    'Priority': complaint.priority || 'N/A',
+    'Assigned Department / Officer': complaint.assignedTo?.fullName || 'Unassigned',
+    'Date of Creation': complaint.submittedOn ? 
+      new Date(complaint.submittedOn).toLocaleDateString() : 'N/A',
+    'Last Updated': complaint.resolvedOn ? 
+      new Date(complaint.resolvedOn).toLocaleDateString() : 'In Progress',
+    'Resolution / Remarks': complaint.status === 'RESOLVED' || complaint.status === 'CLOSED' ? 
+      'Resolved' : 'Pending Resolution',
+    'Contact Phone': options.userRole === 'CITIZEN' ? 'Hidden' : 
+      (complaint.contactPhone || 'N/A'),
+    'Contact Email': options.userRole === 'CITIZEN' ? 'Hidden' : 
+      (complaint.contactEmail || 'N/A'),
+    'Location': complaint.location || 'N/A',
+    'Landmark': complaint.landmark || 'N/A',
+    'SLA Status': slaStatus,
+    'Attachments Count': '0' // Placeholder - can be enhanced later
+  };
+};
+
+/**
+ * Export to PDF using jsPDF
+ */
 export const exportToPDF = async (
-  data: ExportData,
-  trendsData: ChartDataPoint[],
-  categoriesData: CategoryData[],
-  options: ExportOptions,
-) => {
+  complaints: ComplaintData[], 
+  options: ExportOptions
+): Promise<void> => {
   try {
-    // Dynamically import jsPDF
-    const { default: jsPDF } = await import("jspdf");
+    const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF();
+    
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
     let yPosition = 20;
     const marginLeft = 20;
     const marginRight = 20;
-    const contentWidth = pageWidth - marginLeft - marginRight;
-
-    // Primary colors for professional look
-      const primaryColor: [number, number, number] = [41, 128, 185]; // Blue
-      const secondaryColor: [number, number, number] = [52, 73, 94]; // Dark gray
-      const accentColor: [number, number, number] = [231, 76, 60]; // Red for highlights
-
-    // Helper function to add header to each page
-    const addHeader = () => {
-      // Header background
-      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.rect(0, 0, pageWidth, 25, "F");
-
-      // App name in header
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(16);
-      doc.setFont("helvetica", "bold");
-      doc.text(options.systemConfig.appName, marginLeft, 15);
-
-      // Current date in header
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text(new Date().toLocaleDateString(), pageWidth - marginRight, 15, {
-        align: "right",
-      });
-
-      return 35; // Return new Y position after header
-    };
-
-    // Helper function to add footer
-    const addFooter = (pageNum: number, totalPages: number) => {
-      doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      doc.setFontSize(8);
-      doc.text(
-        `Generated by ${options.systemConfig.appName} | Page ${pageNum} of ${totalPages}`,
-        pageWidth / 2,
-        pageHeight - 10,
-        { align: "center" },
-      );
-    };
-
-    // Start first page
-    yPosition = addHeader();
-
-    // Title section
-    doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    doc.setFontSize(24);
-    doc.setFont("helvetica", "bold");
-    doc.text("Complaint Management Report", pageWidth / 2, yPosition, {
-      align: "center",
-    });
-
-    yPosition += 15;
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text(options.systemConfig.appName, pageWidth / 2, yPosition, { align: 'center' });
+    
+    yPosition += 10;
     doc.setFontSize(14);
-    doc.setFont("helvetica", "normal");
-    doc.text(
-      `Comprehensive Analytics & Data Export`,
-      pageWidth / 2,
-      yPosition,
-      {
-        align: "center",
-      },
-    );
-
+    doc.text('Complaints Report', pageWidth / 2, yPosition, { align: 'center' });
+    
+    yPosition += 15;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated: ${new Date().toLocaleString()}`, marginLeft, yPosition);
+    doc.text(`Total Records: ${complaints.length}`, marginLeft, yPosition + 5);
+    doc.text(`User Role: ${options.userRole}`, marginLeft, yPosition + 10);
+    
     yPosition += 25;
-
-    // Report metadata box
-    doc.setFillColor(245, 245, 245);
-    doc.rect(marginLeft, yPosition - 5, contentWidth, 45, "F");
-    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(marginLeft, yPosition - 5, contentWidth, 45, "S");
-
-    yPosition += 5;
-    doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text("REPORT DETAILS", marginLeft + 5, yPosition);
-
+    
+    // Table headers
+    const headers = ['ID', 'Type', 'Status', 'Ward', 'Created', 'Assigned'];
+    const columnWidths = [25, 35, 20, 30, 25, 35];
+    let xPosition = marginLeft;
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    
+    headers.forEach((header, index) => {
+      doc.text(header, xPosition, yPosition);
+      xPosition += columnWidths[index] || 0;
+    });
+    
     yPosition += 8;
-    doc.setFont("helvetica", "normal");
-    const reportDetails = [
-      `Generated: ${new Date(data.exportedAt).toLocaleString()}`,
-      `User Role: ${options.userRole}`,
-      `User Ward: ${options.userWard || "All Wards"}`,
-      `Data Range: ${data.filters.from || "All"} to ${data.filters.to || "All"}`,
-      `Applied Filters: ${
-        Object.entries(data.filters)
-          .filter(([key, value]) => value && value !== "all")
-          .map(([key, value]) => `${key}: ${value}`)
-          .join(", ") || "None"
-      }`,
-    ];
-
-    reportDetails.forEach((detail) => {
-      doc.text(detail, marginLeft + 5, yPosition);
-      yPosition += 5;
-    });
-
-    yPosition += 15;
-
-    // Executive Summary section
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(marginLeft, yPosition, contentWidth, 8, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("EXECUTIVE SUMMARY", marginLeft + 5, yPosition + 5);
-
-    yPosition += 15;
-    doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-
-    // Calculate actual metrics from complaint data to ensure accuracy
-    const actualTotal = data.complaints.length;
-    const actualResolved = data.complaints.filter(
-      (c) => String(c.status).toUpperCase() === "RESOLVED",
-    ).length;
-    const actualPending = data.complaints.filter((c) =>
-      ["REGISTERED", "ASSIGNED", "IN_PROGRESS"].includes(
-        String(c.status).toUpperCase(),
-      ),
-    ).length;
-    const actualOverdue = data.complaints.filter((c) => {
-      if (
-        c.deadline &&
-        ["REGISTERED", "ASSIGNED", "IN_PROGRESS"].includes(
-          String(c.status).toUpperCase(),
-        )
-      ) {
-        return new Date(c.deadline) < new Date();
-      }
-      return false;
-    }).length;
-
-    // Summary metrics in a grid
-    const metrics: {
-      label: string;
-      value: string;
-      color: [number, number, number];
-    }[] = [
-      {
-        label: "Total Complaints",
-        value: actualTotal.toLocaleString(),
-        color: primaryColor,
-      },
-      {
-        label: "Resolved",
-        value: actualResolved.toLocaleString(),
-        color: [39, 174, 96],
-      },
-      {
-        label: "Pending",
-        value: actualPending.toLocaleString(),
-        color: [243, 156, 18],
-      },
-      {
-        label: "Resolution Rate",
-        value:
-          actualTotal > 0
-            ? `${((actualResolved / actualTotal) * 100).toFixed(1)}%`
-            : "0%",
-        color: accentColor,
-      },
-    ];
-
-    const boxWidth = (contentWidth - 15) / 4; // 4 boxes with spacing
-    let xPos = marginLeft;
-
-    metrics.forEach((metric, index) => {
-      // Box background
-      doc.setFillColor(metric.color[0], metric.color[1], metric.color[2]);
-      doc.rect(xPos, yPosition, boxWidth, 20, "F");
-
-      // Value
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text(metric.value, xPos + boxWidth / 2, yPosition + 8, {
-        align: "center",
-      });
-
-      // Label
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.text(metric.label, xPos + boxWidth / 2, yPosition + 15, {
-        align: "center",
-      });
-
-      xPos += boxWidth + 5;
-    });
-
-    yPosition += 35;
-
-    // Categories breakdown
-    if (categoriesData.length > 0) {
-      doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.rect(marginLeft, yPosition, contentWidth, 8, "F");
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text("COMPLAINT CATEGORIES", marginLeft + 5, yPosition + 5);
-
-      yPosition += 15;
-      doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-
-      categoriesData.forEach((category) => {
-        if (yPosition > pageHeight - 50) {
-          doc.addPage();
-          yPosition = addHeader();
-        }
-
-        const percentage =
-          actualTotal > 0
-            ? ((category.count / actualTotal) * 100).toFixed(1)
-            : "0.0";
-        const categoryName = category.name.replace(/_/g, " "); // Replace underscores with spaces
-        doc.text(
-          `• ${categoryName}: ${category.count} complaints (${percentage}%) - Avg: ${category.avgTime.toFixed(1)} days`,
-          marginLeft + 5,
-          yPosition,
-        );
-        yPosition += 6;
-      });
-    }
-
-    // Detailed complaints table on new page
-    doc.addPage();
-    yPosition = addHeader();
-
-    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.rect(marginLeft, yPosition, contentWidth, 8, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "bold");
-    doc.text("DETAILED COMPLAINT RECORDS", marginLeft + 5, yPosition + 5);
-
-    yPosition += 20;
-
-    // Table headers with background
-    doc.setFillColor(245, 245, 245);
-    doc.rect(marginLeft, yPosition - 2, contentWidth, 12, "F");
-    doc.setDrawColor(200, 200, 200);
-    doc.rect(marginLeft, yPosition - 2, contentWidth, 12, "S");
-
-    doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "bold");
-
-    const headers = [
-      "ID",
-      "Type",
-      "Status",
-      "Priority",
-      "Created",
-      "Ward",
-      "Assigned",
-    ];
-      const columnWidths: number[] = [20, 24, 20, 16, 20, 32, 38];
-      let tableXPos = marginLeft;
-
-      headers.forEach((header, index) => {
-        // Draw column separators
-        if (index > 0) {
-          doc.setDrawColor(200, 200, 200);
-          doc.line(tableXPos, yPosition - 2, tableXPos, yPosition + 10);
-        }
-
-        doc.text(header, tableXPos + 2, yPosition + 5);
-        const width = columnWidths[index] ?? 0;
-        tableXPos += width;
-      });
-
-    yPosition += 14;
-    doc.setFont("helvetica", "normal");
-
-    // Table data with proper formatting and separators
-    const maxRecords = Math.min(
-      data.complaints.length,
-      options.maxRecords || 100,
-    );
-
-    data.complaints.slice(0, maxRecords).forEach((complaint, index) => {
+    doc.setFont('helvetica', 'normal');
+    
+    // Table data
+    const maxRecords = Math.min(complaints.length, 50); // Limit for PDF readability
+    
+    for (let i = 0; i < maxRecords; i++) {
+      const complaint = complaints[i];
+      if (!complaint) continue;
+      
+      const formattedData = formatComplaintForExport(complaint, options);
+      
       if (yPosition > pageHeight - 30) {
         doc.addPage();
-        yPosition = addHeader() + 10;
-
-        // Redraw headers on new page
-        doc.setFillColor(245, 245, 245);
-        doc.rect(marginLeft, yPosition - 2, contentWidth, 12, "F");
-        doc.setDrawColor(200, 200, 200);
-        doc.rect(marginLeft, yPosition - 2, contentWidth, 12, "S");
-
-        doc.setTextColor(
-          secondaryColor[0],
-          secondaryColor[1],
-          secondaryColor[2],
-        );
-        doc.setFontSize(7);
-        doc.setFont("helvetica", "bold");
-
-        let headerXPos = marginLeft;
-          headers.forEach((header, headerIndex) => {
-            if (headerIndex > 0) {
-              doc.setDrawColor(200, 200, 200);
-              doc.line(headerXPos, yPosition - 2, headerXPos, yPosition + 10);
-            }
-            doc.text(header, headerXPos + 2, yPosition + 5);
-            const width = columnWidths[headerIndex] ?? 0;
-            headerXPos += width;
-          });
-
-        yPosition += 14;
-        doc.setFont("helvetica", "normal");
+        yPosition = 20;
       }
-
-      // Alternating row background
-      if (index % 2 === 1) {
-        doc.setFillColor(248, 249, 250);
-        doc.rect(marginLeft, yPosition - 1, contentWidth, 10, "F");
-      }
-
-      // Draw row border
-      doc.setDrawColor(220, 220, 220);
-      doc.rect(marginLeft, yPosition - 1, contentWidth, 10, "S");
-
-      tableXPos = marginLeft;
-      const complaintId = formatComplaintId(
-        complaint.id,
-        options.systemConfig.complaintIdPrefix || "KSC",
-      );
-
-      // Format text to prevent overflow
-      const formatText = (text: string, maxLength: number): string => {
-        if (!text) return "N/A";
-        text = text.toString().replace(/_/g, " "); // Replace underscores with spaces
-        return text.length > maxLength
-          ? text.substring(0, maxLength - 2) + ".."
-          : text;
-      };
-
-        const rowData = [
-          formatText(complaintId, 14),
-          formatText(complaint.type, 16),
-          formatText(complaint.status, 14),
-          formatText(complaint.priority, 12),
-          complaint.createdAt
-            ? new Date(complaint.createdAt)
-                .toLocaleDateString("en-GB")
-                .replace(/\//g, "/")
-            : "N/A",
-          formatText(complaint.ward?.name ?? "", 22),
-          formatText(complaint.assignedTo?.fullName || "Unassigned", 26),
-        ];
-
-      rowData.forEach((cellData, colIndex) => {
-        // Draw column separators
-        if (colIndex > 0) {
-          doc.setDrawColor(220, 220, 220);
-          doc.line(tableXPos, yPosition - 1, tableXPos, yPosition + 9);
-        }
-
-          doc.setFontSize(6);
-          const [r = 0, g = 0, b = 0] = secondaryColor;
-          doc.setTextColor(r, g, b);
-          doc.text(cellData, tableXPos + 1, yPosition + 5);
-          const width = columnWidths[colIndex] ?? 0;
-          tableXPos += width;
-        });
-
-      yPosition += 10;
-    });
-
-    // Add footers to all pages
-    // jsPDF exposes a public API for page count
-    const totalPages = doc.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      addFooter(i, totalPages);
+      
+      xPosition = marginLeft;
+      const rowData = [
+        formattedData['Complaint ID'].substring(0, 12),
+        formattedData['Complaint Type'].substring(0, 20),
+        formattedData['Status'].substring(0, 12),
+        formattedData['Ward / Subzone'].substring(0, 18),
+        formattedData['Date of Creation'].substring(0, 12),
+        formattedData['Assigned Department / Officer'].substring(0, 20)
+      ];
+      
+      rowData.forEach((cell, index) => {
+        doc.text(cell, xPosition, yPosition);
+        xPosition += columnWidths[index] || 0;
+      });
+      
+      yPosition += 6;
     }
-
-    // Save the PDF
-    const fileName = `${options.systemConfig.appName.replace(/\s+/g, "-")}-Report-${Date.now()}.pdf`;
-    doc.save(fileName);
+    
+    if (complaints.length > maxRecords) {
+      yPosition += 10;
+      doc.text(`... and ${complaints.length - maxRecords} more records. Use Excel/CSV for complete data.`, 
+        marginLeft, yPosition);
+    }
+    
+    // Generate filename
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `Complaints_Report_${timestamp}.pdf`;
+    
+    doc.save(filename);
+    
   } catch (error) {
-    console.error("Failed to export PDF:", error);
-    throw new Error(
-      "PDF export failed. Please try again or contact support if the issue persists.",
-    );
+    console.error('PDF export failed:', error);
+    throw new Error('PDF export failed. Please try again.');
   }
 };
 
-// Enhanced Excel export with multiple sheets and formatting
+/**
+ * Export to Excel using SheetJS
+ */
 export const exportToExcel = async (
-  data: ExportData,
-  trendsData: ChartDataPoint[],
-  categoriesData: CategoryData[],
-  options: ExportOptions,
-) => {
+  complaints: ComplaintData[], 
+  options: ExportOptions
+): Promise<void> => {
   try {
-    // Dynamically import XLSX
-    const XLSX = await import("xlsx");
+    const XLSX = await import('xlsx');
+    
+    // Format data for Excel
+    const excelData = complaints.map(complaint => 
+      formatComplaintForExport(complaint, options)
+    );
+    
+    // Create workbook
     const workbook = XLSX.utils.book_new();
-
-    // Calculate actual metrics from complaint data for consistency
-    const actualTotal = data.complaints.length;
-    const actualResolved = data.complaints.filter(
-      (c) => String(c.status).toUpperCase() === "RESOLVED",
-    ).length;
-    const actualPending = data.complaints.filter((c) =>
-      ["REGISTERED", "ASSIGNED", "IN_PROGRESS"].includes(
-        String(c.status).toUpperCase(),
-      ),
-    ).length;
-    const actualOverdue = data.complaints.filter((c) => {
-      if (
-        c.deadline &&
-        ["REGISTERED", "ASSIGNED", "IN_PROGRESS"].includes(
-          String(c.status).toUpperCase(),
-        )
-      ) {
-        return new Date(c.deadline) < new Date();
-      }
-      return false;
-    }).length;
-
-    // Summary Sheet with enhanced formatting
-    const summaryData = [
-      [options.systemConfig.appName],
-      ["Complaint Management Report"],
-      [""],
-      ["REPORT DETAILS"],
-      ["Generated on:", new Date(data.exportedAt).toLocaleString()],
-      ["User Role:", options.userRole],
-      ["User Ward:", options.userWard || "All Wards"],
-      [""],
-      ["APPLIED FILTERS"],
-      [
-        "Date Range:",
-        data.filters.from && data.filters.to
-          ? `${data.filters.from} to ${data.filters.to}`
-          : "All dates",
-      ],
-      ["Ward:", (data.filters.ward || "All wards").replace(/_/g, " ")],
-      ["Type:", (data.filters.type || "All types").replace(/_/g, " ")],
-      ["Status:", (data.filters.status || "All statuses").replace(/_/g, " ")],
-      [
-        "Priority:",
-        (data.filters.priority || "All priorities").replace(/_/g, " "),
-      ],
-      [""],
-      ["EXECUTIVE SUMMARY"],
-      ["Total Complaints:", actualTotal],
-      ["Resolved Complaints:", actualResolved],
-      ["Pending Complaints:", actualPending],
-      ["Overdue Complaints:", actualOverdue],
-      [
-        "Resolution Rate:",
-        actualTotal > 0
-          ? `${((actualResolved / actualTotal) * 100).toFixed(2)}%`
-          : "0%",
-      ],
-      [""],
-      ["CATEGORY BREAKDOWN"],
-    ];
-
-    // Add category data to summary
-    categoriesData.forEach((category) => {
-      const percentage =
-        actualTotal > 0
-          ? ((category.count / actualTotal) * 100).toFixed(1)
-          : "0.0";
-      const categoryName = category.name.replace(/_/g, " "); // Replace underscores with spaces
-      summaryData.push([
-        categoryName,
-        category.count,
-        `${percentage}%`,
-        `${category.avgTime.toFixed(1)} days`,
-      ]);
-    });
-
-    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-
-    // Apply formatting to summary sheet
-    if (!summarySheet["!merges"]) summarySheet["!merges"] = [];
-    summarySheet["!merges"].push({ s: { r: 0, c: 0 }, e: { r: 0, c: 3 } }); // Merge title
-
-    XLSX.utils.book_append_sheet(workbook, summarySheet, "Executive Summary");
-
-    // Detailed Complaints Sheet with proper complaint IDs
-    const complaintsData = data.complaints.map((complaint) => {
-      const complaintId = formatComplaintId(
-        complaint.id,
-        options.systemConfig.complaintIdPrefix || "KSC",
-      );
-
-      return {
-        "Complaint ID": complaintId,
-        "Database ID": complaint.id,
-        Type: (complaint.type || "N/A").replace(/_/g, " "),
-        Description: complaint.description || "N/A",
-        Status: (complaint.status || "N/A").replace(/_/g, " ").toUpperCase(),
-        Priority: (complaint.priority || "N/A")
-          .replace(/_/g, " ")
-          .toUpperCase(),
-        Ward: complaint.ward?.name || "N/A",
-        "Created Date": complaint.createdAt
-          ? new Date(complaint.createdAt).toLocaleDateString()
-          : "N/A",
-        "Resolved Date": complaint.resolvedOn
-          ? new Date(complaint.resolvedOn).toLocaleDateString()
-          : "Not resolved",
-        "Resolution Days":
-          complaint.resolvedOn && complaint.createdAt
-            ? Math.ceil(
-                (new Date(complaint.resolvedOn).getTime() -
-                  new Date(complaint.createdAt).getTime()) /
-                  (1000 * 60 * 60 * 24),
-              )
-            : "N/A",
-        "Assigned To": complaint.assignedTo?.fullName || "Unassigned",
-        "Citizen Name":
-          complaint.submittedBy?.fullName || complaint.citizenName || "Guest",
-        "Contact Phone": complaint.contactPhone || "N/A",
-        "Contact Email": complaint.contactEmail || "N/A",
-        Location: complaint.location || "N/A",
-        Landmark: complaint.landmark || "N/A",
-        "SLA Status":
-          complaint.deadline && complaint.resolvedOn
-            ? new Date(complaint.resolvedOn) <= new Date(complaint.deadline)
-              ? "Met"
-              : "Breached"
-            : complaint.deadline &&
-                !complaint.resolvedOn &&
-                new Date() > new Date(complaint.deadline)
-              ? "Overdue"
-              : "Active",
-      };
-    });
-
-    const complaintsSheet = XLSX.utils.json_to_sheet(complaintsData);
-
-    // Set column widths for better readability
-    const wscols = [
+    
+    // Create main data sheet
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Set column widths
+    const columnWidths = [
       { wch: 15 }, // Complaint ID
-      { wch: 12 }, // Database ID
-      { wch: 20 }, // Type
-      { wch: 50 }, // Description
-      { wch: 15 }, // Status
-      { wch: 12 }, // Priority
-      { wch: 15 }, // Ward
-      { wch: 12 }, // Created Date
-      { wch: 12 }, // Resolved Date
-      { wch: 10 }, // Resolution Days
-      { wch: 20 }, // Assigned To
+      { wch: 25 }, // Complaint Type
+      { wch: 20 }, // Ward / Subzone
       { wch: 20 }, // Citizen Name
+      { wch: 40 }, // Description
+      { wch: 12 }, // Status
+      { wch: 12 }, // Priority
+      { wch: 25 }, // Assigned Department / Officer
+      { wch: 15 }, // Date of Creation
+      { wch: 15 }, // Last Updated
+      { wch: 20 }, // Resolution / Remarks
       { wch: 15 }, // Contact Phone
       { wch: 25 }, // Contact Email
       { wch: 30 }, // Location
       { wch: 20 }, // Landmark
       { wch: 12 }, // SLA Status
+      { wch: 12 }  // Attachments Count
     ];
-
-    complaintsSheet["!cols"] = wscols;
-    XLSX.utils.book_append_sheet(workbook, complaintsSheet, "Detailed Records");
-
-    // Trends Analysis Sheet
-    if (trendsData.length > 0) {
-      const trendsSheet = XLSX.utils.json_to_sheet(
-        trendsData.map((trend) => ({
-          Date: trend.date,
-          "New Complaints": trend.complaints,
-          "Resolved Complaints": trend.resolved,
-          "Resolution Rate %":
-            trend.resolved > 0
-              ? ((trend.resolved / trend.complaints) * 100).toFixed(1)
-              : "0",
-          "SLA Compliance %": trend.slaCompliance.toFixed(1),
-          "Pending EOD": trend.complaints - trend.resolved,
-        })),
-      );
-      XLSX.utils.book_append_sheet(workbook, trendsSheet, "Trends Analysis");
-    }
-
-    // Category Analysis Sheet
-    if (categoriesData.length > 0) {
-      const categoriesSheet = XLSX.utils.json_to_sheet(
-        categoriesData.map((category) => ({
-          Category: category.name,
-          "Total Complaints": category.count,
-          Percentage: `${((category.count / data.summary.total) * 100).toFixed(2)}%`,
-          "Average Resolution Time (days)": category.avgTime.toFixed(2),
-          Status:
-            category.avgTime <= 3
-              ? "Excellent"
-              : category.avgTime <= 7
-                ? "Good"
-                : "Needs Improvement",
-        })),
-      );
-      XLSX.utils.book_append_sheet(
-        workbook,
-        categoriesSheet,
-        "Category Analysis",
-      );
-    }
-
-    // Performance Metrics Sheet (if user has appropriate role)
-    if (
-      options.userRole === "ADMINISTRATOR" ||
-      options.userRole === "WARD_OFFICER"
-    ) {
-      const performanceData = [
-        ["PERFORMANCE INDICATORS"],
-        [""],
-        ["Metric", "Value", "Target", "Status"],
-        [
-          "Resolution Rate",
-          `${((data.summary.resolved / data.summary.total) * 100).toFixed(2)}%`,
-          "85%",
-          (data.summary.resolved / data.summary.total) * 100 >= 85
-            ? "✓ Met"
-            : "✗ Below Target",
-        ],
-        ["Average Resolution Time", "3.2 days", "5 days", "✓ Met"],
-        ["Citizen Satisfaction", "4.2/5", "4.0/5", "✓ Met"],
-        ["First Time Resolution", "78%", "75%", "✓ Met"],
-        ["SLA Compliance", "87%", "90%", "✗ Below Target"],
-      ];
-
-      const performanceSheet = XLSX.utils.aoa_to_sheet(performanceData);
-      XLSX.utils.book_append_sheet(
-        workbook,
-        performanceSheet,
-        "Performance KPIs",
-      );
-    }
-
-    // Save the Excel file
-    const fileName = `${options.systemConfig.appName.replace(/\s+/g, "-")}-Report-${Date.now()}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
+    
+    worksheet['!cols'] = columnWidths;
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Complaints Report');
+    
+    // Create summary sheet
+    const summaryData = [
+      [options.systemConfig.appName],
+      ['Complaints Report Summary'],
+      [''],
+      ['Generated:', new Date().toLocaleString()],
+      ['Total Records:', complaints.length],
+      ['User Role:', options.userRole],
+      [''],
+      ['Status Summary:'],
+      ['Registered:', complaints.filter(c => c.status === 'REGISTERED').length],
+      ['Assigned:', complaints.filter(c => c.status === 'ASSIGNED').length],
+      ['In Progress:', complaints.filter(c => c.status === 'IN_PROGRESS').length],
+      ['Resolved:', complaints.filter(c => c.status === 'RESOLVED').length],
+      ['Closed:', complaints.filter(c => c.status === 'CLOSED').length]
+    ];
+    
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+    
+    // Generate filename
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `Complaints_Report_${timestamp}.xlsx`;
+    
+    XLSX.writeFile(workbook, filename);
+    
   } catch (error) {
-    console.error("Failed to export Excel:", error);
-    throw new Error(
-      "Excel export failed. Please try again or contact support if the issue persists.",
-    );
+    console.error('Excel export failed:', error);
+    throw new Error('Excel export failed. Please try again.');
   }
 };
 
-// Enhanced CSV export with proper complaint IDs
-export const exportToCSV = async (data: ExportData, options: ExportOptions) => {
+/**
+ * Export to CSV using Blob
+ */
+export const exportToCSV = async (
+  complaints: ComplaintData[], 
+  options: ExportOptions
+): Promise<void> => {
   try {
-    // Dynamically import XLSX for CSV conversion
-    const XLSX = await import("xlsx");
-    const complaintsData = data.complaints.map((complaint) => {
-      const complaintId = formatComplaintId(
-        complaint.id,
-        options.systemConfig.complaintIdPrefix || "KSC",
-      );
+    // Format data for CSV
+    const csvData = complaints.map(complaint => 
+      formatComplaintForExport(complaint, options)
+    );
+    
+    if (csvData.length === 0) {
+      throw new Error('No data to export');
+    }
+    
+    if (csvData.length === 0) {
+      throw new Error('No data to export');
+    }
 
-      return {
-        "Complaint ID": complaintId,
-        "Database ID": complaint.id,
-        Type: (complaint.type || "N/A").replace(/_/g, " "),
-        Description: (complaint.description || "N/A").replace(/\r?\n|\r/g, " "), // Remove line breaks
-        Status: (complaint.status || "N/A").replace(/_/g, " ").toUpperCase(),
-        Priority: (complaint.priority || "N/A")
-          .replace(/_/g, " ")
-          .toUpperCase(),
-        Ward: complaint.ward?.name || "N/A",
-        "Created Date": complaint.createdAt
-          ? new Date(complaint.createdAt).toLocaleDateString()
-          : "N/A",
-        "Resolved Date": complaint.resolvedOn
-          ? new Date(complaint.resolvedOn).toLocaleDateString()
-          : "Not resolved",
-        "Assigned To": complaint.assignedTo?.fullName || "Unassigned",
-        "Citizen Name":
-          complaint.submittedBy?.fullName || complaint.citizenName || "Guest",
-        "Contact Phone": complaint.contactPhone || "N/A",
-        "Contact Email": complaint.contactEmail || "N/A",
-        Location: (complaint.location || "N/A").replace(/\r?\n|\r/g, " "),
-        Landmark: (complaint.landmark || "N/A").replace(/\r?\n|\r/g, " "),
-      };
-    });
-
-    const worksheet = XLSX.utils.json_to_sheet(complaintsData);
-    const csvContent = XLSX.utils.sheet_to_csv(worksheet);
-
-    // Add BOM for proper Excel opening
-    const csvContentWithBOM = "\uFEFF" + csvContent;
-
-    // Create and download CSV file
-    const blob = new Blob([csvContentWithBOM], {
-      type: "text/csv;charset=utf-8;",
-    });
-    const link = document.createElement("a");
+    // Get headers from first row
+    const firstRow = csvData[0];
+    if (!firstRow) {
+      throw new Error('No data to export');
+    }
+    
+    const headers = Object.keys(firstRow);
+    
+    // Create CSV content
+    const csvRows = [
+      headers.join(','), // Header row
+      ...csvData.map(row => 
+        headers.map(header => {
+          const value = row[header as keyof typeof row] || '';
+          // Escape quotes and wrap in quotes if contains comma or quote
+          const stringValue = String(value);
+          if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+            return `"${stringValue.replace(/"/g, '""')}"`;
+          }
+          return stringValue;
+        }).join(',')
+      )
+    ];
+    
+    const csvContent = csvRows.join('\n');
+    
+    // Add BOM for proper UTF-8 encoding in Excel
+    const csvWithBOM = '\uFEFF' + csvContent;
+    
+    // Create and download file
+    const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
-
-    const fileName = `${options.systemConfig.appName.replace(/\s+/g, "-")}-Report-${Date.now()}.csv`;
-    link.setAttribute("download", fileName);
-    link.style.visibility = "hidden";
+    
+    link.setAttribute('href', url);
+    
+    // Generate filename
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `Complaints_Report_${timestamp}.csv`;
+    
+    link.setAttribute('download', filename);
+    link.style.visibility = 'hidden';
+    
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+    
   } catch (error) {
-    console.error("Failed to export CSV:", error);
-    throw new Error(
-      "CSV export failed. Please try again or contact support if the issue persists.",
+    console.error('CSV export failed:', error);
+    throw new Error('CSV export failed. Please try again.');
+  }
+};
+
+/**
+ * Validate export permissions based on user role
+ */
+export const validateExportPermissions = (userRole: string): boolean => {
+  const allowedRoles = ['ADMINISTRATOR', 'WARD_OFFICER'];
+  return allowedRoles.includes(userRole);
+};
+
+/**
+ * Filter complaints based on user role and permissions
+ */
+export const filterComplaintsForExport = (
+  complaints: ComplaintData[], 
+  userRole: string, 
+  userWardId?: string
+): ComplaintData[] => {
+  if (userRole === 'ADMINISTRATOR') {
+    return complaints; // Admin can export all
+  }
+  
+  if (userRole === 'WARD_OFFICER' && userWardId) {
+    return complaints.filter(complaint => 
+      complaint.ward?.name === userWardId || 
+      !complaint.ward // Include complaints without ward assignment
     );
   }
+  
+  return []; // No access for other roles
 };
 
-// Utility function to capture chart as image for PDF inclusion
-export const captureChartAsImage = async (
-  chartElementId: string,
-): Promise<string | null> => {
-  try {
-    // Dynamically import html2canvas if available
-    let html2canvas;
-    try {
-      const html2canvasModule = await import("html2canvas");
-      html2canvas = html2canvasModule.default;
-    } catch (importError) {
-      console.warn("html2canvas not available, skipping chart capture");
-      return null;
-    }
-
-    const chartElement = document.getElementById(chartElementId);
-    if (!chartElement) return null;
-
-    const canvas = await html2canvas(chartElement, {
-      backgroundColor: "#ffffff",
-      scale: 2, // Higher quality
-      logging: false,
-      useCORS: true,
-    });
-
-    return canvas.toDataURL("image/png");
-  } catch (error) {
-    console.warn("Failed to capture chart:", error);
-    return null;
+/**
+ * Main export function that handles all formats
+ */
+export const exportComplaints = async (
+  complaints: ComplaintData[],
+  format: 'pdf' | 'excel' | 'csv',
+  options: ExportOptions
+): Promise<void> => {
+  // Validate permissions
+  if (!validateExportPermissions(options.userRole)) {
+    throw new Error('You do not have permission to export data');
   }
-};
-
-// Role-based export validation
-export const validateExportPermissions = (
-  userRole: string,
-  requestedData: any,
-): boolean => {
-  switch (userRole) {
-    case "ADMINISTRATOR":
-      return true; // Admin can export everything
-
-    case "WARD_OFFICER":
-      // Ward officers can only export their ward data
-      return !requestedData.includesOtherWards;
-
-    case "MAINTENANCE_TEAM":
-      // Maintenance can only export their assigned tasks
-      return !requestedData.includesUnassignedComplaints;
-
-    default:
-      return false;
-  }
-};
-
-// Utility function to format data for chart visualization
-export const formatDataForChart = (
-  data: any[],
-  dateField: string = "createdAt",
-) => {
-  const groupedData = new Map();
-
-  data.forEach((item) => {
-    const date = new Date(item[dateField]).toISOString().split("T")[0];
-    if (!groupedData.has(date)) {
-      groupedData.set(date, { date, count: 0, resolved: 0 });
-    }
-    const dayData = groupedData.get(date);
-    dayData.count++;
-    if (String(item.status).toUpperCase() === "RESOLVED") {
-      dayData.resolved++;
-    }
-  });
-
-  return Array.from(groupedData.values()).sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  
+  // Filter complaints based on role
+  const filteredComplaints = filterComplaintsForExport(
+    complaints, 
+    options.userRole, 
+    options.userWard
   );
-};
-
-// Enhanced color palette for charts
-export const getChartColors = (count: number) => {
-  const baseColors = [
-    "#0f5691", // Primary theme color
-    "#27ae60", // Green
-    "#f39c12", // Orange
-    "#e74c3c", // Red
-    "#9b59b6", // Purple
-    "#1e40af", // Blue variant
-    "#34495e", // Dark gray
-    "#f1c40f", // Yellow
-    "#e67e22", // Orange variant
-    "#7c3aed", // Purple variant
-  ];
-
-  const colors = [];
-  for (let i = 0; i < count; i++) {
-    colors.push(baseColors[i % baseColors.length]);
+  
+  if (filteredComplaints.length === 0) {
+    throw new Error('No complaints available for export');
   }
-
-  return colors;
-};
-
-// Generate export filename based on filters and timestamp
-export const generateFileName = (
-  appName: string,
-  filters: any,
-  format: string,
-): string => {
-  const timestamp = new Date().toISOString().slice(0, 10);
-  const filterSuffix = Object.entries(filters)
-    .filter(([key, value]) => value && value !== "all")
-    .map(([key, value]) => `${key}-${value}`)
-    .join("_");
-
-  const baseName = appName.replace(/\s+/g, "-");
-  const suffix = filterSuffix ? `-${filterSuffix}` : "";
-
-  return `${baseName}-Report${suffix}-${timestamp}.${format}`;
+  
+  // Export based on format
+  switch (format) {
+    case 'pdf':
+      await exportToPDF(filteredComplaints, options);
+      break;
+    case 'excel':
+      await exportToExcel(filteredComplaints, options);
+      break;
+    case 'csv':
+      await exportToCSV(filteredComplaints, options);
+      break;
+    default:
+      throw new Error(`Unsupported export format: ${format}`);
+  }
 };

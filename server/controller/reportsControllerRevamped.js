@@ -56,34 +56,32 @@ const calculatePerformanceMetrics = async (prisma, where, closedWhere) => {
                 console.warn("Invalid date calculation for repeat complaints, using fallback");
                 repeatCount = 0;
             } else {
-                // Group complaints by citizen and type with timeout protection
-                const complaintGroups = await Promise.race([
-                    prisma.complaint.groupBy({
-                        by: ['citizenName', 'contactPhone', 'type'],
+                // Use simpler approach to avoid groupBy issues
+                const allComplaintsWithPhone = await Promise.race([
+                    prisma.complaint.findMany({
                         where: {
                             submittedOn: { gte: thirtyDaysAgo },
-                            citizenName: { not: null },
-                            AND: [
-                                { contactPhone: { not: null } },
-                                { contactPhone: { not: "" } }
-                            ]
+                            contactPhone: { not: "" }
                         },
-                        _count: {
-                            _all: true,
-                        },
-                        having: {
-                            _count: {
-                                gt: 1
-                            }
-                        }
+                        select: { contactPhone: true }
                     }),
                     new Promise((_, reject) =>
                         setTimeout(() => reject(new Error('Query timeout')), 5000)
                     )
                 ]);
 
-                // Count groups with more than 1 complaint (already filtered by having clause)
-                repeatCount = Array.isArray(complaintGroups) ? complaintGroups.length : 0;
+                // Count duplicates manually
+                if (Array.isArray(allComplaintsWithPhone)) {
+                    const phoneCount = {};
+                    allComplaintsWithPhone.forEach(c => {
+                        if (c.contactPhone) {
+                            phoneCount[c.contactPhone] = (phoneCount[c.contactPhone] || 0) + 1;
+                        }
+                    });
+                    repeatCount = Object.values(phoneCount).filter(count => count > 1).length;
+                } else {
+                    repeatCount = 0;
+                }
             }
         } catch (error) {
             console.warn("Failed to calculate repeat complaints, using fallback:", {
@@ -211,13 +209,16 @@ const calculatePreviousPeriodMetrics = async (prisma, where, closedWhere, from, 
 
         // Calculate previous average resolution time
         const prevClosedComplaints = await prisma.complaint.findMany({
-            where: { ...previousClosedWhere, closedOn: { not: null } },
+            where: previousClosedWhere,
             select: { submittedOn: true, closedOn: true },
         });
 
         let prevTotalResolutionDays = 0;
+        let prevValidComplaintsCount = 0;
+        
         for (const complaint of prevClosedComplaints) {
             if (complaint.closedOn && complaint.submittedOn) {
+                prevValidComplaintsCount++;
                 const days = Math.ceil(
                     (complaint.closedOn.getTime() - complaint.submittedOn.getTime()) /
                     (1000 * 60 * 60 * 24),
@@ -226,8 +227,8 @@ const calculatePreviousPeriodMetrics = async (prisma, where, closedWhere, from, 
             }
         }
 
-        const prevAvgResolutionTime = prevClosedComplaints.length
-            ? prevTotalResolutionDays / prevClosedComplaints.length
+        const prevAvgResolutionTime = prevValidComplaintsCount
+            ? prevTotalResolutionDays / prevValidComplaintsCount
             : 0;
 
         // Calculate previous performance metrics
@@ -421,14 +422,17 @@ export const getUnifiedAnalytics = asyncHandler(async (req, res) => {
 
         // Enhanced average resolution time calculation
         const closedRows = await prisma.complaint.findMany({
-            where: { ...closedWhere, closedOn: { not: null } },
+            where: closedWhere,
             select: { submittedOn: true, closedOn: true, type: true },
         });
 
         let totalResolutionDays = 0;
         let slaCompliantCount = 0;
+        let validComplaintsCount = 0;
+        
         for (const complaint of closedRows) {
             if (complaint.closedOn && complaint.submittedOn) {
+                validComplaintsCount++;
                 const days = Math.ceil(
                     (complaint.closedOn.getTime() - complaint.submittedOn.getTime()) /
                     (1000 * 60 * 60 * 24),
@@ -443,8 +447,8 @@ export const getUnifiedAnalytics = asyncHandler(async (req, res) => {
                 }
             }
         }
-        const avgResolutionTime = closedRows.length
-            ? totalResolutionDays / closedRows.length
+        const avgResolutionTime = validComplaintsCount
+            ? totalResolutionDays / validComplaintsCount
             : 0;
 
         // Enhanced trends calculation with better date handling
@@ -714,8 +718,10 @@ export const getUnifiedAnalytics = asyncHandler(async (req, res) => {
                     where: {
                         assignedToId: officer.id,
                         status: "CLOSED",
-                        closedOn: { not: null },
-                        submittedOn: { not: null }
+                        AND: [
+                            { closedOn: { not: null } },
+                            { submittedOn: { not: null } }
+                        ]
                     },
                     select: { submittedOn: true, closedOn: true },
                 });
@@ -991,13 +997,16 @@ export const getComprehensiveAnalyticsRevamped = asyncHandler(async (req, res) =
 
         // Average resolution time calculation
         const closedRows = await prisma.complaint.findMany({
-            where: { ...closedWhere, closedOn: { not: null } },
+            where: closedWhere,
             select: { submittedOn: true, closedOn: true },
         });
 
         let totalResolutionDays = 0;
+        let validComplaintsCount = 0;
+        
         for (const complaint of closedRows) {
             if (complaint.closedOn && complaint.submittedOn) {
+                validComplaintsCount++;
                 const days = Math.ceil(
                     (complaint.closedOn.getTime() - complaint.submittedOn.getTime()) /
                     (1000 * 60 * 60 * 24),
@@ -1005,8 +1014,8 @@ export const getComprehensiveAnalyticsRevamped = asyncHandler(async (req, res) =
                 totalResolutionDays += days;
             }
         }
-        const avgResolutionTime = closedRows.length
-            ? totalResolutionDays / closedRows.length
+        const avgResolutionTime = validComplaintsCount
+            ? totalResolutionDays / validComplaintsCount
             : 0;
 
         // Enhanced trends calculation with better date handling

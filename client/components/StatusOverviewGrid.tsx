@@ -161,8 +161,8 @@ export default function StatusOverviewGrid({
   filters: Filters;
   onMainFilterChange: (next: StatusId) => void;
 }) {
-  return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 xl:grid-cols-6 gap-3 sm:gap-4">
+return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-2 sm:gap-3">
       {META.map((m) => {
         const active = filters.mainFilter === m.id;
         const style = STYLE[m.id];
@@ -183,49 +183,54 @@ export default function StatusOverviewGrid({
               }
             }}
             className={[
-              "group relative cursor-pointer select-none rounded-2xl border bg-white shadow-sm transition-all",
+              "group relative cursor-pointer select-none rounded-xl border bg-white shadow-sm transition-all",
               "hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
               active
-                ? `ring-2 ${style.ring} ${style.bgSoft} border-transparent`
-                : "hover:border-neutral-200",
+                ? `ring-2 ${style.ring} ${style.bgSoft} border-transparent scale-105`
+                : "hover:border-neutral-200 hover:-translate-y-0.5",
             ].join(" ")}
           >
             {/* Subtle decorative highlight */}
             <div
-              className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full opacity-0 blur-2xl transition-opacity group-hover:opacity-30"
+              className="pointer-events-none absolute -right-4 -top-4 h-16 w-16 rounded-full opacity-0 blur-xl transition-opacity group-hover:opacity-30"
               style={{
                 background:
                   "radial-gradient(40% 40% at 50% 50%, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0) 70%)",
               }}
             />
 
-            <CardHeader className="flex flex-col items-center justify-center p-3 pb-1">
+            <CardHeader className="flex flex-col items-center justify-center p-2 pb-1">
               <div
                 className={[
-                  "mb-2 grid h-10 w-10 place-items-center rounded-full ring-1 ring-inset",
+                  "mb-1.5 grid h-8 w-8 place-items-center rounded-lg ring-1 ring-inset transition-all",
                   active
                     ? `${style.bgSoft} ${style.textSoft} ${style.chipRing}`
                     : "bg-neutral-50 text-neutral-600 ring-neutral-200",
                 ].join(" ")}
               >
-                <m.icon className="h-5 w-5" />
+                <m.icon className="h-4 w-4" />
               </div>
-              <CardTitle className="text-sm font-semibold text-neutral-800">
+              <CardTitle className="text-xs font-semibold text-neutral-800 text-center leading-tight">
                 {m.label}
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="flex flex-col items-center p-2 pt-0">
+            <CardContent className="flex flex-col items-center p-2 pt-0 pb-2">
               <div
                 className={[
-                  "text-2xl font-bold leading-none tracking-tight",
+                  "text-xl font-bold leading-none tracking-tight",
                   active ? style.text : "text-neutral-900",
                 ].join(" ")}
               >
                 {value}
               </div>
-              <p className="mt-1 text-xs text-neutral-500">{m.subtitle}</p>
+              <p className="mt-0.5 text-[10px] text-neutral-500 text-center leading-tight">{m.subtitle}</p>
             </CardContent>
+
+            {/* Active Indicator Dot */}
+            {active && (
+              <div className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-current animate-pulse" style={{ color: style.text }}></div>
+            )}
           </Card>
         );
       })}

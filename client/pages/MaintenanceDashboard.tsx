@@ -261,28 +261,55 @@ const MaintenanceDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-white">
-        <h1 className="text-2xl font-bold mb-2">🚧 Maintenance Dashboard 🛠️</h1>
-        <p className="text-primary-foreground/80">
-          Manage your assigned tasks and track field work progress.
-        </p>
-        <div className="mt-4 flex space-x-2">
-          <Button className="bg-white text-primary hover:bg-gray-100">
-            <Navigation className="h-4 w-4 mr-2" />
-            Start Field Work
-          </Button>
-          <Button
-            variant="outline"
-            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+  {/* Modern Maintenance Welcome Section - Ward Officer Style */}
+      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
+            🚧 Maintenance Dashboard 🛠️
+          </h1>
+          <p className="text-primary-foreground/90 text-sm md:text-base">
+            Manage your assigned tasks and track field work progress.
+          </p>
+        </div>
+        
+        <div className="flex flex-wrap gap-3">
+          <Card
+            className="w-full md:w-44 p-4 cursor-pointer rounded-2xl transition-all duration-300 bg-white/10 hover:bg-white/20 border-white/30 hover:border-white/50 shadow-lg hover:shadow-xl backdrop-blur-sm border"
+            onClick={() => {/* Navigate to field work */}}
+          >
+            <CardHeader className="flex flex-row items-center justify-between p-0 pb-3 space-y-0">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
+                <div className="p-1.5 rounded-lg bg-white/20">
+                  <Navigation className="h-4 w-4 text-white" />
+                </div>
+                Field Work
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="p-0">
+              <div className="text-xs text-white/80">Start your tasks</div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="w-full md:w-44 p-4 cursor-pointer rounded-2xl transition-all duration-300 bg-white/10 hover:bg-white/20 border-white/30 hover:border-white/50 shadow-lg hover:shadow-xl backdrop-blur-sm border"
             onClick={() => refetchComplaints()}
           >
-            <Clock className="h-4 w-4 mr-2" />
-            Refresh Data
-          </Button>
+            <CardHeader className="flex flex-row items-center justify-between p-0 pb-3 space-y-0">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
+                <div className="p-1.5 rounded-lg bg-white/20">
+                  <Clock className="h-4 w-4 text-white" />
+                </div>
+                Refresh
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="p-0">
+              <div className="text-xs text-white/80">Update data</div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
       {/* Debug Info - Development Only */}
       {process.env.NODE_ENV === "development" && (
         <Card className="bg-yellow-50 border-yellow-200">

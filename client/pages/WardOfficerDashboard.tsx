@@ -35,7 +35,7 @@ import {
   Filter,
   Briefcase,
 } from "lucide-react";
-import StatusOverviewGrid from "@/components/StatusOverviewGrid";
+import StatusOverviewGrid from "../components/StatusOverviewGrid";
 import HeatmapGrid, { HeatmapData } from "../components/charts/HeatmapGrid";
 
 interface FilterState {
@@ -260,39 +260,50 @@ const WardOfficerDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-lg p-6 text-white flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Ward Officer Dashboard</h1>
-          <p className="text-primary-foreground/80">
+   {/* Modern Ward Officer Welcome Section */}
+      <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
+        <div className="flex-1">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
+            Ward Officer Dashboard
+          </h1>
+          <p className="text-primary-foreground/90 text-sm md:text-base">
             Manage complaints for {user?.ward?.name || "your assigned ward"} and
             monitor team performance.
           </p>
         </div>
+        
         <Card
-          className={`w-40 p-1.5 cursor-pointer rounded-xl transition-all duration-300 ${filters.mainFilter === "total"
-            ? "ring-2 ring-primary bg-primary/10 scale-105"
-            : "bg-white/10 hover:bg-white/20"
-            }`}
+          className={`w-full md:w-48 p-4 cursor-pointer rounded-2xl transition-all duration-300 ${
+            filters.mainFilter === "total"
+              ? "ring-2 ring-white bg-white/20 scale-105 shadow-2xl border-white/50"
+              : "bg-white/10 hover:bg-white/20 border-white/30 hover:border-white/50 shadow-lg hover:shadow-xl"
+          } backdrop-blur-sm border`}
           onClick={() =>
             handleMainFilterChange(
               filters.mainFilter === "total" ? "none" : "total",
             )
           }
         >
-          <CardHeader className="flex items-center p-0 justify-between pb-0.5">
-            <CardTitle className="flex gap-2 text-sm font-medium text-white/90">
-              <BarChart3 className="h-4 w-4 text-white/90" />
-              Total
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-3 space-y-0">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold text-white">
+              <div className="p-1.5 rounded-lg bg-white/20">
+                <BarChart3 className="h-4 w-4 text-white" />
+              </div>
+              Total Complaints
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="p-1 pt-0">
-            <div className="text-xl font-bold text-center text-white">
+          <CardContent className="p-0">
+            <div className="text-3xl md:text-4xl font-bold text-white mb-1">
               {stats?.summary?.totalComplaints ?? 0}
             </div>
-            <p className="text-xs text-white/80 text-center">All complaints</p>
+            <p className="text-xs text-white/80">All complaints in ward</p>
           </CardContent>
+          
+          {/* Active Indicator */}
+          {filters.mainFilter === "total" && (
+            <div className="absolute top-2 right-2 h-3 w-3 rounded-full bg-white shadow-lg animate-pulse"></div>
+          )}
         </Card>
       </div>
 
@@ -475,7 +486,7 @@ const WardOfficerDashboard: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Performance Overview */}
+      {/* Performance Overview 
       <Card>
         <CardHeader>
           <CardTitle>Ward Performance</CardTitle>
@@ -515,7 +526,7 @@ const WardOfficerDashboard: React.FC = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card>*/}
     </div>
   );
 };

@@ -61,7 +61,7 @@ const TaskDetails = lazy(() => import("./pages/TaskDetails"));
 
 // Admin pages
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
-const UnifiedReportsRevamped = lazy(() => import("./pages/UnifiedReportsRevamped"));
+const UnifiedReports = lazy(() => import("./pages/UnifiedReports"));
 const AdminConfig = lazy(() => import("./pages/AdminConfig"));
 const AdminLanguages = lazy(() => import("./pages/AdminLanguages"));
 
@@ -332,7 +332,7 @@ const App: React.FC = () => {
                                             "MAINTENANCE_TEAM",
                                           ]}
                                         >
-                                          <UnifiedReportsRevamped />
+                                          <UnifiedReports />
                                         </RoleBasedRoute>
                                       </UnifiedLayout>
                                     }

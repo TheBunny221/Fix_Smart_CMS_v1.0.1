@@ -796,155 +796,7 @@ const getComprehensiveAnalytics = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Export reports in various formats
-// @route   GET /api/reports/export
-// @access  Private (Admin, Ward Officer)
-const exportReports = asyncHandler(async (req, res) => {
-  const { format, from, to, ward, type, status, priority } = req.query;
-
-  const normalizeStatus = (s) => {
-    if (!s) return undefined;
-    const map = {
-      registered: "REGISTERED",
-      assigned: "ASSIGNED",
-      in_progress: "IN_PROGRESS",
-      inprogress: "IN_PROGRESS",
-      resolved: "RESOLVED",
-      closed: "CLOSED",
-      reopened: "REOPENED",
-    };
-    return map[String(s).toLowerCase()] || undefined;
-  };
-  const normalizePriority = (p) => {
-    if (!p) return undefined;
-    const map = {
-      low: "LOW",
-      medium: "MEDIUM",
-      high: "HIGH",
-      critical: "CRITICAL",
-    };
-    return map[String(p).toLowerCase()] || undefined;
-  };
-
-  const where = {};
-  if (req.user.role === "WARD_OFFICER" && req.user.wardId) {
-    where.wardId = req.user.wardId; // ignore client ward filter for ward officers
-  } else if (req.user.role === "ADMINISTRATOR" && ward && ward !== "all") {
-    where.wardId = ward;
-  }
-  if (from || to) {
-    where.submittedOn = {};
-    if (from) where.submittedOn.gte = new Date(from);
-    if (to) where.submittedOn.lte = new Date(to);
-  }
-  
-  // Dynamic complaint type filtering for export
-  if (type && type !== "all") {
-    try {
-      const complaintType = await getComplaintTypeById(type);
-      if (complaintType) {
-        // Filter by both new complaintTypeId and legacy type field for compatibility
-        where.OR = [
-          { complaintTypeId: parseInt(complaintType.id) },
-          { type: complaintType.name },
-          { type: type } // Also include direct match for legacy data
-        ];
-      } else {
-        // Fallback to direct type filtering for legacy data
-        where.type = type;
-      }
-    } catch (error) {
-      console.warn("Complaint type resolution failed in export, using direct filter:", error.message);
-      where.type = type;
-    }
-  }
-  const st = normalizeStatus(status);
-  if (st) where.status = st;
-  const pr = normalizePriority(priority);
-  if (pr) where.priority = pr;
-
-  try {
-    const complaints = await prisma.complaint.findMany({
-      where,
-      include: { ward: true, assignedTo: true, submittedBy: true },
-      orderBy: { submittedOn: "desc" },
-    });
-
-    if (format === "csv") {
-      const csvHeaders = [
-        "ID",
-        "Type",
-        "Description",
-        "Status",
-        "Priority",
-        "Ward",
-        "Submitted On",
-        "Resolved On",
-        "Assigned To",
-        "Citizen Name",
-        "Contact",
-      ];
-
-      const csvRows = complaints.map((complaint) => [
-        complaint.id,
-        complaint.type || "N/A",
-        complaint.description?.substring(0, 100) || "N/A",
-        complaint.status,
-        complaint.priority || "N/A",
-        complaint.ward?.name || "N/A",
-        complaint.submittedOn?.toISOString().split("T")[0] || "N/A",
-        complaint.resolvedOn
-          ? complaint.resolvedOn.toISOString().split("T")[0]
-          : "N/A",
-        complaint.assignedTo?.fullName || "Unassigned",
-        complaint.submittedBy?.fullName || "Guest",
-        complaint.contactPhone || "N/A",
-      ]);
-
-      const csvContent = [csvHeaders, ...csvRows]
-        .map((row) => row.map((field) => `"${field}"`).join(","))
-        .join("\n");
-
-      res.setHeader("Content-Type", "text/csv");
-      res.setHeader(
-        "Content-Disposition",
-        "attachment; filename=complaints-report.csv",
-      );
-      return res.send(csvContent);
-    }
-
-    res.json({
-      success: true,
-      message: "Export data prepared successfully",
-      data: {
-        complaints,
-        summary: {
-          total: complaints.length,
-          resolved: complaints.filter((c) => c.status === "RESOLVED").length,
-          pending: complaints.filter((c) =>
-            ["REGISTERED", "ASSIGNED", "IN_PROGRESS"].includes(c.status),
-          ).length,
-        },
-        filters: {
-          from,
-          to,
-          ward: req.user.role === "WARD_OFFICER" ? req.user.wardId : ward,
-          type,
-          status: normalizeStatus(status) || "all",
-          priority: normalizePriority(priority) || "all",
-        },
-        exportedAt: new Date().toISOString(),
-      },
-    });
-  } catch (error) {
-    console.error("Export error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to export reports",
-      error: error.message,
-    });
-  }
-});
+// Export functionality has been moved to frontend-only implementation
 
 /**
  * @swagger
@@ -1591,21 +1443,23 @@ async function calculatePerformanceMetrics(prisma, where, closedWhere) {
     // Calculate repeat complaints (same citizen submitting multiple complaints)
     let repeatComplaintsResult = [];
     try {
-      repeatComplaintsResult = await prisma.complaint.groupBy({
-        by: ["contactPhone"],
+      // Use a simpler approach to avoid groupBy issues
+      const allComplaintsWithPhone = await prisma.complaint.findMany({
         where: {
           ...where,
-          AND: [
-            { contactPhone: { not: null } },
-            { contactPhone: { not: "" } }
-          ]
+          contactPhone: { not: "" }
         },
-        having: {
-          _count: {
-            gt: 1
-          }
+        select: { contactPhone: true }
+      });
+      
+      // Count duplicates manually
+      const phoneCount = {};
+      allComplaintsWithPhone.forEach(c => {
+        if (c.contactPhone) {
+          phoneCount[c.contactPhone] = (phoneCount[c.contactPhone] || 0) + 1;
         }
       });
+      repeatComplaintsResult = Object.values(phoneCount).filter(count => count > 1);
     } catch (error) {
       console.warn("Repeat complaints calculation failed, using fallback:", error.message);
       // Fallback: simple count of complaints with duplicate phone numbers
@@ -1773,10 +1627,6 @@ function calculateTrendPercentages(current, previous, performance) {
   };
 }
 
-router.get(
-  "/export",
-  authorize("ADMINISTRATOR", "WARD_OFFICER"),
-  exportReports,
-);
+// Export route removed - using frontend-only export implementation
 
 export default router;

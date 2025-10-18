@@ -15,21 +15,33 @@ These components have been moved here instead of being deleted to:
 ### Main Components
 | Component | Original Path | Reason for Move | Date Moved |
 |-----------|---------------|-----------------|------------|
-| `AccessibleComponents.tsx` | `components/AccessibleComponents.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
-| `ComplaintStatusUpdate.tsx` | `components/ComplaintStatusUpdate.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
-| `LanguageSwitcher.tsx` | `components/LanguageSwitcher.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
-| `MaterialsModal.tsx` | `components/MaterialsModal.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
-| `OptimizedComponents.tsx` | `components/OptimizedComponents.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
-| `OTPVerification.tsx` | `components/OTPVerification.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
-| `RoleSwitcher.tsx` | `components/RoleSwitcher.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
-| `StatusChip.tsx` | `components/StatusChip.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
-| `StatusTracker.tsx` | `components/StatusTracker.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
-| `UXComponents.tsx` | `components/UXComponents.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
+| `AccessibleComponents.tsx` | `components/AccessibleComponents.tsx` | No usage found in codebase | 2025-10-18 |
+| `AllComplaintCard.tsx` | `components/AllComplaintCard.tsx` | Only used by unused WardDashboard component | 2025-10-18 |
+| `ComplaintStatusUpdate.tsx` | `components/ComplaintStatusUpdate.tsx` | No usage found in codebase | 2025-10-18 |
+| `ConfigLoadingFallback.tsx` | `components/ConfigLoadingFallback.tsx` | No usage found in codebase | 2025-10-18 |
+| `LanguageSwitcher.tsx` | `components/LanguageSwitcher.tsx` | No usage found in codebase | 2025-10-18 |
+| `Layout.tsx` | `components/Layout.tsx` | Replaced by UnifiedLayout | 2025-10-18 |
+| `LoaderAwareComponent.tsx` | `components/LoaderAwareComponent.tsx` | No usage found in codebase | 2025-10-18 |
+| `LocationMapDialog.tsx` | `components/LocationMapDialog.tsx` | Replaced by SimpleLocationMapDialog | 2025-10-18 |
+| `MaterialsModal.tsx` | `components/MaterialsModal.tsx` | No usage found in codebase | 2025-10-18 |
+| `OptimizedComponents.tsx` | `components/OptimizedComponents.tsx` | No usage found in codebase | 2025-10-18 |
+| `OTPVerification.tsx` | `components/OTPVerification.tsx` | No usage found in codebase | 2025-10-18 |
+| `ReportGenerator.tsx` | `components/ReportGenerator.tsx` | No usage found in codebase | 2025-10-18 |
+| `RoleSwitcher.tsx` | `components/RoleSwitcher.tsx` | No usage found in codebase | 2025-10-18 |
+| `StatusChip.tsx` | `components/StatusChip.tsx` | No usage found in codebase | 2025-10-18 |
+| `StatusTracker.tsx` | `components/StatusTracker.tsx` | No usage found in codebase | 2025-10-18 |
+| `UXComponents.tsx` | `components/UXComponents.tsx` | No usage found in codebase | 2025-10-18 |
+| `WardDashboard.tsx` | `components/WardDashboard.tsx` | No usage found in codebase | 2025-10-18 |
 
 ### Layout Components
 | Component | Original Path | Reason for Move | Date Moved |
 |-----------|---------------|-----------------|------------|
-| `DashboardLayout.tsx` | `components/layouts/DashboardLayout.tsx` | No usage found in codebase | ${new Date().toISOString().split('T')[0]} |
+| `DashboardLayout.tsx` | `components/layouts/DashboardLayout.tsx` | No usage found in codebase | 2025-10-18 |
+
+### Form Components
+| Component | Original Path | Reason for Move | Date Moved |
+|-----------|---------------|-----------------|------------|
+| `FormField.tsx` | `components/forms/FormField.tsx` | No usage found in codebase | 2025-10-18 |
 
 ### UI Components
 | Component | Original Path | Reason for Move | Date Moved |
@@ -52,8 +64,8 @@ The components were identified as unused through automated analysis that:
 4. Identified components with zero references
 
 **Total Components Analyzed**: 85  
-**Components Moved to Legacy**: 15  
-**Active Components Remaining**: 70
+**Components Moved to Legacy**: 23  
+**Active Components Remaining**: 62
 
 ## Restoring Components
 
@@ -121,6 +133,46 @@ If you need to restore any of these components:
 - **Purpose**: UX-focused component utilities
 - **Dependencies**: React, UX libraries
 - **Last Known Usage**: UX improvements integrated into main components
+
+### AllComplaintCard.tsx
+- **Purpose**: Card component for displaying total complaints in ward dashboard
+- **Dependencies**: React, UI components, Redux store
+- **Last Known Usage**: Only used by WardDashboard component (also unused)
+
+### ConfigLoadingFallback.tsx
+- **Purpose**: Loading fallback component for configuration loading states
+- **Dependencies**: React, Lucide icons
+- **Last Known Usage**: No imports found in codebase
+
+### Layout.tsx
+- **Purpose**: Legacy layout component with sidebar and navigation
+- **Dependencies**: React, React Router, Redux, UI components
+- **Last Known Usage**: Replaced by UnifiedLayout component
+
+### LoaderAwareComponent.tsx
+- **Purpose**: Higher-order component for loader utilities
+- **Dependencies**: React, custom hooks, Redux
+- **Last Known Usage**: No imports found in codebase
+
+### LocationMapDialog.tsx
+- **Purpose**: Map dialog component for location selection with Leaflet
+- **Dependencies**: React, Leaflet, React-Leaflet, UI components
+- **Last Known Usage**: Replaced by SimpleLocationMapDialog
+
+### ReportGenerator.tsx
+- **Purpose**: HTML report generation utility class
+- **Dependencies**: React (for preview component)
+- **Last Known Usage**: No imports found in codebase
+
+### WardDashboard.tsx
+- **Purpose**: Dashboard component for ward-specific view
+- **Dependencies**: React, AllComplaintCard component
+- **Last Known Usage**: No imports found in codebase
+
+### FormField.tsx
+- **Purpose**: Comprehensive form field components with React Hook Form
+- **Dependencies**: React, React Hook Form, UI components, Lucide icons
+- **Last Known Usage**: No imports found in codebase
 
 ### DashboardLayout.tsx
 - **Purpose**: Dashboard layout component

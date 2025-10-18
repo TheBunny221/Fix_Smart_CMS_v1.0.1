@@ -1,5 +1,5 @@
 {
-    "config-of":"kochi-city",
+    "config-of": "kochi-city",
     "systemConfig": [
         {
             "key": "APP_NAME",
