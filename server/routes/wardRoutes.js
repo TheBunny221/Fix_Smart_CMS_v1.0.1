@@ -5,6 +5,7 @@ import {
   detectLocationArea,
 } from "../controller/wardController.js";
 import { protect, authorize } from "../middleware/auth.js";
+import { validateWardBoundaries, validateLocationDetection } from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -86,6 +87,8 @@ const router = express.Router();
  *   get:
  *     summary: Get all wards with their geographic boundaries
  *     tags: [Wards]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Wards with boundaries retrieved successfully
@@ -102,10 +105,12 @@ const router = express.Router();
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/WardBoundary'
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Internal server error
  */
-router.get("/boundaries", getAllWardsWithBoundaries);
+router.get("/boundaries", protect, authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"), getAllWardsWithBoundaries);
 
 /**
  * @swagger
@@ -177,7 +182,7 @@ router.get("/boundaries", getAllWardsWithBoundaries);
  *       500:
  *         description: Internal server error
  */
-router.put("/:wardId/boundaries", protect, authorize("ADMINISTRATOR"), updateWardBoundaries);
+router.put("/:wardId/boundaries", protect, authorize("ADMINISTRATOR"), validateWardBoundaries, updateWardBoundaries);
 
 /**
  * @swagger
@@ -185,6 +190,8 @@ router.put("/:wardId/boundaries", protect, authorize("ADMINISTRATOR"), updateWar
  *   post:
  *     summary: Detect ward and sub-zone based on coordinates
  *     tags: [Wards]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -219,9 +226,11 @@ router.put("/:wardId/boundaries", protect, authorize("ADMINISTRATOR"), updateWar
  *                   $ref: '#/components/schemas/LocationDetection'
  *       400:
  *         description: Invalid coordinates
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Internal server error
  */
-router.post("/detect-area", detectLocationArea);
+router.post("/detect-area", protect, authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM", "CITIZEN"), validateLocationDetection, detectLocationArea);
 
 export default router;

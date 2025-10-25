@@ -2,12 +2,13 @@
 
 ## Overview
 
-This section contains comprehensive troubleshooting guides for NLC-CMS, including common issues, error resolution procedures, and debugging techniques.
+This section contains comprehensive troubleshooting guides for Fix_Smart_CMS v1.0.3, including common issues, error resolution procedures, and debugging techniques based on the latest system architecture and features.
 
 ## Quick Navigation
 
 ### 🔧 Common Issues
 - **[Common Errors](./COMMON_ERRORS.md)** - Frequently encountered errors and solutions
+- **[Critical Fixes Summary](./CRITICAL_FIXES_SUMMARY.md)** - Major system fixes and resolutions
 - **[Performance Issues](#performance-troubleshooting)** - Performance optimization and debugging
 - **[Deployment Issues](#deployment-troubleshooting)** - Deployment-related problems and fixes
 
@@ -524,5 +525,7 @@ npm run db:generate
 
 ---
 
+**Last Updated**: January 2025  
+**Schema Reference**: [prisma/schema.prisma](../../prisma/schema.prisma)  
 **Back to Main Documentation**: [← README.md](../README.md)  
-**Deployment Guide**: [→ Deployment](../deployment/README.md)
+**Related Documentation**: [Architecture](../architecture/README.md) | [Database](../database/README.md) | [Developer](../developer/README.md) | [Deployment](../deployment/README.md)

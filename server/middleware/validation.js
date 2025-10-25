@@ -1,4 +1,5 @@
 import { body, param, query, validationResult } from "express-validator";
+import DOMPurify from "isomorphic-dompurify";
 
 // Handle validation errors
 export const handleValidationErrors = (req, res, next) => {
@@ -443,6 +444,186 @@ export const validateOTPRequest = [
     .isEmail()
     .normalizeEmail()
     .withMessage("Please provide a valid email"),
+
+  handleValidationErrors,
+];
+
+// Ward boundary validation
+export const validateWardBoundaries = [
+  body("boundaries")
+    .optional()
+    .custom((value) => {
+      if (value) {
+        try {
+          const parsed = JSON.parse(value);
+          if (!Array.isArray(parsed) || parsed.length < 3) {
+            throw new Error("Boundaries must be an array of at least 3 coordinate pairs");
+          }
+          // Validate each coordinate pair
+          for (const coord of parsed) {
+            if (!Array.isArray(coord) || coord.length !== 2 || 
+                typeof coord[0] !== 'number' || typeof coord[1] !== 'number') {
+              throw new Error("Each boundary coordinate must be [longitude, latitude] number pair");
+            }
+            if (coord[0] < -180 || coord[0] > 180 || coord[1] < -90 || coord[1] > 90) {
+              throw new Error("Coordinates must be valid longitude (-180 to 180) and latitude (-90 to 90)");
+            }
+          }
+          return true;
+        } catch (error) {
+          throw new Error(`Invalid boundaries JSON: ${error.message}`);
+        }
+      }
+      return true;
+    }),
+
+  body("centerLat")
+    .optional()
+    .isFloat({ min: -90, max: 90 })
+    .withMessage("Center latitude must be between -90 and 90"),
+
+  body("centerLng")
+    .optional()
+    .isFloat({ min: -180, max: 180 })
+    .withMessage("Center longitude must be between -180 and 180"),
+
+  body("boundingBox")
+    .optional()
+    .custom((value) => {
+      if (value) {
+        try {
+          const parsed = JSON.parse(value);
+          if (!Array.isArray(parsed) || parsed.length !== 4) {
+            throw new Error("Bounding box must be an array of 4 numbers [minLng, minLat, maxLng, maxLat]");
+          }
+          const [minLng, minLat, maxLng, maxLat] = parsed;
+          if (typeof minLng !== 'number' || typeof minLat !== 'number' || 
+              typeof maxLng !== 'number' || typeof maxLat !== 'number') {
+            throw new Error("All bounding box values must be numbers");
+          }
+          if (minLng >= maxLng || minLat >= maxLat) {
+            throw new Error("Invalid bounding box: min values must be less than max values");
+          }
+          return true;
+        } catch (error) {
+          throw new Error(`Invalid bounding box JSON: ${error.message}`);
+        }
+      }
+      return true;
+    }),
+
+  handleValidationErrors,
+];
+
+// Location detection validation
+export const validateLocationDetection = [
+  body("latitude")
+    .isFloat({ min: -90, max: 90 })
+    .withMessage("Latitude must be between -90 and 90"),
+
+  body("longitude")
+    .isFloat({ min: -180, max: 180 })
+    .withMessage("Longitude must be between -180 and 180"),
+
+  handleValidationErrors,
+];
+
+// System config validation (enhanced)
+export const validateSystemConfigBulk = [
+  body("settings")
+    .isArray({ min: 1 })
+    .withMessage("Settings must be a non-empty array"),
+
+  body("settings.*.key")
+    .matches(/^[A-Z_][A-Z0-9_]*$/)
+    .withMessage("Each key must be uppercase letters and underscores only"),
+
+  body("settings.*.value")
+    .notEmpty()
+    .withMessage("Each setting must have a value")
+    .isLength({ max: 5000 })
+    .withMessage("Setting value cannot exceed 5000 characters"),
+
+  body("settings.*.type")
+    .optional()
+    .isIn(["string", "number", "boolean", "json"])
+    .withMessage("Type must be one of: string, number, boolean, json"),
+
+  body("settings.*.description")
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage("Description cannot exceed 500 characters"),
+
+  handleValidationErrors,
+];
+
+// Feedback validation (enhanced)
+export const validateComplaintFeedbackEnhanced = [
+  body("feedback")
+    .trim()
+    .isLength({ min: 5, max: 1000 })
+    .withMessage("Feedback must be between 5 and 1000 characters")
+    .escape(), // Sanitize HTML entities
+
+  body("rating")
+    .isInt({ min: 1, max: 5 })
+    .withMessage("Rating must be between 1 and 5"),
+
+  handleValidationErrors,
+];
+
+// Reopen complaint validation
+export const validateComplaintReopen = [
+  body("reason")
+    .optional()
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage("Reason must be between 10 and 500 characters")
+    .escape(),
+
+  body("comment")
+    .optional()
+    .trim()
+    .isLength({ min: 10, max: 500 })
+    .withMessage("Comment must be between 10 and 500 characters")
+    .escape(),
+
+  handleValidationErrors,
+];
+
+// Bulk user actions validation
+export const validateBulkUserActions = [
+  body("action")
+    .isIn(["activate", "deactivate", "delete"])
+    .withMessage("Action must be one of: activate, deactivate, delete"),
+
+  body("userIds")
+    .isArray({ min: 1, max: 100 })
+    .withMessage("User IDs must be an array with 1-100 items"),
+
+  body("userIds.*")
+    .isString()
+    .isLength({ min: 1 })
+    .withMessage("Each user ID must be a non-empty string"),
+
+  handleValidationErrors,
+];
+
+// Role management validation
+export const validateRoleManagement = [
+  body("userId")
+    .isString()
+    .isLength({ min: 1 })
+    .withMessage("User ID is required"),
+
+  body("newRole")
+    .isIn(["CITIZEN", "WARD_OFFICER", "MAINTENANCE_TEAM", "ADMINISTRATOR"])
+    .withMessage("Invalid role"),
+
+  body("wardId")
+    .optional()
+    .isString()
+    .withMessage("Ward ID must be a string"),
 
   handleValidationErrors,
 ];

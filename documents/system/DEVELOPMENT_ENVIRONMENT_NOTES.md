@@ -90,3 +90,9 @@ The restored UnifiedReports component (`client/pages/UnifiedReportsRevamped.tsx`
 ## 💡 **Important Note**
 
 The TypeScript errors are **cosmetic development issues** and do not affect the actual functionality. The component logic, state management, API integration, and user interface are all correctly implemented. Once the development dependencies are properly installed, all errors will resolve automatically.
+
+---
+
+**Last Updated**: January 2025  
+**Schema Reference**: [prisma/schema.prisma](../../prisma/schema.prisma)  
+**Related Documentation**: [Architecture](../architecture/README.md) | [Database](../database/README.md) | [Deployment](../deployment/README.md)

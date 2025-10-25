@@ -295,10 +295,10 @@ npm run deploy:windows -- --proxy=none
 ## 📞 Support and Resources
 
 ### ✅ Documentation Links
-- [Main Deployment Guide](./documents/deployment/README.md)
-- [SSL Testing Guide](./documents/deployment/SSL_TESTING_GUIDE.md)
-- [Reverse Proxy Setup](./documents/deployment/reverse_proxy_setup.md)
-- [Troubleshooting Guide](./documents/troubleshooting/README.md)
+- [Main Deployment Guide](./README.md)
+- [SSL Testing Guide](./SSL_TESTING_GUIDE.md)
+- [Reverse Proxy Setup](./reverse_proxy_setup.md)
+- [Troubleshooting Guide](../troubleshooting/README.md)
 
 ### ✅ Quick Reference Commands
 ```bash
@@ -320,6 +320,10 @@ npm run validate:db
 ---
 
 **Deployment Standardization Completed**: October 2025  
-**Version**: NLC-CMS v1.0.0  
+**Version**: Fix_Smart_CMS_v1.0.3  
 **Environments Supported**: Linux (Debian), Windows Server, LAN, VPS  
 **SSL/HTTPS**: Fully supported across all environments
+
+**Last Updated**: January 2025  
+**Schema Reference**: [prisma/schema.prisma](../../prisma/schema.prisma)  
+**Related Documentation**: [Architecture](../architecture/README.md) | [Database](../database/README.md) | [System](../system/README.md)

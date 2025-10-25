@@ -19,7 +19,7 @@ import {
   getSystemHealth,
 } from "../controller/adminController.js";
 import { protect, authorize } from "../middleware/auth.js";
-import { validateUser, validateUserUpdate } from "../middleware/validation.js";
+import { validateUser, validateUserUpdate, validateBulkUserActions, validateRoleManagement } from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -274,7 +274,7 @@ router.put("/users/:id/deactivate", deactivateUser);
  *       200:
  *         description: Bulk action completed
  */
-router.post("/users/bulk", bulkUserActions);
+router.post("/users/bulk", validateBulkUserActions, bulkUserActions);
 
 /**
  * @swagger
@@ -359,7 +359,7 @@ router.get("/analytics", getAnalytics);
  *       200:
  *         description: Role updated successfully
  */
-router.put("/roles", manageRoles);
+router.put("/roles", validateRoleManagement, manageRoles);
 
 // Dashboard specific routes
 router.get("/dashboard/analytics", getDashboardAnalytics);

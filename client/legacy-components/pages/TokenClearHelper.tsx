@@ -1,15 +1,19 @@
+// Moved to legacy folder on 2025-10-18 during route cleanup
+// Original path: client/pages/TokenClearHelper.tsx
+// Reason: No route defined, utility component not actively used
+
 import React, { useEffect } from "react";
-import { useAppDispatch } from "../store/hooks";
-import { logout } from "../store/slices/authSlice";
-import { useToast } from "../hooks/use-toast";
-import { Button } from "../components/ui/button";
+import { useAppDispatch } from "../../store/hooks";
+import { logout } from "../../store/slices/authSlice";
+import { useToast } from "../../hooks/use-toast";
+import { Button } from "../../components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/ui/card";
+} from "../../components/ui/card";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 
 const TokenClearHelper: React.FC = () => {

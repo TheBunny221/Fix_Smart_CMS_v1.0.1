@@ -12,7 +12,7 @@ import {
 } from "../controller/systemConfigController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import { body, param } from "express-validator";
-import { handleValidationErrors } from "../middleware/validation.js";
+import { handleValidationErrors, validateSystemConfigBulk } from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -156,7 +156,7 @@ router.post("/reset", resetSystemSettings);
  *       200:
  *         description: Settings updated successfully
  */
-router.put("/bulk", bulkUpdateSystemSettings);
+router.put("/bulk", validateSystemConfigBulk, bulkUpdateSystemSettings);
 
 /**
  * @swagger

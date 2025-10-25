@@ -1,7 +1,26 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { reverseGeocode, searchGeocode } from "../controller/geoController.js";
+import { optionalAuth } from "../middleware/auth.js";
 
 const router = express.Router();
+
+// Rate limiting for geo endpoints to prevent abuse
+const geoRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: {
+    success: false,
+    message: "Too many geocoding requests from this IP, please try again later.",
+    errorCode: "RATE_LIMIT_EXCEEDED"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiting and optional auth to all geo routes
+router.use(geoRateLimit);
+router.use(optionalAuth);
 
 /**
  * @swagger

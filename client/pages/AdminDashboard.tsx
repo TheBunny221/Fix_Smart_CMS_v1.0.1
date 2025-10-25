@@ -28,12 +28,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
-import {
-  Tooltip as UITooltip,
-  TooltipTrigger,
-  TooltipContent,
-  TooltipProvider,
-} from "../components/ui/tooltip";
 import HeatmapGrid, { HeatmapData } from "../components/charts/HeatmapGrid";
 import {
   BarChart,
@@ -66,7 +60,6 @@ import {
   MessageSquare,
   Activity,
   Target,
-  Info,
 } from "lucide-react";
 
 import { useSystemConfig } from "../contexts/SystemConfigContext";
@@ -235,7 +228,6 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <TooltipProvider>
       <div className="space-y-6">
       {/* Modern Welcome Header */}
         <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-8 text-white shadow-xl">
@@ -257,23 +249,18 @@ const AdminDashboard: React.FC = () => {
               {
                 value: systemStats.totalComplaints,
                 label: "Total Complaints",
-                tooltip: "All complaints in the system.",
               },
               {
                 value: systemStats.activeUsers || 0,
                 label: "Active Users",
-                tooltip: "Users who have logged in recently.",
               },
               {
                 value: `${metrics?.slaCompliance || 0}%`,
                 label: "SLA Compliance",
-                tooltip:
-                  "Average on-time performance across complaint types, using each type's configured SLA hours.",
               },
               {
                 value: `${(metrics?.citizenSatisfaction || 0).toFixed(1)}/5`,
                 label: "Satisfaction",
-                tooltip: "Average citizen feedback score.",
               },
             ].map((item, i) => (
               <div
@@ -291,17 +278,7 @@ const AdminDashboard: React.FC = () => {
                   <div className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
                     {item.value}
                   </div>
-                  <div className="flex items-center gap-1.5 text-sm text-slate-700">
-                    <span className="font-medium">{item.label}</span>
-                    <UITooltip>
-                      <TooltipTrigger>
-                        <Info className="h-4 w-4 text-slate-500 hover:text-primary transition-colors cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent className="z-50 relative max-w-xs rounded-xl">
-                        {item.tooltip}
-                      </TooltipContent>
-                    </UITooltip>
-                  </div>
+                  <div className="text-sm font-medium text-slate-700">{item.label}</div>
                 </div>
 
                 {/* Bottom Accent Line */}
@@ -336,16 +313,8 @@ const AdminDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">
                 Active Complaints
-                <UITooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Complaints currently open (not resolved or closed).
-                  </TooltipContent>
-                </UITooltip>
               </CardTitle>
               <FileText className="h-4 w-4 text-orange-600" />
             </CardHeader>
@@ -361,16 +330,8 @@ const AdminDashboard: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">
                 Overdue Tasks
-                <UITooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Open complaints that have passed their SLA deadline.
-                  </TooltipContent>
-                </UITooltip>
               </CardTitle>
               <AlertTriangle className="h-4 w-4 text-red-600" />
             </CardHeader>
@@ -389,16 +350,8 @@ const AdminDashboard: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">
                 Pending Team Assignment
-                <UITooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Complaints waiting to be assigned to a maintenance team.
-                  </TooltipContent>
-                </UITooltip>
               </CardTitle>
               <UserCheck className="h-4 w-4 text-blue-600" />
             </CardHeader>
@@ -414,16 +367,8 @@ const AdminDashboard: React.FC = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <CardTitle className="text-sm font-medium">
                 Avg Resolution
-                <UITooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Average time taken to close complaints (in days).
-                  </TooltipContent>
-                </UITooltip>
               </CardTitle>
               <Clock className="h-4 w-4 text-green-600" />
             </CardHeader>
@@ -1167,7 +1112,6 @@ const AdminDashboard: React.FC = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </TooltipProvider>
   );
 };
 

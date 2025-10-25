@@ -1,4 +1,4 @@
-# Fix_Smart_CMS v 1.0.0 - Documentation Index
+# Fix_Smart_CMS v1.0.3 - Documentation Index
 
 Welcome to the comprehensive documentation for Fix_Smart_CMS, a modern complaint management system built with React 18, Node.js 22+, and PostgreSQL.
 
@@ -10,11 +10,13 @@ Fix_Smart_CMS is a production-ready complaint management system designed for sma
 - **Multi-role User Management**: Citizens, Ward Officers, Maintenance Teams, and System Administrators
 - **Real-time Complaint Tracking**: Live status updates, SLA monitoring, and email notifications
 - **Geographic Organization**: Ward-based complaint assignment and management with sub-zones
-- **File Attachment System**: Secure upload and management of photos, documents, and other attachments
+- **Unified Attachment System**: Secure upload and management of photos, documents, and other attachments
 - **Guest Complaint System**: Anonymous complaint submission with OTP email verification
 - **Multi-language Support**: English, Hindi, and Malayalam interface
 - **Responsive Design**: Mobile-first UI with modern React components and TailwindCSS
 - **Email Broadcasting**: Automated notifications for status changes and assignments
+- **Advanced Reporting**: Unified reports with PDF, Excel, and CSV export capabilities
+- **Dynamic Configuration**: System-wide settings management with real-time updates
 
 ## 📚 Documentation Structure
 
@@ -67,18 +69,20 @@ Common issues, error resolution, and debugging guides
 
 ## 🔄 Current Schema Version
 
-**Schema Version**: v 1.0.0 (Production)  
-**Last Updated**: October 2025  
+**Schema Version**: v1.0.3 (Production)  
+**Last Updated**: January 2025  
 **Active Models**: User, Ward, SubZone, ComplaintType, Complaint, StatusLog, Attachment, OTPSession, Notification, SystemConfig
 
-### Key Schema Features in v 1.0.0
-- **Unified attachment system** for all file types with secure storage
-- **Enhanced complaint assignment** with ward officer and maintenance team fields
-- **Geographic organization** with Ward and SubZone models for precise location management
-- **Streamlined notification system** with email broadcasting capabilities
-- **System configuration management** with dynamic settings and caching
-- **OTP session management** for secure guest complaint submission
-- **Comprehensive audit trail** with status logs and user action tracking
+### Key Schema Features in v1.0.3
+- **Unified Attachment System**: Single table for all file attachments with `AttachmentEntityType` enum (COMPLAINT, CITIZEN, USER, MAINTENANCE_PHOTO)
+- **Enhanced Complaint Management**: Dual assignment system with `assignedToId` (legacy) and specific `wardOfficerId`/`maintenanceTeamId` fields
+- **Geographic Precision**: Ward and SubZone models with cascading relationships for precise location management
+- **Advanced Status Tracking**: `ComplaintStatus` enum (REGISTERED, ASSIGNED, IN_PROGRESS, RESOLVED, CLOSED, REOPENED) with comprehensive audit trail
+- **Priority & SLA Management**: `Priority` enum (LOW, MEDIUM, HIGH, CRITICAL) with `SLAStatus` tracking (ON_TIME, WARNING, OVERDUE, COMPLETED)
+- **Flexible User Roles**: `UserRole` enum (CITIZEN, WARD_OFFICER, MAINTENANCE_TEAM, ADMINISTRATOR, GUEST) with ward-based assignments
+- **Secure Authentication**: OTP session management for guest complaints and password resets
+- **Dynamic Configuration**: SystemConfig model with type categorization for real-time settings management
+- **Comprehensive Indexing**: Performance-optimized database indexes for all major query patterns
 
 ## 🚀 Quick Start
 
@@ -107,7 +111,7 @@ For technical support or contribution guidelines, please refer to the [Developer
 
 ---
 
-**Last Updated**: October 2025  
+**Last Updated**: January 2025  
 **Schema Reference**: [prisma/schema.prisma](../prisma/schema.prisma)  
-**System Version**: Fix_Smart_CMS v 1.0.0  
+**System Version**: Fix_Smart_CMS v1.0.3  
 **Back to Main**: [← README.md](../README.md)  

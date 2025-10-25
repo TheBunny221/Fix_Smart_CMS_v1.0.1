@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
 import { Progress } from "../components/ui/progress";
 import { Skeleton } from "../components/ui/skeleton";
-import { Tooltip as UITooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "../components/ui/tooltip";
+import { useToast } from "../components/ui/use-toast";
 import HeatmapGrid, { HeatmapData } from "../components/charts/HeatmapGrid";
 import { useComplaintTypes } from "../hooks/useComplaintTypes";
 import { getAnalyticsData, getHeatmapData } from "../utils/reportUtils";
@@ -22,13 +22,14 @@ import type { AnalyticsData, FilterOptions } from "../types/reports";
 import {
   CalendarDays, Download, FileText, TrendingUp, TrendingDown, MapPin, Clock, AlertTriangle,
   CheckCircle, BarChart3, PieChart as PieChartIcon, Activity, Target, Users, Zap, Filter,
-  RefreshCw, Share2, FileSpreadsheet, Calendar, Info, ChevronDown, X
+  RefreshCw, Share2, FileSpreadsheet, Calendar, ChevronDown, X
 } from "lucide-react";
 
 const UnifiedReports: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const { translations } = useAppSelector((state) => state.language);
   const { appName, appLogoUrl, getConfig } = useSystemConfig();
+  const { toast } = useToast();
 
   const [rechartsLoaded, setRechartsLoaded] = useState(false);
   const [dateFnsLoaded, setDateFnsLoaded] = useState(false);
@@ -201,55 +202,120 @@ const UnifiedReports: React.FC = () => {
 
   const handleExport = async (format: "pdf" | "excel" | "csv") => {
     if (!permissions.canExportData) {
-      alert("You don't have permission to export data");
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to export data",
+        variant: "destructive"
+      });
       return;
     }
     if (!analyticsData) {
-      alert("No data available for export");
+      toast({
+        title: "No Data",
+        description: "No data available for export",
+        variant: "destructive"
+      });
       return;
     }
     if (!exportUtilsLoaded || !dynamicLibraries.exportUtils) {
-      alert("Export functionality is still loading. Please try again in a moment.");
+      toast({
+        title: "Loading",
+        description: "Export functionality is still loading. Please try again in a moment.",
+        variant: "destructive"
+      });
       return;
     }
 
     setIsExporting(true);
     try {
-      const { validateExportPermissions, exportToPDF, exportToExcel, exportToCSV } = dynamicLibraries.exportUtils;
-      const queryParams = new URLSearchParams({
-        from: filters.dateRange.from,
-        to: filters.dateRange.to,
-        ...(filters.ward !== "all" && { ward: filters.ward }),
-        ...(filters.complaintType !== "all" && { type: filters.complaintType }),
-        ...(filters.status !== "all" && { status: filters.status }),
-        ...(filters.priority !== "all" && { priority: filters.priority }),
-      });
+      const { validateExportPermissions, validateAnalyticsData, exportAnalyticsToPDF, exportAnalyticsToExcel, exportAnalyticsToCSV } = dynamicLibraries.exportUtils;
 
-      if (user?.role === "WARD_OFFICER" && user?.wardId) {
-        queryParams.set("ward", user.wardId);
-      }
-
-      const requestedData = {
-        includesOtherWards: filters.ward === "all" && user?.role !== "ADMINISTRATOR",
-        includesUnassignedComplaints: user?.role === "MAINTENANCE_TEAM" && filters.ward === "all",
-      };
-
-      if (!validateExportPermissions(user?.role || "", requestedData)) {
-        alert("You don't have permission to export data outside your assigned scope");
+      if (!validateExportPermissions(user?.role || "")) {
+        toast({
+          title: "Permission Denied",
+          description: "You don't have permission to export data",
+          variant: "destructive"
+        });
         return;
       }
 
-      const baseUrl = window.location.origin;
-      const response = await fetch(`${baseUrl}/api/reports/export?${queryParams}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
+      // Fetch detailed complaint data for export
+      let complaintsData: any[] = [];
+      try {
+        const queryParams = new URLSearchParams({
+          limit: (user?.role === "ADMINISTRATOR" ? 1000 : 500).toString(),
+          ...(filters.dateRange.from && { dateFrom: filters.dateRange.from }),
+          ...(filters.dateRange.to && { dateTo: filters.dateRange.to }),
+          ...(filters.ward !== "all" && { ward: filters.ward }),
+          ...(filters.complaintType !== "all" && { type: filters.complaintType }),
+          ...(filters.status !== "all" && { status: filters.status }),
+          ...(filters.priority !== "all" && { priority: filters.priority }),
+        });
 
-      if (!response.ok) throw new Error("Failed to fetch export data");
-      const exportData = await response.json();
-      if (!exportData.success) throw new Error(exportData.message || "Export failed");
+        if (user?.role === "WARD_OFFICER" && user?.wardId) {
+          queryParams.set("ward", user.wardId);
+        }
+
+        const baseUrl = window.location.origin;
+        const response = await fetch(`${baseUrl}/api/complaints?${queryParams}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          complaintsData = result.data || [];
+        }
+      } catch (error) {
+        console.warn("Failed to fetch detailed complaint data for export:", error);
+        // Continue with analytics data only
+      }
+
+      // Create comprehensive export data
+      const exportData = {
+        summary: {
+          total: analyticsData.complaints?.total || 0,
+          resolved: analyticsData.complaints?.resolved || 0,
+          pending: analyticsData.complaints?.pending || 0,
+          overdue: analyticsData.complaints?.overdue || 0,
+          closed: (analyticsData.complaints as any)?.closed || 0,
+          reopened: (analyticsData.complaints as any)?.reopened || 0,
+          inProgress: (analyticsData.complaints as any)?.inProgress || 0,
+        },
+        sla: {
+          compliance: analyticsData.sla?.compliance || 0,
+          avgResolutionTime: analyticsData.sla?.avgResolutionTime || 0,
+          target: analyticsData.sla?.target || 48,
+          onTimeResolutions: (analyticsData.sla as any)?.onTimeResolutions || 0,
+          breachedSLA: (analyticsData.sla as any)?.breachedSLA || 0,
+        },
+        performance: analyticsData.performance || {
+          userSatisfaction: 0,
+          escalationRate: 0,
+          firstCallResolution: 0,
+          repeatComplaints: 0,
+        },
+        priorities: (analyticsData as any).priorities || [],
+        trends: analyticsData.trends || [],
+        categories: analyticsData.categories || [],
+        wards: analyticsData.wards || [],
+        complaints: complaintsData, // Include actual complaint data
+        filters: {
+          dateRange: filters.dateRange,
+          ward: filters.ward !== "all" ? filters.ward : "All Wards",
+          complaintType: filters.complaintType !== "all" ? filters.complaintType : "All Types",
+          status: filters.status !== "all" ? filters.status : "All Statuses",
+          priority: filters.priority !== "all" ? filters.priority : "All Priorities",
+        },
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          generatedBy: user?.fullName || "Unknown User",
+          userRole: user?.role || "Unknown",
+          reportType: "Comprehensive Complaints Report",
+        }
+      };
 
       const exportOptions = {
         systemConfig: {
@@ -258,25 +324,71 @@ const UnifiedReports: React.FC = () => {
           complaintIdPrefix: getConfig("COMPLAINT_ID_PREFIX", "KSC"),
         },
         userRole: user?.role || "Unknown",
-        userWard: user?.ward || permissions.defaultWard,
+        userWard: user?.ward?.name || permissions.defaultWard,
         includeCharts: true,
         maxRecords: user?.role === "ADMINISTRATOR" ? 1000 : 500,
+        filters: filters,
+        metadata: {
+          exportedAt: new Date().toISOString(),
+          exportedBy: user?.fullName || "Unknown User",
+          totalRecords: analyticsData.complaints?.total || 0,
+        }
       };
+
+      // Validate data before export
+      const validation = validateAnalyticsData(exportData);
+      if (!validation.isValid) {
+        toast({
+          title: "No Data to Export",
+          description: validation.message || "No data available for export",
+          variant: "destructive"
+        });
+        return;
+      }
 
       switch (format) {
         case "pdf":
-          await exportToPDF(exportData.data, analyticsData.trends, analyticsData.categories, exportOptions);
+          await exportAnalyticsToPDF(exportData, exportOptions);
           break;
         case "excel":
-          exportToExcel(exportData.data, analyticsData.trends, analyticsData.categories, exportOptions);
+          await exportAnalyticsToExcel(exportData, exportOptions);
           break;
         case "csv":
-          exportToCSV(exportData.data, exportOptions);
+          await exportAnalyticsToCSV(exportData, exportOptions);
           break;
       }
+      
+      // Show success message
+      toast({
+        title: "Export Successful",
+        description: `${format.toUpperCase()} export completed successfully! Check your downloads folder.`,
+      });
     } catch (err) {
       console.error("Export error:", err);
-      alert(`Export failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      
+      // Show user-friendly error message with suggestions
+      if (errorMessage.includes('Failed to resolve module specifier') || errorMessage.includes('dependency loading issue')) {
+        toast({
+          title: "Export Library Error",
+          description: "Export library failed to load due to development cache issue. Try refreshing the page (Ctrl+F5) or use CSV export as alternative.",
+          variant: "destructive"
+        });
+      } else if (format !== 'csv') {
+        // If PDF or Excel failed, suggest CSV as fallback
+        toast({
+          title: "Export Failed",
+          description: `${errorMessage}. Try using CSV export as a reliable alternative.`,
+          variant: "destructive"
+        });
+      } else {
+        // CSV export failed - this is more serious
+        toast({
+          title: "Export Failed",
+          description: `CSV export failed: ${errorMessage}. Please try again or contact support.`,
+          variant: "destructive"
+        });
+      }
     } finally {
       setIsExporting(false);
     }
@@ -615,16 +727,16 @@ const UnifiedReports: React.FC = () => {
           {permissions.canExportData && (
             <div className="flex flex-wrap gap-2">
               <Button size="sm" variant="outline" onClick={() => handleExport("csv")} disabled={isExporting} className="rounded-xl border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm hover:shadow">
-                <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">CSV</span>
+                {isExporting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                <span className="hidden sm:inline">{isExporting ? "Exporting..." : "CSV"}</span>
               </Button>
               <Button size="sm" variant="outline" onClick={() => handleExport("excel")} disabled={isExporting} className="rounded-xl border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm hover:shadow">
-                <FileSpreadsheet className="h-4 w-4" />
-                <span className="hidden sm:inline">Excel</span>
+                {isExporting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <FileSpreadsheet className="h-4 w-4" />}
+                <span className="hidden sm:inline">{isExporting ? "Exporting..." : "Excel"}</span>
               </Button>
               <Button size="sm" onClick={() => handleExport("pdf")} disabled={isExporting} className="rounded-xl bg-primary hover:bg-primary/90 text-white transition-all shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40">
-                <Download className="h-4 w-4" />
-                <span className="hidden sm:inline">Export PDF</span>
+                {isExporting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                <span className="hidden sm:inline">{isExporting ? "Exporting..." : "Export PDF"}</span>
               </Button>
             </div>
           )}
@@ -797,7 +909,6 @@ const UnifiedReports: React.FC = () => {
         </div>
 
         {/* Modern KPI Cards with Gradients */}
-        <TooltipProvider>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { label: "Total Complaints", value: analyticsData?.complaints.total || 0, icon: FileText, color: "from-blue-500 to-blue-600", trend: analyticsData?.comparison?.trends?.totalComplaints },
@@ -808,12 +919,8 @@ const UnifiedReports: React.FC = () => {
               <Card key={index} className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-2xl transition-all duration-300">
                 <div className={`absolute inset-0 bg-gradient-to-br ${kpi.color} opacity-0 group-hover:opacity-5 transition-opacity`}></div>
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <CardTitle className="text-sm font-medium">
                     {kpi.label}
-                    <UITooltip>
-                      <TooltipTrigger><Info className="h-4 w-4 text-muted-foreground" /></TooltipTrigger>
-                      <TooltipContent>{kpi.label} information</TooltipContent>
-                    </UITooltip>
                   </CardTitle>
                   <div className={`p-3 rounded-xl bg-gradient-to-br ${kpi.color} text-white shadow-lg`}>
                     <kpi.icon className="h-5 w-5" />
@@ -838,7 +945,6 @@ const UnifiedReports: React.FC = () => {
               </Card>
             ))}
           </div>
-        </TooltipProvider>
 
         {/* Modern Tabs with Analytics */}
         {analyticsData && (

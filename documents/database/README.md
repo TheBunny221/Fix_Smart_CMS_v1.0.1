@@ -2,7 +2,7 @@
 
 ## Overview
 
-This section contains comprehensive database documentation for NLC-CMS, including schema definitions, migration guides, and database management procedures.
+This section contains comprehensive database documentation for Fix_Smart_CMS v1.0.3, including schema definitions, migration guides, and database management procedures based on the latest Prisma schema.
 
 ## Quick Navigation
 
@@ -12,24 +12,26 @@ This section contains comprehensive database documentation for NLC-CMS, includin
 
 ### 🗄️ Schema Documentation
 - **[Schema Reference](../developer/SCHEMA_REFERENCE.md)** - Complete database schema and relationships
-- **[Prisma Schema](../../prisma/schema.prisma)** - Current Prisma schema definition
+- **[Prisma Schema](../../prisma/schema.prisma)** - Current Prisma schema definition (v1.0.3)
+- **[Schema Alignment Report](./SCHEMA_ALIGNMENT_REPORT.md)** - Schema validation and alignment status
+- **[Schema Cleanup Report](./SCHEMA_CLEANUP_REPORT.md)** - Database optimization results
 
 ## Database Configuration
 
 ### Supported Databases
-- **PostgreSQL 14+** (Recommended for production)
+- **PostgreSQL 13+** (Production - Required)
 - **SQLite** (Development only)
 
 ### Connection Configuration
 
 #### Production Environment
 ```env
-DATABASE_URL="postgresql://username:password@localhost:5432/nlc_cms_prod"
+DATABASE_URL="postgresql://username:password@localhost:5432/fix_smart_cms_prod"
 ```
 
 #### Development Environment
 ```env
-DATABASE_URL="postgresql://username:password@localhost:5432/nlc_cms_dev"
+DATABASE_URL="postgresql://username:password@localhost:5432/fix_smart_cms_dev"
 ```
 
 #### Testing Environment
@@ -75,43 +77,107 @@ npm run db:validate
 npm run db:format
 ```
 
-## Schema Overview
+## Schema Overview (v1.0.3)
 
 ### Core Models
 
 #### User Management
-- **User** - System users (citizens, officers, maintenance teams, admins)
-- **Ward** - Geographic administrative divisions
-- **SubZone** - Sub-divisions within wards
+- **User** - System users with role-based access (CITIZEN, WARD_OFFICER, MAINTENANCE_TEAM, ADMINISTRATOR, GUEST)
+- **Ward** - Geographic administrative divisions with active status tracking
+- **SubZone** - Sub-divisions within wards for precise location management
 
 #### Complaint System
-- **ComplaintType** - Categories of complaints
-- **Complaint** - Main complaint records
-- **StatusLog** - Complaint status change history
-- **Attachment** - File attachments for complaints
+- **ComplaintType** - Categories with priority levels and SLA hours
+- **Complaint** - Main complaint records with dual assignment system (legacy + specific roles)
+- **StatusLog** - Comprehensive audit trail for all status changes
+- **Attachment** - Unified attachment system for all entity types (COMPLAINT, CITIZEN, USER, MAINTENANCE_PHOTO)
 
 #### System Features
-- **OTPSession** - OTP verification for guest complaints
-- **Notification** - System notifications and email queue
-- **SystemConfig** - Dynamic system configuration
+- **OTPSession** - Multi-purpose OTP verification (guest complaints, password reset)
+- **Notification** - In-app notification system with read status tracking
+- **SystemConfig** - Dynamic system configuration with type categorization
+
+### Schema Enums
+
+#### UserRole
+```prisma
+enum UserRole {
+  CITIZEN
+  WARD_OFFICER
+  MAINTENANCE_TEAM
+  ADMINISTRATOR
+  GUEST
+}
+```
+
+#### ComplaintStatus
+```prisma
+enum ComplaintStatus {
+  REGISTERED
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REOPENED
+}
+```
+
+#### Priority & SLA
+```prisma
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum SLAStatus {
+  ON_TIME
+  WARNING
+  OVERDUE
+  COMPLETED
+}
+```
+
+#### AttachmentEntityType
+```prisma
+enum AttachmentEntityType {
+  COMPLAINT
+  CITIZEN
+  USER
+  MAINTENANCE_PHOTO
+}
+```
 
 ### Key Relationships
 
 ```
 User ──┐
-       ├── Complaint (as citizen)
-       ├── Complaint (as wardOfficer)
-       └── Complaint (as maintenanceTeam)
+       ├── Complaint (as submittedBy)
+       ├── Complaint (as assignedTo - legacy)
+       ├── Complaint (as wardOfficer - specific)
+       ├── Complaint (as maintenanceTeam - specific)
+       ├── StatusLog (user actions)
+       ├── OTPSession (authentication)
+       ├── Notification (user notifications)
+       └── Attachment (uploadedBy)
 
 Ward ──┐
-       ├── SubZone
-       ├── User (wardOfficers)
-       └── Complaint
+       ├── SubZone (cascading delete)
+       ├── User (ward assignment)
+       └── Complaint (geographic assignment)
 
 Complaint ──┐
-            ├── StatusLog
-            ├── Attachment
-            └── ComplaintType
+            ├── StatusLog (audit trail)
+            ├── Attachment (file uploads)
+            ├── Notification (status updates)
+            ├── ComplaintType (categorization)
+            ├── Ward (geographic location)
+            └── SubZone (precise location)
+
+Attachment ──┐
+             ├── Complaint (specific relation)
+             └── User (generic entity relation)
 ```
 
 ## Migration Management
@@ -340,5 +406,8 @@ npm run db:format
 
 ---
 
+**Last Updated**: January 2025  
+**Schema Version**: v1.0.3  
+**Schema Reference**: [prisma/schema.prisma](../../prisma/schema.prisma)  
 **Back to Main Documentation**: [← README.md](../README.md)  
-**Developer Guide**: [→ Developer](../developer/README.md)
+**Related Documentation**: [Architecture](../architecture/README.md) | [Developer](../developer/README.md) | [System](../system/README.md)

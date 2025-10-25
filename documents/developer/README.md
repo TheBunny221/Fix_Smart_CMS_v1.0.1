@@ -2,7 +2,7 @@
 
 ## Overview
 
-This section contains comprehensive developer documentation for NLC-CMS, including API references, development guides, and technical specifications.
+This section contains comprehensive developer documentation for Fix_Smart_CMS v1.0.3, including API references, development guides, and technical specifications for the latest schema and features.
 
 ## Quick Navigation
 
@@ -12,8 +12,11 @@ This section contains comprehensive developer documentation for NLC-CMS, includi
 
 ### 📚 API & Technical References
 - **[API Reference](./API_REFERENCE.md)** - Complete REST API documentation
-- **[Schema Reference](./SCHEMA_REFERENCE.md)** - Database schema and relationships
+- **[Schema Reference](./SCHEMA_REFERENCE.md)** - Database schema and relationships (v1.0.3)
 - **[State Management](./STATE_MANAGEMENT.md)** - Redux store and state management patterns
+- **[Swagger Integration](./swagger_integration.md)** - API documentation and testing interface
+- **[Export Testing Guide](./EXPORT_TESTING_GUIDE.md)** - Comprehensive export functionality testing
+- **[Attachment System](./complaint-attachment-system.md)** - File upload and attachment management
 
 ### 🔧 Development Tools
 - **[Scripts Reference](./SCRIPTS_REFERENCE.md)** - Available npm scripts and their usage
@@ -43,10 +46,18 @@ npm run dev
 ### Environment Configuration
 Create `.env.development` with development settings:
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/nlc_cms_dev"
+DATABASE_URL="postgresql://user:password@localhost:5432/fix_smart_cms_dev"
 NODE_ENV=development
 PORT=4005
+HOST=localhost
 JWT_SECRET=dev-secret-key
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password
+UPLOAD_DIR=./uploads
+MAX_FILE_SIZE=10485760
+CORS_ORIGIN=http://localhost:3000
 ```
 
 ## Development Workflow
@@ -188,7 +199,31 @@ See [Deployment Guide](../deployment/README.md) for production deployment instru
 - Include API documentation updates
 - Update schema documentation for database changes
 
+## Latest Features (v1.0.3)
+
+### New API Endpoints
+- **Unified Reports**: `/api/reports/unified` - Advanced reporting with export capabilities
+- **System Config**: `/api/system-config` - Dynamic system configuration management
+- **Attachment Upload**: `/api/complaints/:id/attachments` - File upload with validation
+- **Ward Management**: `/api/wards` - Enhanced ward and sub-zone management
+- **Daily Limits**: `/api/complaints/daily-limit` - Complaint submission rate limiting
+
+### Enhanced Features
+- **Multi-format Export**: PDF, Excel, CSV export with template system
+- **Real-time Notifications**: WebSocket-based status updates
+- **Advanced Filtering**: Dynamic complaint filters with date presets
+- **Role-based Access**: Enhanced RBAC with ward-specific permissions
+- **File Management**: Unified attachment system with security validation
+
+### Development Tools
+- **Swagger UI**: Available at `/api-docs` for interactive API testing
+- **Health Checks**: `/api/health` endpoint for system monitoring
+- **Debug Endpoints**: Development-only endpoints for testing and diagnostics
+
 ---
 
+**Last Updated**: January 2025  
+**Schema Version**: v1.0.3  
+**Schema Reference**: [prisma/schema.prisma](../../prisma/schema.prisma)  
 **Back to Main Documentation**: [← README.md](../README.md)  
-**Deployment Guide**: [→ Deployment](../deployment/README.md)
+**Related Documentation**: [Architecture](../architecture/README.md) | [Database](../database/README.md) | [Deployment](../deployment/README.md)

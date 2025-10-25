@@ -1,13 +1,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
 import { Badge } from "../ui/badge";
-import { Info } from "lucide-react";
 
 export interface HeatmapData {
   xLabels: string[];
@@ -45,20 +38,8 @@ export const HeatmapGrid: React.FC<HeatmapGridProps> = ({
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
+        <CardTitle>
           {title}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Info className="h-4 w-4 text-muted-foreground" />
-              </TooltipTrigger>
-              <TooltipContent>
-                <div className="max-w-[260px] text-xs">
-                  Hover over any cell to see the exact complaint count.
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </CardTitle>
         {description ? (
           <p className="text-sm text-muted-foreground mt-1">{description}</p>
@@ -90,9 +71,6 @@ export const HeatmapGrid: React.FC<HeatmapGridProps> = ({
                     className="p-2 text-[11px] md:text-xs font-medium text-muted-foreground text-center"
                     style={{ minHeight: 100, paddingBottom: 12 }}
                   >
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
                           <div className="w-full flex items-end justify-center overflow-visible">
                             <span
                               className="max-w-[140px] block text-center whitespace-normal break-words md:inline-block md:max-w-[180px] md:truncate md:-rotate-45"
@@ -105,12 +83,6 @@ export const HeatmapGrid: React.FC<HeatmapGridProps> = ({
                               {x}
                             </span>
                           </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="text-xs max-w-[300px]">{x}</div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
                   </div>
                 ))}
               </div>
@@ -133,34 +105,19 @@ export const HeatmapGrid: React.FC<HeatmapGridProps> = ({
                     const v = matrix[yi]?.[xi] ?? 0;
                     const opacity = getOpacity(v, min, max);
                     return (
-                      <TooltipProvider key={`${yi}-${xi}`}>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
                             <div
-                              className="h-10 md:h-12 border-t border-l flex items-center justify-center text-[11px] md:text-xs"
+                              key={`${yi}-${xi}`}
+                              className="h-10 md:h-12 border-t border-l flex items-center justify-center text-[11px] md:text-xs cursor-default"
                               style={{
                                 backgroundColor: `hsl(var(--primary) / ${opacity})`,
                               }}
+                              title={`${y} × ${xLabels[xi]}: ${v} complaints`} // Native browser tooltip
                               aria-label={`${y} × ${xLabels[xi]}: ${v}`}
                             >
                               <span className="text-primary-foreground font-medium">
                                 {v}
                               </span>
                             </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <div className="space-y-1">
-                              <div className="text-xs font-medium">{y}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {xLabels[xi]}
-                              </div>
-                              <Badge variant="outline" className="text-[11px]">
-                                {v} complaints
-                              </Badge>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
                     );
                   })}
                 </div>

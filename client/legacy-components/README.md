@@ -33,6 +33,14 @@ These components have been moved here instead of being deleted to:
 | `UXComponents.tsx` | `components/UXComponents.tsx` | No usage found in codebase | 2025-10-18 |
 | `WardDashboard.tsx` | `components/WardDashboard.tsx` | No usage found in codebase | 2025-10-18 |
 
+### Page Components
+| Component | Original Path | Reason for Move | Date Moved |
+|-----------|---------------|-----------------|------------|
+| `AdminAnalytics.tsx` | `pages/AdminAnalytics.tsx` | No route defined, replaced by UnifiedReports | 2025-10-18 |
+| `AdminReports.tsx` | `pages/AdminReports.tsx` | No route defined, replaced by UnifiedReports | 2025-10-18 |
+| `ReportsAnalytics.tsx` | `pages/ReportsAnalytics.tsx` | No route defined, replaced by UnifiedReports | 2025-10-18 |
+| `TokenClearHelper.tsx` | `pages/TokenClearHelper.tsx` | No route defined, utility component not actively used | 2025-10-18 |
+
 ### Layout Components
 | Component | Original Path | Reason for Move | Date Moved |
 |-----------|---------------|-----------------|------------|
@@ -64,8 +72,8 @@ The components were identified as unused through automated analysis that:
 4. Identified components with zero references
 
 **Total Components Analyzed**: 85  
-**Components Moved to Legacy**: 23  
-**Active Components Remaining**: 62
+**Components Moved to Legacy**: 27  
+**Active Components Remaining**: 58
 
 ## Restoring Components
 

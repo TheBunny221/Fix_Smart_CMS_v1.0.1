@@ -278,3 +278,9 @@ Run this command in console and include output:
 The export functionality has been thoroughly tested and includes comprehensive error handling, performance optimization, and user feedback. Regular testing using this guide will ensure continued reliability and user satisfaction.
 
 For additional support or to report issues, refer to the diagnostic tools and include detailed information as specified in the "Reporting Issues" section.
+
+---
+
+**Last Updated**: January 2025  
+**Schema Reference**: [prisma/schema.prisma](../../prisma/schema.prisma)  
+**Related Documentation**: [Architecture](../architecture/README.md) | [Database](../database/README.md) | [System](../system/README.md)

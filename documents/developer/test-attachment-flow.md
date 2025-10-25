@@ -117,3 +117,9 @@ If issues are found:
 - Add multipart/form-data examples
 - Document file upload limits and supported types
 - Update troubleshooting guide for attachment issues
+
+---
+
+**Last Updated**: January 2025  
+**Schema Reference**: [prisma/schema.prisma](../../prisma/schema.prisma)  
+**Related Documentation**: [Architecture](../architecture/README.md) | [Database](../database/README.md) | [System](../system/README.md)

@@ -5,6 +5,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { protect, authorize } from "../middleware/auth.js";
 import { uploadComplaintAttachment } from "../controller/uploadController.js";
+import { validateComplaintFeedbackEnhanced, validateComplaintReopen } from "../middleware/validation.js";
 import {
   getComplaints,
   getComplaint,
@@ -692,7 +693,7 @@ router.put(
  *       403:
  *         $ref: '#/components/responses/ForbiddenError'
  */
-router.post("/:id/feedback", authorize("CITIZEN"), addComplaintFeedback);
+router.post("/:id/feedback", authorize("CITIZEN"), validateComplaintFeedbackEnhanced, addComplaintFeedback);
 
 /**
  * @swagger
@@ -736,7 +737,7 @@ router.post("/:id/feedback", authorize("CITIZEN"), addComplaintFeedback);
  *       403:
  *         $ref: '#/components/responses/ForbiddenError'
  */
-router.put("/:id/reopen", authorize("ADMINISTRATOR"), reopenComplaint);
+router.put("/:id/reopen", authorize("ADMINISTRATOR"), validateComplaintReopen, reopenComplaint);
 
 /**
  * @swagger
