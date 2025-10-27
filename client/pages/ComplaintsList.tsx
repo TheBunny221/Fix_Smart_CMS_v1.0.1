@@ -330,12 +330,12 @@ const ComplaintsList: React.FC = () => {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            {user?.role === "MAINTENANCE_TEAM" ? "My Complaints" : "Complaints"}
+            {user?.role === "MAINTENANCE_TEAM" ? (translations?.nav?.myComplaints || "My Complaints") : (translations?.nav?.complaints || "Complaints")}
           </h1>
           <p className="text-gray-600">
             {user?.role === "MAINTENANCE_TEAM"
-              ? "View and manage complaints you have submitted"
-              : "Manage and track all complaints"}
+              ? (translations?.complaints?.viewAndManageSubmitted || "View and manage complaints you have submitted")
+              : (translations?.complaints?.manageAndTrackAll || "Manage and track all complaints")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -345,13 +345,13 @@ const ComplaintsList: React.FC = () => {
             user?.role === "WARD_OFFICER") && (
               <Button onClick={() => setIsQuickFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                New Complaint
+                {translations?.complaints?.newComplaint || "New Complaint"}
               </Button>
             )}
         </div>
       </div>
 
-    {/* Ultra Compact Filters - Modern Single Line */}
+      {/* Ultra Compact Filters - Modern Single Line */}
       <Card className="rounded-2xl shadow-lg border-slate-200 dark:border-slate-700">
         <CardContent className="p-4">
           {/* Primary Filter Row - Single Line Layout */}
@@ -360,11 +360,11 @@ const ComplaintsList: React.FC = () => {
             <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Search complaints..."
+                placeholder={translations?.complaints?.searchPlaceholder || "Search complaints..."}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 pr-10 h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                title="Search by complaint ID, description, or location"
+                title={translations?.complaints?.searchTooltip || "Search by complaint ID, description, or location"}
               />
               {searchTerm && (
                 <Button
@@ -381,10 +381,10 @@ const ComplaintsList: React.FC = () => {
             {/* Primary Filters - Compact Pills */}
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[130px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder={translations?.common?.status || "Status"} />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
-                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="all">{translations?.complaints?.allStatus || "All Status"}</SelectItem>
                 {configuredStatuses.map((s: string) => (
                   <SelectItem key={s} value={s}>
                     {prettyLabel(s)}
@@ -395,10 +395,10 @@ const ComplaintsList: React.FC = () => {
 
             <Select value={priorityFilter} onValueChange={setPriorityFilter}>
               <SelectTrigger className="w-[130px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
-                <SelectValue placeholder="Priority" />
+                <SelectValue placeholder={translations?.common?.priority || "Priority"} />
               </SelectTrigger>
               <SelectContent className="rounded-xl">
-                <SelectItem value="all">All Priority</SelectItem>
+                <SelectItem value="all">{translations?.complaints?.allPriority || "All Priority"}</SelectItem>
                 {configuredPriorities.map((p: string) => (
                   <SelectItem key={p} value={p}>
                     {prettyLabel(p)}
@@ -407,7 +407,7 @@ const ComplaintsList: React.FC = () => {
                 {configuredPriorities.includes("HIGH") &&
                   configuredPriorities.includes("CRITICAL") && (
                     <SelectItem value="high_critical">
-                      High & Critical
+                      {translations?.complaints?.highAndCritical || "High & Critical"}
                     </SelectItem>
                   )}
               </SelectContent>
@@ -417,10 +417,10 @@ const ComplaintsList: React.FC = () => {
             {user?.role === "ADMINISTRATOR" && (
               <Select value={wardFilter} onValueChange={handleWardChange}>
                 <SelectTrigger className="w-[130px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
-                  <SelectValue placeholder="Ward" />
+                  <SelectValue placeholder={translations?.complaints?.ward || "Ward"} />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="all">All Wards</SelectItem>
+                  <SelectItem value="all">{translations?.complaints?.allWards || "All Wards"}</SelectItem>
                   {wards.map((ward) => (
                     <SelectItem key={ward.id} value={ward.id}>
                       {ward.name}
@@ -435,14 +435,13 @@ const ComplaintsList: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`relative h-10 px-4 text-sm rounded-xl transition-all ${
-                showAdvancedFilters 
-                  ? 'border-primary bg-primary text-white hover:bg-primary/90' 
-                  : 'border-slate-200 dark:border-slate-600 hover:border-primary/50'
-              }`}
+              className={`relative h-10 px-4 text-sm rounded-xl transition-all ${showAdvancedFilters
+                ? 'border-primary bg-primary text-white hover:bg-primary/90'
+                : 'border-slate-200 dark:border-slate-600 hover:border-primary/50'
+                }`}
             >
               <Filter className="h-4 w-4 mr-1.5" />
-              <span className="hidden sm:inline">More</span>
+              <span className="hidden sm:inline">{translations?.common?.more || "More"}</span>
               {(subZoneFilter !== 'all' || slaStatusFilter !== 'all' || needsMaintenanceAssignment) && (
                 <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center font-bold shadow-lg">
                   {[subZoneFilter !== 'all', slaStatusFilter !== 'all', needsMaintenanceAssignment].filter(Boolean).length}
@@ -453,21 +452,21 @@ const ComplaintsList: React.FC = () => {
 
             {/* Action Buttons */}
             <div className="flex items-center gap-2 ml-auto">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={clearFilters} 
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFilters}
                 className="h-10 px-3 text-sm rounded-xl border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
-                title="Clear all filters"
+                title={translations?.complaints?.clearAllFilters || "Clear all filters"}
               >
                 <X className="h-4 w-4" />
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => refetch()} 
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
                 className="h-10 px-3 text-sm rounded-xl bg-primary hover:bg-primary/90 text-white border-transparent shadow-lg shadow-primary/30 transition-all"
-                title="Refresh data"
+                title={translations?.complaints?.refreshData || "Refresh data"}
               >
                 <RefreshCw className="h-4 w-4" />
               </Button>
@@ -483,10 +482,10 @@ const ComplaintsList: React.FC = () => {
                 availableSubZones.length > 0 && (
                   <Select value={subZoneFilter} onValueChange={setSubZoneFilter}>
                     <SelectTrigger className="w-[140px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-750 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
-                      <SelectValue placeholder="Sub-Zone" />
+                      <SelectValue placeholder={translations?.complaints?.subZone || "Sub-Zone"} />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl">
-                      <SelectItem value="all">All Sub-Zones</SelectItem>
+                      <SelectItem value="all">{translations?.complaints?.allSubZones || "All Sub-Zones"}</SelectItem>
                       {availableSubZones.map((subZone) => (
                         <SelectItem key={subZone.id} value={subZone.id}>
                           {subZone.name}
@@ -499,14 +498,14 @@ const ComplaintsList: React.FC = () => {
               {/* SLA Status Filter */}
               <Select value={slaStatusFilter} onValueChange={setSlaStatusFilter}>
                 <SelectTrigger className="w-[140px] h-10 text-sm rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-750 hover:border-primary/50 focus:ring-2 focus:ring-primary/20 transition-all">
-                  <SelectValue placeholder="SLA" />
+                  <SelectValue placeholder={translations?.complaints?.slaStatus || "SLA"} />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  <SelectItem value="all">All SLA</SelectItem>
-                  <SelectItem value="ON_TIME">On Time</SelectItem>
-                  <SelectItem value="WARNING">Warning</SelectItem>
-                  <SelectItem value="OVERDUE">Overdue</SelectItem>
-                  <SelectItem value="COMPLETED">Done</SelectItem>
+                  <SelectItem value="all">{translations?.complaints?.allSLA || "All SLA"}</SelectItem>
+                  <SelectItem value="ON_TIME">{translations?.complaints?.slaStatuses?.ontime || "On Time"}</SelectItem>
+                  <SelectItem value="WARNING">{translations?.complaints?.slaStatuses?.warning || "Warning"}</SelectItem>
+                  <SelectItem value="OVERDUE">{translations?.complaints?.slaStatuses?.overdue || "Overdue"}</SelectItem>
+                  <SelectItem value="COMPLETED">{translations?.complaints?.slaStatuses?.completed || "Done"}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -523,7 +522,7 @@ const ComplaintsList: React.FC = () => {
                     htmlFor="needsMaintenanceAssignment"
                     className="text-sm font-medium cursor-pointer whitespace-nowrap text-slate-900 dark:text-slate-100"
                   >
-                    Needs Assignment
+                    {translations?.complaints?.needsAssignment || "Needs Assignment"}
                   </label>
                 </div>
               )}
@@ -533,65 +532,65 @@ const ComplaintsList: React.FC = () => {
           {/* Active Filters Display */}
           {(searchTerm || statusFilter !== 'all' || priorityFilter !== 'all' || wardFilter !== 'all' || subZoneFilter !== 'all' || slaStatusFilter !== 'all' || needsMaintenanceAssignment) && (
             <div className="flex flex-wrap gap-2 items-center mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Active Filters:</span>
-              
+              <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{translations?.complaints?.activeFilters || "Active Filters"}:</span>
+
               {searchTerm && (
                 <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium border border-blue-200 dark:border-blue-800">
-                  Search: {searchTerm.slice(0, 20)}{searchTerm.length > 20 ? '...' : ''}
+                  {translations?.common?.search || "Search"}: {searchTerm.slice(0, 20)}{searchTerm.length > 20 ? '...' : ''}
                   <button onClick={() => setSearchTerm('')} className="hover:bg-blue-100 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
               )}
-              
+
               {statusFilter !== 'all' && (
                 <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium border border-green-200 dark:border-green-800">
-                  Status: {prettyLabel(statusFilter)}
+                  {translations?.common?.status || "Status"}: {prettyLabel(statusFilter)}
                   <button onClick={() => setStatusFilter('all')} className="hover:bg-green-100 dark:hover:bg-green-800 rounded-full p-0.5 transition-colors">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
               )}
-              
+
               {priorityFilter !== 'all' && (
                 <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs font-medium border border-orange-200 dark:border-orange-800">
-                  Priority: {prettyLabel(priorityFilter)}
+                  {translations?.common?.priority || "Priority"}: {prettyLabel(priorityFilter)}
                   <button onClick={() => setPriorityFilter('all')} className="hover:bg-orange-100 dark:hover:bg-orange-800 rounded-full p-0.5 transition-colors">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
               )}
-              
+
               {wardFilter !== 'all' && (
                 <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-medium border border-purple-200 dark:border-purple-800">
-                  Ward: {wards.find(w => w.id === wardFilter)?.name || wardFilter}
+                  {translations?.complaints?.ward || "Ward"}: {wards.find(w => w.id === wardFilter)?.name || wardFilter}
                   <button onClick={() => handleWardChange('all')} className="hover:bg-purple-100 dark:hover:bg-purple-800 rounded-full p-0.5 transition-colors">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
               )}
-              
+
               {subZoneFilter !== 'all' && (
                 <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium border border-indigo-200 dark:border-indigo-800">
-                  Sub-Zone: {availableSubZones.find(z => z.id === subZoneFilter)?.name || subZoneFilter}
+                  {translations?.complaints?.subZone || "Sub-Zone"}: {availableSubZones.find(z => z.id === subZoneFilter)?.name || subZoneFilter}
                   <button onClick={() => setSubZoneFilter('all')} className="hover:bg-indigo-100 dark:hover:bg-indigo-800 rounded-full p-0.5 transition-colors">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
               )}
-              
+
               {slaStatusFilter !== 'all' && (
                 <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-pink-50 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 text-xs font-medium border border-pink-200 dark:border-pink-800">
-                  SLA: {prettyLabel(slaStatusFilter)}
+                  {translations?.complaints?.slaStatus || "SLA"}: {prettyLabel(slaStatusFilter)}
                   <button onClick={() => setSlaStatusFilter('all')} className="hover:bg-pink-100 dark:hover:bg-pink-800 rounded-full p-0.5 transition-colors">
                     <X className="h-3 w-3" />
                   </button>
                 </span>
               )}
-              
+
               {needsMaintenanceAssignment && (
                 <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs font-medium border border-yellow-200 dark:border-yellow-800">
-                  Needs Assignment
+                  {translations?.complaints?.needsAssignment || "Needs Assignment"}
                   <button onClick={() => setNeedsMaintenanceAssignment(false)} className="hover:bg-yellow-100 dark:hover:bg-yellow-800 rounded-full p-0.5 transition-colors">
                     <X className="h-3 w-3" />
                   </button>
@@ -605,8 +604,8 @@ const ComplaintsList: React.FC = () => {
             <div className="mt-3">
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 {searchTerm.match(/^[A-Za-z]/)
-                  ? `Searching for: "${searchTerm}"`
-                  : `Searching in descriptions and locations`}
+                  ? `${translations?.complaints?.searchingFor || "Searching for"}: "${searchTerm}"`
+                  : (translations?.complaints?.searchingInDescriptions || "Searching in descriptions and locations")}
               </p>
             </div>
           )}
@@ -618,7 +617,7 @@ const ComplaintsList: React.FC = () => {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center">
               <FileText className="h-5 w-5 mr-2" />
-              Complaints (
+              {translations?.nav?.complaints || "Complaints"} (
               {complaintsData?.pagination?.totalItems ??
                 filteredComplaints.length}
               )
@@ -646,19 +645,19 @@ const ComplaintsList: React.FC = () => {
           {!isAuthenticated ? (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-600 mb-2">Please sign in to view complaints.</p>
+              <p className="text-gray-600 mb-2">{translations?.complaints?.pleaseSignIn || "Please sign in to view complaints."}</p>
               <Link to="/login">
-                <Button>Go to Sign In</Button>
+                <Button>{translations?.auth?.login || "Go to Sign In"}</Button>
               </Link>
             </div>
           ) : error ? (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 mx-auto text-red-400 mb-4" />
-              <p className="text-red-500 mb-2">{getApiErrorMessage(error as any) || "Failed to load complaints"}</p>
+              <p className="text-red-500 mb-2">{getApiErrorMessage(error as any) || (translations?.complaints?.failedToLoad || "Failed to load complaints")}</p>
               <div className="flex items-center justify-center gap-2">
-                <Button variant="outline" onClick={() => refetch()}>Try Again</Button>
+                <Button variant="outline" onClick={() => refetch()}>{translations?.common?.retry || "Try Again"}</Button>
                 <Link to="/login">
-                  <Button variant="outline">Sign In</Button>
+                  <Button variant="outline">{translations?.auth?.login || "Sign In"}</Button>
                 </Link>
               </div>
             </div>
@@ -674,13 +673,13 @@ const ComplaintsList: React.FC = () => {
           ) : filteredComplaints.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <p className="text-gray-500 mb-2">No complaints found</p>
+              <p className="text-gray-500 mb-2">{translations?.complaints?.noComplaintsFound || "No complaints found"}</p>
               <p className="text-sm text-gray-400">
                 {searchTerm ||
                   statusFilter !== "all" ||
                   priorityFilter !== "all"
-                  ? "Try adjusting your filters or search terms"
-                  : "Submit your first complaint to get started"}
+                  ? (translations?.complaints?.tryAdjustingFilters || "Try adjusting your filters or search terms")
+                  : (translations?.complaints?.submitFirstComplaint || "Submit your first complaint to get started")}
               </p>
             </div>
           ) : (
@@ -688,25 +687,25 @@ const ComplaintsList: React.FC = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Complaint ID</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Priority</TableHead>
+                    <TableHead>{translations?.complaints?.complaintId || "Complaint ID"}</TableHead>
+                    <TableHead>{translations?.common?.description || "Description"}</TableHead>
+                    <TableHead>{translations?.complaints?.location || "Location"}</TableHead>
+                    <TableHead>{translations?.common?.status || "Status"}</TableHead>
+                    <TableHead>{translations?.common?.priority || "Priority"}</TableHead>
                     {(user?.role === "ADMINISTRATOR" ||
                       user?.role === "WARD_OFFICER") && (
-                        <TableHead>Team</TableHead>
+                        <TableHead>{translations?.complaints?.team || "Team"}</TableHead>
                       )}
                     {user?.role === "ADMINISTRATOR" && (
-                      <TableHead>Officer</TableHead>
+                      <TableHead>{translations?.complaints?.officer || "Officer"}</TableHead>
                     )}
                     {user?.role !== "CITIZEN" && (
                       <>
-                        <TableHead>Rating</TableHead>
-                        <TableHead>SLA</TableHead>
-                        <TableHead>Registered On</TableHead>
-                        <TableHead>Updated</TableHead>
-                        <TableHead>Closed</TableHead>
+                        <TableHead>{translations?.complaints?.rating || "Rating"}</TableHead>
+                        <TableHead>{translations?.complaints?.slaStatus || "SLA"}</TableHead>
+                        <TableHead>{translations?.complaints?.registeredOn || "Registered On"}</TableHead>
+                        <TableHead>{translations?.complaints?.updated || "Updated"}</TableHead>
+                        <TableHead>{translations?.complaints?.closed || "Closed"}</TableHead>
                         {/* {user?.role === "ADMINISTRATOR" && (
                           <>
                             <TableHead>Maintenance Team ID</TableHead>
@@ -715,21 +714,21 @@ const ComplaintsList: React.FC = () => {
                         )} */}
                       </>
                     )}
-                    <TableHead>Actions</TableHead>
+                    <TableHead>{translations?.common?.actions || "Actions"}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredComplaints.map((complaint: any) => (
                     <TableRow key={complaint.id}>
                       <TableCell className="font-medium">
-                        #{complaint.complaintId || (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : 'Unknown')}
+                        #{complaint.complaintId || (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : (translations?.common?.unknown || 'Unknown'))}
                       </TableCell>
                       <TableCell>
                         <div className="max-w-xs">
                           <p className="truncate">{complaint.description}</p>
                           <p className="text-sm text-gray-500">
                             {getComplaintTypeById(complaint.complaintTypeId)?.name ||
-                              (typeof complaint.type === 'string' ? complaint.type.replace("_", " ") : complaint.type?.name || "Unknown Type")}
+                              (typeof complaint.type === 'string' ? complaint.type.replace("_", " ") : complaint.type?.name || (translations?.complaints?.unknownType || "Unknown Type"))}
                           </p>
                         </div>
                       </TableCell>
@@ -741,7 +740,7 @@ const ComplaintsList: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusColor(complaint.status)}>
-                          {complaint.status?.replace("_", " ") || "Unknown"}
+                          {complaint.status?.replace("_", " ") || (translations?.common?.unknown || "Unknown")}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -793,12 +792,12 @@ const ComplaintsList: React.FC = () => {
                                 {complaint.rating}/5
                               </span>
                             ) : (
-                              <span className="text-xs text-gray-500">N/A</span>
+                              <span className="text-xs text-gray-500">{translations?.common?.notAvailable || "N/A"}</span>
                             )}
                           </TableCell>
                           <TableCell>
                             <Badge className={getSLAColor(complaint.slaStatus)}>
-                              {complaint.slaStatus?.replace("_", " ") || "Unknown"}
+                              {complaint.slaStatus?.replace("_", " ") || (translations?.common?.unknown || "Unknown")}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -873,7 +872,7 @@ const ComplaintsList: React.FC = () => {
               {/* Pagination and records-per-page controls */}
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Rows per page:</span>
+                  <span className="text-sm text-gray-600">{translations?.complaints?.rowsPerPage || "Rows per page"}:</span>
                   <Select
                     value={String(recordsPerPage)}
                     onValueChange={(v) => {
@@ -893,8 +892,8 @@ const ComplaintsList: React.FC = () => {
                   </Select>
                   <span className="text-sm text-gray-500">
                     {totalItems === 0
-                      ? `Showing 0 of 0`
-                      : `Showing ${(currentPage - 1) * recordsPerPage + 1} - ${Math.min(currentPage * recordsPerPage, totalItems)} of ${totalItems}`}
+                      ? (translations?.complaints?.showing0of0 || "Showing 0 of 0")
+                      : `${translations?.complaints?.showing || "Showing"} ${(currentPage - 1) * recordsPerPage + 1} - ${Math.min(currentPage * recordsPerPage, totalItems)} ${translations?.common?.of || "of"} ${totalItems}`}
                   </span>
                 </div>
 
@@ -906,7 +905,7 @@ const ComplaintsList: React.FC = () => {
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
                   >
-                    First
+                    {translations?.common?.first || "First"}
                   </Button>
                   <Button
                     variant="outline"
@@ -915,7 +914,7 @@ const ComplaintsList: React.FC = () => {
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                   >
-                    Prev
+                    {translations?.common?.previous || "Prev"}
                   </Button>
 
                   {getPageNumbers().map((p) => (
@@ -939,7 +938,7 @@ const ComplaintsList: React.FC = () => {
                     }
                     disabled={currentPage === totalPages}
                   >
-                    Next
+                    {translations?.common?.next || "Next"}
                   </Button>
                   <Button
                     variant="outline"
@@ -948,7 +947,7 @@ const ComplaintsList: React.FC = () => {
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
                   >
-                    Last
+                    {translations?.common?.last || "Last"}
                   </Button>
                 </div>
               </div>

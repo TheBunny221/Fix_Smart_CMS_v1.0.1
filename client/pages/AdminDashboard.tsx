@@ -199,7 +199,7 @@ const AdminDashboard: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-lg">Loading dashboard data...</div>
+        <div className="text-lg">{t("dashboard.loadingDashboardData")}</div>
       </div>
     );
   }
@@ -258,7 +258,7 @@ const AdminDashboard: React.FC = () => {
               },
               {
                 value: systemStats.activeUsers || 0,
-                label: "Active Users",
+                label: t("dashboard.activeUsers"),
               },
               {
                 value: `${metrics?.slaCompliance || 0}%`,
@@ -266,7 +266,7 @@ const AdminDashboard: React.FC = () => {
               },
               {
                 value: `${(metrics?.citizenSatisfaction || 0).toFixed(1)}/5`,
-                label: "Satisfaction",
+                label: t("dashboard.satisfaction"),
               },
             ].map((item, i) => (
               <div
@@ -395,7 +395,7 @@ const AdminDashboard: React.FC = () => {
             <TabsTrigger value="overview">{t("dashboard.overview")}</TabsTrigger>
             {/* <TabsTrigger value="performance">Performance</TabsTrigger> */}
             {/* <TabsTrigger value="users">Users</TabsTrigger> */}
-            <TabsTrigger value="system">System</TabsTrigger>
+            <TabsTrigger value="system">{t("dashboard.system")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -403,7 +403,7 @@ const AdminDashboard: React.FC = () => {
               {/* Complaint Trends */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Complaint Trends (Last 6 Months)</CardTitle>
+                  <CardTitle>{t("dashboard.complaintTrends")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {complaintTrends && complaintTrends.length > 0 ? (
@@ -431,7 +431,7 @@ const AdminDashboard: React.FC = () => {
                             dataKey="complaints"
                             stroke="#0f5691"
                             strokeWidth={2}
-                            name="Complaints"
+                            name={t("dashboard.complaints")}
                             connectNulls={false}
                           />
                           <Line
@@ -439,7 +439,7 @@ const AdminDashboard: React.FC = () => {
                             dataKey="resolved"
                             stroke="#10B981"
                             strokeWidth={2}
-                            name="Resolved"
+                            name={t("dashboard.resolved")}
                             connectNulls={false}
                           />
                         </LineChart>
@@ -459,7 +459,7 @@ const AdminDashboard: React.FC = () => {
                     <div className="h-[300px] flex items-center justify-center text-gray-500">
                       <div className="text-center">
                         <div className="mb-2">
-                          No complaint trend data available
+                          {t("dashboard.noComplaintTrendData")}
                         </div>
                         {process.env.NODE_ENV === "development" &&
                           analytics && (
@@ -478,7 +478,7 @@ const AdminDashboard: React.FC = () => {
               {/* Complaints by Type */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Complaints by Type</CardTitle>
+                  <CardTitle>{t("dashboard.complaintsByType")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {complaintsByType && complaintsByType.length > 0 ? (
@@ -562,7 +562,7 @@ const AdminDashboard: React.FC = () => {
                     <div className="h-[300px] flex items-center justify-center text-gray-500">
                       <div className="text-center">
                         <div className="mb-2">
-                          No complaint type data available
+                          {t("dashboard.noComplaintTypeData")}
                         </div>
                         {process.env.NODE_ENV === "development" &&
                           analytics && (
@@ -590,22 +590,22 @@ const AdminDashboard: React.FC = () => {
               <CardContent>
                 <div className="w-full">
                   <HeatmapGrid
-                    title="Overall Complaints Heatmap"
-                    description="Complaints by type across wards (overview)"
+                    title={t("dashboard.overallComplaintsHeatmap")}
+                    description={t("dashboard.complaintsByTypeAcrossWards")}
                     data={
                       overviewHeatmap || {
                         xLabels: [],
                         yLabels: [],
                         matrix: [],
-                        xAxisLabel: "Complaint Type",
-                        yAxisLabel: "Ward",
+                        xAxisLabel: t("dashboard.complaintType"),
+                        yAxisLabel: t("dashboard.ward"),
                       }
                     }
                     className="min-h-[420px]"
                   />
                   {overviewHeatmapLoading && (
                     <div className="mt-2 text-xs text-muted-foreground">
-                      Loading heatmap...
+                      {t("dashboard.loadingHeatmap")}
                     </div>
                   )}
                 </div>
@@ -661,7 +661,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 ) : (
                   <div className="h-[200px] flex items-center justify-center text-gray-500">
-                    No recent activity available
+                    {t("dashboard.noRecentActivity")}
                   </div>
                 )}
               </CardContent>
@@ -687,8 +687,8 @@ const AdminDashboard: React.FC = () => {
                       {/* <span>Target: 3d</span> */}
                       <span>
                         {(metrics?.avgResolutionTime || 0) <= 3
-                          ? "On target"
-                          : "Needs improvement"}
+                          ? t("dashboard.onTarget")
+                          : t("dashboard.needsImprovement")}
                       </span>
                     </div>
                     <Progress
@@ -717,10 +717,10 @@ const AdminDashboard: React.FC = () => {
                       <span>Target: 90%</span>
                       <span>
                         {(metrics?.resolutionRate || 0) >= 90
-                          ? "Excellent"
+                          ? t("dashboard.excellent")
                           : (metrics?.resolutionRate || 0) >= 75
-                            ? "Good"
-                            : "Needs improvement"}
+                            ? t("dashboard.good")
+                            : t("dashboard.needsImprovement")}
                       </span>
                     </div>
                     <Progress
@@ -745,10 +745,10 @@ const AdminDashboard: React.FC = () => {
                       <span>Target: 85%</span>
                       <span>
                         {(metrics?.slaCompliance || 0) >= 85
-                          ? "Excellent"
+                          ? t("dashboard.excellent")
                           : (metrics?.slaCompliance || 0) >= 70
-                            ? "Good"
-                            : "Below target"}
+                            ? t("dashboard.good")
+                            : t("dashboard.belowTarget")}
                       </span>
                     </div>
                     <Progress
@@ -761,20 +761,20 @@ const AdminDashboard: React.FC = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Satisfaction Score</CardTitle>
+                  <CardTitle>{t("dashboard.satisfactionScore")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold text-yellow-600">
                     {(metrics?.citizenSatisfaction || 0).toFixed(1)}/5
                   </div>
-                  <p className="text-sm text-gray-600">Citizen feedback</p>
+                  <p className="text-sm text-gray-600">{t("dashboard.citizenFeedback")}</p>
                   <div className="mt-4">
                     <div className="flex justify-between text-sm mb-1">
-                      <span>Target: 4.0</span>
+                      <span>{t("dashboard.target")}: 4.0</span>
                       <span>
                         {(metrics?.citizenSatisfaction || 0) >= 4.0
-                          ? "Above target"
-                          : "Below target"}
+                          ? t("dashboard.aboveTarget")
+                          : t("dashboard.belowTarget")}
                       </span>
                     </div>
                     <Progress
@@ -791,13 +791,13 @@ const AdminDashboard: React.FC = () => {
               {/* Performance Summary */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Performance Summary</CardTitle>
+                  <CardTitle>{t("dashboard.performanceSummary")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">Overall Resolution Rate</span>
+                        <span className="text-sm">{t("dashboard.overallResolutionRate")}</span>
                         <span className="text-lg font-bold text-green-600">
                           {metrics?.resolutionRate || 0}%
                         </span>
@@ -808,7 +808,7 @@ const AdminDashboard: React.FC = () => {
                       />
 
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">SLA Compliance</span>
+                        <span className="text-sm">{t("dashboard.slaCompliance")}</span>
                         <span className="text-lg font-bold text-blue-600">
                           {metrics?.slaCompliance || 0}%
                         </span>
@@ -825,7 +825,7 @@ const AdminDashboard: React.FC = () => {
                           {(metrics?.avgResolutionTime || 0).toFixed(1)}d
                         </div>
                         <p className="text-sm text-gray-600">
-                          Average Resolution Time
+                          {t("dashboard.averageResolutionTime")}
                         </p>
                         {/* <div className="text-xs text-gray-500 mt-1">
                         Target: 3 days
@@ -837,7 +837,7 @@ const AdminDashboard: React.FC = () => {
                           {(metrics?.citizenSatisfaction || 0).toFixed(1)}/5
                         </div>
                         <p className="text-sm text-gray-600">
-                          Satisfaction Score
+                          {t("dashboard.satisfactionScore")}
                         </p>
                       </div>
                     </div>
@@ -848,32 +848,32 @@ const AdminDashboard: React.FC = () => {
               {/* Quick Actions */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Quick Actions</CardTitle>
+                  <CardTitle>{t("dashboard.quickActions")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-3">
                     <Link to="/reports">
                       <Button variant="outline" className="w-full">
                         <BarChart3 className="h-4 w-4 mr-2" />
-                        Detailed Reports
+                        {t("dashboard.detailedReports")}
                       </Button>
                     </Link>
                     <Link to="/admin/analytics">
                       <Button variant="outline" className="w-full">
                         <TrendingUp className="h-4 w-4 mr-2" />
-                        Analytics
+                        {t("dashboard.analytics")}
                       </Button>
                     </Link>
                     <Link to="/admin/users/new">
                       <Button variant="outline" className="w-full">
                         <Users className="h-4 w-4 mr-2" />
-                        Add User
+                        {t("dashboard.addUser")}
                       </Button>
                     </Link>
                     <Link to="/admin/config">
                       <Button variant="outline" className="w-full">
                         <Settings className="h-4 w-4 mr-2" />
-                        Settings
+                        {t("common.settings")}
                       </Button>
                     </Link>
                   </div>
@@ -886,20 +886,20 @@ const AdminDashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>User Management</CardTitle>
+                  <CardTitle>{t("dashboard.userManagement")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Link to="/admin/users" className="block">
                     <Button className="w-full justify-start">
                       <Users className="h-4 w-4 mr-2" />
-                      Manage Users (
+                      {t("dashboard.manageUsers")} (
                       {systemStats.wardOfficers + systemStats.maintenanceTeam})
                     </Button>
                   </Link>
                   <Link to="/admin/users?role=WARD_OFFICER" className="block">
                     <Button variant="outline" className="w-full justify-start">
                       <UserCheck className="h-4 w-4 mr-2" />
-                      Ward Officers ({systemStats.wardOfficers})
+                      {t("dashboard.wardOfficers")} ({systemStats.wardOfficers})
                     </Button>
                   </Link>
                   <Link
@@ -908,7 +908,7 @@ const AdminDashboard: React.FC = () => {
                   >
                     <Button variant="outline" className="w-full justify-start">
                       <Settings className="h-4 w-4 mr-2" />
-                      Maintenance Team ({systemStats.maintenanceTeam})
+                      {t("dashboard.maintenanceTeam")} ({systemStats.maintenanceTeam})
                     </Button>
                   </Link>
                 </CardContent>
@@ -916,35 +916,35 @@ const AdminDashboard: React.FC = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>User Activity (Real-time)</CardTitle>
+                  <CardTitle>{t("dashboard.userActivity")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {userActivityLoading ? (
                     <div className="flex items-center justify-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="ml-2 text-sm">Loading activity...</span>
+                      <span className="ml-2 text-sm">{t("dashboard.loadingActivity")}</span>
                     </div>
                   ) : userActivityError ? (
                     <div className="text-center py-4 text-red-600">
-                      <p className="text-sm">Failed to load user activity</p>
+                      <p className="text-sm">{t("dashboard.failedToLoadUserActivity")}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">Active Users (24h)</span>
+                        <span className="text-sm">{t("dashboard.activeUsers24h")}</span>
                         <Badge variant="secondary">
                           {userActivityData?.data?.metrics?.activeUsers || 0}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">New Registrations (24h)</span>
+                        <span className="text-sm">{t("dashboard.newRegistrations24h")}</span>
                         <Badge variant="secondary">
                           {userActivityData?.data?.metrics?.newRegistrations ||
                             0}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">Login Success Rate</span>
+                        <span className="text-sm">{t("dashboard.loginSuccessRate")}</span>
                         <Badge variant="secondary">
                           {userActivityData?.data?.metrics?.loginSuccessRate ||
                             0}
@@ -955,7 +955,7 @@ const AdminDashboard: React.FC = () => {
                         userActivityData.data.activities.length > 0 && (
                           <div className="mt-4">
                             <h4 className="text-sm font-medium mb-2">
-                              Recent Activity
+                              {t("dashboard.recentActivity")}
                             </h4>
                             <div className="space-y-2 max-h-32 overflow-y-auto">
                               {userActivityData.data.activities
@@ -987,25 +987,25 @@ const AdminDashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>System Configuration</CardTitle>
+                  <CardTitle>{t("dashboard.systemConfiguration")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Link to="/admin/config" className="block">
                     <Button className="w-full justify-start">
                       <Database className="h-4 w-4 mr-2" />
-                      System Settings
+                      {t("dashboard.systemSettings")}
                     </Button>
                   </Link>
                   <Link to="/admin/config?tab=wards" className="block">
                     <Button variant="outline" className="w-full justify-start">
                       <MapPin className="h-4 w-4 mr-2" />
-                      Ward Management
+                      {t("dashboard.wardManagement")}
                     </Button>
                   </Link>
                   <Link to="/admin/config?tab=types" className="block">
                     <Button variant="outline" className="w-full justify-start">
                       <FileText className="h-4 w-4 mr-2" />
-                      Complaint Types
+                      {t("dashboard.complaintTypes")}
                     </Button>
                   </Link>
                 </CardContent>
@@ -1013,28 +1013,28 @@ const AdminDashboard: React.FC = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>System Health (Real-time)</CardTitle>
+                  <CardTitle>{t("dashboard.systemHealth")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {systemHealthLoading ? (
                     <div className="flex items-center justify-center py-4">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                      <span className="ml-2 text-sm">Checking health...</span>
+                      <span className="ml-2 text-sm">{t("dashboard.checkingHealth")}</span>
                     </div>
                   ) : systemHealthError ? (
                     <div className="text-center py-4 text-red-600">
-                      <p className="text-sm">Failed to load system health</p>
+                      <p className="text-sm">{t("dashboard.failedToLoadSystemHealth")}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">Application Uptime</span>
+                        <span className="text-sm">{t("dashboard.applicationUptime")}</span>
                         <Badge className="bg-blue-100 text-blue-800">
-                          {systemHealthData?.data?.uptime?.formatted || "N/A"}
+                          {systemHealthData?.data?.uptime?.formatted || t("dashboard.notAvailable")}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">Database Status</span>
+                        <span className="text-sm">{t("dashboard.databaseStatus")}</span>
                         <Badge
                           className={
                             systemHealthData?.data?.services?.database
@@ -1045,15 +1045,15 @@ const AdminDashboard: React.FC = () => {
                         >
                           {systemHealthData?.data?.services?.database
                             ?.status === "healthy"
-                            ? "Healthy"
-                            : "Unhealthy"}
+                            ? t("dashboard.healthy")
+                            : t("dashboard.unhealthy")}
                           {systemHealthData?.data?.services?.database
                             ?.responseTime &&
                             ` (${systemHealthData.data.services.database.responseTime})`}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">Email Service</span>
+                        <span className="text-sm">{t("dashboard.emailService")}</span>
                         <Badge
                           className={
                             systemHealthData?.data?.services?.emailService
@@ -1063,7 +1063,9 @@ const AdminDashboard: React.FC = () => {
                           }
                         >
                           {systemHealthData?.data?.services?.emailService
-                            ?.status || "Unknown"}
+                            ?.status === "operational" 
+                            ? t("dashboard.operational")
+                            : systemHealthData?.data?.services?.emailService?.status || t("dashboard.unknown")}
                         </Badge>
                       </div>
                       {/* <div className="flex justify-between items-center">
@@ -1088,7 +1090,7 @@ const AdminDashboard: React.FC = () => {
                         <span className="text-sm">API Response</span>
                         <Badge className="bg-green-100 text-green-800">
                           {systemHealthData?.data?.services?.api
-                            ?.averageResponseTime || "N/A"}
+                            ?.averageResponseTime || t("dashboard.notAvailable")}
                         </Badge>
                       </div>
                       {systemHealthData?.data?.system?.memory && (

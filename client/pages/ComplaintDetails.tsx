@@ -47,13 +47,13 @@ const ComplaintDetails: React.FC = () => {
 
   // Utility function to safely format dates
   const formatDate = (dateValue: any, format: 'date' | 'datetime' = 'datetime'): string => {
-    if (!dateValue) return 'Unknown date';
+    if (!dateValue) return translations?.common?.unknownDate || 'Unknown date';
     try {
       const date = new Date(dateValue);
-      if (isNaN(date.getTime())) return 'Invalid date';
+      if (isNaN(date.getTime())) return translations?.common?.invalidDate || 'Invalid date';
       return format === 'date' ? date.toLocaleDateString() : date.toLocaleString();
     } catch {
-      return 'Invalid date';
+      return translations?.common?.invalidDate || 'Invalid date';
     }
   };
 
@@ -264,12 +264,12 @@ const ComplaintDetails: React.FC = () => {
       <div className="text-center py-12">
         <FileText className="h-12 w-12 mx-auto text-red-400 mb-4" />
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Error Loading Complaint
+          {translations?.complaints?.details?.errorLoadingComplaint || "Error Loading Complaint"}
         </h2>
         <p className="text-gray-600 mb-4">
           {error && typeof error === 'object' && 'message' in error
             ? (error as any).message
-            : 'Failed to load complaint details. Please try again.'}
+            : (translations?.complaints?.details?.failedToLoadDetails || 'Failed to load complaint details. Please try again.')}
         </p>
         <Link to="/complaints">
           <Button>
@@ -286,15 +286,15 @@ const ComplaintDetails: React.FC = () => {
       <div className="text-center py-12">
         <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Complaint Not Found
+          {translations?.complaints?.details?.complaintNotFound || "Complaint Not Found"}
         </h2>
         <p className="text-gray-600 mb-4">
-          The complaint you're looking for doesn't exist or you don't have permission to view it.
+          {translations?.complaints?.details?.complaintNotFoundMessage || "The complaint you're looking for doesn't exist or you don't have permission to view it."}
         </p>
         <Link to="/complaints">
           <Button>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Complaints
+            {translations?.complaints?.details?.backToComplaints || "Back to Complaints"}
           </Button>
         </Link>
       </div>
@@ -310,26 +310,26 @@ const ComplaintDetails: React.FC = () => {
             <Link to="/complaints">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
+                {translations?.common?.back || "Back"}
               </Button>
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">
-              Complaint #
-              {complaint?.complaintId || (complaint?.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : "Unknown")}
+              {translations?.complaints?.details?.complaintTitle || "Complaint"} #
+              {complaint?.complaintId || (complaint?.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : (translations?.common?.unknown || "Unknown"))}
             </h1>
           </div>
           <div className="flex items-center space-x-4">
             <Badge className={getStatusColor(complaint?.status || "")}>
-              {complaint?.status?.replace("_", " ") || "Unknown"}
+              {complaint?.status?.replace("_", " ") || (translations?.common?.unknown || "Unknown")}
             </Badge>
             <Badge className={getPriorityColor(complaint?.priority || "")}>
-              {complaint?.priority || "Unknown"} Priority
+              {complaint?.priority || (translations?.common?.unknown || "Unknown")} {translations?.common?.priority || "Priority"}
             </Badge>
             <span className="text-sm text-gray-500">
-              Created{" "}
+              {translations?.complaints?.details?.created || "Created"}{" "}
               {complaint?.submittedOn
                 ? new Date(complaint.submittedOn).toLocaleDateString()
-                : "Unknown"}
+                : (translations?.common?.unknown || "Unknown")}
             </span>
           </div>
         </div>
@@ -344,24 +344,24 @@ const ComplaintDetails: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <FileText className="h-5 w-5 mr-2" />
-                Complaint Details
+                {translations?.complaints?.details?.complaintDetails || "Complaint Details"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <h3 className="font-medium mb-2">Type</h3>
+                <h3 className="font-medium mb-2">{translations?.common?.type || "Type"}</h3>
                 <p className="text-gray-600">
-                  <SafeRenderer fallback="Unknown Type">
+                  <SafeRenderer fallback={translations?.complaints?.unknownType || "Unknown Type"}>
                     {getComplaintTypeById(complaint?.complaintTypeId)?.name || 
-                     (complaint?.type ? (typeof complaint.type === 'string' ? complaint.type.replace("_", " ") : complaint.type?.name) : "Unknown Type")}
+                     (complaint?.type ? (typeof complaint.type === 'string' ? complaint.type.replace("_", " ") : complaint.type?.name) : (translations?.complaints?.unknownType || "Unknown Type"))}
                   </SafeRenderer>
                 </p>
               </div>
               <div>
-                <h3 className="font-medium mb-2">Description</h3>
+                <h3 className="font-medium mb-2">{translations?.common?.description || "Description"}</h3>
                 <p className="text-gray-600">
-                  <SafeRenderer fallback="No description available">
-                    {safeRenderValue(complaint?.description, "No description available")}
+                  <SafeRenderer fallback={translations?.complaints?.details?.noDescriptionAvailable || "No description available"}>
+                    {safeRenderValue(complaint?.description, translations?.complaints?.details?.noDescriptionAvailable || "No description available")}
                   </SafeRenderer>
                 </p>
               </div>
@@ -369,20 +369,20 @@ const ComplaintDetails: React.FC = () => {
                 <div>
                   <h3 className="font-medium mb-2 flex items-center">
                     <MapPin className="h-4 w-4 mr-1" />
-                    Location Information
+                    {translations?.complaints?.details?.locationInformation || "Location Information"}
                   </h3>
                   <div className="space-y-1 text-sm">
                     <p className="text-gray-600">
-                      <strong>Area:</strong> <SafeRenderer fallback="Unknown Area">{safeRenderValue(complaint.area, "Unknown Area")}</SafeRenderer>
+                      <strong>{translations?.complaints?.area || "Area"}:</strong> <SafeRenderer fallback={translations?.complaints?.details?.unknownArea || "Unknown Area"}>{safeRenderValue(complaint.area, translations?.complaints?.details?.unknownArea || "Unknown Area")}</SafeRenderer>
                     </p>
                     {complaint.ward && (
                       <p className="text-gray-600">
-                        <strong>Ward:</strong> <SafeRenderer fallback="Unknown Ward">{safeRenderValue(complaint.ward, "Unknown Ward")}</SafeRenderer>
+                        <strong>{translations?.complaints?.ward || "Ward"}:</strong> <SafeRenderer fallback={translations?.complaints?.details?.unknownWard || "Unknown Ward"}>{safeRenderValue(complaint.ward, translations?.complaints?.details?.unknownWard || "Unknown Ward")}</SafeRenderer>
                       </p>
                     )}
                     {complaint.address && (
                       <p className="text-gray-600">
-                        <strong>Address:</strong> <SafeRenderer fallback="No address provided">{safeRenderValue(complaint.address, "No address provided")}</SafeRenderer>
+                        <strong>{translations?.common?.address || "Address"}:</strong> <SafeRenderer fallback={translations?.complaints?.details?.noAddressProvided || "No address provided"}>{safeRenderValue(complaint.address, translations?.complaints?.details?.noAddressProvided || "No address provided")}</SafeRenderer>
                       </p>
                     )}
                   </div>
@@ -390,28 +390,28 @@ const ComplaintDetails: React.FC = () => {
                 <div>
                   <h3 className="font-medium mb-2 flex items-center">
                     <Calendar className="h-4 w-4 mr-1" />
-                    Timeline
+                    {translations?.complaints?.details?.timeline || "Timeline"}
                   </h3>
                   <div className="space-y-1 text-sm">
                     <p className="text-gray-600">
-                      <strong>Submitted:</strong>{" "}
-                      {complaint?.submittedOn ? new Date(complaint.submittedOn).toLocaleString() : "Unknown"}
+                      <strong>{translations?.complaints?.submittedOn || "Submitted"}:</strong>{" "}
+                      {complaint?.submittedOn ? new Date(complaint.submittedOn).toLocaleString() : (translations?.common?.unknown || "Unknown")}
                     </p>
                     {complaint.assignedOn && (
                       <p className="text-gray-600">
-                        <strong>Assigned:</strong>{" "}
+                        <strong>{translations?.complaints?.details?.assigned || "Assigned"}:</strong>{" "}
                         {new Date(complaint.assignedOn).toLocaleString()}
                       </p>
                     )}
                     {complaint.resolvedOn && (
                       <p className="text-gray-600">
-                        <strong>Resolved:</strong>{" "}
+                        <strong>{translations?.complaints?.resolvedOn || "Resolved"}:</strong>{" "}
                         {new Date(complaint.resolvedOn).toLocaleString()}
                       </p>
                     )}
                     {complaint.closedOn && (
                       <p className="text-gray-600">
-                        <strong>Closed:</strong>{" "}
+                        <strong>{translations?.complaints?.closed || "Closed"}:</strong>{" "}
                         {new Date(complaint.closedOn).toLocaleString()}
                       </p>
                     )}
@@ -424,10 +424,10 @@ const ComplaintDetails: React.FC = () => {
                         return (
                           <>
                             <p className="text-gray-600">
-                              <strong>SLA Deadline:</strong>{" "}
+                              <strong>{translations?.complaints?.details?.slaDeadline || "SLA Deadline"}:</strong>{" "}
                               {deadline
                                 ? new Date(deadline).toLocaleString()
-                                : "N/A"}
+                                : (translations?.common?.notAvailable || "N/A")}
                             </p>
                             <p
                               className={`text-sm font-medium ${status === "OVERDUE"
@@ -437,22 +437,22 @@ const ComplaintDetails: React.FC = () => {
                                   : "text-gray-600"
                                 }`}
                             >
-                              <strong>SLA Status:</strong>{" "}
+                              <strong>{translations?.complaints?.slaStatus || "SLA Status"}:</strong>{" "}
                               {status === "ON_TIME"
-                                ? "On Time"
+                                ? (translations?.complaints?.slaStatuses?.ontime || "On Time")
                                 : status === "OVERDUE"
-                                  ? "Overdue"
-                                  : "N/A"}
+                                  ? (translations?.complaints?.slaStatuses?.overdue || "Overdue")
+                                  : (translations?.common?.notAvailable || "N/A")}
                             </p>
 
 
                             {actualResolutionTime !== null && actualResolutionTime !== undefined && (
                               <p className="text-gray-600 text-sm">
-                                <strong>Resolution Time:</strong>{" "}
-                                {actualResolutionTime} hours
+                                <strong>{translations?.complaints?.details?.resolutionTime || "Resolution Time"}:</strong>{" "}
+                                {actualResolutionTime} {translations?.reports?.kpi?.hours || "hours"}
                                 {actualResolutionTime >= 24 && (
                                   <span className="text-gray-500">
-                                    {" "}({Math.round(actualResolutionTime / 24 * 10) / 10} days)
+                                    {" "}({Math.round(actualResolutionTime / 24 * 10) / 10} {translations?.reports?.kpi?.days || "days"})
                                   </span>
                                 )}
                               </p>
@@ -474,8 +474,8 @@ const ComplaintDetails: React.FC = () => {
               <CardTitle className="flex items-center">
                 <MessageSquare className="h-5 w-5 mr-2" />
                 {user?.role === "CITIZEN"
-                  ? "Status Updates"
-                  : "Status Updates & Comments"}
+                  ? (translations?.complaints?.details?.statusUpdates || "Status Updates")
+                  : (translations?.complaints?.details?.statusUpdatesAndComments || "Status Updates & Comments")}
               </CardTitle>
             </CardHeader>
             <CardContent className="relative">
@@ -508,34 +508,34 @@ const ComplaintDetails: React.FC = () => {
                     const getStatusLabel = (status: string) => {
                       switch (status) {
                         case "REGISTERED":
-                          return "Complaint Registered";
+                          return translations?.complaints?.details?.statusLabels?.registered || "Complaint Registered";
                         case "ASSIGNED":
-                          return "Complaint Assigned";
+                          return translations?.complaints?.details?.statusLabels?.assigned || "Complaint Assigned";
                         case "IN_PROGRESS":
-                          return "Work in Progress";
+                          return translations?.complaints?.details?.statusLabels?.inProgress || "Work in Progress";
                         case "RESOLVED":
-                          return "Complaint Resolved";
+                          return translations?.complaints?.details?.statusLabels?.resolved || "Complaint Resolved";
                         case "CLOSED":
-                          return "Complaint Closed";
+                          return translations?.complaints?.details?.statusLabels?.closed || "Complaint Closed";
                         default:
-                          return `Status: ${status}`;
+                          return `${translations?.common?.status || "Status"}: ${status}`;
                       }
                     };
 
                     const getCitizenStatusMessage = (status: string, log: any) => {
                       switch (status) {
                         case "REGISTERED":
-                          return "Your complaint has been successfully registered and is under review.";
+                          return translations?.complaints?.details?.citizenMessages?.registered || "Your complaint has been successfully registered and is under review.";
                         case "ASSIGNED":
-                          return "Your complaint has been assigned to our maintenance team for resolution.";
+                          return translations?.complaints?.details?.citizenMessages?.assigned || "Your complaint has been assigned to our maintenance team for resolution.";
                         case "IN_PROGRESS":
-                          return "Our team is actively working on resolving your complaint.";
+                          return translations?.complaints?.details?.citizenMessages?.inProgress || "Our team is actively working on resolving your complaint.";
                         case "RESOLVED":
-                          return "Your complaint has been resolved. Please verify and provide feedback.";
+                          return translations?.complaints?.details?.citizenMessages?.resolved || "Your complaint has been resolved. Please verify and provide feedback.";
                         case "CLOSED":
-                          return "Your complaint has been completed and closed.";
+                          return translations?.complaints?.details?.citizenMessages?.closed || "Your complaint has been completed and closed.";
                         default:
-                          return `Your complaint status has been updated to ${status.toLowerCase().replace("_", " ")}.`;
+                          return `${translations?.complaints?.details?.citizenMessages?.statusUpdated || "Your complaint status has been updated to"} ${status.toLowerCase().replace("_", " ")}.`;
                       }
                     };
 
@@ -571,9 +571,9 @@ const ComplaintDetails: React.FC = () => {
                               <>
                                 {log.comment && (
                                   <p className="text-sm text-gray-600 mb-1">
-                                    <strong>Remarks:</strong>{" "}
+                                    <strong>{translations?.complaints?.remarks || "Remarks"}:</strong>{" "}
                                     <TruncatedTextWithTooltip
-                                      text={log.comment || "No comment"}
+                                      text={log.comment || (translations?.complaints?.details?.noComment || "No comment")}
                                       maxLength={100}
                                       className="inline"
                                     />
@@ -584,11 +584,11 @@ const ComplaintDetails: React.FC = () => {
 
                             {log.fromStatus && (
                               <p className="text-xs text-gray-500">
-                                Status changed from{" "}
+                                {translations?.complaints?.details?.statusChangedFrom || "Status changed from"}{" "}
                                 <span className="font-medium">
                                   {log.fromStatus}
                                 </span>{" "}
-                                to{" "}
+                                {translations?.common?.to || "to"}{" "}
                                 <span className="font-medium">
                                   {log.toStatus}
                                 </span>
@@ -607,8 +607,8 @@ const ComplaintDetails: React.FC = () => {
                     <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p>
                       {user?.role === "CITIZEN"
-                        ? "No updates available for your complaint yet"
-                        : "No status updates available"}
+                        ? (translations?.complaints?.details?.noUpdatesYet || "No updates available for your complaint yet")
+                        : (translations?.complaints?.details?.noStatusUpdates || "No status updates available")}
                     </p>
                   </div>
                 )}
@@ -628,19 +628,19 @@ const ComplaintDetails: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Clock className="h-5 w-5 mr-2" />
-                  Administrative Information
+                  {translations?.complaints?.details?.administrativeInformation || "Administrative Information"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h4 className="font-medium mb-2">Assignment Details</h4>
+                    <h4 className="font-medium mb-2">{translations?.complaints?.details?.assignmentDetails || "Assignment Details"}</h4>
                     <div className="space-y-1 text-sm">
                       {complaint.submittedBy && (
                         <p className="text-gray-600">
-                          <strong>Submitted By:</strong>{" "}
+                          <strong>{translations?.complaints?.submittedBy || "Submitted By"}:</strong>{" "}
                           <TruncatedTextWithTooltip
-                            text={complaint.submittedBy?.fullName || "Unknown"}
+                            text={complaint.submittedBy?.fullName || (translations?.common?.unknown || "Unknown")}
                             maxLength={25}
                             className="font-medium"
                           />
@@ -648,7 +648,7 @@ const ComplaintDetails: React.FC = () => {
                             <span>
                               {" ("}
                               <TruncatedTextWithTooltip
-                                text={complaint.submittedBy?.email || "No email"}
+                                text={complaint.submittedBy?.email || (translations?.complaints?.details?.noEmail || "No email")}
                                 responsive={true}
                                 maxWidth="calc(100% - 8rem)"
                                 className="text-blue-600"
@@ -660,7 +660,7 @@ const ComplaintDetails: React.FC = () => {
                       )}
                       {complaint.wardOfficer && (
                         <p className="text-gray-600">
-                          <strong>Ward Officer:</strong>{" "}
+                          <strong>{translations?.complaints?.details?.wardOfficer || "Ward Officer"}:</strong>{" "}
                           <TruncatedTextWithTooltip
                             text={complaint.wardOfficer?.fullName || "Unknown"}
                             maxLength={25}
@@ -682,7 +682,7 @@ const ComplaintDetails: React.FC = () => {
                       )}
                       {complaint.maintenanceTeam && (
                         <p className="text-gray-600">
-                          <strong>Maintenance Team:</strong>{" "}
+                          <strong>{translations?.complaints?.details?.maintenanceTeam || "Maintenance Team"}:</strong>{" "}
                           <TruncatedTextWithTooltip
                             text={complaint.maintenanceTeam?.fullName || "Unknown"}
                             maxLength={25}
@@ -704,7 +704,7 @@ const ComplaintDetails: React.FC = () => {
                       )}
                       {complaint.assignedTo && (
                         <p className="text-gray-600">
-                          <strong>Assigned To:</strong>{" "}
+                          <strong>{translations?.complaints?.assignedTo || "Assigned To"}:</strong>{" "}
                           <TruncatedTextWithTooltip
                             text={complaint.assignedTo?.fullName || "Unknown"}
                             maxLength={25}
@@ -726,30 +726,30 @@ const ComplaintDetails: React.FC = () => {
                       )}
                       {complaint.resolvedById && (
                         <p className="text-gray-600">
-                          <strong>Resolved By:</strong> {typeof complaint.resolvedById === 'string' ? complaint.resolvedById : complaint.resolvedById?.fullName || complaint.resolvedById?.name || "Unknown"}
+                          <strong>{translations?.complaints?.details?.resolvedBy || "Resolved By"}:</strong> {typeof complaint.resolvedById === 'string' ? complaint.resolvedById : complaint.resolvedById?.fullName || complaint.resolvedById?.name || "Unknown"}
                         </p>
                       )}
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-2">Technical Details</h4>
+                    <h4 className="font-medium mb-2">{translations?.complaints?.details?.technicalDetails || "Technical Details"}</h4>
                     <div className="space-y-1 text-sm">
                       <p className="text-gray-600">
-                        <strong>Complaint ID:</strong>{" "}
+                        <strong>{translations?.complaints?.complaintId || "Complaint ID"}:</strong>{" "}
                         {complaint.complaintId || complaint.id}
                       </p>
                       {complaint.tags && (
                         <p className="text-gray-600">
-                          <strong>Tags:</strong>{" "}
+                          <strong>{translations?.complaints?.details?.tags || "Tags"}:</strong>{" "}
                           {JSON.parse(complaint.tags).join(", ")}
                         </p>
                       )}
                       <p className="text-gray-500 text-xs">
-                        <strong>Created:</strong>{" "}
-                        {complaint?.submittedOn ? new Date(complaint.submittedOn).toLocaleString() : "Unknown"}
+                        <strong>{translations?.complaints?.details?.created || "Created"}:</strong>{" "}
+                        {complaint?.submittedOn ? new Date(complaint.submittedOn).toLocaleString() : (translations?.common?.unknown || "Unknown")}
                       </p>
                       <p className="text-gray-500 text-xs">
-                        <strong>Last Updated:</strong>{" "}
+                        <strong>{translations?.complaints?.details?.lastUpdated || "Last Updated"}:</strong>{" "}
                         {new Date(
                           complaint.lastUpdated || complaint.updatedAt || complaint.submittedOn,
                         ).toLocaleString()}
@@ -761,16 +761,16 @@ const ComplaintDetails: React.FC = () => {
                 {/* Citizen Feedback Section */}
                 {(complaint.feedback || complaint.rating) && (
                   <div className="border-t pt-4">
-                    <h4 className="font-medium mb-2">Citizen Feedback</h4>
+                    <h4 className="font-medium mb-2">{translations?.complaints?.details?.citizenFeedback || "Citizen Feedback"}</h4>
                     <div className="bg-blue-50 rounded-lg p-3">
                       {complaint.rating && (
                         <p className="text-sm text-blue-800 mb-1">
-                          <strong>Rating:</strong> {complaint.rating}/5 ⭐
+                          <strong>{translations?.complaints?.rating || "Rating"}:</strong> {complaint.rating}/5 ⭐
                         </p>
                       )}
                       {complaint.feedback && (
                         <p className="text-sm text-blue-700">
-                          <strong>Feedback:</strong> {complaint.feedback}
+                          <strong>{translations?.complaints?.feedback || "Feedback"}:</strong> {complaint.feedback}
                         </p>
                       )}
                     </div>
@@ -786,7 +786,7 @@ const ComplaintDetails: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileText className="h-5 w-5 mr-2" />
-                  Internal Remarks
+                  {translations?.complaints?.details?.internalRemarks || "Internal Remarks"}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -808,7 +808,7 @@ const ComplaintDetails: React.FC = () => {
           {user?.role !== "CITIZEN" && (
             <Card>
               <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
+                <CardTitle>{translations?.complaints?.details?.quickActions || "Quick Actions"}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {(user?.role === "WARD_OFFICER" ||
@@ -819,7 +819,7 @@ const ComplaintDetails: React.FC = () => {
                       onClick={() => setIsUpdateModalOpen(true)}
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      Update Status
+                      {translations?.complaints?.details?.updateStatus || "Update Status"}
                     </Button>
                   )}
 
@@ -832,7 +832,7 @@ const ComplaintDetails: React.FC = () => {
                       onClick={() => setShowFeedbackDialog(true)}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
-                      Provide Feedback
+                      {translations?.complaints?.details?.provideFeedback || "Provide Feedback"}
                     </Button>
                   )}
               </CardContent>
@@ -847,7 +847,7 @@ const ComplaintDetails: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <User className="h-5 w-5 mr-2" />
-                Contact Information
+                {translations?.complaints?.contactInfo || "Contact Information"}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 p-4 sm:p-6">
@@ -855,12 +855,12 @@ const ComplaintDetails: React.FC = () => {
                 <div className="flex items-center min-w-0">
                   <User className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
                   <div className="flex flex-col min-w-0 flex-1">
-                    <span className="font-medium">Complaint Submitter</span>
+                    <span className="font-medium">{translations?.complaints?.details?.complaintSubmitter || "Complaint Submitter"}</span>
                     {(user?.role === "ADMINISTRATOR" ||
                       user?.role === "WARD_OFFICER") &&
                       complaint.submittedBy && (
                         <span className="text-xs text-gray-500">
-                          Registered User: <TruncatedTextWithTooltip
+                          {translations?.complaints?.details?.registeredUser || "Registered User"}: <TruncatedTextWithTooltip
                             text={complaint.submittedBy?.fullName || "Unknown"}
                             maxLength={20}
                             className="inline"
@@ -873,8 +873,8 @@ const ComplaintDetails: React.FC = () => {
               <div className="flex items-center min-w-0">
                 <Phone className="h-4 w-4 mr-2 text-gray-400 flex-shrink-0" />
                 <div className="flex flex-col min-w-0 flex-1">
-                  <SafeRenderer fallback="No phone provided">
-                    {safeRenderValue(complaint.contactPhone, "No phone provided")}
+                  <SafeRenderer fallback={translations?.complaints?.details?.noPhoneProvided || "No phone provided"}>
+                    {safeRenderValue(complaint.contactPhone, translations?.complaints?.details?.noPhoneProvided || "No phone provided")}
                   </SafeRenderer>
                   {(user?.role === "ADMINISTRATOR" ||
                     user?.role === "WARD_OFFICER") &&
@@ -882,7 +882,7 @@ const ComplaintDetails: React.FC = () => {
                     complaint.submittedBy.phoneNumber !==
                     complaint.contactPhone && (
                       <span className="text-xs text-gray-500">
-                        User Phone: {complaint.submittedBy?.phoneNumber || "Not provided"}
+                        {translations?.complaints?.details?.userPhone || "User Phone"}: {complaint.submittedBy?.phoneNumber || (translations?.complaints?.details?.notProvided || "Not provided")}
                       </span>
                     )}
                 </div>
@@ -894,7 +894,7 @@ const ComplaintDetails: React.FC = () => {
                     <div className="group relative min-w-0 w-full">
                       <span
                         className="block truncate text-blue-600 cursor-help hover:text-blue-700 transition-colors w-full text-sm sm:text-base"
-                        title={complaint.contactEmail || "No email provided"}
+                        title={complaint.contactEmail || (translations?.complaints?.details?.noEmailProvided || "No email provided")}
                         style={{
                           maxWidth: 'calc(100% - 0.5rem)', // Account for padding
                           overflow: 'hidden',
@@ -902,7 +902,7 @@ const ComplaintDetails: React.FC = () => {
                           whiteSpace: 'nowrap'
                         }}
                       >
-                        {complaint.contactEmail || "No email provided"}
+                        {complaint.contactEmail || (translations?.complaints?.details?.noEmailProvided || "No email provided")}
                       </span>
                     </div>
                     {(user?.role === "ADMINISTRATOR" ||
@@ -912,10 +912,10 @@ const ComplaintDetails: React.FC = () => {
                       complaint.contactEmail && (
                         <span className="text-xs text-gray-500">
                           <span className="inline-flex items-center min-w-0 w-full">
-                            <span className="text-gray-500 flex-shrink-0">User Email: </span>
+                            <span className="text-gray-500 flex-shrink-0">{translations?.complaints?.details?.userEmail || "User Email"}: </span>
                             <span
                               className="inline-block truncate text-blue-600 cursor-help hover:text-blue-700 transition-colors ml-1 flex-1 min-w-0"
-                              title={complaint.submittedBy?.email || "No email"}
+                              title={complaint.submittedBy?.email || (translations?.complaints?.details?.noEmail || "No email")}
                               style={{
                                 maxWidth: 'calc(100% - 5rem)', // Account for "User Email: " text and padding
                                 overflow: 'hidden',
@@ -923,7 +923,7 @@ const ComplaintDetails: React.FC = () => {
                                 whiteSpace: 'nowrap'
                               }}
                             >
-                              {complaint.submittedBy?.email || "No email"}
+                              {complaint.submittedBy?.email || (translations?.complaints?.details?.noEmail || "No email")}
                             </span>
                           </span>
                         </span>
@@ -938,7 +938,7 @@ const ComplaintDetails: React.FC = () => {
                   <div className="flex items-center text-orange-600">
                     <User className="h-4 w-4 mr-2" />
                     <span className="text-sm font-medium">
-                      Anonymous Complaint
+                      {translations?.complaints?.details?.anonymousComplaint || "Anonymous Complaint"}
                     </span>
                   </div>
                 )}
@@ -951,10 +951,10 @@ const ComplaintDetails: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <CheckCircle className="h-5 w-5 mr-2" />
-                  Assignment & Status Information
+                  {translations?.complaints?.details?.assignmentAndStatusInfo || "Assignment & Status Information"}
                   <span className="ml-2 text-xs">
                     <Badge className={getStatusColor(complaint.status)}>
-                      {complaint.status?.replace("_", " ") || "Unknown"}
+                      {complaint.status?.replace("_", " ") || (translations?.common?.unknown || "Unknown")}
                     </Badge>
                   </span>
                 </CardTitle>
@@ -962,11 +962,11 @@ const ComplaintDetails: React.FC = () => {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
                   <div className="bg-blue-50 rounded-lg p-3">
-                    <p className="text-sm font-medium mb-1">Ward Officer</p>
+                    <p className="text-sm font-medium mb-1">{translations?.complaints?.details?.wardOfficer || "Ward Officer"}</p>
                     {complaint.wardOfficer ? (
                       <>
                         <p className="text-blue-800 font-medium">
-                          {complaint.wardOfficer?.fullName || "Unknown"}
+                          {complaint.wardOfficer?.fullName || (translations?.common?.unknown || "Unknown")}
                         </p>
                         {complaint.wardOfficer?.email && (
                           <p className="text-blue-600 text-sm">
@@ -980,15 +980,15 @@ const ComplaintDetails: React.FC = () => {
                         )}
                       </>
                     ) : (
-                      <p className="text-blue-700 text-sm">Not assigned</p>
+                      <p className="text-blue-700 text-sm">{translations?.complaints?.details?.notAssigned || "Not assigned"}</p>
                     )}
                   </div>
                   <div className="bg-green-50 rounded-lg p-3">
-                    <p className="text-sm font-medium mb-1">Maintenance Team</p>
+                    <p className="text-sm font-medium mb-1">{translations?.complaints?.details?.maintenanceTeam || "Maintenance Team"}</p>
                     {complaint.maintenanceTeam ? (
                       <>
                         <p className="text-green-800 font-medium">
-                          {complaint.maintenanceTeam?.fullName || "Unknown"}
+                          {complaint.maintenanceTeam?.fullName || (translations?.common?.unknown || "Unknown")}
                         </p>
                         {complaint.maintenanceTeam?.email && (
                           <p className="text-green-700 text-sm">
@@ -1002,13 +1002,13 @@ const ComplaintDetails: React.FC = () => {
                         )}
                         {complaint.assignedOn && (
                           <p className="text-green-700 text-xs mt-1">
-                            Assigned on:{" "}
+                            {translations?.complaints?.details?.assignedOn || "Assigned on"}:{" "}
                             {new Date(complaint.assignedOn).toLocaleString()}
                           </p>
                         )}
                       </>
                     ) : (
-                      <p className="text-green-700 text-sm">Unassigned</p>
+                      <p className="text-green-700 text-sm">{translations?.complaints?.details?.unassigned || "Unassigned"}</p>
                     )}
                   </div>
                 </div>
@@ -1024,19 +1024,19 @@ const ComplaintDetails: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <p className="text-sm font-medium mb-1">
-                              SLA Deadline
+                              {translations?.complaints?.details?.slaDeadline || "SLA Deadline"}
                             </p>
                             <p
                               className={`text-sm ${deadline && new Date() > deadline ? "text-red-600 font-medium" : "text-gray-600"}`}
                             >
                               {deadline
                                 ? new Date(deadline).toLocaleString()
-                                : "N/A"}
+                                : (translations?.common?.notAvailable || "N/A")}
                             </p>
                           </div>
 
                           <div>
-                            <p className="text-sm font-medium mb-1">SLA Status</p>
+                            <p className="text-sm font-medium mb-1">{translations?.complaints?.slaStatus || "SLA Status"}</p>
                             <Badge
                               className={
                                 status === "OVERDUE"
@@ -1047,22 +1047,22 @@ const ComplaintDetails: React.FC = () => {
                               }
                             >
                               {status === "ON_TIME"
-                                ? "On Time"
+                                ? (translations?.complaints?.slaStatuses?.ontime || "On Time")
                                 : status === "OVERDUE"
-                                  ? "Overdue"
-                                  : "N/A"}
+                                  ? (translations?.complaints?.slaStatuses?.overdue || "Overdue")
+                                  : (translations?.common?.notAvailable || "N/A")}
                             </Badge>
                           </div>
                         </div>
 
                         {/* SLA Timeline */}
                         <div className="bg-gray-50 rounded-lg p-3">
-                          <p className="text-sm font-medium mb-2">SLA Timeline</p>
+                          <p className="text-sm font-medium mb-2">{translations?.complaints?.details?.slaTimeline || "SLA Timeline"}</p>
                           <div className="space-y-1 text-xs text-gray-600">
 
                             {deadline && (
                               <div className="flex justify-between">
-                                <span>SLA Deadline:</span>
+                                <span>{translations?.complaints?.details?.slaDeadline || "SLA Deadline"}:</span>
                                 <span className={deadline && new Date() > deadline ? "text-red-600 font-medium" : ""}>
                                   {deadline.toLocaleString()}
                                 </span>
@@ -1071,12 +1071,12 @@ const ComplaintDetails: React.FC = () => {
 
                             {actualResolutionTime !== null && actualResolutionTime !== undefined && (
                               <div className="flex justify-between font-medium">
-                                <span>Resolution Time:</span>
+                                <span>{translations?.complaints?.details?.resolutionTime || "Resolution Time"}:</span>
                                 <span className={actualResolutionTime > (getTypeSlaHours(complaint.type) || 0) ? "text-red-600" : "text-green-600"}>
                                   {actualResolutionTime}h
                                   {actualResolutionTime >= 24 && (
                                     <span className="text-gray-500 font-normal">
-                                      {" "}({Math.round(actualResolutionTime / 24 * 10) / 10}d)
+                                      {" "}({Math.round(actualResolutionTime / 24 * 10) / 10}{translations?.reports?.kpi?.daysShort || "d"})
                                     </span>
                                   )}
                                 </span>
@@ -1092,21 +1092,21 @@ const ComplaintDetails: React.FC = () => {
                   user?.role === "WARD_OFFICER") && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t">
                       <div>
-                        <p className="text-sm font-medium mb-1">Priority Level</p>
+                        <p className="text-sm font-medium mb-1">{translations?.complaints?.details?.priorityLevel || "Priority Level"}</p>
                         <Badge className={getPriorityColor(complaint.priority)}>
-                          <SafeRenderer fallback="Unknown Priority">
-                            {safeRenderValue(complaint.priority, "Unknown")} Priority
+                          <SafeRenderer fallback={translations?.complaints?.details?.unknownPriority || "Unknown Priority"}>
+                            {safeRenderValue(complaint.priority, translations?.common?.unknown || "Unknown")} {translations?.common?.priority || "Priority"}
                           </SafeRenderer>
                         </Badge>
                       </div>
                       <div>
-                        <p className="text-sm font-medium mb-1">Complaint Type</p>
+                        <p className="text-sm font-medium mb-1">{translations?.complaints?.complaintType || "Complaint Type"}</p>
                         <Badge variant="outline">
-                          <SafeRenderer fallback="Unknown Type">
+                          <SafeRenderer fallback={translations?.complaints?.unknownType || "Unknown Type"}>
                             {getComplaintTypeById(complaint.complaintTypeId)?.name || 
                              (typeof complaint.type === 'string'
                                ? complaint.type.replace("_", " ")
-                               : complaint.type?.name || "Unknown Type")}
+                               : complaint.type?.name || (translations?.complaints?.unknownType || "Unknown Type"))}
                           </SafeRenderer>
                         </Badge>
                       </div>
@@ -1126,7 +1126,7 @@ const ComplaintDetails: React.FC = () => {
                     <CardHeader>
                       <CardTitle className="flex items-center">
                         <Wrench className="h-5 w-5 mr-2 text-blue-600" />
-                        Maintenance Photos ({complaint.attachments.filter((att: any) => att.entityType === "MAINTENANCE_PHOTO").length})
+                        {translations?.complaints?.details?.maintenancePhotos || "Maintenance Photos"} ({complaint.attachments.filter((att: any) => att.entityType === "MAINTENANCE_PHOTO").length})
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -1204,20 +1204,20 @@ const ComplaintDetails: React.FC = () => {
                                 <div className="space-y-2">
                                   <h4 className="font-medium text-sm text-gray-900">
                                     <TruncatedTextWithTooltip
-                                      text={fullName || "Unknown file"}
+                                      text={fullName || (translations?.complaints?.details?.unknownFile || "Unknown file")}
                                       maxLength={20}
                                       className="font-medium"
                                     />
                                   </h4>
                                   <div className="flex items-center justify-between text-xs text-gray-500">
-                                    <span>By: {typeof att.uploadedBy === 'string' ? att.uploadedBy : att.uploadedBy?.fullName || att.uploadedBy?.name || "Unknown"}</span>
+                                    <span>{translations?.complaints?.details?.uploadedBy || "By"}: {typeof att.uploadedBy === 'string' ? att.uploadedBy : att.uploadedBy?.fullName || att.uploadedBy?.name || (translations?.common?.unknown || "Unknown")}</span>
                                   </div>
                                   <div className="text-xs text-gray-500">
                                     {formatDate(att.createdAt, 'date')}
                                   </div>
                                   {att.description && (
                                     <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                                      <span className="font-medium">Note:</span> {typeof att.description === 'string' ? att.description : att.description?.text || att.description?.content || "No description"}
+                                      <span className="font-medium">{translations?.complaints?.details?.note || "Note"}:</span> {typeof att.description === 'string' ? att.description : att.description?.text || att.description?.content || (translations?.complaints?.details?.noDescription || "No description")}
                                     </div>
                                   )}
                                 </div>
@@ -1237,11 +1237,11 @@ const ComplaintDetails: React.FC = () => {
                                       setIsPreviewOpen(true);
                                     }}
                                   >
-                                    Preview
+                                    {translations?.complaints?.details?.preview || "Preview"}
                                   </Button>
                                   <a href={att.url} download={fullName} className="flex-1">
                                     <Button size="sm" className="w-full text-xs bg-primary hover:bg-primary/90">
-                                      Download
+                                      {translations?.common?.download || "Download"}
                                     </Button>
                                   </a>
                                 </div>
@@ -1259,7 +1259,7 @@ const ComplaintDetails: React.FC = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <Upload className="h-5 w-5 mr-2" />
-                      Complaint Attachments ({complaint.attachments.filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO").length})
+                      {translations?.complaints?.details?.complaintAttachments || "Complaint Attachments"} ({complaint.attachments.filter((att: any) => att.entityType !== "MAINTENANCE_PHOTO").length})
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -1331,7 +1331,7 @@ const ComplaintDetails: React.FC = () => {
                                   <div className="w-full h-32 sm:h-40 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
                                     <div className="text-center">
                                       <File className="h-12 w-12 text-gray-600 mx-auto mb-2" />
-                                      <span className="text-xs text-gray-700 font-medium">Document</span>
+                                      <span className="text-xs text-gray-700 font-medium">{translations?.complaints?.details?.document || "Document"}</span>
                                     </div>
                                   </div>
                                 )}
@@ -1341,14 +1341,14 @@ const ComplaintDetails: React.FC = () => {
                                 <div>
                                   <h4 className="font-semibold text-gray-900 text-sm leading-tight">
                                     <TruncatedTextWithTooltip
-                                      text={attachment.fileName || attachment.originalName || "Unknown file"}
+                                      text={attachment.fileName || attachment.originalName || (translations?.complaints?.details?.unknownFile || "Unknown file")}
                                       maxLength={25}
                                       className="font-semibold"
                                     />
                                   </h4>
                                   <div className="flex items-center gap-2 mt-1">
                                     <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                      {attachment.size ? (attachment.size / 1024).toFixed(1) + 'KB' : 'Unknown size'}
+                                      {attachment.size ? (attachment.size / 1024).toFixed(1) + 'KB' : (translations?.complaints?.details?.unknownSize || 'Unknown size')}
                                     </span>
                                     <span className="text-xs text-gray-500">
                                       {formatDate(attachment.createdAt, 'date')}
@@ -1361,8 +1361,8 @@ const ComplaintDetails: React.FC = () => {
                                     <div className="flex items-start gap-2">
                                       <FileText className="h-4 w-4 text-gray-600 mt-0.5 flex-shrink-0" />
                                       <div className="min-w-0">
-                                        <p className="text-xs font-medium text-gray-800 mb-1">Note:</p>
-                                        <p className="text-xs text-gray-700 break-words leading-relaxed">{typeof attachment.description === 'string' ? attachment.description : attachment.description?.text || attachment.description?.content || "No description"}</p>
+                                        <p className="text-xs font-medium text-gray-800 mb-1">{translations?.complaints?.details?.note || "Note"}:</p>
+                                        <p className="text-xs text-gray-700 break-words leading-relaxed">{typeof attachment.description === 'string' ? attachment.description : attachment.description?.text || attachment.description?.content || (translations?.complaints?.details?.noDescription || "No description")}</p>
                                       </div>
                                     </div>
                                   </div>
@@ -1371,7 +1371,7 @@ const ComplaintDetails: React.FC = () => {
                                 {attachment.uploadedBy && (
                                   <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 rounded-lg p-2">
                                     <User className="h-3 w-3 flex-shrink-0" />
-                                    <span className="truncate">Uploaded by {typeof attachment.uploadedBy === 'string' ? attachment.uploadedBy : attachment.uploadedBy?.fullName || attachment.uploadedBy?.name || "Unknown"}</span>
+                                    <span className="truncate">{translations?.complaints?.details?.uploadedBy || "Uploaded by"} {typeof attachment.uploadedBy === 'string' ? attachment.uploadedBy : attachment.uploadedBy?.fullName || attachment.uploadedBy?.name || (translations?.common?.unknown || "Unknown")}</span>
                                   </div>
                                 )}
                               </div>
@@ -1392,7 +1392,7 @@ const ComplaintDetails: React.FC = () => {
                                   }}
                                 >
                                   <Image className="h-3 w-3 mr-1" />
-                                  Preview
+                                  {translations?.complaints?.details?.preview || "Preview"}
                                 </Button>
                               </div>
                             </div>
