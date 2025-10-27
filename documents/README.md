@@ -66,6 +66,7 @@ System configuration, logging, monitoring, and security
 ### [🔧 Troubleshooting](./troubleshooting/README.md)
 Common issues, error resolution, and debugging guides
 - [Common Errors](./troubleshooting/COMMON_ERRORS.md)
+- [System Issues and Broken Features](./problem-and-broken-features.md) ⚠️ **CRITICAL REFERENCE**
 
 ## 🔄 Current Schema Version
 

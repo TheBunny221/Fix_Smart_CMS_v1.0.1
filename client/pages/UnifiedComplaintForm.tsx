@@ -437,7 +437,6 @@ const UnifiedComplaintForm: React.FC = () => {
         complaintFormData.append("title", `${COMPLAINT_TYPES.find((t) => t.value === formData.type)?.label || 'Complaint'} - ${formData.area || 'Unknown Area'}`);
         complaintFormData.append("description", formData.description || '');
         complaintFormData.append("complaintTypeId", formData.type || '');
-        complaintFormData.append("type", formData.type || '');
         complaintFormData.append("priority", formData.priority || 'MEDIUM');
         complaintFormData.append("wardId", formData.wardId || '');
         
@@ -575,7 +574,7 @@ const UnifiedComplaintForm: React.FC = () => {
       fd.append("otpCode", otpCode);
       fd.append("fullName", formData.fullName);
       fd.append("phoneNumber", formData.phoneNumber);
-      fd.append("type", formData.type);
+      fd.append("complaintTypeId", formData.type);
       fd.append("description", formData.description);
       fd.append("priority", (formData.priority as any) || "MEDIUM");
       fd.append("wardId", formData.wardId);
@@ -1706,7 +1705,7 @@ const UnifiedComplaintForm: React.FC = () => {
                 fd.append("otpCode", otpCode);
                 fd.append("fullName", formData.fullName);
                 fd.append("phoneNumber", formData.phoneNumber);
-                fd.append("type", formData.type);
+                fd.append("complaintTypeId", formData.type);
                 fd.append("description", formData.description);
                 fd.append("priority", (formData.priority as any) || "MEDIUM");
                 fd.append("wardId", formData.wardId);
