@@ -1,5 +1,17 @@
 {
-  "settings": {},
+  "settings": {
+    "languageSettings": "ഭാഷാ ക്രമീകരണങ്ങൾ",
+    "language": "ഭാഷ",
+    "generalSettings": "പൊതു ക്രമീകരണങ്ങൾ",
+    "notificationSettings": "അറിയിപ്പ് ക്രമീകരണങ്ങൾ",
+    "privacySettings": "സ്വകാര്യത ക്രമീകരണങ്ങൾ",
+    "darkMode": "ഡാർക്ക് മോഡ്",
+    "soundEffects": "ശബ്ദ ഇഫക്റ്റുകൾ",
+    "emailAlerts": "ഇമെയിൽ അലേർട്ടുകൾ",
+    "smsAlerts": "SMS അലേർട്ടുകൾ",
+    "dataRetention": "ഡാറ്റ നിലനിർത്തൽ",
+    "accountDeletion": "അക്കൗണ്ട് ഇല്ലാതാക്കൽ"
+  },
   "nav": {
     "ward": "വാർഡ്",
     "profile": "പ്രൊഫൈൽ",
@@ -48,6 +60,7 @@
     "download": "ഡൗൺലോഡ്",
     "upload": "അപ്‌ലോഡ്",
     "required": "ആവശ്യമാണ്",
+    "export": "എക്സ്പോർട്ട്",
     "optional": "ഐച്ഛികം",
     "status": "സ്ഥിതി",
     "priority": "പ്രാധാന്യം",
@@ -59,7 +72,27 @@
     "phone": "ഫോൺ",
     "address": "വിലാസം",
     "description": "വിവരണം",
-    "actions": "നടപടികൾ"
+    "actions": "നടപടികൾ",
+    "welcome": "സ്വാഗതം",
+    "back": "തിരികെ",
+    "continue": "തുടരുക",
+    "finish": "പൂർത്തിയാക്കുക",
+    "skip": "ഒഴിവാക്കുക",
+    "retry": "വീണ്ടും ശ്രമിക്കുക",
+    "help": "സഹായം",
+    "support": "പിന്തുണ",
+    "contact": "ബന്ധപ്പെടുക",
+    "about": "കുറിച്ച്",
+    "version": "പതിപ്പ്",
+    "settings": "ക്രമീകരണങ്ങൾ",
+    "preferences": "മുൻഗണനകൾ",
+    "profile": "പ്രൊഫൈൽ",
+    "account": "അക്കൗണ്ട്",
+    "logout": "ലോഗൗട്ട്",
+    "signin": "സൈൻ ഇൻ",
+    "signup": "സൈൻ അപ്പ്",
+    "register": "രജിസ്റ്റർ",
+    "login": "ലോഗിൻ"
   },
   "complaints": {
     "registerComplaint": "പരാതി രജിസ്റ്റർ ചെയ്യുക",
@@ -147,6 +180,9 @@
     "accountStatus": "അക്കൗണ്ട് നില",
     "active": "സജീവം",
     "inactive": "നിഷ്‌ക്രിയം",
+    "passwordNotSet": "നിങ്ങളുടെ പാസ്‌വേഡ് സജ്ജീകരിച്ചിട്ടില്ല. നിങ്ങൾക്ക് കഴിയും:",
+    "emailPlaceholder": "നിങ്ങളുടെ ഇമെയിൽ നൽകുക",
+    "signingIn": "സൈൻ ഇൻ ചെയ്യുന്നു...",
     "roles": {
       "citizen": "പൗരൻ",
       "admin": "അഡ്മിനിസ്ട്രേറ്റർ",
@@ -210,7 +246,60 @@
     "reports": "റിപ്പോർട്ടുകൾ",
     "analytics": "വിശകലനം",
     "trends": "പ്രവണതകൾ",
-    "insights": "അന്തര്ദൃഷ്ടി"
+    "insights": "അന്തര്ദൃഷ്ടി",
+    "admin": {
+      "title": "അഡ്മിനിസ്ട്രേറ്റർ ഡാഷ്ബോർഡ്",
+      "subtitle": "പൂർണ്ണ സിസ്റ്റം അവലോകനവും മാനേജ്മെന്റ് നിയന്ത്രണങ്ങളും",
+      "activeComplaints": "സജീവ പരാതികൾ",
+      "overdueComplaints": "കാലാവധി കഴിഞ്ഞ ജോലികൾ",
+      "pendingAssignments": "ലംബിച്ചിരിക്കുന്ന ടീം അസൈൻമെന്റ്",
+      "avgResolution": "ശരാശരി പരിഹാരം",
+      "systemHealth": "സിസ്റ്റം ആരോഗ്യം",
+      "recentActivity": "അടുത്തിടെയുള്ള സിസ്റ്റം പ്രവർത്തനം",
+      "loadingData": "ഡാഷ്ബോർഡ് ഡാറ്റ ലോഡ് ചെയ്യുന്നു...",
+      "dataLoadError": "ചില ഡാഷ്ബോർഡ് ഡാറ്റ ലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു",
+      "overviewHeatmap": "അവലോകന ഹീറ്റ്മാപ്",
+      "responseTime": "പ്രതികരണ സമയം",
+      "resolutionRate": "പരിഹാര നിരക്ക്",
+      "satisfactionScore": "സംതൃപ്തി സ്കോർ",
+      "pendingResolution": "പരിഹാരം ലംബിച്ചിരിക്കുന്നു",
+      "openPastDeadline": "അവസാന തീയതി കഴിഞ്ഞ് തുറന്നിരിക്കുന്നു",
+      "needsMaintenanceAssignment": "പരിചരണ അസൈൻമെന്റ് ആവശ്യമാണ്",
+      "averageClosureTime": "ശരാശരി അടയ്ക്കൽ സമയം"
+    },
+    "citizen": {
+      "welcome": "തിരിച്ചുവരവിന് സ്വാഗതം, {{name}}!",
+      "subtitle": "നിങ്ങളുടെ പരാതികൾ ട്രാക്ക് ചെയ്യുകയും ഏറ്റവും പുതിയ പുരോഗതിയുമായി അപ്ഡേറ്റ് ചെയ്യുകയും ചെയ്യുക",
+      "totalComplaints": "ആകെ പരാതികൾ",
+      "allTimeSubmissions": "എല്ലാ സമയത്തെയും സമർപ്പണങ്ങൾ",
+      "pending": "ലംബിച്ചിരിക്കുന്നു",
+      "awaitingAssignment": "അസൈൻമെന്റിനായി കാത്തിരിക്കുന്നു",
+      "inProgress": "പുരോഗമിക്കുന്നു",
+      "beingWorkedOn": "പ്രവർത്തിക്കുന്നു",
+      "resolved": "പരിഹരിച്ചു",
+      "successfullyResolved": "വിജയകരമായി പരിഹരിച്ചു",
+      "resolutionProgress": "പരിഹാര പുരോഗതി",
+      "overallResolutionRate": "മൊത്തത്തിലുള്ള പരിഹാര നിരക്ക്",
+      "avgResolutionTime": "ശരാശരി പരിഹാര സമയം",
+      "myComplaints": "എന്റെ പരാതികൾ",
+      "newComplaint": "പുതിയ പരാതി",
+      "searchPlaceholder": "ID, വിവരണം, അല്ലെങ്കിൽ സ്ഥലം ഉപയോഗിച്ച് തിരയുക...",
+      "allStatus": "എല്ലാ സ്ഥിതിയും",
+      "allTypes": "എല്ലാ തരങ്ങളും",
+      "sortBy": "ഇതിനനുസരിച്ച് ക്രമീകരിക്കുക",
+      "newestFirst": "ഏറ്റവും പുതിയത് ആദ്യം",
+      "oldestFirst": "ഏറ്റവും പഴയത് ആദ്യം",
+      "highPriorityFirst": "ഉയർന്ന മുൻഗണന ആദ്യം",
+      "clearFilters": "ഫിൽറ്ററുകൾ മായ്ക്കുക",
+      "noComplaints": "പരാതികൾ കണ്ടെത്തിയില്ല",
+      "noComplaintsMessage": "നിങ്ങൾ ഇതുവരെ പരാതികൾ സമർപ്പിച്ചിട്ടില്ല.",
+      "submitFirstComplaint": "നിങ്ങളുടെ ആദ്യ പരാതി സമർപ്പിക്കുക",
+      "quickActions": "വേഗത്തിലുള്ള പ്രവർത്തനങ്ങൾ",
+      "submitNewComplaint": "പുതിയ പരാതി സമർപ്പിക്കുക",
+      "viewAllComplaints": "എല്ലാ പരാതികളും കാണുക",
+      "helpSupport": "സഹായവും പിന്തുണയും",
+      "loadingComplaints": "പരാതികൾ ലോഡ് ചെയ്യുന്നു..."
+    }
   },
   "reports": {
     "complaintReports": "പരാതി റിപ്പോർട്ടുകൾ",
@@ -231,6 +320,33 @@
     "summary": "സംഗ്രഹം",
     "details": "വിശദാംശങ്ങൾ"
   },
+  "admin": {
+    "config": {
+      "title": "സിസ്റ്റം കോൺഫിഗറേഷൻ",
+      "subtitle": "സിസ്റ്റം ക്രമീകരണങ്ങൾ, വാർഡുകൾ, പരാതി തരങ്ങൾ, മറ്റ് കോൺഫിഗറേഷനുകൾ എന്നിവ മാനേജ് ചെയ്യുക",
+      "systemSettings": "സിസ്റ്റം ക്രമീകരണങ്ങൾ",
+      "wardsBoundaries": "വാർഡുകളും അതിർത്തികളും",
+      "complaintTypes": "പരാതി തരങ്ങൾ",
+      "userManagement": "ഉപയോക്തൃ മാനേജ്മെന്റ്",
+      "userManagementDescription": "ഉപയോക്തൃ മാനേജ്മെന്റ് ഇന്റർഫേസ് ഇവിടെ നടപ്പിലാക്കും"
+    }
+  },
+  "loading": {
+    "default": "ലോഡ് ചെയ്യുന്നു...",
+    "dashboard": "ഡാഷ്ബോർഡ് ഡാറ്റ ലോഡ് ചെയ്യുന്നു...",
+    "complaints": "പരാതികൾ ലോഡ് ചെയ്യുന്നു...",
+    "saving": "സംരക്ഷിക്കുന്നു...",
+    "submitting": "സമർപ്പിക്കുന്നു...",
+    "refreshing": "പുതുക്കുന്നു..."
+  },
+  "errors": {
+    "loadingFailed": "ഡാറ്റ ലോഡ് ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു",
+    "networkError": "നെറ്റ്‌വർക്ക് കണക്ഷൻ പിശക്",
+    "unauthorized": "ഈ പ്രവർത്തനം നടത്താൻ നിങ്ങൾക്ക് അധികാരമില്ല",
+    "sessionExpired": "നിങ്ങളുടെ സെഷൻ കാലഹരണപ്പെട്ടു. ദയവായി വീണ്ടും ലോഗിൻ ചെയ്യുക",
+    "validationFailed": "ദയവായി നിങ്ങളുടെ ഇൻപുട്ട് പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക",
+    "somethingWentWrong": "എന്തോ തെറ്റ് സംഭവിച്ചു"
+  },
   "messages": {
     "complaintRegistered": "പരാതി വിജയകരമായി രജിസ്റ്റർ ചെയ്തു",
     "complaintUpdated": "പരാതി വിജയകരമായി അപ്ഡേറ്റ് ചെയ്തു",
@@ -250,6 +366,16 @@
     "unauthorizedAccess": "അനധികൃത ആക്സസ്",
     "sessionExpired": "സെഷൻ കാലഹരണപ്പെട്ടു",
     "validationError": "സാധൂകരണം പിശക്",
-    "serverError": "സെർവർ പിശക് സംഭവിച്ചു"
+    "serverError": "സെർവർ പിശക് സംഭവിച്ചു",
+    "welcomeBack": "തിരിച്ചുവരവിന് സ്വാഗതം!",
+    "chooseLoginMethod": "നിങ്ങളുടെ ഇഷ്ടപ്പെട്ട ലോഗിൻ രീതി തിരഞ്ഞെടുക്കുക",
+    "passwordSetupSent": "പാസ്വേഡ് സെറ്റപ്പ് നിർദ്ദേശങ്ങൾ {{email}} ലേക്ക് അയച്ചു. ദയവായി നിങ്ങളുടെ ഇമെയിൽ പരിശോധിച്ച് നിർദ്ദേശങ്ങൾ പാലിക്കുക.",
+    "demoCredentials": "ഡെമോ ക്രെഡൻഷ്യലുകൾ",
+    "testingPurposes": "പരീക്ഷണ ആവശ്യങ്ങൾക്ക് മാത്രം",
+    "eGovernancePortal": "ഇ-ഗവേണൻസ് പോർട്ടൽ",
+    "otpCodeSent": "ഞങ്ങൾ നിങ്ങളുടെ ഇമെയിൽ വിലാസത്തിലേക്ക് 6-അക്ക കോഡ് അയയ്ക്കും",
+    "noAccount": "അക്കൗണ്ട് ഇല്ലേ?",
+    "registerHere": "ഇവിടെ രജിസ്റ്റർ ചെയ്യുക",
+    "backToHome": "ഹോമിലേക്ക് തിരിച്ചുപോകുക"
   }
 }

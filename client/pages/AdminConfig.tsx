@@ -12,12 +12,14 @@ import {
   FileText,
   Users,
 } from "lucide-react";
+import { useAppTranslation } from "../utils/i18n";
 
 import SystemSettingsManager from "../components/SystemSettingsManager";
 import WardManagement from "../components/WardManagement";
 import ComplaintTypeManagement from "../components/ComplaintTypeManagement";
 
 const AdminConfig: React.FC = () => {
+  const { t } = useAppTranslation();
   // Get URL parameters for tab navigation
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get("tab") || "system-settings";
@@ -29,9 +31,9 @@ const AdminConfig: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">System Configuration</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t("admin.config.title")}</h1>
         <p className="text-gray-600 mt-2">
-          Manage system settings, wards, complaint types, and other configurations
+          {t("admin.config.subtitle")}
         </p>
       </div>
 
@@ -39,19 +41,19 @@ const AdminConfig: React.FC = () => {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="system-settings" className="flex items-center space-x-2">
             <Settings className="h-4 w-4" />
-            <span>System Settings</span>
+            <span>{t("admin.config.systemSettings")}</span>
           </TabsTrigger>
           <TabsTrigger value="wards" className="flex items-center space-x-2">
             <Map className="h-4 w-4" />
-            <span>Wards & Boundaries</span>
+            <span>{t("admin.config.wardsBoundaries")}</span>
           </TabsTrigger>
           <TabsTrigger value="complaint-types" className="flex items-center space-x-2">
             <FileText className="h-4 w-4" />
-            <span>Complaint Types</span>
+            <span>{t("admin.config.complaintTypes")}</span>
           </TabsTrigger>
           {/* <TabsTrigger value="users" className="flex items-center space-x-2">
             <Users className="h-4 w-4" />
-            <span>User Management</span>
+            <span>{t("admin.config.userManagement")}</span>
           </TabsTrigger> */}
         </TabsList>
 
@@ -70,8 +72,8 @@ const AdminConfig: React.FC = () => {
         <TabsContent value="users" className="space-y-6">
           <div className="text-center py-12">
             <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">User Management</h3>
-            <p className="text-gray-600">User management interface will be implemented here</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t("admin.config.userManagement")}</h3>
+            <p className="text-gray-600">{t("admin.config.userManagementDescription")}</p>
           </div>
         </TabsContent>
       </Tabs>

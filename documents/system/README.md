@@ -45,6 +45,41 @@ Enhanced system configuration features including:
 - Organized configuration sections
 - Real-time configuration updates
 
+### [System Configuration Implementation](./SYSTEM_CONFIG_IMPLEMENTATION_SUMMARY.md)
+Centralized system configuration management implementation including:
+- Dynamic configuration loading at app startup
+- Redux-based state management for system settings
+- Complaint types integration with system config
+- Real-time configuration updates and caching
+
+### [System Configuration UI Cleanup](./SYSTEM_CONFIG_UI_CLEANUP_SUMMARY.md)
+System configuration UI improvements including:
+- Organized configuration sections and categories
+- Duplicate field removal and consolidation
+- Improved layout and user experience
+- Consistent styling and validation
+
+### [System Settings Refactor](./SYSTEM_SETTINGS_REFACTOR_EXAMPLE.md)
+SystemSettingsManager refactoring example including:
+- Centralized loading state management
+- Global loader integration patterns
+- Component simplification and cleanup
+- Performance optimization techniques
+
+### [Package Cleanup](./PACKAGE_CLEANUP_SUMMARY.md)
+Package.json cleanup and optimization including:
+- Script consolidation and standardization
+- Dynamic dependency detection for production builds
+- Legacy script removal and modernization
+- Build optimization and security improvements
+
+### [Vulnerability Report](./vulnerability-report.md)
+Comprehensive security vulnerability analysis including:
+- Dependency vulnerability scanning results
+- Code pattern security analysis
+- Risk assessment and remediation priorities
+- Security hardening recommendations
+
 ### [Development Environment Notes](./DEVELOPMENT_ENVIRONMENT_NOTES.md)
 Development environment setup and troubleshooting including:
 - TypeScript configuration and error resolution

@@ -63,8 +63,8 @@
         },
         {
             "key": "NOTIFICATION_SETTINGS",
-            "value": "{\"email\":true,\"sms\":false}",
-            "description": "Notification preferences",
+            "value": "{\"email\":{\"enabled\":true,\"templates\":[\"complaint_status\",\"assignment\",\"resolution\"]},\"sms\":{\"enabled\":false,\"templates\":[\"urgent_updates\"]}}",
+            "description": "Comprehensive notification configuration including email and SMS settings with template preferences",
             "isActive": true
         },
         {
@@ -163,36 +163,14 @@
             "description": "Official office address",
             "isActive": true
         },
-        {
-            "key": "SYSTEM_VERSION",
-            "value": "1.0.0",
-            "description": "Current system version",
-            "isActive": true
-        },
-        {
-            "key": "MAINTENANCE_MODE",
-            "value": "false",
-            "description": "System maintenance mode status",
-            "isActive": true
-        },
+
         {
             "key": "GUEST_COMPLAINT_ENABLED",
             "value": "true",
-            "description": "Allow guest users to submit complaints",
+            "description": "Allow guest users to submit complaints without registration",
             "isActive": true
         },
-        {
-            "key": "EMAIL_NOTIFICATIONS_ENABLED",
-            "value": "true",
-            "description": "Enable email notifications for complaints",
-            "isActive": true
-        },
-        {
-            "key": "SMS_NOTIFICATIONS_ENABLED",
-            "value": "false",
-            "description": "Enable SMS notifications for complaints",
-            "isActive": true
-        },
+
         {
             "key": "COMPLAINT_PHOTO_MAX_SIZE",
             "value": "5",
@@ -205,18 +183,7 @@
             "description": "Maximum number of photos per complaint",
             "isActive": true
         },
-        {
-            "key": "AUTO_CLOSE_RESOLVED_COMPLAINTS",
-            "value": "true",
-            "description": "Automatically close resolved complaints after specified days",
-            "isActive": true
-        },
-        {
-            "key": "AUTO_CLOSE_DAYS",
-            "value": "7",
-            "description": "Number of days after which resolved complaints are auto-closed",
-            "isActive": true
-        },
+
         {
             "key": "CITIZEN_DAILY_COMPLAINT_LIMIT",
             "value": "5",
@@ -238,15 +205,10 @@
         {
             "key": "SERVICE_AREA_VALIDATION_ENABLED",
             "value": "true",
-            "description": "Enable or disable location-based validation for complaint submissions",
+            "description": "Enable location-based validation to ensure complaints are submitted within the defined service area boundary",
             "isActive": true
         },
-        {
-            "key": "AUTO_ASSIGN_ON_REOPEN",
-            "value": "false",
-            "description": "If enabled, the system automatically assigns a complaint after reopening. Default should be false.",
-            "isActive": true
-        }
+
     ],
     "ward": [
         {

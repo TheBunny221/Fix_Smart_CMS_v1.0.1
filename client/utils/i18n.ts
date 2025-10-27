@@ -32,9 +32,10 @@ const getPersistedLanguage = (): SupportedLanguage => {
     return FALLBACK_LANGUAGE;
   }
 
+  // Check both keys for backward compatibility, prioritize "language"
   const stored =
-    window.localStorage.getItem("lang") ??
-    window.localStorage.getItem("language");
+    window.localStorage.getItem("language") ??
+    window.localStorage.getItem("lang");
   if (stored && (Object.keys(resources) as SupportedLanguage[]).includes(stored as SupportedLanguage)) {
     return stored as SupportedLanguage;
   }
@@ -72,7 +73,7 @@ export const useAppTranslation = (): UseTranslationResponse<Namespace, undefined
     }
 
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("lang", nextLanguage);
+      window.localStorage.setItem("language", nextLanguage);
     }
   }, [currentLanguage]);
 

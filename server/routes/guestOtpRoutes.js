@@ -1,9 +1,24 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import {
   requestComplaintOtp,
   verifyComplaintOtp,
   getComplaintDetailsWithOtp,
 } from "../controller/guestOtpController.js";
+
+// Rate limiting for guest OTP requests
+const guestOtpLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: process.env.NODE_ENV === "production" ? 3 : 50, // 3 OTP requests per 5 minutes in production
+  message: {
+    success: false,
+    message: "Too many OTP requests. Please wait 5 minutes before requesting again.",
+    errorCode: "OTP_RATE_LIMIT_EXCEEDED"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  trustProxy: true,
+});
 
 const router = express.Router();
 
@@ -128,7 +143,7 @@ router.get("/test", (req, res) => {
  *         description: Complaint not found
  */
 // Public endpoints - no authentication required
-router.post("/request-complaint-otp", requestComplaintOtp);
+router.post("/request-complaint-otp", guestOtpLimiter, requestComplaintOtp);
 
 /**
  * @swagger
@@ -168,7 +183,7 @@ router.post("/request-complaint-otp", requestComplaintOtp);
  *       404:
  *         description: OTP session not found
  */
-router.post("/verify-complaint-otp", verifyComplaintOtp);
+router.post("/verify-complaint-otp", guestOtpLimiter, verifyComplaintOtp);
 
 /**
  * @swagger

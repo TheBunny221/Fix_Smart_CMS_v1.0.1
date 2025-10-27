@@ -168,11 +168,49 @@ const getCallerModule = () => {
   return 'unknown';
 };
 
-// Enhanced logging methods with automatic module detection
+// Sanitize sensitive data from log metadata
+const sanitizeLogData = (data) => {
+  if (!data || typeof data !== 'object') return data;
+  
+  const sensitiveFields = [
+    'password', 'token', 'secret', 'key', 'otp', 'otpCode', 'authorization',
+    'cookie', 'session', 'jwt', 'auth', 'credentials', 'apiKey', 'privateKey'
+  ];
+  
+  const sanitized = Array.isArray(data) ? [...data] : { ...data };
+  
+  const sanitizeValue = (obj) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    
+    if (Array.isArray(obj)) {
+      return obj.map(sanitizeValue);
+    }
+    
+    const result = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const lowerKey = key.toLowerCase();
+      if (sensitiveFields.some(field => lowerKey.includes(field))) {
+        result[key] = '[REDACTED]';
+      } else if (typeof value === 'object' && value !== null) {
+        result[key] = sanitizeValue(value);
+      } else {
+        result[key] = value;
+      }
+    }
+    return result;
+  };
+  
+  return sanitizeValue(sanitized);
+};
+
+// Enhanced logging methods with automatic module detection and sanitization
 const createLogMethod = (level) => {
   return (message, meta = {}) => {
     const module = meta.module || getCallerModule();
-    logger.log(level, message, { ...meta, module });
+    const sanitizedMeta = process.env.NODE_ENV === 'production' 
+      ? sanitizeLogData(meta) 
+      : meta;
+    logger.log(level, message, { ...sanitizedMeta, module });
   };
 };
 

@@ -4,7 +4,7 @@
  * Frontend-only implementation with RBAC integration
  */
 
-import { showViteCacheInstructions, handleViteCacheError } from './viteCacheHelper';
+import { showViteCacheInstructions, handleViteCacheError, safeImport } from './viteCacheHelper';
 
 // Export data interface
 interface ComplaintData {
@@ -287,7 +287,7 @@ export const exportToPDF = async (
   options: ExportOptions
 ): Promise<void> => {
   try {
-    const { default: jsPDF } = await import('jspdf');
+    const { default: jsPDF } = await safeImport('jspdf');
     const doc = new jsPDF();
 
     const pageWidth = doc.internal.pageSize.width;
@@ -388,7 +388,7 @@ export const exportToExcel = async (
   options: ExportOptions
 ): Promise<void> => {
   try {
-    const XLSX = await import('xlsx');
+    const XLSX = await safeImport('xlsx');
 
     // Format data for Excel
     const excelData = complaints.map(complaint =>
@@ -540,6 +540,78 @@ export const validateExportPermissions = (userRole: string): boolean => {
 };
 
 /**
+ * Check if export dependencies are available
+ */
+export const checkExportDependencies = async (): Promise<{ 
+  pdf: boolean; 
+  excel: boolean; 
+  csv: boolean; 
+  errors: string[] 
+}> => {
+  const result = { pdf: false, excel: false, csv: true, errors: [] as string[] };
+  
+  // CSV is always available (no external dependencies)
+  result.csv = true;
+  
+  // Check PDF dependencies
+  try {
+    await safeImport('jspdf');
+    result.pdf = true;
+  } catch (error) {
+    result.errors.push(`PDF export unavailable: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+  
+  // Check Excel dependencies
+  try {
+    await safeImport('xlsx');
+    result.excel = true;
+  } catch (error) {
+    result.errors.push(`Excel export unavailable: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+  
+  return result;
+};
+
+/**
+ * Get available export formats based on dependencies
+ */
+export const getAvailableExportFormats = async (): Promise<Array<{
+  format: 'pdf' | 'excel' | 'csv';
+  label: string;
+  available: boolean;
+  reason?: string;
+}>> => {
+  const dependencies = await checkExportDependencies();
+  
+  const formats: Array<{
+    format: 'pdf' | 'excel' | 'csv';
+    label: string;
+    available: boolean;
+    reason?: string;
+  }> = [
+    {
+      format: 'pdf',
+      label: 'PDF',
+      available: dependencies.pdf,
+      ...(dependencies.pdf ? {} : { reason: 'PDF library not available' })
+    },
+    {
+      format: 'excel',
+      label: 'Excel (XLSX)',
+      available: dependencies.excel,
+      ...(dependencies.excel ? {} : { reason: 'Excel library not available' })
+    },
+    {
+      format: 'csv',
+      label: 'CSV',
+      available: dependencies.csv
+    }
+  ];
+  
+  return formats;
+};
+
+/**
  * Validate analytics data for export
  */
 export const validateAnalyticsData = (data: EnhancedAnalyticsData): { isValid: boolean; message?: string } => {
@@ -564,8 +636,131 @@ export const validateAnalyticsData = (data: EnhancedAnalyticsData): { isValid: b
   return { isValid: true };
 };
 
+// Track ongoing export operations to prevent concurrent issues
+const ongoingExports = new Set<string>();
+
+// Export state management to prevent shared mutable state issues
+interface ExportState {
+  id: string;
+  format: string;
+  startTime: number;
+  status: 'preparing' | 'fetching' | 'generating' | 'completed' | 'failed';
+  progress?: string;
+}
+
+const exportStates = new Map<string, ExportState>();
+
+// Clean up old export states (older than 5 minutes)
+const cleanupOldExportStates = () => {
+  const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+  for (const [id, state] of exportStates.entries()) {
+    if (state.startTime < fiveMinutesAgo) {
+      exportStates.delete(id);
+      ongoingExports.delete(id);
+    }
+  }
+};
+
+// Run cleanup periodically
+setInterval(cleanupOldExportStates, 60000); // Every minute
+
 /**
- * Filter complaints based on user role and permissions
+ * Generate unique export operation ID
+ */
+const generateExportId = (filters: any, format: string, userRole: string): string => {
+  const filterStr = JSON.stringify(filters);
+  const timestamp = Date.now();
+  return `${userRole}-${format}-${btoa(filterStr).slice(0, 10)}-${timestamp}`;
+};
+
+/**
+ * Fetch complaint data from server with proper RBAC enforcement
+ */
+export const fetchExportData = async (
+  filters: any,
+  options: ExportOptions
+): Promise<{ complaints: ComplaintData[]; metadata: any }> => {
+  // Validate permissions client-side first
+  if (!validateExportPermissions(options.userRole)) {
+    throw new Error('You do not have permission to export data');
+  }
+
+  // Generate unique export ID to prevent concurrent issues
+  const exportId = generateExportId(filters, 'data-fetch', options.userRole);
+  
+  if (ongoingExports.has(exportId)) {
+    throw new Error('An identical export is already in progress. Please wait for it to complete.');
+  }
+
+  ongoingExports.add(exportId);
+
+  try {
+    // Build query parameters
+    const params = new URLSearchParams();
+    
+    if (filters.dateRange?.from) params.set('from', filters.dateRange.from);
+    if (filters.dateRange?.to) params.set('to', filters.dateRange.to);
+    if (filters.ward && filters.ward !== 'all') params.set('ward', filters.ward);
+    if (filters.complaintType && filters.complaintType !== 'all') params.set('type', filters.complaintType);
+    if (filters.status && filters.status !== 'all') params.set('status', filters.status);
+    if (filters.priority && filters.priority !== 'all') params.set('priority', filters.priority);
+    
+    // Set reasonable limit for exports
+    params.set('limit', '10000');
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+    try {
+      const response = await fetch(`/api/reports/export-data?${params}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        if (response.status === 403) {
+          throw new Error('You do not have permission to export data');
+        }
+        if (response.status === 401) {
+          throw new Error('Your session has expired. Please log in again.');
+        }
+        throw new Error(`Failed to fetch export data: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to fetch export data');
+      }
+
+      return {
+        complaints: result.data.complaints || [],
+        metadata: result.data.metadata || {},
+      };
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Export request timed out. Please try again with fewer records or a smaller date range.');
+      }
+      
+      throw error;
+    }
+  } catch (error) {
+    console.error('Export data fetch failed:', error);
+    throw error;
+  } finally {
+    ongoingExports.delete(exportId);
+  }
+};
+
+/**
+ * Filter complaints based on user role and permissions (legacy function for backward compatibility)
  */
 export const filterComplaintsForExport = (
   complaints: ComplaintData[],
@@ -588,13 +783,47 @@ export const filterComplaintsForExport = (
 
 /**
  * Enhanced PDF export with comprehensive complaint details and statistics
+ * Now supports both pre-fetched data and server-side data fetching
  */
 export const exportAnalyticsToPDF = async (
-  data: EnhancedAnalyticsData,
-  options: ExportOptions
+  dataOrFilters: EnhancedAnalyticsData | any,
+  options: ExportOptions,
+  useServerData: boolean = false
 ): Promise<void> => {
+  let data: EnhancedAnalyticsData;
+  
+  if (useServerData) {
+    // Fetch data from server with RBAC enforcement
+    const { complaints, metadata } = await fetchExportData(dataOrFilters, options);
+    
+    // Transform server data to analytics format
+    data = {
+      summary: metadata.summary || calculateStatistics(complaints).summary,
+      sla: metadata.sla || calculateStatistics(complaints).sla,
+      performance: {
+        userSatisfaction: 0,
+        escalationRate: 0,
+        firstCallResolution: 0,
+        repeatComplaints: 0,
+      },
+      priorities: calculateStatistics(complaints).priorities,
+      categories: calculateStatistics(complaints).categories,
+      wards: calculateStatistics(complaints).wards,
+      trends: [],
+      complaints,
+      filters: metadata.filters,
+      metadata: {
+        generatedAt: metadata.generatedAt,
+        generatedBy: metadata.generatedBy,
+        userRole: metadata.userRole,
+        reportType: 'comprehensive',
+      },
+    };
+  } else {
+    data = dataOrFilters as EnhancedAnalyticsData;
+  }
   try {
-    const { default: jsPDF } = await import('jspdf');
+    const { default: jsPDF } = await safeImport('jspdf');
     const doc = new jsPDF();
 
     const pageWidth = doc.internal.pageSize.width;
@@ -810,13 +1039,47 @@ export const exportAnalyticsToPDF = async (
 
 /**
  * Enhanced Excel export with comprehensive complaint details and multiple sheets
+ * Now supports both pre-fetched data and server-side data fetching
  */
 export const exportAnalyticsToExcel = async (
-  data: EnhancedAnalyticsData,
-  options: ExportOptions
+  dataOrFilters: EnhancedAnalyticsData | any,
+  options: ExportOptions,
+  useServerData: boolean = false
 ): Promise<void> => {
+  let data: EnhancedAnalyticsData;
+  
+  if (useServerData) {
+    // Fetch data from server with RBAC enforcement
+    const { complaints, metadata } = await fetchExportData(dataOrFilters, options);
+    
+    // Transform server data to analytics format
+    data = {
+      summary: metadata.summary || calculateStatistics(complaints).summary,
+      sla: metadata.sla || calculateStatistics(complaints).sla,
+      performance: {
+        userSatisfaction: 0,
+        escalationRate: 0,
+        firstCallResolution: 0,
+        repeatComplaints: 0,
+      },
+      priorities: calculateStatistics(complaints).priorities,
+      categories: calculateStatistics(complaints).categories,
+      wards: calculateStatistics(complaints).wards,
+      trends: [],
+      complaints,
+      filters: metadata.filters,
+      metadata: {
+        generatedAt: metadata.generatedAt,
+        generatedBy: metadata.generatedBy,
+        userRole: metadata.userRole,
+        reportType: 'comprehensive',
+      },
+    };
+  } else {
+    data = dataOrFilters as EnhancedAnalyticsData;
+  }
   try {
-    const XLSX = await import('xlsx');
+    const XLSX = await safeImport('xlsx');
 
     // Create workbook
     const workbook = XLSX.utils.book_new();
@@ -1004,11 +1267,45 @@ export const exportAnalyticsToExcel = async (
 /**
  * Enhanced CSV export with comprehensive complaint details
  * This function is designed to be the most reliable export option
+ * Now supports both pre-fetched data and server-side data fetching
  */
 export const exportAnalyticsToCSV = async (
-  data: EnhancedAnalyticsData,
-  options: ExportOptions
+  dataOrFilters: EnhancedAnalyticsData | any,
+  options: ExportOptions,
+  useServerData: boolean = false
 ): Promise<void> => {
+  let data: EnhancedAnalyticsData;
+  
+  if (useServerData) {
+    // Fetch data from server with RBAC enforcement
+    const { complaints, metadata } = await fetchExportData(dataOrFilters, options);
+    
+    // Transform server data to analytics format
+    data = {
+      summary: metadata.summary || calculateStatistics(complaints).summary,
+      sla: metadata.sla || calculateStatistics(complaints).sla,
+      performance: {
+        userSatisfaction: 0,
+        escalationRate: 0,
+        firstCallResolution: 0,
+        repeatComplaints: 0,
+      },
+      priorities: calculateStatistics(complaints).priorities,
+      categories: calculateStatistics(complaints).categories,
+      wards: calculateStatistics(complaints).wards,
+      trends: [],
+      complaints,
+      filters: metadata.filters,
+      metadata: {
+        generatedAt: metadata.generatedAt,
+        generatedBy: metadata.generatedBy,
+        userRole: metadata.userRole,
+        reportType: 'comprehensive',
+      },
+    };
+  } else {
+    data = dataOrFilters as EnhancedAnalyticsData;
+  }
   try {
     let csvContent = '';
 
@@ -1167,9 +1464,345 @@ export const exportAnalyticsToCSV = async (
 };
 
 /**
- * Main export function that handles all formats
+ * Show user-friendly export progress and feedback with state tracking
+ */
+const showExportProgress = (message: string, isError: boolean = false, exportId?: string) => {
+  // Update export state if provided
+  if (exportId && exportStates.has(exportId)) {
+    const state = exportStates.get(exportId)!;
+    state.progress = message;
+    if (isError) {
+      state.status = 'failed';
+    }
+  }
+
+  // Create or update progress indicator
+  let progressElement = document.getElementById('export-progress');
+  
+  if (!progressElement) {
+    progressElement = document.createElement('div');
+    progressElement.id = 'export-progress';
+    progressElement.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${isError ? '#fee2e2' : '#f0f9ff'};
+      border: 1px solid ${isError ? '#fecaca' : '#bae6fd'};
+      color: ${isError ? '#dc2626' : '#0369a1'};
+      padding: 12px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 10000;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      max-width: 300px;
+      word-wrap: break-word;
+      transition: all 0.3s ease;
+    `;
+    document.body.appendChild(progressElement);
+  }
+  
+  progressElement.textContent = message;
+  progressElement.style.background = isError ? '#fee2e2' : '#f0f9ff';
+  progressElement.style.borderColor = isError ? '#fecaca' : '#bae6fd';
+  progressElement.style.color = isError ? '#dc2626' : '#0369a1';
+  
+  // Auto-remove after delay
+  setTimeout(() => {
+    if (progressElement && progressElement.parentNode) {
+      progressElement.parentNode.removeChild(progressElement);
+    }
+  }, isError ? 8000 : 3000);
+};
+
+/**
+ * Get current export operations status
+ */
+export const getExportStatus = (): Array<{ id: string; format: string; status: string; progress?: string }> => {
+  return Array.from(exportStates.values()).map(state => ({
+    id: state.id,
+    format: state.format,
+    status: state.status,
+    ...(state.progress ? { progress: state.progress } : {})
+  }));
+};
+
+/**
+ * Cancel an ongoing export operation
+ */
+export const cancelExport = (exportId: string): boolean => {
+  if (ongoingExports.has(exportId)) {
+    ongoingExports.delete(exportId);
+    exportStates.delete(exportId);
+    showExportProgress('Export cancelled by user', true);
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Cancel all ongoing export operations
+ */
+export const cancelAllExports = (): number => {
+  const count = ongoingExports.size;
+  ongoingExports.clear();
+  exportStates.clear();
+  
+  if (count > 0) {
+    showExportProgress(`Cancelled ${count} ongoing export(s)`, true);
+  }
+  
+  return count;
+};
+
+/**
+ * Check if there are any ongoing exports
+ */
+export const hasOngoingExports = (): boolean => {
+  return ongoingExports.size > 0;
+};
+
+/**
+ * Get count of ongoing exports
+ */
+export const getOngoingExportsCount = (): number => {
+  return ongoingExports.size;
+};
+
+/**
+ * Clean up export resources and prevent memory leaks
+ */
+export const cleanupExportResources = (): void => {
+  // Remove any lingering progress elements
+  const progressElement = document.getElementById('export-progress');
+  if (progressElement && progressElement.parentNode) {
+    progressElement.parentNode.removeChild(progressElement);
+  }
+  
+  // Clear old states
+  cleanupOldExportStates();
+  
+  // Force garbage collection of any large objects
+  if (typeof window !== 'undefined' && 'gc' in window) {
+    try {
+      (window as any).gc();
+    } catch (e) {
+      // Ignore if gc is not available
+    }
+  }
+};
+
+/**
+ * Recovery mechanism for stuck exports
+ */
+export const recoverStuckExports = (): number => {
+  const now = Date.now();
+  const stuckThreshold = 5 * 60 * 1000; // 5 minutes
+  let recoveredCount = 0;
+  
+  for (const [id, state] of exportStates.entries()) {
+    if (now - state.startTime > stuckThreshold && state.status !== 'completed' && state.status !== 'failed') {
+      console.warn(`Recovering stuck export: ${id}`);
+      ongoingExports.delete(id);
+      exportStates.delete(id);
+      recoveredCount++;
+    }
+  }
+  
+  if (recoveredCount > 0) {
+    showExportProgress(`Recovered ${recoveredCount} stuck export(s)`, false);
+  }
+  
+  return recoveredCount;
+};
+
+/**
+ * Initialize export system with cleanup and recovery
+ */
+export const initializeExportSystem = (): void => {
+  // Clean up any existing resources
+  cleanupExportResources();
+  
+  // Set up periodic cleanup
+  if (typeof window !== 'undefined') {
+    // Clean up old states every minute
+    setInterval(cleanupOldExportStates, 60000);
+    
+    // Recover stuck exports every 5 minutes
+    setInterval(recoverStuckExports, 5 * 60000);
+    
+    // Clean up resources when page is about to unload
+    window.addEventListener('beforeunload', () => {
+      cancelAllExports();
+      cleanupExportResources();
+    });
+    
+    // Clean up resources when page becomes hidden (mobile/tab switching)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cleanupExportResources();
+      }
+    });
+  }
+};
+
+// Initialize the export system
+if (typeof window !== 'undefined') {
+  initializeExportSystem();
+}
+
+/**
+ * Main export function that handles all formats with server-side data fetching
  */
 export const exportComplaints = async (
+  filters: any,
+  format: 'pdf' | 'excel' | 'csv',
+  options: ExportOptions
+): Promise<void> => {
+  // Generate unique export operation ID
+  const exportId = generateExportId(filters, format, options.userRole);
+  
+  // Check for concurrent exports
+  if (ongoingExports.has(exportId)) {
+    const error = new Error('An identical export is already in progress. Please wait for it to complete.');
+    showExportProgress(error.message, true, exportId);
+    throw error;
+  }
+
+  // Validate permissions
+  if (!validateExportPermissions(options.userRole)) {
+    const error = new Error('You do not have permission to export data');
+    showExportProgress(error.message, true, exportId);
+    throw error;
+  }
+
+  // Initialize export state
+  const exportState: ExportState = {
+    id: exportId,
+    format,
+    startTime: Date.now(),
+    status: 'preparing',
+    progress: 'Initializing export...',
+  };
+  
+  ongoingExports.add(exportId);
+  exportStates.set(exportId, exportState);
+
+  try {
+    exportState.status = 'preparing';
+    showExportProgress('Preparing export data...', false, exportId);
+    
+    // Check if export format is available
+    const dependencies = await checkExportDependencies();
+    if (format === 'pdf' && !dependencies.pdf) {
+      throw new Error('PDF export is not available. Please try CSV export or refresh the page.');
+    }
+    if (format === 'excel' && !dependencies.excel) {
+      throw new Error('Excel export is not available. Please try CSV export or refresh the page.');
+    }
+    
+    // Fetch data from server with RBAC enforcement
+    exportState.status = 'fetching';
+    exportState.progress = 'Fetching data from server...';
+    const { complaints, metadata } = await fetchExportData(filters, options);
+
+    if (complaints.length === 0) {
+      const error = new Error('No complaints available for export with the selected filters');
+      showExportProgress(error.message, true, exportId);
+      throw error;
+    }
+
+    exportState.status = 'generating';
+    exportState.progress = `Generating ${format.toUpperCase()} for ${complaints.length} records...`;
+    showExportProgress(`Generating ${format.toUpperCase()} export for ${complaints.length} records...`, false, exportId);
+
+    // Create isolated scope for export generation to prevent shared state issues
+    const generateExport = async () => {
+      // Clone data to prevent mutation issues
+      const clonedComplaints = JSON.parse(JSON.stringify(complaints));
+      const clonedMetadata = JSON.parse(JSON.stringify(metadata));
+      
+      // Add metadata to options for export functions
+      const enrichedOptions = {
+        ...options,
+        metadata: clonedMetadata,
+        filters: JSON.parse(JSON.stringify(filters)),
+      };
+
+      // Export based on format with individual error handling
+      switch (format) {
+        case 'pdf':
+          await exportToPDF(clonedComplaints, enrichedOptions);
+          break;
+        case 'excel':
+          await exportToExcel(clonedComplaints, enrichedOptions);
+          break;
+        case 'csv':
+          await exportToCSV(clonedComplaints, enrichedOptions);
+          break;
+        default:
+          throw new Error(`Unsupported export format: ${format}`);
+      }
+    };
+
+    try {
+      await generateExport();
+      
+      exportState.status = 'completed';
+      exportState.progress = `Export completed successfully!`;
+      showExportProgress(`${format.toUpperCase()} export completed successfully! (${complaints.length} records)`, false, exportId);
+    } catch (formatError) {
+      // If specific format fails, suggest alternatives
+      if (format !== 'csv') {
+        throw new Error(`${format.toUpperCase()} export failed. Please try CSV export as an alternative.`);
+      }
+      throw formatError;
+    }
+  } catch (error) {
+    exportState.status = 'failed';
+    exportState.progress = error instanceof Error ? error.message : 'Export failed';
+    
+    console.error('Export failed:', error);
+    
+    // Show user-friendly error message
+    let errorMessage = 'Export failed. Please try again.';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('identical export')) {
+        errorMessage = error.message;
+      } else if (error.message.includes('timed out')) {
+        errorMessage = 'Export timed out. Try reducing the date range or using filters to limit data.';
+      } else if (error.message.includes('Failed to fetch') || error.message.includes('Network')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.message.includes('permission')) {
+        errorMessage = 'You do not have permission to export data.';
+      } else if (error.message.includes('session has expired')) {
+        errorMessage = 'Your session has expired. Please log in again.';
+      } else if (error.message.includes('cache') || error.message.includes('not available')) {
+        errorMessage = 'Export library loading issue. Please refresh the page (Ctrl+F5) and try again, or use CSV export.';
+      } else if (error.message.includes('No complaints available')) {
+        errorMessage = 'No data to export with current filters. Try adjusting your filters.';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+    
+    showExportProgress(errorMessage, true, exportId);
+    throw error;
+  } finally {
+    ongoingExports.delete(exportId);
+    
+    // Keep state for a short time for status checking, then clean up
+    setTimeout(() => {
+      exportStates.delete(exportId);
+    }, 30000); // 30 seconds
+  }
+};
+
+/**
+ * Legacy export function for backward compatibility (uses pre-fetched data)
+ */
+export const exportComplaintsLegacy = async (
   complaints: ComplaintData[],
   format: 'pdf' | 'excel' | 'csv',
   options: ExportOptions

@@ -9,7 +9,7 @@ import {
 } from "../controller/complaintTypeController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import { body } from "express-validator";
-import { handleValidationErrors } from "../middleware/validation.js";
+import { handleValidationErrors, sanitizeInputs, validateMongoId, validatePagination } from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -95,7 +95,7 @@ const validateComplaintType = [
  *                   items:
  *                     $ref: '#/components/schemas/ComplaintType'
  */
-router.get("/", getComplaintTypes);
+router.get("/", sanitizeInputs, validatePagination, getComplaintTypes);
 
 /**
  * @swagger
@@ -113,6 +113,7 @@ router.get(
   "/stats",
   protect,
   authorize("ADMINISTRATOR", "WARD_OFFICER"),
+  sanitizeInputs,
   getComplaintTypeStats,
 );
 
@@ -134,10 +135,11 @@ router.get(
  *       404:
  *         description: Complaint type not found
  */
-router.get("/:id", getComplaintTypeById);
+router.get("/:id", sanitizeInputs, validateMongoId, getComplaintTypeById);
 
 // Protected routes (require authentication)
 router.use(protect);
+router.use(sanitizeInputs); // Sanitize all inputs for protected routes
 
 /**
  * @swagger
@@ -197,6 +199,7 @@ router.post(
 router.put(
   "/:id",
   authorize("ADMINISTRATOR"),
+  validateMongoId,
   validateComplaintType,
   updateComplaintType,
 );
@@ -221,6 +224,6 @@ router.put(
  *       404:
  *         description: Complaint type not found
  */
-router.delete("/:id", authorize("ADMINISTRATOR"), deleteComplaintType);
+router.delete("/:id", authorize("ADMINISTRATOR"), validateMongoId, deleteComplaintType);
 
 export default router;

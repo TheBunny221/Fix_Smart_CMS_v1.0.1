@@ -971,17 +971,20 @@ const getComprehensiveAnalytics = asyncHandler(async (req, res) => {
 // Routes
 router.get(
   "/dashboard",
+  protect,
   authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"),
   getDashboardMetrics,
 );
 router.get(
   "/trends",
+  protect,
   authorize("ADMINISTRATOR", "WARD_OFFICER"),
   getComplaintTrends,
 );
-router.get("/sla", authorize("ADMINISTRATOR", "WARD_OFFICER"), getSLAReport);
+router.get("/sla", protect, authorize("ADMINISTRATOR", "WARD_OFFICER"), getSLAReport);
 router.get(
   "/analytics",
+  protect,
   authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"),
   getComprehensiveAnalytics,
 );
@@ -990,6 +993,7 @@ router.get(
 // Returns matrix counts for Complaints × Wards (Admin) or Complaints × Sub-zones (Ward Officer)
 router.get(
   "/heatmap",
+  protect,
   authorize("ADMINISTRATOR", "WARD_OFFICER"),
   asyncHandler(async (req, res) => {
     const { from, to, type, status, priority, ward } = req.query;
@@ -1428,10 +1432,8 @@ async function calculatePerformanceMetrics(prisma, where, closedWhere) {
         complaint: closedWhere
       },
       having: {
-        complaintId: {
-          _count: {
-            gt: 1 // More than one assignment = reassignment
-          }
+        _count: {
+          gt: 1 // More than one assignment = reassignment
         }
       }
     });
@@ -1627,6 +1629,310 @@ function calculateTrendPercentages(current, previous, performance) {
   };
 }
 
-// Export route removed - using frontend-only export implementation
+// @desc    Get complaint data for export with RBAC enforcement
+// @route   GET /api/reports/export-data
+// @access  Private (Admin, Ward Officer)
+const getExportData = asyncHandler(async (req, res) => {
+  const {
+    from,
+    to,
+    ward,
+    type,
+    status,
+    priority,
+    format = 'json',
+    limit = 10000
+  } = req.query;
+
+  // Strict RBAC enforcement - only Admin and Ward Officer can export
+  if (!['ADMINISTRATOR', 'WARD_OFFICER'].includes(req.user.role)) {
+    return res.status(403).json({
+      success: false,
+      message: 'You do not have permission to export data'
+    });
+  }
+
+  // Helper: normalize enums
+  const normalizeStatus = (s) => {
+    if (!s) return undefined;
+    const map = {
+      registered: "REGISTERED",
+      assigned: "ASSIGNED",
+      in_progress: "IN_PROGRESS",
+      inprogress: "IN_PROGRESS",
+      resolved: "RESOLVED",
+      closed: "CLOSED",
+      reopened: "REOPENED",
+    };
+    return map[String(s).toLowerCase()] || s.toUpperCase();
+  };
+
+  const normalizePriority = (p) => {
+    if (!p) return undefined;
+    const map = {
+      low: "LOW",
+      medium: "MEDIUM",
+      high: "HIGH",
+      critical: "CRITICAL",
+    };
+    return map[String(p).toLowerCase()] || p.toUpperCase();
+  };
+
+  // Build where conditions with strict RBAC
+  const where = {};
+  
+  // Ward Officer can only export from their ward
+  if (req.user.role === "WARD_OFFICER" && req.user.wardId) {
+    where.wardId = req.user.wardId;
+  } else if (req.user.role === "ADMINISTRATOR" && ward && ward !== "all") {
+    // Admin can filter by specific ward
+    where.wardId = ward;
+  }
+
+  // Date filters
+  if (from || to) {
+    where.submittedOn = {};
+    if (from) where.submittedOn.gte = new Date(from);
+    if (to) where.submittedOn.lte = new Date(to);
+  }
+
+  // Dynamic complaint type filtering
+  if (type && type !== "all") {
+    try {
+      const complaintType = await getComplaintTypeById(type);
+      if (complaintType) {
+        where.OR = [
+          { complaintTypeId: parseInt(complaintType.id) },
+          { type: complaintType.name },
+          { type: type }
+        ];
+      } else {
+        where.type = type;
+      }
+    } catch (error) {
+      console.warn("Complaint type resolution failed in export, using direct filter:", error.message);
+      where.type = type;
+    }
+  }
+
+  // Status and priority filters
+  const normalizedStatus = normalizeStatus(status);
+  if (normalizedStatus) where.status = normalizedStatus;
+  
+  const normalizedPriority = normalizePriority(priority);
+  if (normalizedPriority) where.priority = normalizedPriority;
+
+  try {
+    // Limit export size to prevent memory issues
+    const exportLimit = Math.min(parseInt(limit) || 10000, 50000);
+
+    // Fetch complaints with complete data for export
+    const complaints = await prisma.complaint.findMany({
+      where,
+      take: exportLimit,
+      orderBy: { submittedOn: "desc" },
+      include: {
+        ward: { select: { id: true, name: true } },
+        subZone: { select: { id: true, name: true } },
+        submittedBy: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+        assignedTo: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+        wardOfficer: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
+        maintenanceTeam: {
+          select: {
+            id: true,
+            fullName: true,
+            email: true,
+            role: true,
+          },
+        },
+        complaintType: { select: { id: true, name: true } },
+        attachments: {
+          where: {
+            entityType: {
+              in: ["COMPLAINT", "MAINTENANCE_PHOTO"]
+            }
+          },
+          select: {
+            id: true,
+            name: true,
+            url: true,
+            entityType: true,
+          },
+        },
+        statusLogs: {
+          orderBy: { timestamp: "desc" },
+          take: 5, // Include recent status changes
+          include: {
+            user: { select: { fullName: true, role: true } },
+          },
+        },
+      },
+    });
+
+    // Calculate SLA status for each complaint
+    const now = new Date();
+    const enrichedComplaints = complaints.map((complaint) => {
+      let slaStatus = complaint.slaStatus;
+      if (complaint.status === "RESOLVED" || complaint.status === "CLOSED") {
+        slaStatus = "COMPLETED";
+      } else if (complaint.deadline instanceof Date) {
+        const daysRemaining = (complaint.deadline - now) / (1000 * 60 * 60 * 24);
+        if (daysRemaining < 0) slaStatus = "OVERDUE";
+        else if (daysRemaining <= 1) slaStatus = "WARNING";
+        else slaStatus = "ON_TIME";
+      }
+
+      return {
+        ...complaint,
+        type: complaint.complaintType?.name || complaint.type,
+        slaStatus,
+        citizenName: complaint.submittedBy?.fullName,
+        contactPhone: complaint.submittedBy?.phoneNumber,
+        contactEmail: complaint.submittedBy?.email,
+      };
+    });
+
+    // Get total count for metadata
+    const totalCount = await prisma.complaint.count({ where });
+
+    // Prepare response with metadata
+    const responseData = {
+      complaints: enrichedComplaints,
+      metadata: {
+        totalRecords: totalCount,
+        exportedRecords: enrichedComplaints.length,
+        generatedAt: new Date().toISOString(),
+        generatedBy: req.user.fullName || req.user.email,
+        userRole: req.user.role,
+        userWard: req.user.wardId,
+        filters: {
+          dateRange: { from, to },
+          ward: req.user.role === "WARD_OFFICER" ? req.user.wardId : ward,
+          type,
+          status: normalizedStatus,
+          priority: normalizedPriority,
+        },
+        exportLimit,
+        truncated: totalCount > exportLimit,
+      },
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Export data retrieved successfully",
+      data: responseData,
+    });
+
+  } catch (error) {
+    console.error("Export data error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve export data",
+      error: error.message,
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/reports/export-data:
+ *   get:
+ *     summary: Get complaint data for export with RBAC enforcement
+ *     tags: [Reports]
+ *     description: Retrieve complaint data for export with proper authorization checks (Admin, Ward Officer only)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Start date for export
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: End date for export
+ *       - in: query
+ *         name: ward
+ *         schema:
+ *           type: string
+ *         description: Ward ID filter (Admin only)
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *         description: Complaint type filter
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [registered, assigned, in_progress, resolved, closed, reopened]
+ *         description: Status filter
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high, critical]
+ *         description: Priority filter
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           maximum: 50000
+ *           default: 10000
+ *         description: Maximum number of records to export
+ *     responses:
+ *       200:
+ *         description: Export data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     complaints:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     metadata:
+ *                       type: object
+ *       403:
+ *         description: Insufficient permissions for export
+ *       401:
+ *         $ref: '#/components/responses/UnauthorizedError'
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/export-data", protect, authorize("ADMINISTRATOR", "WARD_OFFICER"), getExportData);
 
 export default router;

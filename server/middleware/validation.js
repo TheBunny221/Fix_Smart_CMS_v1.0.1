@@ -1,6 +1,48 @@
 import { body, param, query, validationResult } from "express-validator";
 import DOMPurify from "isomorphic-dompurify";
 
+// General input sanitization middleware
+export const sanitizeInputs = (req, res, next) => {
+  const sanitizeValue = (value) => {
+    if (typeof value === 'string') {
+      // Remove potential XSS attacks
+      return DOMPurify.sanitize(value, { 
+        ALLOWED_TAGS: [], 
+        ALLOWED_ATTR: [],
+        KEEP_CONTENT: true 
+      }).trim();
+    }
+    if (typeof value === 'object' && value !== null) {
+      if (Array.isArray(value)) {
+        return value.map(sanitizeValue);
+      }
+      const sanitized = {};
+      for (const [key, val] of Object.entries(value)) {
+        sanitized[key] = sanitizeValue(val);
+      }
+      return sanitized;
+    }
+    return value;
+  };
+
+  // Sanitize request body
+  if (req.body && typeof req.body === 'object') {
+    req.body = sanitizeValue(req.body);
+  }
+
+  // Sanitize query parameters
+  if (req.query && typeof req.query === 'object') {
+    req.query = sanitizeValue(req.query);
+  }
+
+  // Sanitize URL parameters
+  if (req.params && typeof req.params === 'object') {
+    req.params = sanitizeValue(req.params);
+  }
+
+  next();
+};
+
 // Handle validation errors
 export const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
@@ -639,6 +681,73 @@ export const validateOtpRequest = [
     .optional()
     .isIn(["complaint_submission"])
     .withMessage("Invalid purpose"),
+
+  handleValidationErrors,
+];
+
+// File upload validation
+export const validateFileUpload = [
+  body("description")
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage("Description cannot exceed 500 characters"),
+
+  handleValidationErrors,
+];
+
+// Generic ID validation for various endpoints
+export const validateId = [
+  param("id")
+    .isString()
+    .isLength({ min: 1 })
+    .withMessage("Invalid ID format"),
+
+  handleValidationErrors,
+];
+
+// Ward ID validation for path parameters
+export const validateWardId = [
+  param("wardId")
+    .isString()
+    .isLength({ min: 1 })
+    .withMessage("Invalid ward ID format"),
+
+  handleValidationErrors,
+];
+
+// Query parameter validation for search and filters
+export const validateSearchQuery = [
+  query("search")
+    .optional()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage("Search term must be between 1 and 100 characters"),
+
+  query("sort")
+    .optional()
+    .isIn(["asc", "desc", "newest", "oldest", "priority", "status"])
+    .withMessage("Invalid sort parameter"),
+
+  handleValidationErrors,
+];
+
+// System health and stats validation
+export const validateDateRange = [
+  query("startDate")
+    .optional()
+    .isISO8601()
+    .withMessage("Invalid start date format"),
+
+  query("endDate")
+    .optional()
+    .isISO8601()
+    .withMessage("Invalid end date format"),
+
+  query("ward")
+    .optional()
+    .isString()
+    .withMessage("Invalid ward parameter"),
 
   handleValidationErrors,
 ];

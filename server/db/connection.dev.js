@@ -3,14 +3,50 @@ const { PrismaClient } = pkg;
 import fs from "fs";
 import path from "path";
 
-// Initialize Prisma client for development (SQLite)
+// Initialize Prisma client for development
 const createPrismaClient = () => {
   const config = {
     log: ["info", "warn", "error"],
     errorFormat: "pretty",
   };
 
+  // Apply connection pooling for PostgreSQL in development too
+  const baseUrl = process.env.DATABASE_URL;
+  if (baseUrl?.includes("postgresql")) {
+    config.datasources = {
+      db: {
+        url: buildDatabaseUrlWithPooling(),
+      },
+    };
+  }
+
   return new PrismaClient(config);
+};
+
+// Build DATABASE_URL with connection pooling parameters for development
+const buildDatabaseUrlWithPooling = () => {
+  const baseUrl = process.env.DATABASE_URL;
+  if (!baseUrl) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+
+  // Only add pooling parameters for PostgreSQL
+  if (baseUrl.includes("postgresql")) {
+    const poolMin = process.env.DATABASE_POOL_MIN || "1";
+    const poolMax = process.env.DATABASE_POOL_MAX || "5";
+    
+    // Parse existing URL to check for existing parameters
+    const url = new URL(baseUrl);
+    
+    // Add connection pool parameters (smaller for development)
+    url.searchParams.set("connection_limit", poolMax);
+    url.searchParams.set("pool_timeout", "10");
+    url.searchParams.set("connect_timeout", "30");
+    
+    return url.toString();
+  }
+  
+  return baseUrl;
 };
 
 let prisma = createPrismaClient();

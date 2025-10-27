@@ -12,7 +12,7 @@ import {
 } from "../controller/systemConfigController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import { body, param } from "express-validator";
-import { handleValidationErrors, validateSystemConfigBulk } from "../middleware/validation.js";
+import { handleValidationErrors, validateSystemConfigBulk, sanitizeInputs } from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -48,6 +48,7 @@ const validateKeyParam = [
 // All routes require admin access
 router.use(protect);
 router.use(authorize("ADMINISTRATOR"));
+router.use(sanitizeInputs); // Sanitize all inputs for system config routes
 
 /**
  * @swagger

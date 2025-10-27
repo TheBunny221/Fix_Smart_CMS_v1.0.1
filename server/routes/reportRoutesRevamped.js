@@ -1,6 +1,7 @@
 import express from "express";
 import { protect, authorize } from "../middleware/auth.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
+import { sanitizeInputs, validateDateRange, validatePagination } from "../middleware/validation.js";
 import {
   getUnifiedAnalytics,
   getComprehensiveAnalyticsRevamped,
@@ -409,7 +410,10 @@ router.use(protect);
  */
 router.get(
   "/unified",
+  protect,
   authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM", "CITIZEN"),
+  sanitizeInputs,
+  validateDateRange,
   getUnifiedAnalytics,
 );
 
@@ -539,7 +543,10 @@ router.get(
  */
 router.get(
   "/analytics",
+  protect,
   authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"),
+  sanitizeInputs,
+  validateDateRange,
   getComprehensiveAnalyticsRevamped,
 );
 
@@ -728,7 +735,10 @@ router.get(
  */
 router.get(
   "/heatmap",
+  protect,
   authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"),
+  sanitizeInputs,
+  validateDateRange,
   getHeatmapDataRevamped,
 );
 
@@ -784,7 +794,9 @@ router.get(
  */
 router.get(
   "/health",
+  protect,
   authorize("ADMINISTRATOR"),
+  sanitizeInputs,
   asyncHandler(async (req, res) => {
     const healthData = {
       status: "healthy",

@@ -35,6 +35,7 @@ import { Eye, EyeOff, Mail, Lock, Home } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 import { useOtpFlow } from "../contexts/OtpContext";
 import AdminSeeder from "../components/AdminSeeder";
+import { useAppTranslation } from "../utils/i18n";
 
 const Login: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -42,6 +43,7 @@ const Login: React.FC = () => {
   const { toast } = useToast();
   const { openOtpFlow } = useOtpFlow();
   const { appName, appLogoUrl, appLogoSize } = useSystemConfig();
+  const { t } = useAppTranslation();
 
   // Set document title
   useDocumentTitle("Login");
@@ -208,14 +210,14 @@ const Login: React.FC = () => {
             />
           </div>
           <h1 className="text-3xl font-bold text-gray-900">{appName}</h1>
-          <p className="text-gray-600">E-Governance Portal</p>
+          <p className="text-gray-600">{t("messages.eGovernancePortal")}</p>
         </div>
 
         <Card>
           <CardHeader className="text-center">
-            <CardTitle>Welcome Back</CardTitle>
+            <CardTitle>{t("guest.welcomeBack")}</CardTitle>
             <CardDescription>
-              Choose your preferred login method
+              {t("messages.chooseLoginMethod")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -233,7 +235,7 @@ const Login: React.FC = () => {
               <Alert className="mb-4 border-amber-200 bg-amber-50">
                 <AlertDescription className="text-amber-700">
                   <div className="space-y-2">
-                    <p>Your password is not set. You can:</p>
+                    <p>{t("auth.passwordNotSet")}</p>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <Button
                         variant="outline"
@@ -241,7 +243,7 @@ const Login: React.FC = () => {
                         onClick={() => setLoginMethod("otp")}
                         className="text-amber-700 border-amber-300"
                       >
-                        Login with OTP
+                        {t("auth.login")} with OTP
                       </Button>
                       <Button
                         variant="outline"
@@ -250,7 +252,7 @@ const Login: React.FC = () => {
                         disabled={isLoading}
                         className="text-amber-700 border-amber-300"
                       >
-                        Set Password
+                        Set {t("auth.password")}
                       </Button>
                     </div>
                   </div>
@@ -270,7 +272,7 @@ const Login: React.FC = () => {
                   className="flex items-center gap-2"
                 >
                   <Lock className="h-4 w-4" />
-                  Password
+                  {t("auth.password")}
                 </TabsTrigger>
                 <TabsTrigger value="otp" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
@@ -282,12 +284,12 @@ const Login: React.FC = () => {
               <TabsContent value="password" className="space-y-4">
                 <form onSubmit={handlePasswordLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
+                    <Label htmlFor="email">{t("auth.email")}</Label>
                     <Input
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder={t("auth.emailPlaceholder")}
                       value={formData.email}
                       onChange={handleInputChange}
                       required
@@ -295,13 +297,13 @@ const Login: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t("auth.password")}</Label>
                     <div className="relative">
                       <Input
                         id="password"
                         name="password"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
+                        placeholder={`Enter your ${t("auth.password").toLowerCase()}`}
                         value={formData.password}
                         onChange={handleInputChange}
                         required
@@ -329,7 +331,7 @@ const Login: React.FC = () => {
                       isLoading || !formData.email || !formData.password
                     }
                   >
-                    {isLoading ? "Signing In..." : "Sign In"}
+                    {isLoading ? t("auth.signingIn") : t("auth.login")}
                   </Button>
                 </form>
               </TabsContent>
@@ -338,12 +340,12 @@ const Login: React.FC = () => {
               <TabsContent value="otp" className="space-y-4">
                 <form onSubmit={handleOTPRequest} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="otp-email">Email Address</Label>
+                    <Label htmlFor="otp-email">{t("auth.email")}</Label>
                     <Input
                       id="otp-email"
                       name="email"
                       type="email"
-                      placeholder="Enter your email"
+                      placeholder={t("auth.emailPlaceholder")}
                       value={formData.email}
                       onChange={handleInputChange}
                       required
@@ -359,7 +361,7 @@ const Login: React.FC = () => {
                   </Button>
 
                   <div className="text-center text-sm text-gray-600">
-                    <p>We'll send a 6-digit code to your email address</p>
+                    <p>{t("messages.otpCodeSent")}</p>
                   </div>
                 </form>
               </TabsContent>
@@ -368,9 +370,9 @@ const Login: React.FC = () => {
             {/* Links */}
             <div className="text-center space-y-2 pt-4">
               <p className="text-sm text-gray-600">
-                Don't have an account?{" "}
+                {t("messages.noAccount")}{" "}
                 <Link to="/register" className="text-blue-600 hover:underline">
-                  Register here
+                  {t("messages.registerHere")}
                 </Link>
               </p>
              { /**<p className="text-sm text-gray-600">
@@ -388,7 +390,7 @@ const Login: React.FC = () => {
                   className="inline-flex items-center gap-1 text-blue-600 hover:underline"
                 >
                   <Home className="h-4 w-4" />
-                  Back to Home
+                  {t("messages.backToHome")}
                 </Link>
               </p>
             </div>
@@ -402,8 +404,8 @@ const Login: React.FC = () => {
         {process.env.NODE_ENV === "development" && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Demo Credentials</CardTitle>
-              <CardDescription>For testing purposes only</CardDescription>
+              <CardTitle className="text-lg">{t("messages.demoCredentials")}</CardTitle>
+              <CardDescription>{t("messages.testingPurposes")}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">

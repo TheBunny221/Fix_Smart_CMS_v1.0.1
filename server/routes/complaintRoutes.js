@@ -5,7 +5,16 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { protect, authorize } from "../middleware/auth.js";
 import { uploadComplaintAttachment } from "../controller/uploadController.js";
-import { validateComplaintFeedbackEnhanced, validateComplaintReopen } from "../middleware/validation.js";
+import { 
+  validateComplaintFeedbackEnhanced, 
+  validateComplaintReopen,
+  validateComplaintCreation,
+  validateComplaintUpdate,
+  validateComplaintFilters,
+  validatePagination,
+  validateMongoId,
+  sanitizeInputs
+} from "../middleware/validation.js";
 import {
   getComplaints,
   getComplaint,
@@ -154,10 +163,12 @@ router.get("/daily-limit-status", protect, authorize("CITIZEN"), getDailyLimitSt
  *                     averageResolutionTime:
  *                       type: number
  */
+// Public stats endpoint - no authentication required but limited data
 router.get("/public/stats", getComplaintStats);
 
 // Protected routes
 router.use(protect); // All routes below require authentication
+router.use(sanitizeInputs); // Sanitize all inputs for protected routes
 
 /**
  * @swagger
@@ -209,7 +220,7 @@ router.use(protect); // All routes below require authentication
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/", getComplaints);
+router.get("/", validatePagination, validateComplaintFilters, getComplaints);
 
 /**
  * @swagger
@@ -302,9 +313,9 @@ router.get("/", getComplaints);
  */
 router.post(
   "/",
-  protect,
   authorize("CITIZEN", "ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"),
   upload.array("attachments", 5),
+  validateComplaintCreation,
   createComplaint,
 );
 
@@ -473,7 +484,7 @@ router.get(
  *       401:
  *         $ref: '#/components/responses/UnauthorizedError'
  */
-router.get("/:id", getComplaint);
+router.get("/:id", validateMongoId, getComplaint);
 
 /**
  * @swagger
@@ -543,6 +554,8 @@ router.get("/:id", getComplaint);
 router.put(
   "/:id",
   authorize("WARD_OFFICER", "MAINTENANCE_TEAM", "ADMINISTRATOR"),
+  validateMongoId,
+  validateComplaintUpdate,
   updateComplaintStatus,
 );
 
@@ -591,6 +604,8 @@ router.put(
 router.put(
   "/:id/status",
   authorize("WARD_OFFICER", "MAINTENANCE_TEAM", "ADMINISTRATOR"),
+  validateMongoId,
+  validateComplaintUpdate,
   updateComplaintStatus,
 );
 
@@ -643,6 +658,8 @@ router.put(
 router.put(
   "/:id/assign",
   authorize("WARD_OFFICER", "ADMINISTRATOR"),
+  validateMongoId,
+  validateComplaintUpdate,
   assignComplaint,
 );
 
@@ -693,7 +710,7 @@ router.put(
  *       403:
  *         $ref: '#/components/responses/ForbiddenError'
  */
-router.post("/:id/feedback", authorize("CITIZEN"), validateComplaintFeedbackEnhanced, addComplaintFeedback);
+router.post("/:id/feedback", authorize("CITIZEN"), validateMongoId, validateComplaintFeedbackEnhanced, addComplaintFeedback);
 
 /**
  * @swagger
@@ -737,7 +754,7 @@ router.post("/:id/feedback", authorize("CITIZEN"), validateComplaintFeedbackEnha
  *       403:
  *         $ref: '#/components/responses/ForbiddenError'
  */
-router.put("/:id/reopen", authorize("ADMINISTRATOR"), validateComplaintReopen, reopenComplaint);
+router.put("/:id/reopen", authorize("ADMINISTRATOR"), validateMongoId, validateComplaintReopen, reopenComplaint);
 
 /**
  * @swagger

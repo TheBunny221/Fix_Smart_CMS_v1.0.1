@@ -56,6 +56,7 @@ import FeedbackDialog from "../components/FeedbackDialog";
 import QuickComplaintModal from "../components/QuickComplaintModal";
 import ContactInfoCard from "../components/ContactInfoCard";
 import { SafeRenderer, safeRenderValue } from "../components/SafeRenderer";
+import { useAppTranslation } from "../utils/i18n";
 
 // Suppress ResizeObserver loop limit warnings
 const originalError = console.error;
@@ -70,6 +71,7 @@ const CitizenDashboard: React.FC = () => {
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const { translations } = useAppSelector((state) => state.language);
   const { complaintTypeOptions } = useComplaintTypes();
+  const { t } = useAppTranslation();
 
   // Set document title
   useDocumentTitle("Dashboard");
@@ -395,10 +397,10 @@ const CitizenDashboard: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2">
-              🚀 Welcome back, {user?.fullName || "Citizen"}! 👋
+              🚀 {t("dashboard.citizen.welcome", { name: user?.fullName || "Citizen" })} 👋
             </h1>
             <p className="text-primary-foreground/80">
-              Track your complaints and stay updated with the latest progress.
+              {t("dashboard.citizen.subtitle")}
             </p>
           </div>
           <div className="hidden md:flex items-center space-x-4">
@@ -407,7 +409,7 @@ const CitizenDashboard: React.FC = () => {
               className="bg-white text-primary hover:bg-gray-50"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
-              New Complaint
+              {t("dashboard.citizen.newComplaint")}
             </Button>
           </div>
         </div>
@@ -418,7 +420,7 @@ const CitizenDashboard: React.FC = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Complaints
+              {t("dashboard.citizen.totalComplaints")}
             </CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -432,7 +434,7 @@ const CitizenDashboard: React.FC = () => {
               <>
                 <div className="text-2xl font-bold">{dashboardStats.total}</div>
                 <p className="text-xs text-muted-foreground">
-                  All time submissions
+                  {t("dashboard.citizen.allTimeSubmissions")}
                 </p>
               </>
             )}
@@ -441,7 +443,7 @@ const CitizenDashboard: React.FC = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.citizen.pending")}</CardTitle>
             <Clock className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
@@ -455,7 +457,7 @@ const CitizenDashboard: React.FC = () => {
                 <div className="text-2xl font-bold text-yellow-600">
                   {dashboardStats.pending}
                 </div>
-                <p className="text-xs text-muted-foreground">Awaiting assignment</p>
+                <p className="text-xs text-muted-foreground">{t("dashboard.citizen.awaitingAssignment")}</p>
               </>
             )}
           </CardContent>
@@ -463,7 +465,7 @@ const CitizenDashboard: React.FC = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.citizen.inProgress")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
@@ -477,7 +479,7 @@ const CitizenDashboard: React.FC = () => {
                 <div className="text-2xl font-bold text-orange-600">
                   {dashboardStats.inProgress}
                 </div>
-                <p className="text-xs text-muted-foreground">Being worked on</p>
+                <p className="text-xs text-muted-foreground">{t("dashboard.citizen.beingWorkedOn")}</p>
               </>
             )}
           </CardContent>
@@ -485,7 +487,7 @@ const CitizenDashboard: React.FC = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Resolved</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.citizen.resolved")}</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -500,7 +502,7 @@ const CitizenDashboard: React.FC = () => {
                   {dashboardStats.resolved}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Successfully resolved
+                  {t("dashboard.citizen.successfullyResolved")}
                 </p>
               </>
             )}
@@ -533,7 +535,7 @@ const CitizenDashboard: React.FC = () => {
       {/* Resolution Rate Progress */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Resolution Progress</CardTitle>
+          <CardTitle className="text-lg">{t("dashboard.citizen.resolutionProgress")}</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading || statsLoading ? (
@@ -546,7 +548,7 @@ const CitizenDashboard: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">
-                  Overall Resolution Rate
+                  {t("dashboard.citizen.overallResolutionRate")}
                 </span>
                 <span className="text-sm text-muted-foreground">
                   {dashboardStats.resolved} of {dashboardStats.total} complaints
@@ -561,7 +563,7 @@ const CitizenDashboard: React.FC = () => {
               </div>
               {dashboardStats.avgResolutionTime > 0 && (
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>Average Resolution Time</span>
+                  <span>{t("dashboard.citizen.avgResolutionTime")}</span>
                   <span>{dashboardStats.avgResolutionTime} days</span>
                 </div>
               )}
@@ -574,15 +576,15 @@ const CitizenDashboard: React.FC = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">My Complaints</CardTitle>
+            <CardTitle className="text-lg">{t("dashboard.citizen.myComplaints")}</CardTitle>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handleRefresh}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
+                {t("common.refresh")}
               </Button>
               <Button onClick={() => setIsQuickFormOpen(true)} size="sm">
                 <PlusCircle className="h-4 w-4 mr-2" />
-                New Complaint
+                {t("dashboard.citizen.newComplaint")}
               </Button>
             </div>
           </div>
@@ -595,7 +597,7 @@ const CitizenDashboard: React.FC = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Search by ID, description, or location..."
+                    placeholder={t("dashboard.citizen.searchPlaceholder")}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10"
@@ -626,7 +628,7 @@ const CitizenDashboard: React.FC = () => {
                   <SelectValue placeholder="All Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="all">{t("dashboard.citizen.allStatus")}</SelectItem>
                   <SelectItem value="REGISTERED">Registered</SelectItem>
                   <SelectItem value="ASSIGNED">Assigned</SelectItem>
                   <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
@@ -640,7 +642,7 @@ const CitizenDashboard: React.FC = () => {
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="all">{t("dashboard.citizen.allTypes")}</SelectItem>
                   {complaintTypeOptions.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
@@ -661,10 +663,10 @@ const CitizenDashboard: React.FC = () => {
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="submittedOn-desc">Newest First</SelectItem>
-                  <SelectItem value="submittedOn-asc">Oldest First</SelectItem>
+                  <SelectItem value="submittedOn-desc">{t("dashboard.citizen.newestFirst")}</SelectItem>
+                  <SelectItem value="submittedOn-asc">{t("dashboard.citizen.oldestFirst")}</SelectItem>
                   <SelectItem value="priority-desc">
-                    High Priority First
+                    {t("dashboard.citizen.highPriorityFirst")}
                   </SelectItem>
                   <SelectItem value="status-asc">Status</SelectItem>
                 </SelectContent>
@@ -675,7 +677,7 @@ const CitizenDashboard: React.FC = () => {
                 (typeFilter && typeFilter !== "all")) && (
                   <Button variant="ghost" onClick={clearAllFilters}>
                     <Filter className="h-4 w-4 mr-2" />
-                    Clear Filters
+                    {t("dashboard.citizen.clearFilters")}
                   </Button>
                 )}
             </div>
@@ -685,22 +687,22 @@ const CitizenDashboard: React.FC = () => {
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-2">Loading complaints...</span>
+              <span className="ml-2">{t("dashboard.citizen.loadingComplaints")}</span>
             </div>
           ) : complaints.length === 0 ? (
             <div className="text-center py-8">
               <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No complaints found
+                {t("dashboard.citizen.noComplaints")}
               </h3>
               <p className="text-gray-500 mb-4">
                 {searchTerm || statusFilter || typeFilter
                   ? "No complaints match your current filters."
-                  : "You haven't submitted any complaints yet."}
+                  : t("dashboard.citizen.noComplaintsMessage")}
               </p>
               <Button onClick={() => navigate("/complaints/citizen-form")}>
                 <PlusCircle className="h-4 w-4 mr-2" />
-                Submit Your First Complaint
+                {t("dashboard.citizen.submitFirstComplaint")}
               </Button>
             </div>
           ) : (
@@ -987,7 +989,7 @@ const CitizenDashboard: React.FC = () => {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Quick Actions</CardTitle>
+            <CardTitle className="text-lg">{t("dashboard.citizen.quickActions")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button
@@ -995,7 +997,7 @@ const CitizenDashboard: React.FC = () => {
               className="w-full justify-start"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
-              Submit New Complaint
+              {t("dashboard.citizen.submitNewComplaint")}
             </Button>
             <Button
               variant="outline"
@@ -1003,14 +1005,14 @@ const CitizenDashboard: React.FC = () => {
               className="w-full justify-start"
             >
               <FileText className="mr-2 h-4 w-4" />
-              View All Complaints
+              {t("dashboard.citizen.viewAllComplaints")}
             </Button>
             {/* Track Complaint Status removed as requested */}
           </CardContent>
         </Card>
 
         {/* Help & Support (reused from Home page contact section) */}
-        <ContactInfoCard title="Help & Support" />
+        <ContactInfoCard title={t("dashboard.citizen.helpSupport")} />
       </div>
 
       {/* Quick Complaint Modal */}

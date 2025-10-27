@@ -5,7 +5,12 @@ import {
   detectLocationArea,
 } from "../controller/wardController.js";
 import { protect, authorize } from "../middleware/auth.js";
-import { validateWardBoundaries, validateLocationDetection } from "../middleware/validation.js";
+import { 
+  validateWardBoundaries, 
+  validateLocationDetection,
+  validateMongoId,
+  sanitizeInputs
+} from "../middleware/validation.js";
 
 const router = express.Router();
 
@@ -110,7 +115,7 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/boundaries", protect, authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"), getAllWardsWithBoundaries);
+router.get("/boundaries", protect, authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"), sanitizeInputs, getAllWardsWithBoundaries);
 
 /**
  * @swagger
@@ -182,7 +187,7 @@ router.get("/boundaries", protect, authorize("ADMINISTRATOR", "WARD_OFFICER", "M
  *       500:
  *         description: Internal server error
  */
-router.put("/:wardId/boundaries", protect, authorize("ADMINISTRATOR"), validateWardBoundaries, updateWardBoundaries);
+router.put("/:wardId/boundaries", protect, authorize("ADMINISTRATOR"), sanitizeInputs, validateMongoId, validateWardBoundaries, updateWardBoundaries);
 
 /**
  * @swagger
@@ -231,6 +236,6 @@ router.put("/:wardId/boundaries", protect, authorize("ADMINISTRATOR"), validateW
  *       500:
  *         description: Internal server error
  */
-router.post("/detect-area", protect, authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM", "CITIZEN"), validateLocationDetection, detectLocationArea);
+router.post("/detect-area", protect, authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM", "CITIZEN"), sanitizeInputs, validateLocationDetection, detectLocationArea);
 
 export default router;

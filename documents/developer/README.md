@@ -18,6 +18,12 @@ This section contains comprehensive developer documentation for Fix_Smart_CMS v1
 - **[Export Testing Guide](./EXPORT_TESTING_GUIDE.md)** - Comprehensive export functionality testing
 - **[Attachment System](./complaint-attachment-system.md)** - File upload and attachment management
 
+### 🤖 AI Agent Resources
+- **[Agent Guide](./AGENTS.md)** - Comprehensive guide for AI agents working with the codebase
+- **[Component Analysis Report](./component-analysis-report.md)** - React component usage analysis and cleanup recommendations
+- **[Route Analysis Report](./ROUTE_ANALYSIS_REPORT.md)** - React router configuration analysis and optimization
+- **[Route Cleanup Summary](./ROUTE_CLEANUP_SUMMARY.md)** - Route cleanup implementation results and validation
+
 ### 🔧 Development Tools
 - **[Scripts Reference](./SCRIPTS_REFERENCE.md)** - Available npm scripts and their usage
 - **[Server Validation Report](./SERVER_VALIDATION_REPORT.md)** - Server-side validation and testing

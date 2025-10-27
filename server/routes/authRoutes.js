@@ -22,29 +22,68 @@ import {
   validateOTP,
   validateOTPRequest,
   validatePasswordChange,
+  validateUserProfileUpdate,
+  sanitizeInputs
 } from "../middleware/validation.js";
 
 const router = express.Router();
 
-// More lenient rate limiting for auth endpoints
-const authLimiter = rateLimit({
+// Strict rate limiting for login attempts (prevent brute force)
+const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Increased limit
+  max: process.env.NODE_ENV === "production" ? 5 : 100, // 5 attempts in production, 100 in dev
   message: {
     success: false,
-    message: "Too many authentication attempts. Please try again later.",
+    message: "Too many login attempts. Please try again in 15 minutes.",
+    errorCode: "LOGIN_RATE_LIMIT_EXCEEDED"
   },
   standardHeaders: true,
   legacyHeaders: false,
   trustProxy: true,
-  // Skip for development and specific IPs
-  skip: (req) => {
-    return process.env.NODE_ENV === "development" || 
-           req.ip === "127.0.0.1" ||
-           req.ip === "::1" ||
-           req.ip === "199.199.50.51" ||
-           req.ip.includes("localhost");
+  skipSuccessfulRequests: true, // Don't count successful requests
+  skipFailedRequests: false, // Count failed requests
+});
+
+// Rate limiting for OTP requests (prevent spam)
+const otpLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: process.env.NODE_ENV === "production" ? 3 : 50, // 3 OTP requests per 5 minutes in production
+  message: {
+    success: false,
+    message: "Too many OTP requests. Please wait 5 minutes before requesting again.",
+    errorCode: "OTP_RATE_LIMIT_EXCEEDED"
   },
+  standardHeaders: true,
+  legacyHeaders: false,
+  trustProxy: true,
+});
+
+// Rate limiting for password reset/setup (prevent abuse)
+const passwordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: process.env.NODE_ENV === "production" ? 3 : 20, // 3 password operations per hour in production
+  message: {
+    success: false,
+    message: "Too many password reset attempts. Please try again in 1 hour.",
+    errorCode: "PASSWORD_RATE_LIMIT_EXCEEDED"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  trustProxy: true,
+});
+
+// General auth rate limiting (for registration and other auth operations)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === "production" ? 10 : 100, // 10 attempts in production
+  message: {
+    success: false,
+    message: "Too many authentication requests. Please try again later.",
+    errorCode: "AUTH_RATE_LIMIT_EXCEEDED"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  trustProxy: true,
 });
 
 /**
@@ -226,7 +265,7 @@ const authLimiter = rateLimit({
  *       409:
  *         description: Email already exists
  */
-router.post("/register", validateRegistration, register);
+router.post("/register", authLimiter, sanitizeInputs, validateRegistration, register);
 
 /**
  * @swagger
@@ -255,7 +294,7 @@ router.post("/register", validateRegistration, register);
  *       401:
  *         description: Authentication failed
  */
-router.post("/login", authLimiter, validateLogin, login);
+router.post("/login", loginLimiter, sanitizeInputs, validateLogin, login);
 /**
  * @swagger
  * /api/auth/login-otp:
@@ -276,7 +315,7 @@ router.post("/login", authLimiter, validateLogin, login);
  *       400:
  *         description: Invalid email or user not found
  */
-router.post("/login-otp", authLimiter, validateOTPRequest, loginWithOTP);
+router.post("/login-otp", otpLimiter, sanitizeInputs, validateOTPRequest, loginWithOTP);
 
 /**
  * @swagger
@@ -303,7 +342,7 @@ router.post("/login-otp", authLimiter, validateOTPRequest, loginWithOTP);
  *       400:
  *         description: Invalid or expired OTP
  */
-router.post("/verify-otp", authLimiter, validateOTP, verifyOTPLogin);
+router.post("/verify-otp", loginLimiter, sanitizeInputs, validateOTP, verifyOTPLogin);
 
 /**
  * @swagger
@@ -323,7 +362,7 @@ router.post("/verify-otp", authLimiter, validateOTP, verifyOTPLogin);
  *       400:
  *         description: Invalid or expired OTP
  */
-router.post("/verify-registration-otp", validateOTP, verifyRegistrationOTP);
+router.post("/verify-registration-otp", authLimiter, sanitizeInputs, validateOTP, verifyRegistrationOTP);
 
 /**
  * @swagger
@@ -345,6 +384,8 @@ router.post("/verify-registration-otp", validateOTP, verifyRegistrationOTP);
  */
 router.post(
   "/resend-registration-otp",
+  otpLimiter,
+  sanitizeInputs,
   validateOTPRequest,
   resendRegistrationOTP,
 );
@@ -373,7 +414,7 @@ router.post(
  *       404:
  *         description: User not found
  */
-router.post("/send-password-setup", sendPasswordSetup);
+router.post("/send-password-setup", passwordLimiter, sanitizeInputs, validateOTPRequest, sendPasswordSetup);
 
 /**
  * @swagger
@@ -406,7 +447,7 @@ router.post("/send-password-setup", sendPasswordSetup);
  *       400:
  *         description: Invalid or expired token
  */
-router.post("/set-password/:token", setPassword);
+router.post("/set-password/:token", passwordLimiter, sanitizeInputs, validatePasswordChange, setPassword);
 
 /**
  * @swagger
@@ -422,6 +463,7 @@ router.post("/logout", logout); // Logout should be accessible even with invalid
 
 // Protected routes
 router.use(protect); // All routes after this middleware are protected
+router.use(sanitizeInputs); // Sanitize all inputs for protected routes
 
 /**
  * @swagger
@@ -501,7 +543,7 @@ router.get("/verify-token", verifyToken);
  *       401:
  *         description: Unauthorized
  */
-router.put("/profile", updateProfile);
+router.put("/profile", validateUserProfileUpdate, updateProfile);
 
 /**
  * @swagger

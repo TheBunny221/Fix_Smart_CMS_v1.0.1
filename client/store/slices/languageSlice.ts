@@ -30,9 +30,20 @@ export interface LanguageState {
   isLoading: boolean;
 }
 
+// Get initial language from localStorage with fallback
+const getInitialLanguage = (): Language => {
+  if (typeof window === "undefined") return "en";
+  
+  const stored = localStorage.getItem("language") || localStorage.getItem("lang");
+  if (stored && (stored === "en" || stored === "hi" || stored === "ml")) {
+    return stored as Language;
+  }
+  return "en";
+};
+
 // Initial state
 const initialState: LanguageState = {
-  currentLanguage: (localStorage.getItem("language") as Language) || "en",
+  currentLanguage: getInitialLanguage(),
   translations: translations.en,
   isLoading: false,
 };
@@ -51,8 +62,8 @@ const languageSlice = createSlice({
       localStorage.setItem("language", action.payload);
     },
     initializeLanguage: (state) => {
-      // Initialize language from localStorage or default to English
-      const savedLanguage = localStorage.getItem("language") as Language | null;
+      // Initialize language from localStorage with fallback to 'lang' key
+      const savedLanguage = (localStorage.getItem("language") || localStorage.getItem("lang")) as Language | null;
       if (savedLanguage && translations[savedLanguage]) {
         state.currentLanguage = savedLanguage;
         state.translations = translations[savedLanguage];

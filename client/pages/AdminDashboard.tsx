@@ -64,6 +64,7 @@ import {
 
 import { useSystemConfig } from "../contexts/SystemConfigContext";
 import { SafeRenderer, safeRenderValue } from "../components/SafeRenderer";
+import { useAppTranslation } from "../utils/i18n";
 
 // Suppress ResizeObserver loop limit warnings (non-blocking)
 if (typeof window !== 'undefined') {
@@ -79,6 +80,7 @@ if (typeof window !== 'undefined') {
 const AdminDashboard: React.FC = () => {
   const { translations } = useAppSelector((state) => state.language);
   const { appName } = useSystemConfig();
+  const { t } = useAppTranslation();
 
   // Fetch real-time data using API queries
   const {
@@ -234,10 +236,10 @@ const AdminDashboard: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
-                🛡️ Administrator Dashboard 🛠️
+                🛡️ {t("dashboard.admin.title")} 🛠️
               </h1>
               <p className="text-primary-foreground/90 text-base md:text-lg">
-                Complete system overview and management controls for {appName}
+                {t("dashboard.admin.subtitle")} {appName}
               </p>
             </div>
             <Shield className="h-16 w-16 md:h-20 md:w-20 text-primary-foreground/40 hidden sm:block" />
@@ -248,7 +250,7 @@ const AdminDashboard: React.FC = () => {
             {[
               {
                 value: systemStats.totalComplaints,
-                label: "Total Complaints",
+                label: t("dashboard.citizen.totalComplaints"),
               },
               {
                 value: systemStats.activeUsers || 0,
@@ -256,7 +258,7 @@ const AdminDashboard: React.FC = () => {
               },
               {
                 value: `${metrics?.slaCompliance || 0}%`,
-                label: "SLA Compliance",
+                label: t("dashboard.slaCompliance"),
               },
               {
                 value: `${(metrics?.citizenSatisfaction || 0).toFixed(1)}/5`,
@@ -292,7 +294,7 @@ const AdminDashboard: React.FC = () => {
           <div className="mt-4">
             <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-700">
               <div className="font-medium">
-                Some dashboard data failed to load
+                {t("dashboard.admin.dataLoadError")}
               </div>
               {process.env.NODE_ENV === "development" && (
                 <div className="mt-1 text-xs text-red-600/80">
@@ -314,7 +316,7 @@ const AdminDashboard: React.FC = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Active Complaints
+                {t("dashboard.admin.activeComplaints")}
               </CardTitle>
               <FileText className="h-4 w-4 text-orange-600" />
             </CardHeader>
@@ -323,7 +325,7 @@ const AdminDashboard: React.FC = () => {
                 {systemStats.activeComplaints}
               </div>
               <p className="text-xs text-muted-foreground">
-                Pending resolution
+                {t("dashboard.admin.pendingResolution")}
               </p>
             </CardContent>
           </Card>
@@ -331,7 +333,7 @@ const AdminDashboard: React.FC = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Overdue Tasks
+                {t("dashboard.admin.overdueComplaints")}
               </CardTitle>
               <AlertTriangle className="h-4 w-4 text-red-600" />
             </CardHeader>
@@ -340,7 +342,7 @@ const AdminDashboard: React.FC = () => {
                 {systemStats.overdue}
               </div>
               <p className="text-xs text-muted-foreground">
-                Open past deadline
+                {t("dashboard.admin.openPastDeadline")}
               </p>
               <p className="text-[11px] text-gray-500 mt-1">
                 SLA breaches (open + resolved late): {metrics.slaBreaches ?? 0}
@@ -351,7 +353,7 @@ const AdminDashboard: React.FC = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Pending Team Assignment
+                {t("dashboard.admin.pendingAssignments")}
               </CardTitle>
               <UserCheck className="h-4 w-4 text-blue-600" />
             </CardHeader>
@@ -360,7 +362,7 @@ const AdminDashboard: React.FC = () => {
                 {systemStats.pendingTeamAssignments || 0}
               </div>
               <p className="text-xs text-muted-foreground">
-                Needs maintenance assignment
+                {t("dashboard.admin.needsMaintenanceAssignment")}
               </p>
             </CardContent>
           </Card>
@@ -368,7 +370,7 @@ const AdminDashboard: React.FC = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Avg Resolution
+                {t("dashboard.admin.avgResolution")}
               </CardTitle>
               <Clock className="h-4 w-4 text-green-600" />
             </CardHeader>
@@ -377,7 +379,7 @@ const AdminDashboard: React.FC = () => {
                 {(metrics?.avgResolutionTime || 0).toFixed(1)}d
               </div>
               <p className="text-xs text-muted-foreground">
-                Average Closure Time
+                {t("dashboard.admin.averageClosureTime")}
               </p>
             </CardContent>
           </Card>
@@ -386,7 +388,7 @@ const AdminDashboard: React.FC = () => {
         {/* Main Dashboard Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="overview">{t("dashboard.overview")}</TabsTrigger>
             {/* <TabsTrigger value="performance">Performance</TabsTrigger> */}
             {/* <TabsTrigger value="users">Users</TabsTrigger> */}
             <TabsTrigger value="system">System</TabsTrigger>
@@ -576,7 +578,7 @@ const AdminDashboard: React.FC = () => {
             {/* Overview Heatmap */}
             <Card>
               <CardHeader>
-                <CardTitle>Overview Heatmap</CardTitle>
+                <CardTitle>{t("dashboard.admin.overviewHeatmap")}</CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
                   High-level view of complaints across wards and types
                 </p>
@@ -611,7 +613,7 @@ const AdminDashboard: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Activity className="h-5 w-5 mr-2" />
-                  Recent System Activity
+                  {t("dashboard.admin.recentActivity")}
                 </CardTitle>
               </CardHeader>
               <CardContent>

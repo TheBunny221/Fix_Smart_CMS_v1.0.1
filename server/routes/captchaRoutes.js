@@ -1,8 +1,23 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import {
   generateCaptcha,
   verifyCaptcha,
 } from "../controller/captchaController.js";
+
+// Rate limiting for CAPTCHA verification (prevent brute force)
+const captchaLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: process.env.NODE_ENV === "production" ? 10 : 100, // 10 attempts per 5 minutes in production
+  message: {
+    success: false,
+    message: "Too many CAPTCHA verification attempts. Please try again later.",
+    errorCode: "CAPTCHA_RATE_LIMIT_EXCEEDED"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  trustProxy: true,
+});
 
 const router = express.Router();
 
@@ -106,6 +121,6 @@ router.get("/generate", generateCaptcha);
  *         description: Invalid CAPTCHA or expired session
  */
 // Verify CAPTCHA (optional standalone endpoint)
-router.post("/verify", verifyCaptcha);
+router.post("/verify", captchaLimiter, verifyCaptcha);
 
 export default router;

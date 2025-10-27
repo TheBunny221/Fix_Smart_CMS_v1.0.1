@@ -43,6 +43,7 @@ import {
   ChevronDown,
   ChevronRight,
   Search,
+  MessageSquare,
 } from "lucide-react";
 
 interface ConfigSection {
@@ -54,7 +55,34 @@ interface ConfigSection {
 
 const CONFIG_SECTIONS: ConfigSection[] = [
   {
-    title: "Map Settings",
+    title: "Application Settings",
+    icon: <Globe className="h-5 w-5" />,
+    description: "Application branding and general settings",
+    keys: [
+      "APP_NAME",
+      "APP_LOGO_URL",
+      "APP_LOGO_SIZE",
+      "ADMIN_EMAIL",
+    ],
+  },
+  {
+    title: "Complaint Management",
+    icon: <FileText className="h-5 w-5" />,
+    description: "Complaint submission and management settings",
+    keys: [
+      "COMPLAINT_ID_PREFIX",
+      "COMPLAINT_ID_START_NUMBER",
+      "COMPLAINT_ID_LENGTH",
+      "COMPLAINT_PHOTO_MAX_SIZE",
+      "COMPLAINT_PHOTO_MAX_COUNT",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+      "GUEST_COMPLAINT_ENABLED",
+      "DEFAULT_SLA_HOURS",
+    ],
+  },
+  {
+    title: "Geographic & Location Settings",
     icon: <Map className="h-5 w-5" />,
     description: "Geographic and location-based configuration",
     keys: [
@@ -86,52 +114,25 @@ const CONFIG_SECTIONS: ConfigSection[] = [
     icon: <Settings className="h-5 w-5" />,
     description: "Core system functionality and behavior",
     keys: [
-      "SYSTEM_VERSION",
-      "MAINTENANCE_MODE",
-      "AUTO_CLOSE_RESOLVED_COMPLAINTS",
-      "AUTO_CLOSE_DAYS",
       "AUTO_ASSIGN_COMPLAINTS",
-      "AUTO_ASSIGN_ON_REOPEN",
       "CITIZEN_REGISTRATION_ENABLED",
-    ],
-  },
-  {
-    title: "Complaint Settings",
-    icon: <FileText className="h-5 w-5" />,
-    description: "Complaint submission and management settings",
-    keys: [
-      "GUEST_COMPLAINT_ENABLED",
-      "EMAIL_NOTIFICATIONS_ENABLED",
-      "SMS_NOTIFICATIONS_ENABLED",
-      "COMPLAINT_PHOTO_MAX_SIZE",
-      "COMPLAINT_PHOTO_MAX_COUNT",
-      "CITIZEN_DAILY_COMPLAINT_LIMIT",
-      "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
-      "COMPLAINT_ID_PREFIX",
-      "COMPLAINT_ID_START_NUMBER",
-      "COMPLAINT_ID_LENGTH",
-    ],
-  },
-  {
-    title: "Application Settings",
-    icon: <Globe className="h-5 w-5" />,
-    description: "Application branding and general settings",
-    keys: [
-      "APP_NAME",
-      "APP_LOGO_URL",
-      "APP_LOGO_SIZE",
-      "ADMIN_EMAIL",
-      "DEFAULT_SLA_HOURS",
       "OTP_EXPIRY_MINUTES",
       "MAX_FILE_SIZE_MB",
     ],
   },
   {
-    title: "System Data",
+    title: "Notification & Communication",
+    icon: <MessageSquare className="h-5 w-5" />,
+    description: "Notification settings and communication preferences",
+    keys: [
+      "NOTIFICATION_SETTINGS",
+    ],
+  },
+  {
+    title: "System Data Structures",
     icon: <Database className="h-5 w-5" />,
     description: "System data structures and configurations",
     keys: [
-      "NOTIFICATION_SETTINGS",
       "COMPLAINT_PRIORITIES",
       "COMPLAINT_STATUSES",
     ],
@@ -172,8 +173,26 @@ const SystemSettingsManager: React.FC = () => {
   // Helper functions
   const getSettingLabel = (key: string): string => {
     const labels: Record<string, string> = {
+      // Application Settings
+      APP_NAME: "Application Name",
+      APP_LOGO_URL: "Logo URL",
+      APP_LOGO_SIZE: "Logo Size",
+      ADMIN_EMAIL: "Administrator Email",
+      
+      // Complaint Management
+      COMPLAINT_ID_PREFIX: "Complaint ID Prefix",
+      COMPLAINT_ID_START_NUMBER: "ID Start Number",
+      COMPLAINT_ID_LENGTH: "ID Number Length",
+      COMPLAINT_PHOTO_MAX_SIZE: "Max Photo Size (MB)",
+      COMPLAINT_PHOTO_MAX_COUNT: "Max Photo Count",
+      CITIZEN_DAILY_COMPLAINT_LIMIT: "Daily Complaint Limit",
+      CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED: "Enable Daily Limit",
+      GUEST_COMPLAINT_ENABLED: "Allow Guest Complaints",
+      DEFAULT_SLA_HOURS: "Default SLA Hours",
+      
+      // Geographic Settings
       MAP_SEARCH_PLACE: "Search Place Context",
-      MAP_COUNTRY_CODES: "Country Codes",
+      MAP_COUNTRY_CODES: "Country Codes (ISO2)",
       MAP_DEFAULT_LAT: "Default Latitude",
       MAP_DEFAULT_LNG: "Default Longitude",
       MAP_BBOX_NORTH: "Bounding Box North",
@@ -181,36 +200,24 @@ const SystemSettingsManager: React.FC = () => {
       MAP_BBOX_EAST: "Bounding Box East",
       MAP_BBOX_WEST: "Bounding Box West",
       SERVICE_AREA_BOUNDARY: "Service Area Boundary (GeoJSON)",
-      SERVICE_AREA_VALIDATION_ENABLED: "Enable Service Area Validation",
+      SERVICE_AREA_VALIDATION_ENABLED: "Enable Location Validation",
+      
+      // Contact Information
       CONTACT_HELPLINE: "Helpline Number",
       CONTACT_EMAIL: "Support Email",
       CONTACT_OFFICE_HOURS: "Office Hours",
       CONTACT_OFFICE_ADDRESS: "Office Address",
-      SYSTEM_VERSION: "System Version",
-      MAINTENANCE_MODE: "Maintenance Mode",
-      AUTO_CLOSE_RESOLVED_COMPLAINTS: "Auto-close Resolved Complaints",
-      AUTO_CLOSE_DAYS: "Auto-close After Days",
+      
+      // System Behavior
       AUTO_ASSIGN_COMPLAINTS: "Auto-assign Complaints",
-      AUTO_ASSIGN_ON_REOPEN: "Auto-assign on Reopen",
-      CITIZEN_REGISTRATION_ENABLED: "Citizen Registration",
-      GUEST_COMPLAINT_ENABLED: "Guest Complaints",
-      EMAIL_NOTIFICATIONS_ENABLED: "Email Notifications",
-      SMS_NOTIFICATIONS_ENABLED: "SMS Notifications",
-      COMPLAINT_PHOTO_MAX_SIZE: "Max Photo Size (MB)",
-      COMPLAINT_PHOTO_MAX_COUNT: "Max Photo Count",
-      CITIZEN_DAILY_COMPLAINT_LIMIT: "Daily Complaint Limit",
-      CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED: "Enable Daily Limit",
-      COMPLAINT_ID_PREFIX: "Complaint ID Prefix",
-      COMPLAINT_ID_START_NUMBER: "ID Start Number",
-      COMPLAINT_ID_LENGTH: "ID Number Length",
-      APP_NAME: "Application Name",
-      APP_LOGO_URL: "Logo URL",
-      APP_LOGO_SIZE: "Logo Size",
-      ADMIN_EMAIL: "Administrator Email",
-      DEFAULT_SLA_HOURS: "Default SLA Hours",
+      CITIZEN_REGISTRATION_ENABLED: "Allow Citizen Registration",
       OTP_EXPIRY_MINUTES: "OTP Expiry Minutes",
       MAX_FILE_SIZE_MB: "Max File Size (MB)",
-      NOTIFICATION_SETTINGS: "Notification Settings (JSON)",
+      
+      // Notifications
+      NOTIFICATION_SETTINGS: "Notification Configuration (JSON)",
+      
+      // System Data
       COMPLAINT_PRIORITIES: "Complaint Priorities (JSON)",
       COMPLAINT_STATUSES: "Complaint Statuses (JSON)",
     };

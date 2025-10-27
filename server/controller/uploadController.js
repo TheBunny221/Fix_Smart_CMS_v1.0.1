@@ -55,9 +55,17 @@ export const uploadComplaintAttachment = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check if complaint exists
+  // Check if complaint exists and user has permission
   const complaint = await prisma.complaint.findUnique({
     where: { id: complaintId },
+    select: {
+      id: true,
+      submittedById: true,
+      wardId: true,
+      assignedToId: true,
+      maintenanceTeamId: true,
+      wardOfficerId: true,
+    },
   });
 
   if (!complaint) {
@@ -68,6 +76,27 @@ export const uploadComplaintAttachment = asyncHandler(async (req, res) => {
       message: "Complaint not found",
       data: null,
     });
+  }
+
+  // Server-side authorization check - only allow authorized users to upload attachments
+  if (req.user) {
+    const isAuthorized =
+      req.user.role === "ADMINISTRATOR" ||
+      complaint.submittedById === req.user.id ||
+      (req.user.role === "WARD_OFFICER" && 
+       (complaint.wardId === req.user.wardId || complaint.wardOfficerId === req.user.id)) ||
+      (req.user.role === "MAINTENANCE_TEAM" && 
+       (complaint.assignedToId === req.user.id || complaint.maintenanceTeamId === req.user.id));
+
+    if (!isAuthorized) {
+      // Clean up uploaded file
+      fs.unlinkSync(req.file.path);
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. You don't have permission to upload attachments to this complaint.",
+        data: null,
+      });
+    }
   }
 
   // Create attachment record
@@ -211,6 +240,43 @@ export const getAttachment = asyncHandler(async (req, res) => {
   const { filename } = req.params;
   const uploadDir = process.env.UPLOAD_PATH || "./uploads";
 
+  // Find attachment in database for authorization check
+  const attachment = await prisma.attachment.findFirst({
+    where: { fileName: filename },
+    include: {
+      complaint: {
+        select: {
+          id: true,
+          submittedById: true,
+          wardId: true,
+          assignedToId: true,
+          maintenanceTeamId: true,
+          wardOfficerId: true,
+        },
+      },
+    },
+  });
+
+  // Server-side authorization check
+  if (attachment && attachment.complaint && req.user) {
+    const complaint = attachment.complaint;
+    const isAuthorized =
+      req.user.role === "ADMINISTRATOR" ||
+      complaint.submittedById === req.user.id ||
+      (req.user.role === "WARD_OFFICER" && 
+       (complaint.wardId === req.user.wardId || complaint.wardOfficerId === req.user.id)) ||
+      (req.user.role === "MAINTENANCE_TEAM" && 
+       (complaint.assignedToId === req.user.id || complaint.maintenanceTeamId === req.user.id));
+
+    if (!isAuthorized) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. You don't have permission to view this file.",
+        data: null,
+      });
+    }
+  }
+
   // Try different possible file paths
   const possiblePaths = [
     path.join(uploadDir, filename), // Direct in uploads
@@ -236,11 +302,6 @@ export const getAttachment = asyncHandler(async (req, res) => {
       data: null,
     });
   }
-
-  // Find attachment in database for metadata
-  const attachment = await prisma.attachment.findFirst({
-    where: { fileName: filename },
-  });
 
   if (attachment) {
     // Set appropriate headers with original name

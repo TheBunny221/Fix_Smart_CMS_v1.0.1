@@ -1,4 +1,5 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -22,10 +23,27 @@ import {
 import {
   validateOtpVerification,
   validateComplaintTracking,
+  validateGuestComplaint,
+  validateOtpRequest,
+  sanitizeInputs
 } from "../middleware/validation.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Rate limiting for guest OTP operations
+const guestOtpLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: process.env.NODE_ENV === "production" ? 3 : 50, // 3 OTP requests per 5 minutes in production
+  message: {
+    success: false,
+    message: "Too many OTP requests. Please wait 5 minutes before requesting again.",
+    errorCode: "OTP_RATE_LIMIT_EXCEEDED"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  trustProxy: true,
+});
 
 const router = express.Router();
 
@@ -288,7 +306,7 @@ const upload = multer({
  *       415:
  *         description: Unsupported file type
  */
-router.post("/complaint", upload.array("attachments", 5), submitGuestComplaint);
+router.post("/complaint", upload.array("attachments", 5), sanitizeInputs, validateGuestComplaint, submitGuestComplaint);
 /**
  * @swagger
  * /api/guest/complaint-with-attachments:
@@ -319,6 +337,8 @@ router.post("/complaint", upload.array("attachments", 5), submitGuestComplaint);
 router.post(
   "/complaint-with-attachments",
   upload.array("attachments", 5),
+  sanitizeInputs,
+  validateGuestComplaint,
   submitGuestComplaintWithAttachments,
 );
 /**
@@ -352,7 +372,10 @@ router.post(
  */
 router.post(
   "/verify-otp",
+  guestOtpLimiter,
   upload.array("attachments", 5),
+  sanitizeInputs,
+  validateOtpVerification,
   verifyOTPAndRegister,
 );
 
@@ -382,7 +405,7 @@ router.post(
  *       429:
  *         description: Too many OTP requests
  */
-router.post("/resend-otp", resendOTP);
+router.post("/resend-otp", guestOtpLimiter, sanitizeInputs, validateOtpRequest, resendOTP);
 
 /**
  * @swagger
@@ -534,7 +557,7 @@ router.post("/service-request", submitGuestServiceRequest);
  *       400:
  *         description: Invalid or expired OTP
  */
-router.post("/verify-service-otp", verifyServiceRequestOTP);
+router.post("/verify-service-otp", guestOtpLimiter, verifyServiceRequestOTP);
 
 /**
  * @swagger

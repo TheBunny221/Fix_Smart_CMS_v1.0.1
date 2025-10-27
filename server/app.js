@@ -41,6 +41,7 @@ import geoRoutes from "./routes/geoRoutes.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { requestLogger } from "./middleware/requestLogger.js";
 import responseFormatter from "./middleware/responseFormatter.js";
+import { sanitizeInputs } from "./middleware/validation.js";
 
 // Enhanced request logging middleware using our logger
 const enhancedRequestLogger = (req, res, next) => {
@@ -214,6 +215,9 @@ export function createApp() {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+  // Input sanitization middleware (after body parsing, before routes)
+  app.use(sanitizeInputs);
+
   // Response normalization must come before routes
   app.use(responseFormatter());
 
@@ -261,7 +265,7 @@ export function createApp() {
   app.use("/api/system-config", systemConfigRoutes);
   app.use("/api/logs", logRoutes);
   app.use("/api/geo", geoRoutes);
-  // app.use("/api", materialsRoutes);
+  app.use("/api", materialsRoutes);
   app.use("/api", complaintPhotosRoutes);
 
   // Serve uploaded files

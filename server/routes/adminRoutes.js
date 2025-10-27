@@ -19,13 +19,22 @@ import {
   getSystemHealth,
 } from "../controller/adminController.js";
 import { protect, authorize } from "../middleware/auth.js";
-import { validateUser, validateUserUpdate, validateBulkUserActions, validateRoleManagement } from "../middleware/validation.js";
+import { 
+  validateUser, 
+  validateUserUpdate, 
+  validateBulkUserActions, 
+  validateRoleManagement,
+  validatePagination,
+  validateMongoId,
+  sanitizeInputs
+} from "../middleware/validation.js";
 
 const router = express.Router();
 
 // All admin routes require authentication and admin privileges
 router.use(protect);
 router.use(authorize("ADMINISTRATOR"));
+router.use(sanitizeInputs); // Sanitize all inputs for admin routes
 
 /**
  * @swagger
@@ -115,7 +124,7 @@ router.use(authorize("ADMINISTRATOR"));
  *                         pages:
  *                           type: integer
  */
-router.get("/users", getAllUsers);
+router.get("/users", validatePagination, getAllUsers);
 router.get("/users/export", exportUsers);
 
 /**
@@ -184,7 +193,7 @@ router.post("/users", validateUser, createUser);
  *       404:
  *         description: User not found
  */
-router.put("/users/:id", validateUserUpdate, updateUser);
+router.put("/users/:id", validateMongoId, validateUserUpdate, updateUser);
 
 /**
  * @swagger
@@ -206,7 +215,7 @@ router.put("/users/:id", validateUserUpdate, updateUser);
  *       404:
  *         description: User not found
  */
-router.delete("/users/:id", deleteUser);
+router.delete("/users/:id", validateMongoId, deleteUser);
 
 /**
  * @swagger
@@ -226,7 +235,7 @@ router.delete("/users/:id", deleteUser);
  *       200:
  *         description: User activated successfully
  */
-router.put("/users/:id/activate", activateUser);
+router.put("/users/:id/activate", validateMongoId, activateUser);
 
 /**
  * @swagger
@@ -246,7 +255,7 @@ router.put("/users/:id/activate", activateUser);
  *       200:
  *         description: User deactivated successfully
  */
-router.put("/users/:id/deactivate", deactivateUser);
+router.put("/users/:id/deactivate", validateMongoId, deactivateUser);
 
 /**
  * @swagger

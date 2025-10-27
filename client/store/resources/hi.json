@@ -1,5 +1,17 @@
 {
-  "settings": {},
+  "settings": {
+    "languageSettings": "भाषा सेटिंग्स",
+    "language": "भाषा",
+    "generalSettings": "सामान्य सेटिंग्स",
+    "notificationSettings": "अधिसूचना सेटिंग्स",
+    "privacySettings": "गोपनीयता सेटिंग्स",
+    "darkMode": "डार्क मोड",
+    "soundEffects": "ध्वनि प्रभाव",
+    "emailAlerts": "ईमेल अलर्ट",
+    "smsAlerts": "SMS अलर्ट",
+    "dataRetention": "डेटा प्रतिधारण",
+    "accountDeletion": "खाता हटाना"
+  },
   "nav": {
     "ward": "वार्ड",
     "profile": "प्रोफ़ाइल",
@@ -48,6 +60,7 @@
     "download": "डाउनलोड",
     "upload": "अपलोड",
     "required": "आवश्यक",
+    "export": "निर्यात",
     "optional": "वैकल्पिक",
     "status": "स्थिति",
     "priority": "प्राथमिकता",
@@ -59,7 +72,27 @@
     "phone": "फ़ोन",
     "address": "पता",
     "description": "विवरण",
-    "actions": "क्रियाएँ"
+    "actions": "क्रियाएँ",
+    "welcome": "स्वागत",
+    "back": "वापस",
+    "continue": "जारी रखें",
+    "finish": "समाप्त",
+    "skip": "छोड़ें",
+    "retry": "पुनः प्रयास",
+    "help": "सहायता",
+    "support": "समर्थन",
+    "contact": "संपर्क",
+    "about": "के बारे में",
+    "version": "संस्करण",
+    "settings": "सेटिंग्स",
+    "preferences": "प्राथमिकताएं",
+    "profile": "प्रोफ़ाइल",
+    "account": "खाता",
+    "logout": "लॉगआउट",
+    "signin": "साइन इन",
+    "signup": "साइन अप",
+    "register": "रजिस्टर",
+    "login": "लॉगिन"
   },
   "complaints": {
     "registerComplaint": "शिकायत दर्ज करें",
@@ -147,6 +180,9 @@
     "accountStatus": "खाता स्थिति",
     "active": "सक्रिय",
     "inactive": "निष्क्रिय",
+    "passwordNotSet": "आपका पासवर्ड सेट नहीं है। आप कर सकते हैं:",
+    "emailPlaceholder": "अपना ईमेल दर्ज करें",
+    "signingIn": "साइन इन हो रहे हैं...",
     "roles": {
       "citizen": "नागरिक",
       "admin": "प्रशासक",
@@ -210,7 +246,60 @@
     "reports": "रिपोर्ट्स",
     "analytics": "विश्लेषण",
     "trends": "रुझान",
-    "insights": "अंतर्दृष्टि"
+    "insights": "अंतर्दृष्टि",
+    "admin": {
+      "title": "प्रशासक डैशबोर्ड",
+      "subtitle": "पूर्ण सिस्टम अवलोकन और प्रबंधन नियंत्रण",
+      "activeComplaints": "सक्रिय शिकायतें",
+      "overdueComplaints": "अतिदेय कार्य",
+      "pendingAssignments": "लंबित टीम असाइनमेंट",
+      "avgResolution": "औसत समाधान",
+      "systemHealth": "सिस्टम स्वास्थ्य",
+      "recentActivity": "हाल की सिस्टम गतिविधि",
+      "loadingData": "डैशबोर्ड डेटा लोड हो रहा है...",
+      "dataLoadError": "कुछ डैशबोर्ड डेटा लोड करने में विफल",
+      "overviewHeatmap": "अवलोकन हीटमैप",
+      "responseTime": "प्रतिक्रिया समय",
+      "resolutionRate": "समाधान दर",
+      "satisfactionScore": "संतुष्टि स्कोर",
+      "pendingResolution": "समाधान लंबित",
+      "openPastDeadline": "समय सीमा के बाद खुला",
+      "needsMaintenanceAssignment": "रखरखाव असाइनमेंट की आवश्यकता",
+      "averageClosureTime": "औसत बंद करने का समय"
+    },
+    "citizen": {
+      "welcome": "वापस स्वागत है, {{name}}!",
+      "subtitle": "अपनी शिकायतों को ट्रैक करें और नवीनतम प्रगति के साथ अपडेट रहें",
+      "totalComplaints": "कुल शिकायतें",
+      "allTimeSubmissions": "सभी समय की सबमिशन",
+      "pending": "लंबित",
+      "awaitingAssignment": "असाइनमेंट की प्रतीक्षा",
+      "inProgress": "प्रगति में",
+      "beingWorkedOn": "काम किया जा रहा है",
+      "resolved": "हल हो गया",
+      "successfullyResolved": "सफलतापूर्वक हल हो गया",
+      "resolutionProgress": "समाधान प्रगति",
+      "overallResolutionRate": "समग्र समाधान दर",
+      "avgResolutionTime": "औसत समाधान समय",
+      "myComplaints": "मेरी शिकायतें",
+      "newComplaint": "नई शिकायत",
+      "searchPlaceholder": "ID, विवरण, या स्थान द्वारा खोजें...",
+      "allStatus": "सभी स्थिति",
+      "allTypes": "सभी प्रकार",
+      "sortBy": "इसके द्वारा क्रमबद्ध करें",
+      "newestFirst": "नवीनतम पहले",
+      "oldestFirst": "पुराना पहले",
+      "highPriorityFirst": "उच्च प्राथमिकता पहले",
+      "clearFilters": "फ़िल्टर साफ़ करें",
+      "noComplaints": "कोई शिकायत नहीं मिली",
+      "noComplaintsMessage": "आपने अभी तक कोई शिकायत दर्ज नहीं की है।",
+      "submitFirstComplaint": "अपनी पहली शिकायत दर्ज करें",
+      "quickActions": "त्वरित कार्य",
+      "submitNewComplaint": "नई शिकायत दर्ज करें",
+      "viewAllComplaints": "सभी शिकायतें देखें",
+      "helpSupport": "सहायता और समर्थन",
+      "loadingComplaints": "शिकायतें लोड हो रही हैं..."
+    }
   },
   "reports": {
     "complaintReports": "शिकायत रिपोर्ट्स",
@@ -231,6 +320,33 @@
     "summary": "सारांश",
     "details": "विवरण"
   },
+  "admin": {
+    "config": {
+      "title": "सिस्टम कॉन्फ़िगरेशन",
+      "subtitle": "सिस्टम सेटिंग्स, वार्ड, शिकायत प्रकार और अन्य कॉन्फ़िगरेशन प्रबंधित करें",
+      "systemSettings": "सिस्टम सेटिंग्स",
+      "wardsBoundaries": "वार्ड और सीमाएं",
+      "complaintTypes": "शिकायत प्रकार",
+      "userManagement": "उपयोगकर्ता प्रबंधन",
+      "userManagementDescription": "उपयोगकर्ता प्रबंधन इंटरफेस यहाँ लागू किया जाएगा"
+    }
+  },
+  "loading": {
+    "default": "लोड हो रहा है...",
+    "dashboard": "डैशबोर्ड डेटा लोड हो रहा है...",
+    "complaints": "शिकायतें लोड हो रही हैं...",
+    "saving": "सहेजा जा रहा है...",
+    "submitting": "सबमिट किया जा रहा है...",
+    "refreshing": "रिफ्रेश हो रहा है..."
+  },
+  "errors": {
+    "loadingFailed": "डेटा लोड करने में विफल",
+    "networkError": "नेटवर्क कनेक्शन त्रुटि",
+    "unauthorized": "आप इस कार्य को करने के लिए अधिकृत नहीं हैं",
+    "sessionExpired": "आपका सत्र समाप्त हो गया है। कृपया फिर से लॉगिन करें",
+    "validationFailed": "कृपया अपना इनपुट जांचें और फिर से कोशिश करें",
+    "somethingWentWrong": "कुछ गलत हुआ"
+  },
   "messages": {
     "complaintRegistered": "शिकायत सफलतापूर्वक दर्ज की गई",
     "complaintUpdated": "शिकायत सफलतापूर्वक अपडेट की गई",
@@ -250,6 +366,16 @@
     "unauthorizedAccess": "अनधिकृत पहुंच",
     "sessionExpired": "सत्र समाप्त",
     "validationError": "मान्यकरण त्रुटि",
-    "serverError": "सर्वर त्रुटि हुई"
+    "serverError": "सर्वर त्रुटि हुई",
+    "welcomeBack": "वापसी पर स्वागत है!",
+    "chooseLoginMethod": "अपनी पसंदीदा लॉगिन विधि चुनें",
+    "passwordSetupSent": "पासवर्ड सेटअप निर्देश {{email}} पर भेजे गए हैं। कृपया अपना ईमेल जांचें और निर्देशों का पालन करें।",
+    "demoCredentials": "डेमो क्रेडेंशियल",
+    "testingPurposes": "केवल परीक्षण उद्देश्यों के लिए",
+    "eGovernancePortal": "ई-गवर्नेंस पोर्टल",
+    "otpCodeSent": "हम आपके ईमेल पते पर 6-अंकों का कोड भेजेंगे",
+    "noAccount": "कोई खाता नहीं है?",
+    "registerHere": "यहाँ रजिस्टर करें",
+    "backToHome": "होम पर वापस जाएं"
   }
 }

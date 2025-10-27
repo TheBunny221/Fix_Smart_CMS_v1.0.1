@@ -5,51 +5,78 @@ const logDir = path.join(__dirname, "logs", "prod");
 module.exports = {
   apps: [
     {
-      name: "NLC-CMS",
+      name: "NLC-CMS-prod",
       script: "server/server.js",
       exec_mode: "cluster",
-      instances: 2,
+      instances: "max", // Use all available CPU cores
       watch: false,
       autorestart: true,
-      max_restarts: 10,
-      min_uptime: "10s",
-      max_memory_restart: "800M",
-      restart_delay: 4000,
+      max_restarts: 5,
+      min_uptime: "30s",
+      max_memory_restart: "1G",
+      restart_delay: 5000,
       env: {
         NODE_ENV: "production",
         PORT: 4005,
         HOST: "0.0.0.0",
-        DATABASE_URL: "postgresql://fixsmart:mrbunny22@199.199.50.51:5432/kochicms?schema=test4",
-        JWT_SECRET: "dasjkdfsgfjsdhgfjsjkfvbbxdhwiuiq154654646",
-        JWT_EXPIRE: "7d",
-        CLIENT_URL: "http://localhost:4005",
-        CORS_ORIGIN: "http://localhost:3000,http://localhost:4005",
-        TRUST_PROXY: "true",
-        TRUST_PROXY: "true",
-        RATE_LIMIT_WINDOW_MS: "900000",
-        RATE_LIMIT_MAX: "1000",
-        MAX_FILE_SIZE: "10485760",
-        UPLOAD_PATH: "./uploads",
-        EMAIL_SERVICE: "smtp.office365.com",
-        EMAIL_USER: "swsm@cimconautomation.com",
-        EMAIL_PASS: "cimcon@1987",
-        EMAIL_PORT: "587",
-        EMAIL_FROM: "Cochin Smart City",
-        HELMET_CSP_ENABLED: "true",
-        LOG_LEVEL: "info",
-        LOG_FILE: "logs/application.log",
-        ENABLE_METRICS: "true",
-        DATABASE_POOL_MIN: "2",
-        DATABASE_POOL_MAX: "10"
       },
-
+      env_file: ".env.production",
       out_file: path.join(logDir, "api-out.log"),
       error_file: path.join(logDir, "api-error.log"),
-      merge_logs: true,
-      log_date_format: "YYYY-MM-DD HH:mm:ss",
-      kill_timeout: 5000,
-      listen_timeout: 8000,
+      log_file: path.join(logDir, "api-combined.log"),
+      pid_file: path.join(logDir, "api.pid"),
+      merge_logs: false, // Keep separate logs in production for better debugging
+      log_date_format: "YYYY-MM-DD HH:mm:ss Z",
+      kill_timeout: 10000,
+      listen_timeout: 15000,
       wait_ready: true,
+      // Production-specific optimizations
+      node_args: "--max-old-space-size=2048 --optimize-for-size",
+      // Log rotation settings
+      log_type: "json",
+      // Monitoring and health checks
+      pmx: true,
+      monitoring: true,
+      // Graceful shutdown
+      shutdown_with_message: true,
+      // Error handling
+      combine_logs: false,
+      // Performance monitoring
+      instance_var: "INSTANCE_ID",
+      // Advanced settings
+      vizion: true,
+      autorestart: true,
+      // Memory and CPU limits
+      max_memory_restart: "1G",
+      // Restart conditions
+      cron_restart: "0 2 * * *", // Restart daily at 2 AM for maintenance
+      // Environment-specific overrides
+      env_production: {
+        NODE_ENV: "production",
+        PORT: 4005,
+        HOST: "0.0.0.0",
+        PM2_SERVE_PATH: "./dist",
+        PM2_SERVE_PORT: 8080,
+        PM2_SERVE_SPA: "true",
+        PM2_SERVE_HOMEPAGE: "/index.html"
+      }
     },
   ],
+  
+  // Deployment configuration for production
+  deploy: {
+    production: {
+      user: "deploy",
+      host: ["199.199.50.51", "199.199.50.206"],
+      ref: "origin/main",
+      repo: "git@github.com:your-org/nlc-cms.git",
+      path: "/var/www/nlc-cms",
+      "pre-deploy-local": "",
+      "post-deploy": "npm install && npm run build && pm2 reload ecosystem.prod.config.cjs --env production && pm2 save",
+      "pre-setup": "mkdir -p /var/www/nlc-cms/logs/prod",
+      env: {
+        NODE_ENV: "production"
+      }
+    }
+  }
 };

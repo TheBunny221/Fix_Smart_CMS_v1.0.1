@@ -1,354 +1,707 @@
-# Fix_Smart_CMS Production Deployment Guide
+# Production Deployment Guide
 
 ## Overview
 
-This guide provides comprehensive instructions for deploying Fix_Smart_CMS to production. The system uses Nginx as a reverse proxy to handle HTTPS/SSL termination, while the Node.js application runs on HTTP behind Nginx. This architecture provides better performance, security, and eliminates HTTPS restart loops.
+This guide provides comprehensive instructions for deploying the NLC-CMS application to production environments. It covers both Linux (Debian/Ubuntu) and Windows Server deployments with detailed configuration examples and troubleshooting procedures.
 
-## Quick Deployment Summary
+## Prerequisites
 
-The production build now includes:
+### System Requirements
 
-- ✅ All deployment scripts and commands
-- ✅ Environment validation and alignment tools
-- ✅ Nginx reverse proxy configuration
-- ✅ HTTP-only application setup (HTTPS handled by Nginx)
-- ✅ Comprehensive health checks
-- ✅ PM2 configuration for production
-- ✅ Database setup and migration tools
+#### Minimum Hardware Requirements
+- **CPU**: 2 cores (4 cores recommended)
+- **RAM**: 4GB (8GB recommended)
+- **Storage**: 50GB SSD (100GB recommended)
+- **Network**: Stable internet connection with static IP
 
-## Build Process
+#### Software Requirements
+- **Node.js**: Version 18.x or higher
+- **PostgreSQL**: Version 13.x or higher
+- **PM2**: Latest version for process management
+- **Nginx/Apache**: For reverse proxy (recommended)
+- **SSL Certificate**: For HTTPS (required for production)
 
-### 1. Create Production Build
+### Network Requirements
+- **Ports**: 80 (HTTP), 443 (HTTPS), 4005 (application), 5432 (PostgreSQL)
+- **Firewall**: Configured to allow necessary traffic
+- **DNS**: Domain name configured and pointing to server
 
+## Environment Setup
+
+### 1. Linux (Debian/Ubuntu) Setup
+
+#### System Updates
 ```bash
-# Clean and build for production
-npm run build
+# Update system packages
+sudo apt update && sudo apt upgrade -y
+
+# Install essential packages
+sudo apt install -y curl wget git build-essential
 ```
 
-This creates a complete `dist/` folder with:
-
-- Compiled server code
-- Built client application
-- All deployment scripts
-- Environment templates
-- SSL certificate structure
-- PM2 configuration
-- Comprehensive documentation
-
-### 2. Build Output Structure
-
-```
-dist/
-├── server/                 # Compiled server code
-├── client/                 # Built React application
-├── scripts/                # All deployment scripts
-├── config/                 # SSL and configuration files
-├── prisma/                 # Database schema and migrations
-├── package.json           # Production dependencies and commands
-├── ecosystem.prod.config.cjs  # PM2 configuration
-├── .env.production        # Production environment template
-└── README_DEPLOYMENT.md   # Complete deployment guide
-```
-
-## Deployment Commands (Available in dist/)
-
-### Environment Management
-
+#### Node.js Installation
 ```bash
-npm run validate:env       # Validate all environment files
-npm run env:align         # Align environment configurations
-npm run deploy:validate   # Complete deployment validation
-```
-
-### Database Operations
-
-```bash
-npm run validate:db       # Test database connection
-npm run db:setup         # Complete database setup
-npm run db:generate      # Generate Prisma client
-npm run db:migrate       # Run migrations
-npm run db:seed          # Seed initial data
-npm run db:studio        # Open database browser
-```
-
-### Server Management
-
-```bash
-npm start                # Start HTTP server (behind Nginx)
-npm run start:production # Start with production script
-```
-
-### PM2 Process Management
-
-```bash
-npm run pm2:start        # Start with PM2 (HTTP behind Nginx)
-npm run pm2:status       # Check PM2 status
-npm run pm2:logs         # View PM2 logs
-npm run pm2:restart      # Restart application
-npm run pm2:stop         # Stop application
-```
-
-### Quick Deployment
-
-```bash
-npm run deploy:quick     # Install + setup + start
-npm run deploy:pm2       # Deploy with PM2
-```
-
-## Step-by-Step Deployment
-
-### 1. Prepare Production Server
-
-```bash
-# Install Node.js (v18+)
+# Install Node.js 18.x
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+sudo apt install -y nodejs
 
-# Install PM2 globally
-npm install -g pm2
-
-# Install PostgreSQL (if not already installed)
-sudo apt-get install postgresql postgresql-contrib
+# Verify installation
+node --version
+npm --version
 ```
 
-### 2. Deploy Application
+#### PostgreSQL Installation
+```bash
+# Install PostgreSQL
+sudo apt install -y postgresql postgresql-contrib
+
+# Start and enable PostgreSQL
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Create database and user
+sudo -u postgres psql
+CREATE DATABASE nlc_cms_prod;
+CREATE USER nlc_user WITH ENCRYPTED PASSWORD 'secure_password';
+GRANT ALL PRIVILEGES ON DATABASE nlc_cms_prod TO nlc_user;
+\q
+```
+
+#### PM2 Installation
+```bash
+# Install PM2 globally
+sudo npm install -g pm2
+
+# Setup PM2 startup script
+pm2 startup
+sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u $USER --hp $HOME
+```
+
+#### Nginx Installation and Configuration
+```bash
+# Install Nginx
+sudo apt install -y nginx
+
+# Create Nginx configuration
+sudo nano /etc/nginx/sites-available/nlc-cms
+```
+
+**Nginx Configuration Example:**
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com www.your-domain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name your-domain.com www.your-domain.com;
+
+    ssl_certificate /path/to/your/certificate.crt;
+    ssl_certificate_key /path/to/your/private.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+
+    location / {
+        proxy_pass http://localhost:4005;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    location /api {
+        proxy_pass http://localhost:4005/api;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;
+}
+```
 
 ```bash
-# Extract build archive
-unzip nlc-cms-production-build.zip
-cd dist/
+# Enable the site
+sudo ln -s /etc/nginx/sites-available/nlc-cms /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
 
-# Install dependencies
-npm ci --production
+### 2. Windows Server Setup
 
-# Configure environment
-cp .env.production.template .env
-# Edit .env with your specific configuration
+#### Prerequisites Installation
+1. **Install Node.js**
+   - Download from https://nodejs.org/
+   - Install with default options
+   - Verify installation in PowerShell: `node --version`
 
-# Validate configuration
-npm run deploy:validate
+2. **Install PostgreSQL**
+   - Download from https://www.postgresql.org/download/windows/
+   - Install with default options
+   - Create database and user using pgAdmin
+
+3. **Install PM2**
+   ```powershell
+   npm install -g pm2
+   npm install -g pm2-windows-startup
+   pm2-startup install
+   ```
+
+4. **Install IIS or Apache**
+   - Configure as reverse proxy to Node.js application
+   - Setup SSL certificates
+
+## Application Deployment
+
+### 1. Code Deployment
+
+#### Clone Repository
+```bash
+# Create application directory
+sudo mkdir -p /var/www/nlc-cms
+sudo chown $USER:$USER /var/www/nlc-cms
+cd /var/www/nlc-cms
+
+# Clone repository
+git clone https://github.com/your-org/nlc-cms.git .
+```
+
+#### Install Dependencies
+```bash
+# Install production dependencies only
+npm ci --omit=dev
+
+# Generate Prisma client
+npm run db:generate
+```
+
+### 2. Environment Configuration
+
+#### Create Production Environment File
+```bash
+# Create .env.production file
+nano .env.production
+```
+
+**Environment Variables:**
+```env
+# Application Configuration
+NODE_ENV=production
+PORT=4005
+HOST=0.0.0.0
+
+# Database Configuration
+DATABASE_URL="postgresql://nlc_user:secure_password@localhost:5432/nlc_cms_prod"
+
+# JWT Configuration
+JWT_SECRET=your-very-secure-jwt-secret-key-here
+REFRESH_TOKEN_SECRET=your-very-secure-refresh-token-secret-key-here
+JWT_EXPIRES_IN=1h
+REFRESH_TOKEN_EXPIRES_IN=7d
+
+# Email Configuration
+SMTP_HOST=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@domain.com
+SMTP_PASS=your-email-password
+
+# Application URLs
+FRONTEND_URL=https://your-domain.com
+BACKEND_URL=https://your-domain.com/api
+
+# File Upload Configuration
+UPLOAD_DIR=/var/www/nlc-cms/uploads
+MAX_FILE_SIZE=10485760
+ALLOWED_FILE_TYPES=jpg,jpeg,png,pdf,doc,docx
+
+# Security Configuration
+CORS_ORIGIN=https://your-domain.com
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# Logging Configuration
+LOG_LEVEL=info
+LOG_DIR=/var/www/nlc-cms/logs
+```
+
+#### Set File Permissions
+```bash
+# Set appropriate permissions
+chmod 600 .env.production
+chmod -R 755 /var/www/nlc-cms
+chmod -R 777 /var/www/nlc-cms/uploads
+chmod -R 777 /var/www/nlc-cms/logs
 ```
 
 ### 3. Database Setup
 
+#### Run Migrations
 ```bash
-# Test database connection
-npm run validate:db
+# Apply database migrations
+npm run db:migrate
 
-# Setup database
-npm run db:setup
+# Verify migration status
+npx prisma migrate status
 ```
 
-### 4. Nginx and SSL Configuration
-
+#### Seed Production Data
 ```bash
-# Install Nginx
-sudo apt update && sudo apt install nginx
-
-# Copy Nginx configuration
-sudo cp config/nginx/nginx.conf /etc/nginx/sites-available/fix-smart-cms
-sudo ln -s /etc/nginx/sites-available/fix-smart-cms /etc/nginx/sites-enabled/
-
-# Generate SSL certificates for Nginx
-sudo openssl req -x509 -newkey rsa:2048 \
-  -keyout /etc/ssl/private/fix-smart-cms.key \
-  -out /etc/ssl/certs/fix-smart-cms.crt \
-  -days 365 -nodes \
-  -subj "/C=IN/ST=Kerala/L=Kochi/O=Fix Smart CMS/CN=$(hostname -I | awk '{print $1}')"
-
-# Set proper permissions
-sudo chmod 600 /etc/ssl/private/fix-smart-cms.key
-sudo chmod 644 /etc/ssl/certs/fix-smart-cms.crt
-
-# Test and start Nginx
-sudo nginx -t
-sudo systemctl enable nginx
-sudo systemctl start nginx
+# Seed essential data (admin user, system config, etc.)
+ADMIN_EMAIL=admin@your-domain.com ADMIN_PASSWORD=secure_admin_password npm run db:seed
 ```
 
-### 5. Start Application
+### 4. Build Application
 
+#### Build Frontend and Backend
 ```bash
-# Option 1: Direct start (for testing)
-npm run start:production
+# Build the application
+npm run build
 
-# Option 2: PM2 (recommended for production)
-npm run pm2:start
-
-# Option 3: PM2 with HTTPS (if SSL configured)
-npm run pm2:start:https
+# Verify build completed successfully
+ls -la dist/
 ```
 
-## Environment Configuration
+### 5. PM2 Configuration
 
-### Required Variables (.env)
-
-```env
-NODE_ENV=production
-PORT=4005
-HOST=127.0.0.1
-DATABASE_URL=postgresql://user:password@host:5432/database
-JWT_SECRET=your-super-secure-jwt-secret-256-bits
-CLIENT_URL=http://localhost:4005
-CORS_ORIGIN=http://localhost:4005,http://localhost:3000
-TRUST_PROXY=true
-```
-
-### Nginx Reverse Proxy Configuration
-
-The application runs on HTTP behind Nginx which handles HTTPS:
-
-```env
-# Application Configuration (HTTP behind Nginx)
-NODE_ENV=production
-PORT=4005
-HOST=127.0.0.1
-TRUST_PROXY=true
-CLIENT_URL=http://localhost:4005
-CORS_ORIGIN=http://localhost:4005,http://localhost:3000
-```
-
-SSL certificates are managed by Nginx at `/etc/ssl/private/fix-smart-cms.key` and `/etc/ssl/certs/fix-smart-cms.crt`.
-
-## HTTPS Loop Prevention
-
-The system now includes automatic HTTPS loop prevention:
-
-1. **SSL Certificate Validation**: Checks if certificates exist and are valid
-2. **Automatic Fallback**: Falls back to HTTP if SSL issues detected
-3. **Environment Alignment**: Automatically aligns environment variables
-4. **Graceful Error Handling**: Prevents restart loops on SSL failures
-
-### How It Works
-
-- If HTTPS is enabled but SSL certificates are missing/invalid, the system automatically switches to HTTP mode
-- Environment variables are automatically aligned to prevent conflicts
-- The ecosystem configuration uses only one PM2 app to avoid port conflicts
-- Comprehensive validation prevents common deployment issues
-
-## Health Checks
-
-### Endpoints
-
-- **Basic Health**: `http://localhost:4005/api/health`
-- **Detailed Health**: `http://localhost:4005/api/health/detailed`
-- **API Documentation**: `http://localhost:4005/api-docs`
-- **Application**: `http://localhost:4005`
-
-### Validation Commands
-
+#### Create PM2 Ecosystem File
 ```bash
-# Check application health
-npm run health:check
+# Create ecosystem.prod.config.cjs
+nano ecosystem.prod.config.cjs
+```
+
+**PM2 Configuration:**
+```javascript
+module.exports = {
+  apps: [{
+    name: 'nlc-cms',
+    script: 'server/server.js',
+    cwd: '/var/www/nlc-cms',
+    instances: 'max',
+    exec_mode: 'cluster',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 4005
+    },
+    env_file: '.env.production',
+    log_file: '/var/www/nlc-cms/logs/combined.log',
+    out_file: '/var/www/nlc-cms/logs/out.log',
+    error_file: '/var/www/nlc-cms/logs/error.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    merge_logs: true,
+    max_memory_restart: '1G',
+    node_args: '--max-old-space-size=1024',
+    watch: false,
+    ignore_watch: ['node_modules', 'logs', 'uploads'],
+    max_restarts: 10,
+    min_uptime: '10s',
+    kill_timeout: 5000,
+    wait_ready: true,
+    listen_timeout: 10000
+  }]
+};
+```
+
+#### Start Application with PM2
+```bash
+# Start application
+pm2 start ecosystem.prod.config.cjs
+
+# Save PM2 configuration
+pm2 save
+
+# Check application status
+pm2 status
+pm2 logs nlc-cms
+```
+
+## SSL Certificate Setup
+
+### Using Let's Encrypt (Recommended)
+
+#### Install Certbot
+```bash
+# Install Certbot
+sudo apt install -y certbot python3-certbot-nginx
+
+# Obtain SSL certificate
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+
+# Test automatic renewal
+sudo certbot renew --dry-run
+```
+
+### Using Custom SSL Certificate
+
+#### Install Certificate Files
+```bash
+# Create SSL directory
+sudo mkdir -p /etc/ssl/nlc-cms
+
+# Copy certificate files
+sudo cp your-certificate.crt /etc/ssl/nlc-cms/
+sudo cp your-private.key /etc/ssl/nlc-cms/
+sudo chmod 600 /etc/ssl/nlc-cms/*
+```
+
+## Monitoring and Logging
+
+### 1. Application Monitoring
+
+#### PM2 Monitoring
+```bash
+# Monitor processes
+pm2 monit
 
 # View logs
-npm run logs:view
+pm2 logs nlc-cms --lines 100
 
-# Check PM2 status
-npm run pm2:status
+# Restart application
+pm2 restart nlc-cms
+
+# Reload application (zero-downtime)
+pm2 reload nlc-cms
 ```
+
+#### Health Check Setup
+```bash
+# Create health check script
+nano /var/www/nlc-cms/scripts/health-check.sh
+```
+
+**Health Check Script:**
+```bash
+#!/bin/bash
+HEALTH_URL="http://localhost:4005/api/health"
+RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL)
+
+if [ $RESPONSE -eq 200 ]; then
+    echo "Application is healthy"
+    exit 0
+else
+    echo "Application is unhealthy (HTTP $RESPONSE)"
+    exit 1
+fi
+```
+
+```bash
+# Make script executable
+chmod +x /var/www/nlc-cms/scripts/health-check.sh
+
+# Add to crontab for regular checks
+crontab -e
+# Add: */5 * * * * /var/www/nlc-cms/scripts/health-check.sh
+```
+
+### 2. Log Management
+
+#### Log Rotation Setup
+```bash
+# Create logrotate configuration
+sudo nano /etc/logrotate.d/nlc-cms
+```
+
+**Logrotate Configuration:**
+```
+/var/www/nlc-cms/logs/*.log {
+    daily
+    missingok
+    rotate 30
+    compress
+    delaycompress
+    notifempty
+    create 644 www-data www-data
+    postrotate
+        pm2 reloadLogs
+    endscript
+}
+```
+
+## Backup Strategy
+
+### 1. Database Backup
+
+#### Automated Database Backup Script
+```bash
+# Create backup script
+nano /var/www/nlc-cms/scripts/backup-db.sh
+```
+
+**Database Backup Script:**
+```bash
+#!/bin/bash
+BACKUP_DIR="/var/backups/nlc-cms"
+DATE=$(date +%Y%m%d_%H%M%S)
+DB_NAME="nlc_cms_prod"
+DB_USER="nlc_user"
+
+# Create backup directory
+mkdir -p $BACKUP_DIR
+
+# Create database backup
+pg_dump -U $DB_USER -h localhost $DB_NAME | gzip > $BACKUP_DIR/db_backup_$DATE.sql.gz
+
+# Keep only last 30 days of backups
+find $BACKUP_DIR -name "db_backup_*.sql.gz" -mtime +30 -delete
+
+echo "Database backup completed: db_backup_$DATE.sql.gz"
+```
+
+```bash
+# Make script executable
+chmod +x /var/www/nlc-cms/scripts/backup-db.sh
+
+# Add to crontab for daily backups
+crontab -e
+# Add: 0 2 * * * /var/www/nlc-cms/scripts/backup-db.sh
+```
+
+### 2. File Backup
+
+#### Application Files Backup
+```bash
+# Create file backup script
+nano /var/www/nlc-cms/scripts/backup-files.sh
+```
+
+**File Backup Script:**
+```bash
+#!/bin/bash
+BACKUP_DIR="/var/backups/nlc-cms"
+DATE=$(date +%Y%m%d_%H%M%S)
+APP_DIR="/var/www/nlc-cms"
+
+# Create backup directory
+mkdir -p $BACKUP_DIR
+
+# Backup uploads and configuration
+tar -czf $BACKUP_DIR/files_backup_$DATE.tar.gz \
+    -C $APP_DIR \
+    uploads/ \
+    .env.production \
+    ecosystem.prod.config.cjs
+
+# Keep only last 30 days of backups
+find $BACKUP_DIR -name "files_backup_*.tar.gz" -mtime +30 -delete
+
+echo "Files backup completed: files_backup_$DATE.tar.gz"
+```
+
+## Security Hardening
+
+### 1. System Security
+
+#### Firewall Configuration
+```bash
+# Configure UFW firewall
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+```
+
+#### Fail2Ban Setup
+```bash
+# Install Fail2Ban
+sudo apt install -y fail2ban
+
+# Configure Fail2Ban for Nginx
+sudo nano /etc/fail2ban/jail.local
+```
+
+**Fail2Ban Configuration:**
+```ini
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 5
+
+[nginx-http-auth]
+enabled = true
+
+[nginx-limit-req]
+enabled = true
+```
+
+### 2. Application Security
+
+#### Security Headers
+Ensure Nginx configuration includes security headers (already included in example above).
+
+#### Rate Limiting
+Application-level rate limiting is configured in the application code and environment variables.
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Port Already in Use**
-
-   ```bash
-   # Check what's using the port
-   sudo netstat -tulpn | grep :4005
-   # Kill the process or change PORT in .env
-   ```
-
-2. **Database Connection Failed**
-
-   ```bash
-   npm run validate:db
-   # Check DATABASE_URL in .env
-   ```
-
-3. **SSL Certificate Issues**
-
-   ```bash
-   npm run validate:env
-   # Ensure TRUST_PROXY=true for production with Nginx reverse proxy
-   ```
-
-4. **Environment Misalignment**
-   ```bash
-   npm run env:align
-   npm run validate:env
-   ```
-
-### Log Files
-
-- Application: `logs/application.log`
-- PM2 logs: `~/.pm2/logs/`
-- Error logs: `logs/error.log`
-
-## Production Checklist
-
-- [ ] Node.js v18+ installed
-- [ ] PM2 installed globally
-- [ ] PostgreSQL database configured
-- [ ] Environment variables set in `.env`
-- [ ] Database connection tested
-- [ ] SSL certificates added (if using HTTPS)
-- [ ] Application health check passes
-- [ ] PM2 process running
-- [ ] Logs are being written
-- [ ] Backup strategy configured
-
-## QA Handoff
-
-For QA teams, the complete deployment package includes:
-
-1. **Complete Build**: `dist/` folder with everything needed
-2. **All Commands**: Every deployment command is available in the build
-3. **Documentation**: Comprehensive guides and troubleshooting
-4. **Validation Tools**: Scripts to validate every aspect of deployment
-5. **Health Checks**: Endpoints and commands to verify functionality
-
-### QA Quick Start
-
+#### 1. Application Won't Start
 ```bash
-# Extract and validate
-unzip nlc-cms-production-build.zip
-cd dist/
-npm run deploy:validate
+# Check PM2 logs
+pm2 logs nlc-cms
 
-# Deploy and test
-npm run deploy:quick
+# Check environment variables
+cat .env.production
 
-# Verify
-npm run health:check
-curl http://localhost:4005/api/health
+# Test database connection
+npm run validate:db
+
+# Check port availability
+netstat -tulpn | grep :4005
 ```
 
-## Support
+#### 2. Database Connection Issues
+```bash
+# Test PostgreSQL connection
+psql -U nlc_user -h localhost -d nlc_cms_prod
 
-For deployment issues:
+# Check PostgreSQL status
+sudo systemctl status postgresql
 
-1. Check the troubleshooting section
-2. Run validation commands
-3. Review application logs
-4. Check PM2 status and logs
-5. Contact development team with specific error messages
+# Check PostgreSQL logs
+sudo tail -f /var/log/postgresql/postgresql-13-main.log
+```
+
+#### 3. SSL Certificate Issues
+```bash
+# Test SSL certificate
+openssl s_client -connect your-domain.com:443
+
+# Check certificate expiration
+openssl x509 -in /etc/ssl/nlc-cms/your-certificate.crt -text -noout
+
+# Renew Let's Encrypt certificate
+sudo certbot renew
+```
+
+#### 4. Performance Issues
+```bash
+# Monitor system resources
+htop
+
+# Check PM2 process status
+pm2 monit
+
+# Analyze slow queries
+# (PostgreSQL specific commands)
+
+# Check application logs for errors
+pm2 logs nlc-cms --lines 100
+```
+
+### Emergency Procedures
+
+#### Quick Restart
+```bash
+# Restart application
+pm2 restart nlc-cms
+
+# Restart Nginx
+sudo systemctl restart nginx
+
+# Restart PostgreSQL
+sudo systemctl restart postgresql
+```
+
+#### Rollback Procedure
+```bash
+# Stop current application
+pm2 stop nlc-cms
+
+# Restore from backup
+# (specific steps depend on backup method)
+
+# Start application
+pm2 start nlc-cms
+```
+
+## Maintenance
+
+### Regular Maintenance Tasks
+
+#### Weekly
+- Review application logs
+- Check system resource usage
+- Verify backup integrity
+- Update security patches
+
+#### Monthly
+- Update Node.js dependencies
+- Review performance metrics
+- Conduct security audit
+- Test disaster recovery procedures
+
+#### Quarterly
+- Major version updates
+- Infrastructure review
+- Security penetration testing
+- Capacity planning review
+
+### Update Procedures
+
+#### Application Updates
+```bash
+# Stop application
+pm2 stop nlc-cms
+
+# Backup current version
+cp -r /var/www/nlc-cms /var/backups/nlc-cms-$(date +%Y%m%d)
+
+# Pull latest code
+git pull origin main
+
+# Install dependencies
+npm ci --omit=dev
+
+# Run migrations
+npm run db:migrate
+
+# Build application
+npm run build
+
+# Start application
+pm2 start nlc-cms
+
+# Verify deployment
+pm2 logs nlc-cms
+```
+
+## Support and Documentation
+
+### Getting Help
+- Check application logs: `pm2 logs nlc-cms`
+- Review system logs: `sudo journalctl -u nginx`
+- Check database logs: `sudo tail -f /var/log/postgresql/*.log`
+- Monitor system resources: `htop`
+
+### Documentation References
+- [API Documentation](../developer/API_REFERENCE.md)
+- [Database Schema](../developer/SCHEMA_REFERENCE.md)
+- [Troubleshooting Guide](../troubleshooting/README.md)
+- [Security Guide](../system/SECURITY_AND_AUTHENTICATION.md)
 
 ---
 
-**Build Information**
-
-- **Version**: 1.0.0
-- **Node.js**: v18+
-- **Database**: PostgreSQL
-- **Process Manager**: PM2
-- **SSL**: Optional (auto-fallback to HTTP)
-
-**Key Features**
-
-- ✅ HTTPS loop prevention
-- ✅ Automatic environment alignment
-- ✅ Comprehensive validation
-- ✅ All deployment commands included
-- ✅ Production-ready configuration
+**Last Updated**: October 27, 2025  
+**Version**: 1.0.3  
+**Deployment Guide Version**: 1.0  
+**Next Review**: January 2026

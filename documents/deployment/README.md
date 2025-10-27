@@ -447,6 +447,10 @@ jobs:
 
 - [SSL Testing Guide](./SSL_TESTING_GUIDE.md) - Comprehensive SSL validation procedures
 - [Reverse Proxy Setup](./reverse_proxy_setup.md) - Manual proxy configuration
+- [Production Deployment Checklist](./PRODUCTION_DEPLOYMENT_CHECKLIST.md) - Complete production deployment checklist with validation steps
+- [Production Deployment Guide](./PRODUCTION_DEPLOYMENT_GUIDE.md) - Comprehensive production deployment guide for Linux and Windows
+- [Production Environment Variables](./PRODUCTION_ENVIRONMENT_VARIABLES.md) - Complete guide to production environment configuration
+- [Backup and Recovery Procedures](./BACKUP_AND_RECOVERY_PROCEDURES.md) - Database and file system backup/recovery procedures
 - [Troubleshooting Guide](../troubleshooting/README.md) - Common issues and solutions
 - [Database Guide](../database/README.md) - Database setup and management
 

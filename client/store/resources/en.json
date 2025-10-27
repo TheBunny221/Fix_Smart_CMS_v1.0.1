@@ -1,5 +1,17 @@
 {
-  "settings": {},
+  "settings": {
+    "languageSettings": "Language Settings",
+    "language": "Language",
+    "generalSettings": "General Settings",
+    "notificationSettings": "Notification Settings",
+    "privacySettings": "Privacy Settings",
+    "darkMode": "Dark Mode",
+    "soundEffects": "Sound Effects",
+    "emailAlerts": "Email Alerts",
+    "smsAlerts": "SMS Alerts",
+    "dataRetention": "Data Retention",
+    "accountDeletion": "Account Deletion"
+  },
   "nav": {
     "ward": "Ward",
     "profile": "Profile",
@@ -48,6 +60,7 @@
     "download": "Download",
     "upload": "Upload",
     "required": "Required",
+    "export": "Export",
     "optional": "Optional",
     "status": "Status",
     "priority": "Priority",
@@ -59,7 +72,27 @@
     "phone": "Phone",
     "address": "Address",
     "description": "Description",
-    "actions": "Actions"
+    "actions": "Actions",
+    "welcome": "Welcome",
+    "back": "Back",
+    "continue": "Continue",
+    "finish": "Finish",
+    "skip": "Skip",
+    "retry": "Retry",
+    "help": "Help",
+    "support": "Support",
+    "contact": "Contact",
+    "about": "About",
+    "version": "Version",
+    "settings": "Settings",
+    "preferences": "Preferences",
+    "profile": "Profile",
+    "account": "Account",
+    "logout": "Logout",
+    "signin": "Sign In",
+    "signup": "Sign Up",
+    "register": "Register",
+    "login": "Login"
   },
   "complaints": {
     "registerComplaint": "Register Complaint",
@@ -147,6 +180,9 @@
     "accountStatus": "Account Status",
     "active": "Active",
     "inactive": "Inactive",
+    "passwordNotSet": "Your password is not set. You can:",
+    "emailPlaceholder": "Enter your email",
+    "signingIn": "Signing In...",
     "roles": {
       "citizen": "Citizen",
       "admin": "Administrator",
@@ -210,7 +246,60 @@
     "reports": "Reports",
     "analytics": "Analytics",
     "trends": "Trends",
-    "insights": "Insights"
+    "insights": "Insights",
+    "admin": {
+      "title": "Administrator Dashboard",
+      "subtitle": "Complete system overview and management controls",
+      "activeComplaints": "Active Complaints",
+      "overdueComplaints": "Overdue Tasks",
+      "pendingAssignments": "Pending Team Assignment",
+      "avgResolution": "Avg Resolution",
+      "systemHealth": "System Health",
+      "recentActivity": "Recent System Activity",
+      "loadingData": "Loading dashboard data...",
+      "dataLoadError": "Some dashboard data failed to load",
+      "overviewHeatmap": "Overview Heatmap",
+      "responseTime": "Response Time",
+      "resolutionRate": "Resolution Rate",
+      "satisfactionScore": "Satisfaction Score",
+      "pendingResolution": "Pending resolution",
+      "openPastDeadline": "Open past deadline",
+      "needsMaintenanceAssignment": "Needs maintenance assignment",
+      "averageClosureTime": "Average Closure Time"
+    },
+    "citizen": {
+      "welcome": "Welcome back, {{name}}!",
+      "subtitle": "Track your complaints and stay updated with the latest progress",
+      "totalComplaints": "Total Complaints",
+      "allTimeSubmissions": "All time submissions",
+      "pending": "Pending",
+      "awaitingAssignment": "Awaiting assignment",
+      "inProgress": "In Progress",
+      "beingWorkedOn": "Being worked on",
+      "resolved": "Resolved",
+      "successfullyResolved": "Successfully resolved",
+      "resolutionProgress": "Resolution Progress",
+      "overallResolutionRate": "Overall Resolution Rate",
+      "avgResolutionTime": "Average Resolution Time",
+      "myComplaints": "My Complaints",
+      "newComplaint": "New Complaint",
+      "searchPlaceholder": "Search by ID, description, or location...",
+      "allStatus": "All Status",
+      "allTypes": "All Types",
+      "sortBy": "Sort by",
+      "newestFirst": "Newest First",
+      "oldestFirst": "Oldest First",
+      "highPriorityFirst": "High Priority First",
+      "clearFilters": "Clear Filters",
+      "noComplaints": "No complaints found",
+      "noComplaintsMessage": "You haven't submitted any complaints yet.",
+      "submitFirstComplaint": "Submit Your First Complaint",
+      "quickActions": "Quick Actions",
+      "submitNewComplaint": "Submit New Complaint",
+      "viewAllComplaints": "View All Complaints",
+      "helpSupport": "Help & Support",
+      "loadingComplaints": "Loading complaints..."
+    }
   },
   "reports": {
     "complaintReports": "Complaint Reports",
@@ -231,6 +320,33 @@
     "summary": "Summary",
     "details": "Details"
   },
+  "admin": {
+    "config": {
+      "title": "System Configuration",
+      "subtitle": "Manage system settings, wards, complaint types, and other configurations",
+      "systemSettings": "System Settings",
+      "wardsBoundaries": "Wards & Boundaries",
+      "complaintTypes": "Complaint Types",
+      "userManagement": "User Management",
+      "userManagementDescription": "User management interface will be implemented here"
+    }
+  },
+  "loading": {
+    "default": "Loading...",
+    "dashboard": "Loading dashboard data...",
+    "complaints": "Loading complaints...",
+    "saving": "Saving...",
+    "submitting": "Submitting...",
+    "refreshing": "Refreshing..."
+  },
+  "errors": {
+    "loadingFailed": "Failed to load data",
+    "networkError": "Network connection error",
+    "unauthorized": "You are not authorized to perform this action",
+    "sessionExpired": "Your session has expired. Please login again",
+    "validationFailed": "Please check your input and try again",
+    "somethingWentWrong": "Something went wrong"
+  },
   "messages": {
     "complaintRegistered": "Complaint registered successfully",
     "complaintUpdated": "Complaint updated successfully",
@@ -250,6 +366,16 @@
     "unauthorizedAccess": "Unauthorized access",
     "sessionExpired": "Session expired",
     "validationError": "Validation error",
-    "serverError": "Server error occurred"
+    "serverError": "Server error occurred",
+    "welcomeBack": "Welcome back!",
+    "chooseLoginMethod": "Choose your preferred login method",
+    "passwordSetupSent": "Password setup instructions have been sent to {{email}}. Please check your email and follow the instructions.",
+    "demoCredentials": "Demo Credentials",
+    "testingPurposes": "For testing purposes only",
+    "eGovernancePortal": "E-Governance Portal",
+    "otpCodeSent": "We'll send a 6-digit code to your email address",
+    "noAccount": "Don't have an account?",
+    "registerHere": "Register here",
+    "backToHome": "Back to Home"
   }
 }

@@ -10,7 +10,8 @@ import {
   uploadProfilePicture,
   uploadLogo,
 } from "../controller/uploadController.js";
-import { protect, optionalAuth } from "../middleware/auth.js";
+import { protect, authorize } from "../middleware/auth.js";
+import { validateMongoId, sanitizeInputs } from "../middleware/validation.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -152,7 +153,10 @@ const upload = multer({
  */
 router.post(
   "/complaint/:complaintId/attachment",
-  optionalAuth,
+  protect, // Require authentication for complaint attachments
+  authorize("CITIZEN", "ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"),
+  sanitizeInputs,
+  validateMongoId,
   upload.single("complaintAttachment"),
   uploadComplaintAttachment,
 );
@@ -183,6 +187,8 @@ router.post(
 router.post(
   "/profile/picture",
   protect,
+  authorize("CITIZEN", "ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"),
+  sanitizeInputs,
   upload.single("profilePicture"),
   uploadProfilePicture,
 );
@@ -228,17 +234,8 @@ router.post(
 router.post(
   "/logo",
   protect,
-  // Check for admin role
-  (req, res, next) => {
-    if (req.user.role !== "ADMINISTRATOR") {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied. Administrator role required.",
-        data: null,
-      });
-    }
-    next();
-  },
+  authorize("ADMINISTRATOR"),
+  sanitizeInputs,
   upload.single("logo"),
   uploadLogo,
 );
@@ -266,7 +263,8 @@ router.post(
  *       404:
  *         description: File not found
  */
-router.get("/:filename", getAttachment);
+// File access requires authentication to prevent unauthorized access
+router.get("/:filename", protect, authorize("CITIZEN", "ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"), getAttachment);
 
 /**
  * @swagger
@@ -291,6 +289,7 @@ router.get("/:filename", getAttachment);
  *       404:
  *         description: Logo file not found
  */
+// Logo files can be accessed publicly for branding
 router.get("/logo/:filename", getAttachment);
 
 /**
@@ -313,6 +312,6 @@ router.get("/logo/:filename", getAttachment);
  *       404:
  *         description: File not found
  */
-router.delete("/:id", protect, deleteAttachment);
+router.delete("/:id", protect, authorize("CITIZEN", "ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"), sanitizeInputs, validateMongoId, deleteAttachment);
 
 export default router;

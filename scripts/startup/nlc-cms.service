@@ -1,0 +1,46 @@
+[Unit]
+Description=NLC-CMS Complaint Management System
+Documentation=https://github.com/your-org/nlc-cms
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=forking
+User=nlc-cms
+Group=nlc-cms
+WorkingDirectory=/var/www/nlc-cms
+Environment=NODE_ENV=production
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=PM2_HOME=/var/www/nlc-cms/.pm2
+ExecStart=/usr/local/bin/pm2 start ecosystem.prod.config.cjs --env production
+ExecReload=/usr/local/bin/pm2 reload ecosystem.prod.config.cjs --env production
+ExecStop=/usr/local/bin/pm2 kill
+PIDFile=/var/www/nlc-cms/.pm2/pm2.pid
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=60s
+StartLimitBurst=3
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/nlc-cms
+ReadWritePaths=/var/www/nlc-cms/logs
+ReadWritePaths=/var/www/nlc-cms/uploads
+ReadWritePaths=/var/www/nlc-cms/.pm2
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=nlc-cms
+
+[Install]
+WantedBy=multi-user.target

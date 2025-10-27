@@ -19,17 +19,50 @@ const createPrismaClient = () => {
   if (process.env.NODE_ENV === "production") {
     config.datasources = {
       db: {
-        url: process.env.DATABASE_URL,
+        url: buildDatabaseUrlWithPooling(),
       },
     };
-
-    // Connection pool settings for PostgreSQL in production
-    if (process.env.DATABASE_URL?.includes("postgresql")) {
-        // Additional PostgreSQL-specific optimizations can be added here
-    }
+  } else {
+    // Development configuration
+    config.datasources = {
+      db: {
+        url: buildDatabaseUrlWithPooling(),
+      },
+    };
   }
 
   return new PrismaClient(config);
+};
+
+// Build DATABASE_URL with connection pooling parameters
+const buildDatabaseUrlWithPooling = () => {
+  const baseUrl = process.env.DATABASE_URL;
+  if (!baseUrl) {
+    throw new Error("DATABASE_URL environment variable is not set");
+  }
+
+  // Only add pooling parameters for PostgreSQL
+  if (baseUrl.includes("postgresql")) {
+    const poolMin = process.env.DATABASE_POOL_MIN || "2";
+    const poolMax = process.env.DATABASE_POOL_MAX || "10";
+    
+    // Parse existing URL to check for existing parameters
+    const url = new URL(baseUrl);
+    
+    // Add connection pool parameters
+    url.searchParams.set("connection_limit", poolMax);
+    url.searchParams.set("pool_timeout", "20");
+    url.searchParams.set("connect_timeout", "60");
+    
+    // Add SSL mode for production if not already specified
+    if (process.env.NODE_ENV === "production" && !url.searchParams.has("sslmode")) {
+      url.searchParams.set("sslmode", "require");
+    }
+    
+    return url.toString();
+  }
+  
+  return baseUrl;
 };
 
 let prisma = createPrismaClient();
@@ -92,7 +125,7 @@ const connectDB = async () => {
 
     console.log(`✅ ${dbType} Connected successfully`);
 
-    // PostgreSQL specific connection validation
+    // PostgreSQL specific connection validation and pool monitoring
     if (dbType === "PostgreSQL") {
       try {
         const result = await prisma.$queryRaw`SELECT version() as version`;
@@ -108,6 +141,35 @@ const connectDB = async () => {
             `🔧 Active Extensions: ${extensions.map((e) => e.extname).join(", ")}`,
           );
         }
+
+        // Log connection pool configuration
+        console.log(`🏊 Connection Pool Configuration:`);
+        console.log(`   • Min Connections: ${process.env.DATABASE_POOL_MIN || "2"}`);
+        console.log(`   • Max Connections: ${process.env.DATABASE_POOL_MAX || "10"}`);
+        console.log(`   • Pool Timeout: 20s`);
+        console.log(`   • Connect Timeout: 60s`);
+
+        // Check current connection stats if available
+        try {
+          const connectionStats = await prisma.$queryRaw`
+            SELECT 
+              count(*) as total_connections,
+              count(*) FILTER (WHERE state = 'active') as active_connections,
+              count(*) FILTER (WHERE state = 'idle') as idle_connections
+            FROM pg_stat_activity 
+            WHERE datname = current_database()
+          `;
+          
+          if (connectionStats[0]) {
+            console.log(`📊 Current Connection Stats:`);
+            console.log(`   • Total: ${connectionStats[0].total_connections}`);
+            console.log(`   • Active: ${connectionStats[0].active_connections}`);
+            console.log(`   • Idle: ${connectionStats[0].idle_connections}`);
+          }
+        } catch (statsError) {
+          console.log(`📊 Connection stats not available (requires superuser privileges)`);
+        }
+
       } catch (error) {
         console.warn("⚠️ Could not fetch PostgreSQL version:", error.message);
       }
@@ -260,5 +322,68 @@ const checkDatabaseHealth = async () => {
   }
 };
 
-export { connectDB, getPrisma, checkDatabaseHealth };
+// Connection pool health monitoring
+const checkConnectionPoolHealth = async () => {
+  try {
+    const isPostgreSQL = process.env.DATABASE_URL?.includes("postgresql");
+    
+    if (!isPostgreSQL) {
+      return {
+        healthy: true,
+        message: "Connection pooling not applicable for non-PostgreSQL databases",
+        stats: null
+      };
+    }
+
+    // Test connection responsiveness
+    const startTime = Date.now();
+    await prisma.$queryRaw`SELECT 1 as test;`;
+    const responseTime = Date.now() - startTime;
+
+    let connectionStats = null;
+    try {
+      // Try to get connection statistics (requires appropriate permissions)
+      const stats = await prisma.$queryRaw`
+        SELECT 
+          count(*) as total_connections,
+          count(*) FILTER (WHERE state = 'active') as active_connections,
+          count(*) FILTER (WHERE state = 'idle') as idle_connections,
+          count(*) FILTER (WHERE state = 'idle in transaction') as idle_in_transaction
+        FROM pg_stat_activity 
+        WHERE datname = current_database()
+      `;
+      
+      connectionStats = stats[0];
+    } catch (statsError) {
+      // Stats not available, but connection is working
+      connectionStats = { message: "Connection stats require elevated privileges" };
+    }
+
+    return {
+      healthy: true,
+      message: "Connection pool is healthy",
+      responseTime: `${responseTime}ms`,
+      poolConfig: {
+        minConnections: process.env.DATABASE_POOL_MIN || "2",
+        maxConnections: process.env.DATABASE_POOL_MAX || "10",
+        poolTimeout: "20s",
+        connectTimeout: "60s"
+      },
+      stats: connectionStats
+    };
+
+  } catch (error) {
+    return {
+      healthy: false,
+      message: `Connection pool health check failed: ${error.message}`,
+      error: error.code || "UNKNOWN_ERROR",
+      poolConfig: {
+        minConnections: process.env.DATABASE_POOL_MIN || "2",
+        maxConnections: process.env.DATABASE_POOL_MAX || "10"
+      }
+    };
+  }
+};
+
+export { connectDB, getPrisma, checkDatabaseHealth, checkConnectionPoolHealth };
 export default connectDB;

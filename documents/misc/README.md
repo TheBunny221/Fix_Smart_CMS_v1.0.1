@@ -16,6 +16,13 @@ The miscellaneous documentation serves as a repository for feature-specific docu
 - **[API Response Structure Fix](./API_RESPONSE_STRUCTURE_FIX.md)**: API response structure improvements and fixes
 - **[Dashboard Fix Summary](./DASHBOARD_FIX_SUMMARY.md)**: Summary of dashboard-related fixes and improvements
 
+### Implementation Documentation
+- **[Implementation Checklist](./IMPLEMENTATION_CHECKLIST.md)**: UpdateStatusModal enhancement implementation checklist with comprehensive task tracking
+- **[Implementation Summary](./IMPLEMENTATION_SUMMARY.md)**: Password management system implementation summary with security features and validation results
+
+### Documentation Migration
+- **[Documentation Migration Log](./DOCUMENTATION_MIGRATION_LOG.md)**: Complete log of root-level documentation files reorganized into appropriate subdirectories
+
 ### Historical Documentation
 - **[Documentation Index](./DOCUMENTATION_INDEX.md)**: Previous documentation index (superseded by main README)
 

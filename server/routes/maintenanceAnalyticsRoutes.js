@@ -498,12 +498,14 @@ const getMaintenanceDashboard = asyncHandler(async (req, res) => {
 // Routes
 router.get(
   "/analytics",
+  protect,
   authorize("MAINTENANCE_TEAM"),
   getMaintenanceAnalytics,
 );
 
 router.get(
   "/dashboard",
+  protect,
   authorize("MAINTENANCE_TEAM"),
   getMaintenanceDashboard,
 );
@@ -570,10 +572,8 @@ async function calculateMaintenancePerformanceMetrics(prisma, where, maintenance
         }
       },
       having: {
-        complaintId: {
-          _count: {
-            gt: 2 // More than 2 status changes indicates multiple visits
-          }
+        _count: {
+          gt: 2 // More than 2 status changes indicates multiple visits
         }
       }
     });
@@ -590,10 +590,8 @@ async function calculateMaintenancePerformanceMetrics(prisma, where, maintenance
         maintenanceTeamId: maintenanceUserId
       },
       having: {
-        area: {
-          _count: {
-            gt: 1
-          }
+        _count: {
+          gt: 1
         }
       }
     });
