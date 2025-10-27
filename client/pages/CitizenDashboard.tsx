@@ -103,6 +103,12 @@ const CitizenDashboard: React.FC = () => {
   );
   const [isQuickFormOpen, setIsQuickFormOpen] = useState(false);
 
+  // Convert type ID to type name for API call
+  const getTypeNameFromId = (typeId: string) => {
+    const complaintType = complaintTypeOptions.find(type => type.value === typeId);
+    return complaintType?.label || typeId;
+  };
+
   // Use RTK Query for better authentication handling
   // Helper function to get complaint type name from ID
   const getComplaintTypeNameById = (typeId: string) => {
@@ -122,9 +128,7 @@ const CitizenDashboard: React.FC = () => {
       // Add search parameters from URL if any
       ...(searchTerm && { search: searchTerm }),
       ...(statusFilter && statusFilter !== "all" && { status: [statusFilter] }),
-      ...(typeFilter && typeFilter !== "all" && { 
-        type: [getComplaintTypeNameById(typeFilter)] // Convert ID to name for backend
-      }),
+      ...(typeFilter && typeFilter !== "all" && { type: [getTypeNameFromId(typeFilter)] }),
       ...(sortBy && { sortBy }),
       ...(sortOrder && { sortOrder }),
     },
