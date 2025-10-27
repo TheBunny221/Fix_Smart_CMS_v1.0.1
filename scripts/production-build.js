@@ -5,6 +5,14 @@
  * 
  * Compiles TypeScript code, bundles React frontend, and prepares 
  * production-ready server in the 'dist' directory
+ * 
+ * Environment Variables:
+ * - BUILD_ENV_FILE: Override the environment file to use (default: .env.production)
+ * - SKIP_ENV_VALIDATION: Skip validation of required environment variables (default: false)
+ * 
+ * Examples:
+ * - BUILD_ENV_FILE=.env.staging node scripts/production-build.js
+ * - SKIP_ENV_VALIDATION=true node scripts/production-build.js
  */
 
 import fs from 'fs';
@@ -20,7 +28,8 @@ const rootDir = path.resolve(__dirname, '..');
 const CONFIG = {
   distDir: path.join(rootDir, 'dist'),
   sourceDir: rootDir,
-  envFile: '.env.production'
+  envFile: process.env.BUILD_ENV_FILE || '.env.production', // Allow override via environment variable
+  skipEnvValidation: process.env.SKIP_ENV_VALIDATION === 'true'
 };
 
 /**
@@ -29,11 +38,11 @@ const CONFIG = {
 function execCommand(command, options = {}) {
   try {
     console.log(`🔧 Executing: ${command}`);
-    const result = execSync(command, { 
+    const result = execSync(command, {
       stdio: 'inherit',
       encoding: 'utf8',
       cwd: options.cwd || rootDir,
-      ...options 
+      ...options
     });
     return { success: true, output: result };
   } catch (error) {
@@ -49,7 +58,7 @@ function execCommand(command, options = {}) {
 function cleanBuild() {
   console.log('🧹 Cleaning Previous Build');
   console.log('='.repeat(50));
-  
+
   // Try to remove dist directory with retry logic for Windows
   if (fs.existsSync(CONFIG.distDir)) {
     let retries = 3;
@@ -82,7 +91,7 @@ function cleanBuild() {
       }
     }
   }
-  
+
   // Clean TypeScript build cache
   const tsBuildDir = path.join(rootDir, 'tsbuild');
   if (fs.existsSync(tsBuildDir)) {
@@ -93,7 +102,7 @@ function cleanBuild() {
       console.log('⚠️ Could not remove TypeScript build cache, continuing...');
     }
   }
-  
+
   return true;
 }
 
@@ -103,7 +112,7 @@ function cleanBuild() {
 function validateEnvironment() {
   console.log('\n⚙️ Validating Environment');
   console.log('='.repeat(50));
-  
+
   // Check if production environment file exists
   const envPath = path.join(rootDir, CONFIG.envFile);
   if (!fs.existsSync(envPath)) {
@@ -111,29 +120,29 @@ function validateEnvironment() {
     console.error('💡 Create .env.production with production configuration');
     return false;
   }
-  
+
   console.log(`✅ Found environment file: ${CONFIG.envFile}`);
-  
+
   // Validate Node.js version
   const nodeVersion = process.version;
   const majorVersion = parseInt(nodeVersion.replace('v', '').split('.')[0]);
-  
+
   if (majorVersion < 18) {
     console.error(`❌ Node.js version ${nodeVersion} is too old. Requires v18+`);
     return false;
   }
-  
+
   console.log(`✅ Node.js version: ${nodeVersion}`);
-  
+
   // Check if package.json exists
   const packagePath = path.join(rootDir, 'package.json');
   if (!fs.existsSync(packagePath)) {
     console.error('❌ package.json not found');
     return false;
   }
-  
+
   console.log('✅ Package.json found');
-  
+
   return true;
 }
 
@@ -143,14 +152,14 @@ function validateEnvironment() {
 function installDependencies() {
   console.log('\n📦 Installing Dependencies');
   console.log('='.repeat(50));
-  
+
   // Install all dependencies (including dev) for building
   const result = execCommand('npm ci');
   if (!result.success) {
     console.error('❌ Failed to install dependencies');
     return false;
   }
-  
+
   console.log('✅ Dependencies installed successfully');
   return true;
 }
@@ -161,14 +170,15 @@ function installDependencies() {
 function compileTypeScript() {
   console.log('\n🔨 Compiling TypeScript');
   console.log('='.repeat(50));
-  
+  console.log('📝 Note: Legacy components are excluded from compilation (client/legacy-components/*)');
+
   // Check if TypeScript config exists
   const tsConfigPath = path.join(rootDir, 'tsconfig.json');
   if (!fs.existsSync(tsConfigPath)) {
     console.log('⚠️ No TypeScript config found, skipping TypeScript compilation');
     return true;
   }
-  
+
   // Check if TypeScript is available
   const tscCheck = execCommand('npm list typescript', { silent: true, continueOnError: true });
   if (!tscCheck.success) {
@@ -176,20 +186,20 @@ function compileTypeScript() {
     console.log('💡 For TypeScript compilation, install typescript as a dependency');
     return true;
   }
-  
+
   // Try local TypeScript first, then global (Windows-compatible paths)
   let result = execCommand('npx tsc --project tsconfig.json', { continueOnError: true });
   if (!result.success) {
     // Try alternative path for Windows
     result = execCommand('node_modules\\.bin\\tsc --project tsconfig.json', { continueOnError: true });
   }
-  
+
   if (!result.success) {
     console.log('⚠️ TypeScript compilation failed, continuing without compilation');
     console.log('💡 Server files will be copied as-is (JavaScript files should work)');
     return true; // Don't fail the build for TypeScript issues
   }
-  
+
   console.log('✅ TypeScript compiled successfully');
   return true;
 }
@@ -200,20 +210,20 @@ function compileTypeScript() {
 function buildFrontend() {
   console.log('\n🎨 Building React Frontend');
   console.log('='.repeat(50));
-  
+
   // Check if Vite config exists
   const viteConfigPath = path.join(rootDir, 'vite.config.ts');
   if (!fs.existsSync(viteConfigPath)) {
     console.log('⚠️ No Vite config found, skipping frontend build');
     return true;
   }
-  
+
   const result = execCommand('npx vite build');
   if (!result.success) {
     console.error('❌ Frontend build failed');
     return false;
   }
-  
+
   console.log('✅ Frontend built successfully');
   return true;
 }
@@ -224,21 +234,21 @@ function buildFrontend() {
 function preparePrisma() {
   console.log('\n🗄️ Preparing Prisma Database');
   console.log('='.repeat(50));
-  
+
   // Check if Prisma schema exists
   const prismaSchemaPath = path.join(rootDir, 'prisma/schema.prisma');
   if (!fs.existsSync(prismaSchemaPath)) {
     console.log('⚠️ No Prisma schema found, skipping Prisma setup');
     return true;
   }
-  
+
   // Generate Prisma client
   const generateResult = execCommand('npx prisma generate');
   if (!generateResult.success) {
     console.error('❌ Prisma client generation failed');
     return false;
   }
-  
+
   console.log('✅ Prisma client generated successfully');
   return true;
 }
@@ -249,7 +259,7 @@ function preparePrisma() {
 function createDistStructure() {
   console.log('\n📁 Creating Distribution Structure');
   console.log('='.repeat(50));
-  
+
   // Create main directories
   const directories = [
     CONFIG.distDir,
@@ -261,14 +271,14 @@ function createDistStructure() {
     path.join(CONFIG.distDir, 'logs'),
     path.join(CONFIG.distDir, 'uploads')
   ];
-  
+
   directories.forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
       console.log(`✅ Created directory: ${path.relative(rootDir, dir)}`);
     }
   });
-  
+
   return true;
 }
 
@@ -278,15 +288,15 @@ function createDistStructure() {
 function copyServerFiles() {
   console.log('\n🖥️ Copying Server Files');
   console.log('='.repeat(50));
-  
+
   const serverSourceDir = path.join(rootDir, 'server');
   const serverDestDir = path.join(CONFIG.distDir, 'server');
-  
+
   if (!fs.existsSync(serverSourceDir)) {
     console.error('❌ Server directory not found');
     return false;
   }
-  
+
   try {
     // Use Node.js fs methods for better cross-platform compatibility
     copyDirectoryRecursive(serverSourceDir, serverDestDir);
@@ -304,7 +314,7 @@ function copyServerFiles() {
 function copyClientBuild() {
   console.log('\n🌐 Copying Client Build');
   console.log('='.repeat(50));
-  
+
   // Check for Vite build output in various locations
   const possibleBuildDirs = [
     path.join(rootDir, 'client', 'dist'),  // client/dist
@@ -312,10 +322,10 @@ function copyClientBuild() {
     path.join(rootDir, 'build'),           // build directory
     path.join(rootDir, 'public')           // public directory
   ];
-  
+
   const clientDestDir = path.join(CONFIG.distDir, 'client');
   let sourceBuildDir = null;
-  
+
   // Find the first existing build directory
   for (const buildDir of possibleBuildDirs) {
     if (fs.existsSync(buildDir) && buildDir !== CONFIG.distDir) {
@@ -327,7 +337,7 @@ function copyClientBuild() {
       }
     }
   }
-  
+
   if (sourceBuildDir) {
     try {
       copyDirectoryRecursive(sourceBuildDir, clientDestDir);
@@ -339,7 +349,7 @@ function copyClientBuild() {
     console.log('⚠️ No client build directory found, skipping frontend build');
     console.log('💡 Run "npm run build:client" first if you need frontend assets');
   }
-  
+
   return true;
 }
 
@@ -350,29 +360,57 @@ function copyConfigFiles() {
   console.log('\n⚙️ Copying Configuration Files');
   console.log('='.repeat(50));
   
+  // Verify environment file exists and validate required variables
+  const envFilePath = path.join(rootDir, CONFIG.envFile);
+  if (!fs.existsSync(envFilePath)) {
+    console.error(`❌ ${CONFIG.envFile} file not found! This is required for production builds.`);
+    console.log(`💡 Please create ${CONFIG.envFile} with your production environment variables.`);
+    return false;
+  }
+  
+  // Validate required environment variables (unless skipped)
+  if (!CONFIG.skipEnvValidation) {
+    const envContent = fs.readFileSync(envFilePath, 'utf8');
+    const requiredVars = ['NODE_ENV', 'PORT', 'DATABASE_URL', 'JWT_SECRET'];
+    const missingVars = requiredVars.filter(varName => !envContent.includes(`${varName}=`));
+    
+    if (missingVars.length > 0) {
+      console.error(`❌ Missing required environment variables in ${CONFIG.envFile}: ${missingVars.join(', ')}`);
+      return false;
+    }
+    
+    console.log(`✅ Found and validated ${CONFIG.envFile} file`);
+    console.log(`   - Contains ${requiredVars.length} required variables`);
+  } else {
+    console.log(`✅ Found ${CONFIG.envFile} file (validation skipped)`);
+  }
+
   const configFiles = [
     { src: 'config', dest: 'config', required: false },
     { src: 'prisma', dest: 'prisma', required: true },
-    { src: '.env.production', dest: '.env', required: true },
+    { src: CONFIG.envFile, dest: '.env', required: true },
+    { src: CONFIG.envFile, dest: CONFIG.envFile, required: true }, // Keep original for reference
     { src: 'ecosystem.prod.config.cjs', dest: 'ecosystem.prod.config.cjs', required: false },
     { src: 'package.json', dest: 'package.json', required: true }
   ];
-  
+
   // After copying, update the .env file for LAN access
   const envPath = path.join(CONFIG.distDir, '.env');
   if (fs.existsSync(envPath)) {
+    console.log('🔧 Updating environment variables for production deployment...');
     let envContent = fs.readFileSync(envPath, 'utf8');
-    
+    const originalContent = envContent;
+
     // Ensure LAN accessibility by updating CORS and CLIENT_URL
     envContent = envContent.replace(
-      /CLIENT_URL=.*/g, 
+      /CLIENT_URL=.*/g,
       'CLIENT_URL=http://0.0.0.0:4005'
     );
     envContent = envContent.replace(
-      /CORS_ORIGIN=.*/g, 
+      /CORS_ORIGIN=.*/g,
       'CORS_ORIGIN=http://0.0.0.0:4005,http://localhost:4005,http://localhost:3000'
     );
-    
+
     // Ensure HOST is set to 0.0.0.0 for LAN access
     if (!envContent.includes('HOST=0.0.0.0')) {
       envContent = envContent.replace(/HOST=.*/g, 'HOST=0.0.0.0');
@@ -380,15 +418,26 @@ function copyConfigFiles() {
         envContent += '\nHOST=0.0.0.0';
       }
     }
-    
-    fs.writeFileSync(envPath, envContent);
-    console.log('✅ Updated .env for LAN accessibility');
+
+    // Only write if content changed
+    if (envContent !== originalContent) {
+      fs.writeFileSync(envPath, envContent);
+      console.log('✅ Updated .env for LAN accessibility');
+      console.log('   - CLIENT_URL set to http://0.0.0.0:4005');
+      console.log('   - CORS_ORIGIN configured for multiple origins');
+      console.log('   - HOST set to 0.0.0.0 for LAN access');
+    } else {
+      console.log('✅ Environment variables already configured correctly');
+    }
+  } else {
+    console.error('❌ Failed to find copied .env file for updates');
+    return false;
   }
-  
+
   for (const file of configFiles) {
     const srcPath = path.join(rootDir, file.src);
     const destPath = path.join(CONFIG.distDir, file.dest);
-    
+
     if (fs.existsSync(srcPath)) {
       try {
         if (fs.statSync(srcPath).isDirectory()) {
@@ -416,7 +465,7 @@ function copyConfigFiles() {
       console.log(`⚠️ Optional file not found: ${file.src}`);
     }
   }
-  
+
   return true;
 }
 
@@ -426,10 +475,10 @@ function copyConfigFiles() {
 function copyDeploymentScripts() {
   console.log('\n📜 Copying Deployment Scripts');
   console.log('='.repeat(50));
-  
+
   const scriptsSourceDir = path.join(rootDir, 'scripts');
   const scriptsDestDir = path.join(CONFIG.distDir, 'scripts');
-  
+
   if (fs.existsSync(scriptsSourceDir)) {
     try {
       copyDirectoryRecursive(scriptsSourceDir, scriptsDestDir);
@@ -440,7 +489,7 @@ function copyDeploymentScripts() {
   } else {
     console.log('⚠️ Scripts directory not found');
   }
-  
+
   return true;
 }
 
@@ -471,16 +520,16 @@ function getProductionDependencies(originalPackage) {
     'date-fns',
     'i18next'
   ];
-  
+
   const productionDeps = {};
-  
+
   // Add all server dependencies that exist in the original package
   serverDependencies.forEach(dep => {
     if (originalPackage.dependencies[dep]) {
       productionDeps[dep] = originalPackage.dependencies[dep];
     }
   });
-  
+
   // Add any additional dependencies that might be needed for production
   // but not in our predefined list (dynamic detection)
   Object.keys(originalPackage.dependencies).forEach(dep => {
@@ -492,16 +541,16 @@ function getProductionDependencies(originalPackage) {
       'html2canvas', 'jspdf', 'xlsx', 'pdfjs-dist', 'docx-preview',
       'tailwind-merge', 'tailwindcss-animate'
     ];
-    
-    const isFrontendPackage = frontendPackages.some(pattern => 
+
+    const isFrontendPackage = frontendPackages.some(pattern =>
       dep.startsWith(pattern) || dep.includes('radix-ui')
     );
-    
+
     if (!isFrontendPackage && !productionDeps[dep]) {
       productionDeps[dep] = originalPackage.dependencies[dep];
     }
   });
-  
+
   return productionDeps;
 }
 
@@ -511,20 +560,20 @@ function getProductionDependencies(originalPackage) {
 function createProductionPackageJson() {
   console.log('\n📋 Creating Production Package.json');
   console.log('='.repeat(50));
-  
+
   const originalPackagePath = path.join(rootDir, 'package.json');
   const productionPackagePath = path.join(CONFIG.distDir, 'package.json');
-  
+
   if (!fs.existsSync(originalPackagePath)) {
     console.error('❌ Original package.json not found');
     return false;
   }
-  
+
   const originalPackage = JSON.parse(fs.readFileSync(originalPackagePath, 'utf8'));
-  
+
   // Get production dependencies dynamically
   const productionDependencies = getProductionDependencies(originalPackage);
-  
+
   // Create production-optimized package.json
   const productionPackage = {
     name: originalPackage.name,
@@ -562,16 +611,16 @@ function createProductionPackageJson() {
     author: originalPackage.author,
     license: originalPackage.license
   };
-  
+
   // Log the dependencies being included
   console.log(`📦 Including ${Object.keys(productionDependencies).length} production dependencies:`);
   Object.keys(productionDependencies).forEach(dep => {
     console.log(`   ✅ ${dep}@${productionDependencies[dep]}`);
   });
-  
+
   fs.writeFileSync(productionPackagePath, JSON.stringify(productionPackage, null, 2));
   console.log('✅ Production package.json created with dynamic dependencies');
-  
+
   return true;
 }
 
@@ -581,16 +630,16 @@ function createProductionPackageJson() {
 function validateBuild() {
   console.log('\n✅ Validating Build Output');
   console.log('='.repeat(50));
-  
+
   const requiredFiles = [
     'package.json',
     'server/server.js',
     '.env',
     'prisma/schema.prisma'
   ];
-  
+
   const missingFiles = [];
-  
+
   requiredFiles.forEach(file => {
     const filePath = path.join(CONFIG.distDir, file);
     if (!fs.existsSync(filePath)) {
@@ -599,16 +648,16 @@ function validateBuild() {
       console.log(`✅ ${file}`);
     }
   });
-  
+
   if (missingFiles.length > 0) {
     console.error('❌ Missing required files:');
     missingFiles.forEach(file => console.error(`   - ${file}`));
     return false;
   }
-  
+
   // Check dist directory size
   console.log(`📊 Build size: ${Math.round(getDirectorySize(CONFIG.distDir) / 1024 / 1024)} MB`);
-  
+
   console.log('✅ Build validation completed successfully');
   return true;
 }
@@ -620,14 +669,14 @@ function copyDirectoryRecursive(src, dest) {
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
   }
-  
+
   const files = fs.readdirSync(src);
-  
+
   files.forEach(file => {
     const srcPath = path.join(src, file);
     const destPath = path.join(dest, file);
     const stats = fs.statSync(srcPath);
-    
+
     if (stats.isDirectory()) {
       copyDirectoryRecursive(srcPath, destPath);
     } else {
@@ -641,14 +690,14 @@ function copyDirectoryRecursive(src, dest) {
  */
 function getDirectorySize(dirPath) {
   let size = 0;
-  
+
   try {
     const files = fs.readdirSync(dirPath);
-    
+
     files.forEach(file => {
       const filePath = path.join(dirPath, file);
       const stats = fs.statSync(filePath);
-      
+
       if (stats.isDirectory()) {
         size += getDirectorySize(filePath);
       } else {
@@ -658,7 +707,7 @@ function getDirectorySize(dirPath) {
   } catch (error) {
     // Ignore errors for inaccessible files
   }
-  
+
   return size;
 }
 
@@ -671,7 +720,7 @@ function main() {
   console.log(`📅 Build started: ${new Date().toISOString()}`);
   console.log(`📁 Source: ${rootDir}`);
   console.log(`📦 Output: ${CONFIG.distDir}`);
-  
+
   const buildSteps = [
     { name: 'Clean Previous Build', fn: cleanBuild },
     { name: 'Validate Environment', fn: validateEnvironment },
@@ -687,21 +736,22 @@ function main() {
     { name: 'Create Production Package.json', fn: createProductionPackageJson },
     { name: 'Validate Build Output', fn: validateBuild }
   ];
-  
+
   for (const step of buildSteps) {
     console.log(`\n📋 ${step.name}`);
     const success = step.fn();
-    
+
     if (!success) {
       console.error(`\n❌ Build failed at step: ${step.name}`);
       process.exit(1);
     }
   }
-  
+
   console.log('\n🎉 Production Build Completed Successfully!');
   console.log('='.repeat(60));
   console.log(`📦 Build output: ${CONFIG.distDir}`);
   console.log(`📅 Build completed: ${new Date().toISOString()}`);
+  console.log(`🔧 Environment file used: ${CONFIG.envFile}`);
   console.log('');
   console.log('📋 Next steps:');
   console.log('1. Copy the dist/ folder to your target server');

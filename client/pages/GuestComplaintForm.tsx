@@ -345,7 +345,7 @@ const GuestComplaintForm: React.FC = () => {
       submissionData.append("fullName", formData.fullName);
       submissionData.append("email", formData.email);
       submissionData.append("phoneNumber", formData.phoneNumber);
-      submissionData.append("type", formData.type);
+      submissionData.append("complaintTypeId", formData.type);
       submissionData.append("description", formData.description);
       submissionData.append("priority", formData.priority || "MEDIUM");
       submissionData.append("wardId", formData.wardId);

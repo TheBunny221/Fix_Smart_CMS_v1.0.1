@@ -381,7 +381,7 @@ const CitizenComplaintForm: React.FC = () => {
       // Add complaint data
       formDataToSubmit.append("description", formData.description);
       formDataToSubmit.append("complaintTypeId", formData.type);
-      formDataToSubmit.append("type", formData.type);
+      // Don't send legacy 'type' field - let backend use complaintTypeId
       formDataToSubmit.append("priority", formData.priority.toLowerCase());
       formDataToSubmit.append("wardId", formData.wardId);
       formDataToSubmit.append("area", formData.area);

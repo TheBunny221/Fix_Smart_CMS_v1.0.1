@@ -247,7 +247,9 @@ const UnifiedReports: React.FC = () => {
           ...(filters.dateRange.from && { dateFrom: filters.dateRange.from }),
           ...(filters.dateRange.to && { dateTo: filters.dateRange.to }),
           ...(filters.ward !== "all" && { ward: filters.ward }),
-          ...(filters.complaintType !== "all" && { type: filters.complaintType }),
+          ...(filters.complaintType !== "all" && { 
+            type: getComplaintTypeById(filters.complaintType)?.name || filters.complaintType 
+          }),
           ...(filters.status !== "all" && { status: filters.status }),
           ...(filters.priority !== "all" && { priority: filters.priority }),
         });
@@ -415,7 +417,9 @@ const UnifiedReports: React.FC = () => {
         from: filters.dateRange.from,
         to: filters.dateRange.to,
         ...(filters.ward !== "all" && { ward: filters.ward }),
-        ...(filters.complaintType !== "all" && { type: filters.complaintType }),
+        ...(filters.complaintType !== "all" && { 
+          type: getComplaintTypeById(filters.complaintType)?.name || filters.complaintType 
+        }),
         ...(filters.status !== "all" && { status: filters.status }),
         ...(filters.priority !== "all" && { priority: filters.priority }),
         detailed: "true",

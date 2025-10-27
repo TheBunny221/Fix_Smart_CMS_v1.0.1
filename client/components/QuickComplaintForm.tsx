@@ -359,10 +359,15 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
       try {
         if (submissionMode === "citizen" && isAuthenticated) {
           // Citizen flow: Submit directly to authenticated API
+          // Get the complaint type name from the ID
+          const selectedComplaintType = complaintTypeOptions.find(
+            (type) => type.value === formData.problemType
+          );
+          
           const complaintData = {
-            title: `${formData.problemType} complaint`,
+            title: `${selectedComplaintType?.label || formData.problemType} complaint`,
             description: formData.description,
-            type: formData.problemType as ComplaintType,
+            complaintTypeId: parseInt(formData.problemType), // Send as ID for new backend
             priority: "MEDIUM" as Priority,
             wardId: formData.ward,
             ...(formData.subZoneId && { subZoneId: formData.subZoneId }),
@@ -463,7 +468,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
         fd.append("otpCode", inputCode);
         fd.append("fullName", formData.fullName);
         fd.append("phoneNumber", formData.mobile);
-        fd.append("type", formData.problemType);
+        fd.append("complaintTypeId", formData.problemType);
         fd.append("description", formData.description);
         fd.append("priority", "MEDIUM");
         fd.append("wardId", formData.ward);

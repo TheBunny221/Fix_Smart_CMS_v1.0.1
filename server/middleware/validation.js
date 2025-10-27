@@ -393,18 +393,10 @@ export const validateComplaintFilters = [
 
   query("type")
     .optional()
-    .isIn([
-      "WATER_SUPPLY",
-      "ELECTRICITY",
-      "ROAD_REPAIR",
-      "GARBAGE_COLLECTION",
-      "STREET_LIGHTING",
-      "SEWERAGE",
-      "PUBLIC_HEALTH",
-      "TRAFFIC",
-      "OTHERS",
-    ])
-    .withMessage("Invalid type filter"),
+    .isString()
+    .trim()
+    .isLength({ min: 1 })
+    .withMessage("Type filter cannot be empty"),
 
   query("wardId")
     .optional()

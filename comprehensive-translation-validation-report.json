@@ -1,0 +1,4607 @@
+{
+  "timestamp": "2025-10-27T10:03:10.046Z",
+  "summary": {
+    "totalRoles": 4,
+    "rolesWithFullCoverage": 0,
+    "totalPages": 31,
+    "pagesWithTranslations": 14,
+    "totalTranslationKeys": 125,
+    "validKeys": 76,
+    "missingKeys": 49,
+    "totalHardcodedStrings": 497,
+    "overallTranslationCoverage": 45,
+    "languageSwitchingWorking": 6,
+    "languageSwitchingIssues": 0
+  },
+  "roleBasedResults": {
+    "ADMIN": {
+      "role": "ADMIN",
+      "accessiblePages": [
+        "client/pages/AdminConfig.tsx",
+        "client/pages/AdminDashboard.tsx",
+        "client/pages/AdminUsers.tsx",
+        "client/pages/AdminLanguages.tsx",
+        "client/pages/AdminWardBoundaries.tsx",
+        "client/pages/UnifiedReports.tsx",
+        "client/pages/WardManagement.tsx",
+        "client/components/SystemSettingsManager.tsx",
+        "client/components/WardBoundaryManager.tsx",
+        "client/components/ComplaintTypeManagement.tsx"
+      ],
+      "pageResults": [
+        {
+          "filePath": "client/pages/AdminConfig.tsx",
+          "hasTranslationImport": true,
+          "useTranslationHook": true,
+          "translationKeys": [
+            {
+              "key": "tab",
+              "line": 25,
+              "context": "const activeTab = searchParams.get(\"tab\") || \"system-settings\";",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "admin.config.title",
+              "line": 34,
+              "context": "<h1 className=\"text-3xl font-bold text-gray-900\">{t(\"admin.config.title\")}</h1>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "admin.config.subtitle",
+              "line": 36,
+              "context": "{t(\"admin.config.subtitle\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "admin.config.systemSettings",
+              "line": 44,
+              "context": "<span>{t(\"admin.config.systemSettings\")}</span>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "admin.config.wardsBoundaries",
+              "line": 48,
+              "context": "<span>{t(\"admin.config.wardsBoundaries\")}</span>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "admin.config.complaintTypes",
+              "line": 52,
+              "context": "<span>{t(\"admin.config.complaintTypes\")}</span>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "admin.config.userManagement",
+              "line": 56,
+              "context": "<span>{t(\"admin.config.userManagement\")}</span>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "admin.config.userManagement",
+              "line": 75,
+              "context": "<h3 className=\"text-lg font-medium text-gray-900 mb-2\">{t(\"admin.config.userManagement\")}</h3>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "admin.config.userManagementDescription",
+              "line": 76,
+              "context": "<p className=\"text-gray-600\">{t(\"admin.config.userManagementDescription\")}</p>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            }
+          ],
+          "hardcodedStrings": [],
+          "validKeys": 8,
+          "missingKeys": 1
+        },
+        {
+          "filePath": "client/pages/AdminDashboard.tsx",
+          "hasTranslationImport": true,
+          "useTranslationHook": true,
+          "translationKeys": [
+            {
+              "key": "dashboard.admin.title",
+              "line": 243,
+              "context": "🛡️ {t(\"dashboard.admin.title\")} 🛠️",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.subtitle",
+              "line": 246,
+              "context": "{t(\"dashboard.admin.subtitle\")} {appName}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.totalComplaints",
+              "line": 257,
+              "context": "label: t(\"dashboard.citizen.totalComplaints\"),",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.slaCompliance",
+              "line": 265,
+              "context": "label: t(\"dashboard.slaCompliance\"),",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.dataLoadError",
+              "line": 301,
+              "context": "{t(\"dashboard.admin.dataLoadError\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.activeComplaints",
+              "line": 323,
+              "context": "{t(\"dashboard.admin.activeComplaints\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.pendingResolution",
+              "line": 332,
+              "context": "{t(\"dashboard.admin.pendingResolution\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.overdueComplaints",
+              "line": 340,
+              "context": "{t(\"dashboard.admin.overdueComplaints\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.openPastDeadline",
+              "line": 349,
+              "context": "{t(\"dashboard.admin.openPastDeadline\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.pendingAssignments",
+              "line": 360,
+              "context": "{t(\"dashboard.admin.pendingAssignments\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.needsMaintenanceAssignment",
+              "line": 369,
+              "context": "{t(\"dashboard.admin.needsMaintenanceAssignment\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.avgResolution",
+              "line": 377,
+              "context": "{t(\"dashboard.admin.avgResolution\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.averageClosureTime",
+              "line": 386,
+              "context": "{t(\"dashboard.admin.averageClosureTime\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.overview",
+              "line": 395,
+              "context": "<TabsTrigger value=\"overview\">{t(\"dashboard.overview\")}</TabsTrigger>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.overviewHeatmap",
+              "line": 585,
+              "context": "<CardTitle>{t(\"dashboard.admin.overviewHeatmap\")}</CardTitle>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.admin.recentActivity",
+              "line": 620,
+              "context": "{t(\"dashboard.admin.recentActivity\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "Loading dashboard data...",
+              "line": 202,
+              "type": "jsx_text",
+              "context": "<div className=\"text-lg\">Loading dashboard data...</div>"
+            },
+            {
+              "content": "Complaint Trends (Last 6 Months)",
+              "line": 406,
+              "type": "jsx_text",
+              "context": "<CardTitle>Complaint Trends (Last 6 Months)</CardTitle>"
+            },
+            {
+              "content": "Complaints by Type",
+              "line": 481,
+              "type": "jsx_text",
+              "context": "<CardTitle>Complaints by Type</CardTitle>"
+            },
+            {
+              "content": "Overall Complaints Heatmap",
+              "line": 593,
+              "type": "attribute",
+              "context": "title=\"Overall Complaints Heatmap\""
+            },
+            {
+              "content": "Response Time",
+              "line": 676,
+              "type": "jsx_text",
+              "context": "<CardTitle>Response Time</CardTitle>"
+            },
+            {
+              "content": "Target: 3d",
+              "line": 687,
+              "type": "jsx_text",
+              "context": "{/* <span>Target: 3d</span> */}"
+            },
+            {
+              "content": "Resolution Rate",
+              "line": 708,
+              "type": "jsx_text",
+              "context": "<CardTitle>Resolution Rate</CardTitle>"
+            },
+            {
+              "content": "Complaints resolved",
+              "line": 714,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-600\">Complaints resolved</p>"
+            },
+            {
+              "content": "Target: 90%",
+              "line": 717,
+              "type": "jsx_text",
+              "context": "<span>Target: 90%</span>"
+            },
+            {
+              "content": "SLA Compliance",
+              "line": 736,
+              "type": "jsx_text",
+              "context": "<CardTitle>SLA Compliance</CardTitle>"
+            },
+            {
+              "content": "Meeting deadlines",
+              "line": 742,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-600\">Meeting deadlines</p>"
+            },
+            {
+              "content": "Target: 85%",
+              "line": 745,
+              "type": "jsx_text",
+              "context": "<span>Target: 85%</span>"
+            },
+            {
+              "content": "Satisfaction Score",
+              "line": 764,
+              "type": "jsx_text",
+              "context": "<CardTitle>Satisfaction Score</CardTitle>"
+            },
+            {
+              "content": "Citizen feedback",
+              "line": 770,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-600\">Citizen feedback</p>"
+            },
+            {
+              "content": "Target: 4.0",
+              "line": 773,
+              "type": "jsx_text",
+              "context": "<span>Target: 4.0</span>"
+            },
+            {
+              "content": "Performance Summary",
+              "line": 794,
+              "type": "jsx_text",
+              "context": "<CardTitle>Performance Summary</CardTitle>"
+            },
+            {
+              "content": "Overall Resolution Rate",
+              "line": 800,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">Overall Resolution Rate</span>"
+            },
+            {
+              "content": "SLA Compliance",
+              "line": 811,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">SLA Compliance</span>"
+            },
+            {
+              "content": "Quick Actions",
+              "line": 851,
+              "type": "jsx_text",
+              "context": "<CardTitle>Quick Actions</CardTitle>"
+            },
+            {
+              "content": "User Management",
+              "line": 889,
+              "type": "jsx_text",
+              "context": "<CardTitle>User Management</CardTitle>"
+            },
+            {
+              "content": "User Activity (Real-time)",
+              "line": 919,
+              "type": "jsx_text",
+              "context": "<CardTitle>User Activity (Real-time)</CardTitle>"
+            },
+            {
+              "content": "Loading activity...",
+              "line": 925,
+              "type": "jsx_text",
+              "context": "<span className=\"ml-2 text-sm\">Loading activity...</span>"
+            },
+            {
+              "content": "Failed to load user activity",
+              "line": 929,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm\">Failed to load user activity</p>"
+            },
+            {
+              "content": "Active Users (24h)",
+              "line": 934,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">Active Users (24h)</span>"
+            },
+            {
+              "content": "New Registrations (24h)",
+              "line": 940,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">New Registrations (24h)</span>"
+            },
+            {
+              "content": "Login Success Rate",
+              "line": 947,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">Login Success Rate</span>"
+            },
+            {
+              "content": "System Configuration",
+              "line": 990,
+              "type": "jsx_text",
+              "context": "<CardTitle>System Configuration</CardTitle>"
+            },
+            {
+              "content": "System Health (Real-time)",
+              "line": 1016,
+              "type": "jsx_text",
+              "context": "<CardTitle>System Health (Real-time)</CardTitle>"
+            },
+            {
+              "content": "Checking health...",
+              "line": 1022,
+              "type": "jsx_text",
+              "context": "<span className=\"ml-2 text-sm\">Checking health...</span>"
+            },
+            {
+              "content": "Failed to load system health",
+              "line": 1026,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm\">Failed to load system health</p>"
+            },
+            {
+              "content": "Application Uptime",
+              "line": 1031,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">Application Uptime</span>"
+            },
+            {
+              "content": "Database Status",
+              "line": 1037,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">Database Status</span>"
+            },
+            {
+              "content": "Email Service",
+              "line": 1056,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">Email Service</span>"
+            },
+            {
+              "content": "File Storage",
+              "line": 1070,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">File Storage</span>"
+            },
+            {
+              "content": "API Response",
+              "line": 1088,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">API Response</span>"
+            },
+            {
+              "content": "Memory Usage",
+              "line": 1096,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm\">Memory Usage</span>"
+            }
+          ],
+          "validKeys": 16,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/AdminUsers.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "role",
+              "line": 89,
+              "context": "const roleParam = searchParams.get(\"role\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "status",
+              "line": 90,
+              "context": "const statusParam = searchParams.get(\"status\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "a",
+              "line": 421,
+              "context": "const a = document.createElement(\"a\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "User Management",
+              "line": 469,
+              "type": "jsx_text",
+              "context": "<h1 className=\"text-3xl font-bold text-gray-900\">User Management</h1>"
+            },
+            {
+              "content": "Manage all users in the system",
+              "line": 470,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600\">Manage all users in the system</p>"
+            },
+            {
+              "content": "Total Users",
+              "line": 490,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium text-gray-600\">Total Users</p>"
+            },
+            {
+              "content": "Search users...",
+              "line": 589,
+              "type": "attribute",
+              "context": "placeholder=\"Search users...\""
+            },
+            {
+              "content": "Filter by role",
+              "line": 597,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Filter by role\" />"
+            },
+            {
+              "content": "All Roles",
+              "line": 600,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Roles</SelectItem>"
+            },
+            {
+              "content": "Ward Officers",
+              "line": 602,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"WARD_OFFICER\">Ward Officers</SelectItem>"
+            },
+            {
+              "content": "Filter by status",
+              "line": 614,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Filter by status\" />"
+            },
+            {
+              "content": "All Status",
+              "line": 617,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Status</SelectItem>"
+            },
+            {
+              "content": "Loading users...",
+              "line": 641,
+              "type": "jsx_text",
+              "context": "<span className=\"ml-2\">Loading users...</span>"
+            },
+            {
+              "content": "Edit user",
+              "line": 708,
+              "type": "attribute",
+              "context": "title=\"Edit user\""
+            },
+            {
+              "content": "Full Name",
+              "line": 773,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"fullName\">Full Name</Label>"
+            },
+            {
+              "content": "Enter full name",
+              "line": 780,
+              "type": "attribute",
+              "context": "placeholder=\"Enter full name\""
+            },
+            {
+              "content": "Enter email address",
+              "line": 799,
+              "type": "attribute",
+              "context": "placeholder=\"Enter email address\""
+            },
+            {
+              "content": "Phone Number",
+              "line": 808,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"phoneNumber\">Phone Number</Label>"
+            },
+            {
+              "content": "Enter phone number",
+              "line": 815,
+              "type": "attribute",
+              "context": "placeholder=\"Enter phone number\""
+            },
+            {
+              "content": "Select role",
+              "line": 827,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select role\" />"
+            },
+            {
+              "content": "Ward Officer",
+              "line": 831,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"WARD_OFFICER\">Ward Officer</SelectItem>"
+            },
+            {
+              "content": "Select ward (optional)",
+              "line": 851,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select ward (optional)\" />"
+            },
+            {
+              "content": "No ward assigned",
+              "line": 854,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"none\">No ward assigned</SelectItem>"
+            },
+            {
+              "content": "Enter department",
+              "line": 873,
+              "type": "attribute",
+              "context": "placeholder=\"Enter department\""
+            },
+            {
+              "content": "Full Name",
+              "line": 923,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"editFullName\">Full Name</Label>"
+            },
+            {
+              "content": "Enter full name",
+              "line": 930,
+              "type": "attribute",
+              "context": "placeholder=\"Enter full name\""
+            },
+            {
+              "content": "Enter email address",
+              "line": 943,
+              "type": "attribute",
+              "context": "placeholder=\"Enter email address\""
+            },
+            {
+              "content": "Phone Number",
+              "line": 948,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"editPhoneNumber\">Phone Number</Label>"
+            },
+            {
+              "content": "Enter phone number",
+              "line": 955,
+              "type": "attribute",
+              "context": "placeholder=\"Enter phone number\""
+            },
+            {
+              "content": "Select role",
+              "line": 967,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select role\" />"
+            },
+            {
+              "content": "Ward Officer",
+              "line": 971,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"WARD_OFFICER\">Ward Officer</SelectItem>"
+            },
+            {
+              "content": "Select ward (optional)",
+              "line": 994,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select ward (optional)\" />"
+            },
+            {
+              "content": "No ward assigned",
+              "line": 997,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"none\">No ward assigned</SelectItem>"
+            },
+            {
+              "content": "Enter department",
+              "line": 1015,
+              "type": "attribute",
+              "context": "placeholder=\"Enter department\""
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 3
+        },
+        {
+          "filePath": "client/pages/AdminLanguages.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "a",
+              "line": 240,
+              "context": "const a = document.createElement(\"a\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "Add New Language",
+              "line": 293,
+              "type": "jsx_text",
+              "context": "<DialogTitle>Add New Language</DialogTitle>"
+            },
+            {
+              "content": "Language Code",
+              "line": 297,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"code\">Language Code</Label>"
+            },
+            {
+              "content": "e.g., fr, de, es",
+              "line": 300,
+              "type": "attribute",
+              "context": "placeholder=\"e.g., fr, de, es\""
+            },
+            {
+              "content": "English Name",
+              "line": 308,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"name\">English Name</Label>"
+            },
+            {
+              "content": "e.g., French, German, Spanish",
+              "line": 311,
+              "type": "attribute",
+              "context": "placeholder=\"e.g., French, German, Spanish\""
+            },
+            {
+              "content": "Native Name",
+              "line": 319,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"nativeName\">Native Name</Label>"
+            },
+            {
+              "content": "e.g., Français, Deutsch, Español",
+              "line": 322,
+              "type": "attribute",
+              "context": "placeholder=\"e.g., Français, Deutsch, Español\""
+            },
+            {
+              "content": "Text Direction",
+              "line": 333,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"direction\">Text Direction</Label>"
+            },
+            {
+              "content": "Left to Right",
+              "line": 344,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"ltr\">Left to Right</SelectItem>"
+            },
+            {
+              "content": "Right to Left",
+              "line": 345,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"rtl\">Right to Left</SelectItem>"
+            },
+            {
+              "content": "Add Language",
+              "line": 356,
+              "type": "jsx_text",
+              "context": "<Button onClick={handleAddLanguage}>Add Language</Button>"
+            },
+            {
+              "content": "Filter by category",
+              "line": 456,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Filter by category\" />"
+            },
+            {
+              "content": "All Categories",
+              "line": 459,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Categories</SelectItem>"
+            },
+            {
+              "content": "Add New Translation Key",
+              "line": 473,
+              "type": "jsx_text",
+              "context": "<h3 className=\"font-medium mb-3\">Add New Translation Key</h3>"
+            },
+            {
+              "content": "Translation key (e.g., common.submit)",
+              "line": 476,
+              "type": "attribute",
+              "context": "placeholder=\"Translation key (e.g., common.submit)\""
+            },
+            {
+              "content": "English translation",
+              "line": 496,
+              "type": "attribute",
+              "context": "placeholder=\"English translation\""
+            },
+            {
+              "content": "Edit Translation",
+              "line": 574,
+              "type": "jsx_text",
+              "context": "<DialogTitle>Edit Translation</DialogTitle>"
+            },
+            {
+              "content": "Translation Key",
+              "line": 615,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"key\">Translation Key</Label>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 1
+        },
+        {
+          "filePath": "client/pages/AdminWardBoundaries.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Loading wards...",
+              "line": 203,
+              "type": "jsx_text",
+              "context": "<span>Loading wards...</span>"
+            },
+            {
+              "content": "Ward Boundary:",
+              "line": 232,
+              "type": "jsx_text",
+              "context": "<span>Ward Boundary:</span>"
+            },
+            {
+              "content": "Sub-Zone Boundaries:",
+              "line": 242,
+              "type": "jsx_text",
+              "context": "<span>Sub-Zone Boundaries:</span>"
+            },
+            {
+              "content": "Sub-Zones:",
+              "line": 268,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium\">Sub-Zones:</p>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/UnifiedReports.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "recharts",
+              "line": 44,
+              "context": "const recharts = await import(\"recharts\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "date-fns",
+              "line": 49,
+              "context": "const dateFns = await import(\"date-fns\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "../utils/exportUtils",
+              "line": 54,
+              "context": "const exportUtils = await import(\"../utils/exportUtils\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "T",
+              "line": 84,
+              "context": "const formatDateForAPI = (date: Date): string => date.toISOString().split(\"T\")[0] || \"\";",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "csv",
+              "line": 729,
+              "context": "<Button size=\"sm\" variant=\"outline\" onClick={() => handleExport(\"csv\")} disabled={isExporting} className=\"rounded-xl border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm hover:shadow\">",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "excel",
+              "line": 733,
+              "context": "<Button size=\"sm\" variant=\"outline\" onClick={() => handleExport(\"excel\")} disabled={isExporting} className=\"rounded-xl border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm hover:shadow\">",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "pdf",
+              "line": 737,
+              "context": "<Button size=\"sm\" onClick={() => handleExport(\"pdf\")} disabled={isExporting} className=\"rounded-xl bg-primary hover:bg-primary/90 text-white transition-all shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40\">",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "Loading chart...",
+              "line": 531,
+              "type": "jsx_text",
+              "context": "<p>Loading chart...</p>"
+            },
+            {
+              "content": "Chart type not supported",
+              "line": 602,
+              "type": "jsx_text",
+              "context": "return <div className=\"h-[300px] flex items-center justify-center text-muted-foreground\"><p>Chart type not supported</p></div>;"
+            },
+            {
+              "content": "Error loading chart",
+              "line": 610,
+              "type": "jsx_text",
+              "context": "<p>Error loading chart</p>"
+            },
+            {
+              "content": "Error Loading Data",
+              "line": 661,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-xl font-semibold mb-2\">Error Loading Data</h2>"
+            },
+            {
+              "content": "Feature Loading Error",
+              "line": 677,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-xl font-semibold mb-2\">Feature Loading Error</h2>"
+            },
+            {
+              "content": "Loading chart libraries...",
+              "line": 693,
+              "type": "jsx_text",
+              "context": "<span>Loading chart libraries...</span>"
+            },
+            {
+              "content": "Reports & Analytics",
+              "line": 710,
+              "type": "jsx_text",
+              "context": "<li className=\"text-slate-900 dark:text-slate-100 font-medium\">Reports & Analytics</li>"
+            },
+            {
+              "content": "Customize your report view",
+              "line": 754,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs text-slate-500 dark:text-slate-400\">Customize your report view</p>"
+            },
+            {
+              "content": "Date Range",
+              "line": 766,
+              "type": "jsx_text",
+              "context": "<Label className=\"text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block\">Date Range</Label>"
+            },
+            {
+              "content": "All Wards",
+              "line": 811,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Wards</SelectItem>"
+            },
+            {
+              "content": "Complaint Type",
+              "line": 820,
+              "type": "jsx_text",
+              "context": "<Label className=\"text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block\">Complaint Type</Label>"
+            },
+            {
+              "content": "Select type",
+              "line": 823,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select type\" />"
+            },
+            {
+              "content": "All Types",
+              "line": 826,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Types</SelectItem>"
+            },
+            {
+              "content": "Loading types...",
+              "line": 828,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"\" disabled>Loading types...</SelectItem>"
+            },
+            {
+              "content": "No types available",
+              "line": 830,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"\" disabled>No types available</SelectItem>"
+            },
+            {
+              "content": "Select status",
+              "line": 843,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select status\" />"
+            },
+            {
+              "content": "All Status",
+              "line": 846,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Status</SelectItem>"
+            },
+            {
+              "content": "In Progress",
+              "line": 849,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"in_progress\">In Progress</SelectItem>"
+            },
+            {
+              "content": "Active Filters:",
+              "line": 858,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm font-medium text-slate-600 dark:text-slate-400\">Active Filters:</span>"
+            },
+            {
+              "content": "No filters applied",
+              "line": 884,
+              "type": "jsx_text",
+              "context": "<span className=\"text-xs text-slate-500 dark:text-slate-400\">No filters applied</span>"
+            },
+            {
+              "content": "No previous data",
+              "line": 941,
+              "type": "jsx_text",
+              "context": "<><TrendingUp className=\"h-3 w-3 mr-1\" />No previous data</>"
+            },
+            {
+              "content": "No trend data available",
+              "line": 986,
+              "type": "jsx_text",
+              "context": "<div className=\"text-center\"><BarChart3 className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No trend data available</p></div>"
+            },
+            {
+              "content": "No category data available",
+              "line": 1009,
+              "type": "jsx_text",
+              "context": "<div className=\"text-center\"><PieChartIcon className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No category data available</p></div>"
+            },
+            {
+              "content": "Updating heatmap...",
+              "line": 1022,
+              "type": "jsx_text",
+              "context": "{heatmapLoading && <div className=\"h-8 flex items-center text-xs text-muted-foreground mt-2\"><RefreshCw className=\"h-3 w-3 mr-2 animate-spin\" /> Updating heatmap...</div>}"
+            },
+            {
+              "content": "Detailed Trends Analysis",
+              "line": 1029,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4\">Detailed Trends Analysis</h3>"
+            },
+            {
+              "content": "No trend data available",
+              "line": 1043,
+              "type": "jsx_text",
+              "context": "<div className=\"h-[400px] flex items-center justify-center text-muted-foreground\"><div className=\"text-center\"><BarChart3 className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No trend data available</p></div></div>"
+            },
+            {
+              "content": "Resolution Time Distribution",
+              "line": 1050,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4\">Resolution Time Distribution</h3>"
+            },
+            {
+              "content": "No category metrics available",
+              "line": 1060,
+              "type": "jsx_text",
+              "context": "<div className=\"h-[300px] flex items-center justify-center text-muted-foreground\"><div className=\"text-center\"><BarChart3 className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No category metrics available</p></div></div>"
+            },
+            {
+              "content": "Ward Performance Comparison",
+              "line": 1068,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4\">Ward Performance Comparison</h3>"
+            },
+            {
+              "content": "No ward comparison data available",
+              "line": 1077,
+              "type": "jsx_text",
+              "context": "<div className=\"h-[400px] flex items-center justify-center text-muted-foreground\"><div className=\"text-center\"><BarChart3 className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No ward comparison data available</p></div></div>"
+            },
+            {
+              "content": "Category Analysis",
+              "line": 1085,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4\">Category Analysis</h3>"
+            },
+            {
+              "content": "Processing your data...",
+              "line": 1120,
+              "type": "jsx_text",
+              "context": "<div className=\"text-lg font-medium mb-2 text-slate-900 dark:text-slate-100\">Processing your data...</div>"
+            },
+            {
+              "content": "Report Scope",
+              "line": 1140,
+              "type": "jsx_text",
+              "context": "<span className=\"font-semibold text-slate-900 dark:text-slate-100\">Report Scope</span>"
+            },
+            {
+              "content": "Period:",
+              "line": 1144,
+              "type": "jsx_text",
+              "context": "<span className=\"text-slate-600 dark:text-slate-400\">Period:</span>"
+            },
+            {
+              "content": "Ward:",
+              "line": 1149,
+              "type": "jsx_text",
+              "context": "<span className=\"text-slate-600 dark:text-slate-400\">Ward:</span>"
+            },
+            {
+              "content": "Type:",
+              "line": 1155,
+              "type": "jsx_text",
+              "context": "<span className=\"text-slate-600 dark:text-slate-400\">Type:</span>"
+            },
+            {
+              "content": "Status:",
+              "line": 1161,
+              "type": "jsx_text",
+              "context": "<span className=\"text-slate-600 dark:text-slate-400\">Status:</span>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 7
+        },
+        {
+          "filePath": "client/pages/WardManagement.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Ward Management",
+              "line": 155,
+              "type": "jsx_text",
+              "context": "<h1 className=\"text-3xl font-bold text-gray-900\">Ward Management</h1>"
+            },
+            {
+              "content": "In Progress",
+              "line": 221,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium text-gray-600\">In Progress</p>"
+            },
+            {
+              "content": "Resolution Rate",
+              "line": 244,
+              "type": "jsx_text",
+              "context": "<span>Resolution Rate</span>"
+            },
+            {
+              "content": "2.3",
+              "line": 251,
+              "type": "jsx_text",
+              "context": "<div className=\"text-2xl font-bold text-blue-600\">2.3</div>"
+            },
+            {
+              "content": "Avg. Resolution Days",
+              "line": 252,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-600\">Avg. Resolution Days</p>"
+            },
+            {
+              "content": "95%",
+              "line": 255,
+              "type": "jsx_text",
+              "context": "<div className=\"text-2xl font-bold text-green-600\">95%</div>"
+            },
+            {
+              "content": "Citizen Satisfaction",
+              "line": 256,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-600\">Citizen Satisfaction</p>"
+            },
+            {
+              "content": "Active Team Members",
+              "line": 260,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-600\">Active Team Members</p>"
+            },
+            {
+              "content": "Priority Complaints",
+              "line": 275,
+              "type": "jsx_text",
+              "context": "<TabsTrigger value=\"priority\">Priority Complaints</TabsTrigger>"
+            },
+            {
+              "content": "Resolution Rate",
+              "line": 293,
+              "type": "jsx_text",
+              "context": "<span>Resolution Rate</span>"
+            },
+            {
+              "content": "Total Complaints",
+              "line": 306,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-600\">Total Complaints</p>"
+            },
+            {
+              "content": "No complaint data available",
+              "line": 490,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-500\">No complaint data available</p>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/components/SystemSettingsManager.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Enter valid JSON",
+              "line": 322,
+              "type": "attribute",
+              "context": "placeholder=\"Enter valid JSON\""
+            },
+            {
+              "content": "Loading system settings...",
+              "line": 378,
+              "type": "jsx_text",
+              "context": "<span className=\"ml-2\">Loading system settings...</span>"
+            },
+            {
+              "content": "Error Loading Settings",
+              "line": 388,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-xl font-semibold mb-2\">Error Loading Settings</h2>"
+            },
+            {
+              "content": "Failed to load system configuration",
+              "line": 389,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600 mb-4\">Failed to load system configuration</p>"
+            },
+            {
+              "content": "Try Again",
+              "line": 390,
+              "type": "jsx_text",
+              "context": "<Button onClick={() => refetch()}>Try Again</Button>"
+            },
+            {
+              "content": "System Configuration",
+              "line": 401,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-2xl font-bold\">System Configuration</h2>"
+            },
+            {
+              "content": "Manage all system settings with enable/disable controls",
+              "line": 402,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600\">Manage all system settings with enable/disable controls</p>"
+            },
+            {
+              "content": "Search settings...",
+              "line": 427,
+              "type": "attribute",
+              "context": "placeholder=\"Search settings...\""
+            },
+            {
+              "content": "No settings found",
+              "line": 514,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-medium text-gray-900 mb-2\">No settings found</h3>"
+            },
+            {
+              "content": "Try adjusting your search terms",
+              "line": 515,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600\">Try adjusting your search terms</p>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/components/WardBoundaryManager.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "leaflet",
+              "line": 93,
+              "context": "const leafletModule = await import(\"leaflet\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "leaflet-draw",
+              "line": 103,
+              "context": "await import(\"leaflet-draw\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "leaflet-draw/dist/leaflet.draw.css",
+              "line": 105,
+              "context": "await import(\"leaflet-draw/dist/leaflet.draw.css\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "div",
+              "line": 330,
+              "context": "const toolbar = document.createElement(\"div\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "button",
+              "line": 339,
+              "context": "const btn = document.createElement(\"button\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "div",
+              "line": 389,
+              "context": "const wrapper = document.createElement(\"div\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "Geolocation is not supported by this browser.",
+              "line": 517,
+              "context": "alert(\"Geolocation is not supported by this browser.\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "void | Promise",
+              "line": 52,
+              "type": "jsx_text",
+              "context": "onSave: (wardData: Ward, subZoneData?: SubZone[]) => void | Promise<void>;"
+            },
+            {
+              "content": "Error:",
+              "line": 163,
+              "type": "jsx_text",
+              "context": "\"<strong>Error:</strong> Shape edges cannot cross!\","
+            },
+            {
+              "content": "Ward Boundary",
+              "line": 641,
+              "type": "jsx_text",
+              "context": "<Label className=\"font-medium\">Ward Boundary</Label>"
+            },
+            {
+              "content": "Sub-Zone Boundaries",
+              "line": 692,
+              "type": "jsx_text",
+              "context": "<Label className=\"font-medium\">Sub-Zone Boundaries</Label>"
+            },
+            {
+              "content": "Drawing Mode:",
+              "line": 788,
+              "type": "jsx_text",
+              "context": "<strong>Drawing Mode:</strong>{\" \"}"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 7
+        },
+        {
+          "filePath": "client/components/ComplaintTypeManagement.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Loading complaint types...",
+              "line": 218,
+              "type": "jsx_text",
+              "context": "<span className=\"ml-2\">Loading complaint types...</span>"
+            },
+            {
+              "content": "Error Loading Complaint Types",
+              "line": 228,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-xl font-semibold mb-2\">Error Loading Complaint Types</h2>"
+            },
+            {
+              "content": "Failed to load complaint type data",
+              "line": 229,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600 mb-4\">Failed to load complaint type data</p>"
+            },
+            {
+              "content": "Try Again",
+              "line": 230,
+              "type": "jsx_text",
+              "context": "<Button onClick={() => refetch()}>Try Again</Button>"
+            },
+            {
+              "content": "Complaint Type Management",
+              "line": 241,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-2xl font-bold\">Complaint Type Management</h2>"
+            },
+            {
+              "content": "Manage complaint types and their configurations",
+              "line": 242,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600\">Manage complaint types and their configurations</p>"
+            },
+            {
+              "content": "Search complaint types...",
+              "line": 260,
+              "type": "attribute",
+              "context": "placeholder=\"Search complaint types...\""
+            },
+            {
+              "content": "SLA Hours",
+              "line": 301,
+              "type": "jsx_text",
+              "context": "<TableHead>SLA Hours</TableHead>"
+            },
+            {
+              "content": "No complaint types found",
+              "line": 360,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-medium text-gray-900 mb-2\">No complaint types found</h3>"
+            },
+            {
+              "content": "Try adjusting your search terms",
+              "line": 361,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600\">Try adjusting your search terms</p>"
+            },
+            {
+              "content": "Enter complaint type name",
+              "line": 382,
+              "type": "attribute",
+              "context": "placeholder=\"Enter complaint type name\""
+            },
+            {
+              "content": "Enter complaint type description",
+              "line": 391,
+              "type": "attribute",
+              "context": "placeholder=\"Enter complaint type description\""
+            },
+            {
+              "content": "SLA Hours",
+              "line": 415,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"type-sla\">SLA Hours</Label>"
+            },
+            {
+              "content": "Enter SLA hours",
+              "line": 422,
+              "type": "attribute",
+              "context": "placeholder=\"Enter SLA hours\""
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        }
+      ],
+      "summary": {
+        "totalPages": 10,
+        "pagesWithTranslations": 6,
+        "totalTranslationKeys": 43,
+        "validKeys": 24,
+        "missingKeys": 19,
+        "hardcodedStrings": 167,
+        "translationCoverage": 60,
+        "keyValidityRate": 56
+      }
+    },
+    "WARD_OFFICER": {
+      "role": "WARD_OFFICER",
+      "accessiblePages": [
+        "client/pages/WardOfficerDashboard.tsx",
+        "client/pages/ComplaintsList.tsx",
+        "client/pages/ComplaintDetails.tsx",
+        "client/pages/WardTasks.tsx",
+        "client/pages/UnifiedReports.tsx",
+        "client/components/ComplaintsListWidget.tsx",
+        "client/components/ComplaintDetailsModal.tsx"
+      ],
+      "pageResults": [
+        {
+          "filePath": "client/pages/WardOfficerDashboard.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Ward Officer Dashboard",
+              "line": 218,
+              "type": "jsx_text",
+              "context": "<h1 className=\"text-2xl font-bold mb-2\">Ward Officer Dashboard</h1>"
+            },
+            {
+              "content": "Loading ward statistics...",
+              "line": 219,
+              "type": "jsx_text",
+              "context": "<p className=\"text-blue-100\">Loading ward statistics...</p>"
+            },
+            {
+              "content": "Ward Officer Dashboard",
+              "line": 244,
+              "type": "jsx_text",
+              "context": "<h1 className=\"text-2xl font-bold mb-2\">Ward Officer Dashboard</h1>"
+            },
+            {
+              "content": "Error loading ward statistics",
+              "line": 245,
+              "type": "jsx_text",
+              "context": "<p className=\"text-red-100\">Error loading ward statistics</p>"
+            },
+            {
+              "content": "All complaints in ward",
+              "line": 300,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs text-white/80\">All complaints in ward</p>"
+            },
+            {
+              "content": "Filter by Status",
+              "line": 312,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-lg font-semibold\">Filter by Status</h2>"
+            },
+            {
+              "content": "Quick Actions",
+              "line": 421,
+              "type": "jsx_text",
+              "context": "<CardTitle>Quick Actions</CardTitle>"
+            },
+            {
+              "content": "Overview Heatmap",
+              "line": 461,
+              "type": "jsx_text",
+              "context": "<CardTitle>Overview Heatmap</CardTitle>"
+            },
+            {
+              "content": "Ward Overview Heatmap",
+              "line": 468,
+              "type": "attribute",
+              "context": "title=\"Ward Overview Heatmap\""
+            },
+            {
+              "content": "Ward Performance",
+              "line": 492,
+              "type": "jsx_text",
+              "context": "<CardTitle>Ward Performance</CardTitle>"
+            },
+            {
+              "content": "Total Complaints",
+              "line": 497,
+              "type": "jsx_text",
+              "context": "<span>Total Complaints</span>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/ComplaintsList.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "search",
+              "line": 62,
+              "context": "searchParams.get(\"search\") || \"\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "status",
+              "line": 65,
+              "context": "searchParams.get(\"status\") || \"all\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "priority",
+              "line": 68,
+              "context": "const priority = searchParams.get(\"priority\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "ward",
+              "line": 76,
+              "context": "searchParams.get(\"ward\") || \"all\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "subZone",
+              "line": 79,
+              "context": "searchParams.get(\"subZone\") || \"all\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "needsMaintenanceAssignment",
+              "line": 82,
+              "context": "searchParams.get(\"needsMaintenanceAssignment\") === \"true\" || false,",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "slaStatus",
+              "line": 85,
+              "context": "searchParams.get(\"slaStatus\") || \"all\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "_",
+              "line": 122,
+              "context": ".split(\"_\")",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "priority",
+              "line": 155,
+              "context": "const urlPriority = searchParams.get(\"priority\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": ",",
+              "line": 159,
+              "context": ".split(\",\")",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "Search complaints...",
+              "line": 363,
+              "type": "attribute",
+              "context": "placeholder=\"Search complaints...\""
+            },
+            {
+              "content": "Search by complaint ID, description, or location",
+              "line": 367,
+              "type": "attribute",
+              "context": "title=\"Search by complaint ID, description, or location\""
+            },
+            {
+              "content": "All Status",
+              "line": 387,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Status</SelectItem>"
+            },
+            {
+              "content": "All Priority",
+              "line": 401,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Priority</SelectItem>"
+            },
+            {
+              "content": "All Wards",
+              "line": 423,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Wards</SelectItem>"
+            },
+            {
+              "content": "Clear all filters",
+              "line": 461,
+              "type": "attribute",
+              "context": "title=\"Clear all filters\""
+            },
+            {
+              "content": "Refresh data",
+              "line": 470,
+              "type": "attribute",
+              "context": "title=\"Refresh data\""
+            },
+            {
+              "content": "All Sub-Zones",
+              "line": 489,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Sub-Zones</SelectItem>"
+            },
+            {
+              "content": "All SLA",
+              "line": 505,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All SLA</SelectItem>"
+            },
+            {
+              "content": "On Time",
+              "line": 506,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"ON_TIME\">On Time</SelectItem>"
+            },
+            {
+              "content": "Active Filters:",
+              "line": 536,
+              "type": "jsx_text",
+              "context": "<span className=\"text-xs font-medium text-slate-600 dark:text-slate-400\">Active Filters:</span>"
+            },
+            {
+              "content": "Please sign in to view complaints.",
+              "line": 649,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600 mb-2\">Please sign in to view complaints.</p>"
+            },
+            {
+              "content": "Go to Sign In",
+              "line": 651,
+              "type": "jsx_text",
+              "context": "<Button>Go to Sign In</Button>"
+            },
+            {
+              "content": "Try Again",
+              "line": 659,
+              "type": "jsx_text",
+              "context": "<Button variant=\"outline\" onClick={() => refetch()}>Try Again</Button>"
+            },
+            {
+              "content": "Sign In",
+              "line": 661,
+              "type": "jsx_text",
+              "context": "<Button variant=\"outline\">Sign In</Button>"
+            },
+            {
+              "content": "No complaints found",
+              "line": 677,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-500 mb-2\">No complaints found</p>"
+            },
+            {
+              "content": "Complaint ID",
+              "line": 691,
+              "type": "jsx_text",
+              "context": "<TableHead>Complaint ID</TableHead>"
+            },
+            {
+              "content": "Registered On",
+              "line": 707,
+              "type": "jsx_text",
+              "context": "<TableHead>Registered On</TableHead>"
+            },
+            {
+              "content": "Maintenance Team ID",
+              "line": 712,
+              "type": "jsx_text",
+              "context": "<TableHead>Maintenance Team ID</TableHead>"
+            },
+            {
+              "content": "Ward Officer ID",
+              "line": 713,
+              "type": "jsx_text",
+              "context": "<TableHead>Ward Officer ID</TableHead>"
+            },
+            {
+              "content": "N/A",
+              "line": 796,
+              "type": "jsx_text",
+              "context": "<span className=\"text-xs text-gray-500\">N/A</span>"
+            },
+            {
+              "content": "Rows per page:",
+              "line": 876,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm text-gray-600\">Rows per page:</span>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 10
+        },
+        {
+          "filePath": "client/pages/ComplaintDetails.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Area:",
+              "line": 376,
+              "type": "jsx_text",
+              "context": "<strong>Area:</strong> <SafeRenderer fallback=\"Unknown Area\">{safeRenderValue(complaint.area, \"Unknown Area\")}</SafeRenderer>"
+            },
+            {
+              "content": "Ward:",
+              "line": 380,
+              "type": "jsx_text",
+              "context": "<strong>Ward:</strong> <SafeRenderer fallback=\"Unknown Ward\">{safeRenderValue(complaint.ward, \"Unknown Ward\")}</SafeRenderer>"
+            },
+            {
+              "content": "Address:",
+              "line": 385,
+              "type": "jsx_text",
+              "context": "<strong>Address:</strong> <SafeRenderer fallback=\"No address provided\">{safeRenderValue(complaint.address, \"No address provided\")}</SafeRenderer>"
+            },
+            {
+              "content": "Submitted:",
+              "line": 397,
+              "type": "jsx_text",
+              "context": "<strong>Submitted:</strong>{\" \"}"
+            },
+            {
+              "content": "Assigned:",
+              "line": 402,
+              "type": "jsx_text",
+              "context": "<strong>Assigned:</strong>{\" \"}"
+            },
+            {
+              "content": "Resolved:",
+              "line": 408,
+              "type": "jsx_text",
+              "context": "<strong>Resolved:</strong>{\" \"}"
+            },
+            {
+              "content": "Closed:",
+              "line": 414,
+              "type": "jsx_text",
+              "context": "<strong>Closed:</strong>{\" \"}"
+            },
+            {
+              "content": "SLA Deadline:",
+              "line": 427,
+              "type": "jsx_text",
+              "context": "<strong>SLA Deadline:</strong>{\" \"}"
+            },
+            {
+              "content": "SLA Status:",
+              "line": 440,
+              "type": "jsx_text",
+              "context": "<strong>SLA Status:</strong>{\" \"}"
+            },
+            {
+              "content": "Resolution Time:",
+              "line": 451,
+              "type": "jsx_text",
+              "context": "<strong>Resolution Time:</strong>{\" \"}"
+            },
+            {
+              "content": "Remarks:",
+              "line": 574,
+              "type": "jsx_text",
+              "context": "<strong>Remarks:</strong>{\" \"}"
+            },
+            {
+              "content": "Assignment Details",
+              "line": 637,
+              "type": "jsx_text",
+              "context": "<h4 className=\"font-medium mb-2\">Assignment Details</h4>"
+            },
+            {
+              "content": "Submitted By:",
+              "line": 641,
+              "type": "jsx_text",
+              "context": "<strong>Submitted By:</strong>{\" \"}"
+            },
+            {
+              "content": "Ward Officer:",
+              "line": 663,
+              "type": "jsx_text",
+              "context": "<strong>Ward Officer:</strong>{\" \"}"
+            },
+            {
+              "content": "Maintenance Team:",
+              "line": 685,
+              "type": "jsx_text",
+              "context": "<strong>Maintenance Team:</strong>{\" \"}"
+            },
+            {
+              "content": "Assigned To:",
+              "line": 707,
+              "type": "jsx_text",
+              "context": "<strong>Assigned To:</strong>{\" \"}"
+            },
+            {
+              "content": "Resolved By:",
+              "line": 729,
+              "type": "jsx_text",
+              "context": "<strong>Resolved By:</strong> {typeof complaint.resolvedById === 'string' ? complaint.resolvedById : complaint.resolvedById?.fullName || complaint.resolvedById?.name || \"Unknown\"}"
+            },
+            {
+              "content": "Technical Details",
+              "line": 735,
+              "type": "jsx_text",
+              "context": "<h4 className=\"font-medium mb-2\">Technical Details</h4>"
+            },
+            {
+              "content": "Complaint ID:",
+              "line": 738,
+              "type": "jsx_text",
+              "context": "<strong>Complaint ID:</strong>{\" \"}"
+            },
+            {
+              "content": "Tags:",
+              "line": 743,
+              "type": "jsx_text",
+              "context": "<strong>Tags:</strong>{\" \"}"
+            },
+            {
+              "content": "Created:",
+              "line": 748,
+              "type": "jsx_text",
+              "context": "<strong>Created:</strong>{\" \"}"
+            },
+            {
+              "content": "Last Updated:",
+              "line": 752,
+              "type": "jsx_text",
+              "context": "<strong>Last Updated:</strong>{\" \"}"
+            },
+            {
+              "content": "Citizen Feedback",
+              "line": 764,
+              "type": "jsx_text",
+              "context": "<h4 className=\"font-medium mb-2\">Citizen Feedback</h4>"
+            },
+            {
+              "content": "Rating:",
+              "line": 768,
+              "type": "jsx_text",
+              "context": "<strong>Rating:</strong> {complaint.rating}/5 ⭐"
+            },
+            {
+              "content": "Feedback:",
+              "line": 773,
+              "type": "jsx_text",
+              "context": "<strong>Feedback:</strong> {complaint.feedback}"
+            },
+            {
+              "content": "Quick Actions",
+              "line": 811,
+              "type": "jsx_text",
+              "context": "<CardTitle>Quick Actions</CardTitle>"
+            },
+            {
+              "content": "Complaint Submitter",
+              "line": 858,
+              "type": "jsx_text",
+              "context": "<span className=\"font-medium\">Complaint Submitter</span>"
+            },
+            {
+              "content": "User Email:",
+              "line": 915,
+              "type": "jsx_text",
+              "context": "<span className=\"text-gray-500 flex-shrink-0\">User Email: </span>"
+            },
+            {
+              "content": "Ward Officer",
+              "line": 965,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">Ward Officer</p>"
+            },
+            {
+              "content": "Not assigned",
+              "line": 983,
+              "type": "jsx_text",
+              "context": "<p className=\"text-blue-700 text-sm\">Not assigned</p>"
+            },
+            {
+              "content": "Maintenance Team",
+              "line": 987,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">Maintenance Team</p>"
+            },
+            {
+              "content": "SLA Status",
+              "line": 1039,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">SLA Status</p>"
+            },
+            {
+              "content": "SLA Timeline",
+              "line": 1060,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-2\">SLA Timeline</p>"
+            },
+            {
+              "content": "SLA Deadline:",
+              "line": 1065,
+              "type": "jsx_text",
+              "context": "<span>SLA Deadline:</span>"
+            },
+            {
+              "content": "Resolution Time:",
+              "line": 1074,
+              "type": "jsx_text",
+              "context": "<span>Resolution Time:</span>"
+            },
+            {
+              "content": "Priority Level",
+              "line": 1095,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">Priority Level</p>"
+            },
+            {
+              "content": "Complaint Type",
+              "line": 1103,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">Complaint Type</p>"
+            },
+            {
+              "content": "Note:",
+              "line": 1220,
+              "type": "jsx_text",
+              "context": "<span className=\"font-medium\">Note:</span> {typeof att.description === 'string' ? att.description : att.description?.text || att.description?.content || \"No description\"}"
+            },
+            {
+              "content": "Note:",
+              "line": 1364,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs font-medium text-gray-800 mb-1\">Note:</p>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/WardTasks.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Ward Tasks",
+              "line": 80,
+              "type": "jsx_text",
+              "context": "<h1 className=\"text-3xl font-bold text-gray-900\">Ward Tasks</h1>"
+            },
+            {
+              "content": "Total Tasks",
+              "line": 92,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium text-gray-600\">Total Tasks</p>"
+            },
+            {
+              "content": "In Progress",
+              "line": 114,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium text-gray-600\">In Progress</p>"
+            },
+            {
+              "content": "Recent Tasks",
+              "line": 137,
+              "type": "jsx_text",
+              "context": "<CardTitle>Recent Tasks</CardTitle>"
+            },
+            {
+              "content": "Update Status",
+              "line": 175,
+              "type": "jsx_text",
+              "context": "<Button size=\"sm\">Update Status</Button>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/UnifiedReports.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "recharts",
+              "line": 44,
+              "context": "const recharts = await import(\"recharts\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "date-fns",
+              "line": 49,
+              "context": "const dateFns = await import(\"date-fns\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "../utils/exportUtils",
+              "line": 54,
+              "context": "const exportUtils = await import(\"../utils/exportUtils\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "T",
+              "line": 84,
+              "context": "const formatDateForAPI = (date: Date): string => date.toISOString().split(\"T\")[0] || \"\";",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "csv",
+              "line": 729,
+              "context": "<Button size=\"sm\" variant=\"outline\" onClick={() => handleExport(\"csv\")} disabled={isExporting} className=\"rounded-xl border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm hover:shadow\">",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "excel",
+              "line": 733,
+              "context": "<Button size=\"sm\" variant=\"outline\" onClick={() => handleExport(\"excel\")} disabled={isExporting} className=\"rounded-xl border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm hover:shadow\">",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "pdf",
+              "line": 737,
+              "context": "<Button size=\"sm\" onClick={() => handleExport(\"pdf\")} disabled={isExporting} className=\"rounded-xl bg-primary hover:bg-primary/90 text-white transition-all shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40\">",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "Loading chart...",
+              "line": 531,
+              "type": "jsx_text",
+              "context": "<p>Loading chart...</p>"
+            },
+            {
+              "content": "Chart type not supported",
+              "line": 602,
+              "type": "jsx_text",
+              "context": "return <div className=\"h-[300px] flex items-center justify-center text-muted-foreground\"><p>Chart type not supported</p></div>;"
+            },
+            {
+              "content": "Error loading chart",
+              "line": 610,
+              "type": "jsx_text",
+              "context": "<p>Error loading chart</p>"
+            },
+            {
+              "content": "Error Loading Data",
+              "line": 661,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-xl font-semibold mb-2\">Error Loading Data</h2>"
+            },
+            {
+              "content": "Feature Loading Error",
+              "line": 677,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-xl font-semibold mb-2\">Feature Loading Error</h2>"
+            },
+            {
+              "content": "Loading chart libraries...",
+              "line": 693,
+              "type": "jsx_text",
+              "context": "<span>Loading chart libraries...</span>"
+            },
+            {
+              "content": "Reports & Analytics",
+              "line": 710,
+              "type": "jsx_text",
+              "context": "<li className=\"text-slate-900 dark:text-slate-100 font-medium\">Reports & Analytics</li>"
+            },
+            {
+              "content": "Customize your report view",
+              "line": 754,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs text-slate-500 dark:text-slate-400\">Customize your report view</p>"
+            },
+            {
+              "content": "Date Range",
+              "line": 766,
+              "type": "jsx_text",
+              "context": "<Label className=\"text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block\">Date Range</Label>"
+            },
+            {
+              "content": "All Wards",
+              "line": 811,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Wards</SelectItem>"
+            },
+            {
+              "content": "Complaint Type",
+              "line": 820,
+              "type": "jsx_text",
+              "context": "<Label className=\"text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block\">Complaint Type</Label>"
+            },
+            {
+              "content": "Select type",
+              "line": 823,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select type\" />"
+            },
+            {
+              "content": "All Types",
+              "line": 826,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Types</SelectItem>"
+            },
+            {
+              "content": "Loading types...",
+              "line": 828,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"\" disabled>Loading types...</SelectItem>"
+            },
+            {
+              "content": "No types available",
+              "line": 830,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"\" disabled>No types available</SelectItem>"
+            },
+            {
+              "content": "Select status",
+              "line": 843,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select status\" />"
+            },
+            {
+              "content": "All Status",
+              "line": 846,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"all\">All Status</SelectItem>"
+            },
+            {
+              "content": "In Progress",
+              "line": 849,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"in_progress\">In Progress</SelectItem>"
+            },
+            {
+              "content": "Active Filters:",
+              "line": 858,
+              "type": "jsx_text",
+              "context": "<span className=\"text-sm font-medium text-slate-600 dark:text-slate-400\">Active Filters:</span>"
+            },
+            {
+              "content": "No filters applied",
+              "line": 884,
+              "type": "jsx_text",
+              "context": "<span className=\"text-xs text-slate-500 dark:text-slate-400\">No filters applied</span>"
+            },
+            {
+              "content": "No previous data",
+              "line": 941,
+              "type": "jsx_text",
+              "context": "<><TrendingUp className=\"h-3 w-3 mr-1\" />No previous data</>"
+            },
+            {
+              "content": "No trend data available",
+              "line": 986,
+              "type": "jsx_text",
+              "context": "<div className=\"text-center\"><BarChart3 className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No trend data available</p></div>"
+            },
+            {
+              "content": "No category data available",
+              "line": 1009,
+              "type": "jsx_text",
+              "context": "<div className=\"text-center\"><PieChartIcon className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No category data available</p></div>"
+            },
+            {
+              "content": "Updating heatmap...",
+              "line": 1022,
+              "type": "jsx_text",
+              "context": "{heatmapLoading && <div className=\"h-8 flex items-center text-xs text-muted-foreground mt-2\"><RefreshCw className=\"h-3 w-3 mr-2 animate-spin\" /> Updating heatmap...</div>}"
+            },
+            {
+              "content": "Detailed Trends Analysis",
+              "line": 1029,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4\">Detailed Trends Analysis</h3>"
+            },
+            {
+              "content": "No trend data available",
+              "line": 1043,
+              "type": "jsx_text",
+              "context": "<div className=\"h-[400px] flex items-center justify-center text-muted-foreground\"><div className=\"text-center\"><BarChart3 className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No trend data available</p></div></div>"
+            },
+            {
+              "content": "Resolution Time Distribution",
+              "line": 1050,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4\">Resolution Time Distribution</h3>"
+            },
+            {
+              "content": "No category metrics available",
+              "line": 1060,
+              "type": "jsx_text",
+              "context": "<div className=\"h-[300px] flex items-center justify-center text-muted-foreground\"><div className=\"text-center\"><BarChart3 className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No category metrics available</p></div></div>"
+            },
+            {
+              "content": "Ward Performance Comparison",
+              "line": 1068,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4\">Ward Performance Comparison</h3>"
+            },
+            {
+              "content": "No ward comparison data available",
+              "line": 1077,
+              "type": "jsx_text",
+              "context": "<div className=\"h-[400px] flex items-center justify-center text-muted-foreground\"><div className=\"text-center\"><BarChart3 className=\"h-12 w-12 mx-auto mb-2 opacity-50\" /><p>No ward comparison data available</p></div></div>"
+            },
+            {
+              "content": "Category Analysis",
+              "line": 1085,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4\">Category Analysis</h3>"
+            },
+            {
+              "content": "Processing your data...",
+              "line": 1120,
+              "type": "jsx_text",
+              "context": "<div className=\"text-lg font-medium mb-2 text-slate-900 dark:text-slate-100\">Processing your data...</div>"
+            },
+            {
+              "content": "Report Scope",
+              "line": 1140,
+              "type": "jsx_text",
+              "context": "<span className=\"font-semibold text-slate-900 dark:text-slate-100\">Report Scope</span>"
+            },
+            {
+              "content": "Period:",
+              "line": 1144,
+              "type": "jsx_text",
+              "context": "<span className=\"text-slate-600 dark:text-slate-400\">Period:</span>"
+            },
+            {
+              "content": "Ward:",
+              "line": 1149,
+              "type": "jsx_text",
+              "context": "<span className=\"text-slate-600 dark:text-slate-400\">Ward:</span>"
+            },
+            {
+              "content": "Type:",
+              "line": 1155,
+              "type": "jsx_text",
+              "context": "<span className=\"text-slate-600 dark:text-slate-400\">Type:</span>"
+            },
+            {
+              "content": "Status:",
+              "line": 1161,
+              "type": "jsx_text",
+              "context": "<span className=\"text-slate-600 dark:text-slate-400\">Status:</span>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 7
+        },
+        {
+          "filePath": "client/components/ComplaintsListWidget.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Failed to load complaints",
+              "line": 160,
+              "type": "jsx_text",
+              "context": "<p className=\"text-red-500 mb-2\">Failed to load complaints</p>"
+            },
+            {
+              "content": "No complaints found",
+              "line": 177,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-500 mb-2\">No complaints found</p>"
+            },
+            {
+              "content": "Team Assignment",
+              "line": 195,
+              "type": "jsx_text",
+              "context": "<TableHead>Team Assignment</TableHead>"
+            },
+            {
+              "content": "N/A",
+              "line": 287,
+              "type": "jsx_text",
+              "context": "<span className=\"text-xs text-gray-500\">N/A</span>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/components/ComplaintDetailsModal.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "a",
+              "line": 115,
+              "context": "const a = document.createElement(\"a\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [],
+          "validKeys": 0,
+          "missingKeys": 1
+        }
+      ],
+      "summary": {
+        "totalPages": 7,
+        "pagesWithTranslations": 3,
+        "totalTranslationKeys": 18,
+        "validKeys": 0,
+        "missingKeys": 18,
+        "hardcodedStrings": 118,
+        "translationCoverage": 43,
+        "keyValidityRate": 0
+      }
+    },
+    "MAINTENANCE": {
+      "role": "MAINTENANCE",
+      "accessiblePages": [
+        "client/pages/MaintenanceDashboard.tsx",
+        "client/pages/MaintenanceTasks.tsx",
+        "client/pages/TaskDetails.tsx",
+        "client/pages/ComplaintDetails.tsx",
+        "client/components/ComplaintDetailsModal.tsx"
+      ],
+      "pageResults": [
+        {
+          "filePath": "client/pages/MaintenanceDashboard.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Loading your assigned tasks...",
+              "line": 219,
+              "type": "jsx_text",
+              "context": "<p className=\"text-green-100\">Loading your assigned tasks...</p>"
+            },
+            {
+              "content": "⚠️ Dashboard Error",
+              "line": 244,
+              "type": "jsx_text",
+              "context": "<h1 className=\"text-2xl font-bold mb-2\">⚠️ Dashboard Error</h1>"
+            },
+            {
+              "content": "Start your tasks",
+              "line": 290,
+              "type": "jsx_text",
+              "context": "<div className=\"text-xs text-white/80\">Start your tasks</div>"
+            },
+            {
+              "content": "Update data",
+              "line": 308,
+              "type": "jsx_text",
+              "context": "<div className=\"text-xs text-white/80\">Update data</div>"
+            },
+            {
+              "content": "Total Tasks",
+              "line": 340,
+              "type": "jsx_text",
+              "context": "<CardTitle className=\"text-sm font-medium\">Total Tasks</CardTitle>"
+            },
+            {
+              "content": "Assigned to you",
+              "line": 347,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs text-muted-foreground\">Assigned to you</p>"
+            },
+            {
+              "content": "Today's Tasks",
+              "line": 353,
+              "type": "jsx_text",
+              "context": "<CardTitle className=\"text-sm font-medium\">Today's Tasks</CardTitle>"
+            },
+            {
+              "content": "Scheduled for today",
+              "line": 360,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs text-muted-foreground\">Scheduled for today</p>"
+            },
+            {
+              "content": "In Progress",
+              "line": 366,
+              "type": "jsx_text",
+              "context": "<CardTitle className=\"text-sm font-medium\">In Progress</CardTitle>"
+            },
+            {
+              "content": "This month",
+              "line": 388,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs text-muted-foreground\">This month</p>"
+            },
+            {
+              "content": "Tools & Reports",
+              "line": 403,
+              "type": "jsx_text",
+              "context": "<TabsTrigger value=\"tools\">Tools & Reports</TabsTrigger>"
+            },
+            {
+              "content": "No active tasks",
+              "line": 420,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-500\">No active tasks</p>"
+            },
+            {
+              "content": "Quick Actions",
+              "line": 508,
+              "type": "jsx_text",
+              "context": "<CardTitle className=\"text-lg\">Quick Actions</CardTitle>"
+            },
+            {
+              "content": "Progress Stats",
+              "line": 533,
+              "type": "jsx_text",
+              "context": "<CardTitle className=\"text-lg\">Progress Stats</CardTitle>"
+            },
+            {
+              "content": "Tasks Completed",
+              "line": 538,
+              "type": "jsx_text",
+              "context": "<span>Tasks Completed</span>"
+            },
+            {
+              "content": "No urgent tasks! Well done!",
+              "line": 595,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-500\">No urgent tasks! Well done!</p>"
+            },
+            {
+              "content": "Recently Completed Tasks",
+              "line": 662,
+              "type": "jsx_text",
+              "context": "<CardTitle>Recently Completed Tasks</CardTitle>"
+            },
+            {
+              "content": "Field Tools",
+              "line": 706,
+              "type": "jsx_text",
+              "context": "<CardTitle>Field Tools</CardTitle>"
+            },
+            {
+              "content": "Reports & Analytics",
+              "line": 730,
+              "type": "jsx_text",
+              "context": "<CardTitle>Reports & Analytics</CardTitle>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/MaintenanceTasks.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "../components/PhotoUploadModal",
+              "line": 35,
+              "context": "() => import(\"../components/PhotoUploadModal\"),",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "T",
+              "line": 139,
+              "context": "? new Date(complaint.deadline).toISOString().split(\"T\")[0]",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "Work Progress & Updates",
+              "line": 378,
+              "type": "jsx_text",
+              "context": "<h4 className=\"font-medium text-gray-800\">Work Progress & Updates</h4>"
+            },
+            {
+              "content": "No updates or photos yet",
+              "line": 384,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm\">No updates or photos yet</p>"
+            },
+            {
+              "content": "Work progress photo",
+              "line": 419,
+              "type": "attribute",
+              "context": "alt=\"Work progress photo\""
+            },
+            {
+              "content": "Manage your assigned maintenance work",
+              "line": 577,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600\">Manage your assigned maintenance work</p>"
+            },
+            {
+              "content": "Total tasks assigned",
+              "line": 612,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs text-white/80\">Total tasks assigned</p>"
+            },
+            {
+              "content": "Filter by Status",
+              "line": 638,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-lg font-semibold\">Filter by Status</h2>"
+            },
+            {
+              "content": "Try a different filter or refresh.",
+              "line": 1020,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm mt-1\">Try a different filter or refresh.</p>"
+            },
+            {
+              "content": "Mark Task as Resolved",
+              "line": 1179,
+              "type": "jsx_text",
+              "context": "<DialogTitle>Mark Task as Resolved</DialogTitle>"
+            },
+            {
+              "content": "Completion Notes",
+              "line": 1189,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"resolveComment\">Completion Notes</Label>"
+            },
+            {
+              "content": "Add notes about the work completed...",
+              "line": 1194,
+              "type": "attribute",
+              "context": "placeholder=\"Add notes about the work completed...\""
+            },
+            {
+              "content": "Upload Completion Photo",
+              "line": 1200,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"resolvePhoto\">Upload Completion Photo</Label>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 2
+        },
+        {
+          "filePath": "client/pages/TaskDetails.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "T",
+              "line": 168,
+              "context": "? new Date(raw.deadline).toISOString().split(\"T\")[0]",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "T",
+              "line": 169,
+              "context": ": (raw.submittedOn ? new Date(new Date(raw.submittedOn).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split(\"T\")[0] : null),",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "/",
+              "line": 192,
+              "context": "fileName: p.fileName || p.originalName || p.photoUrl?.split(\"/\").pop() || \"Unknown file\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "Debug Info:",
+              "line": 278,
+              "type": "jsx_text",
+              "context": "<strong>Debug Info:</strong>"
+            },
+            {
+              "content": "Area:",
+              "line": 388,
+              "type": "jsx_text",
+              "context": "<strong>Area:</strong> {raw.area}"
+            },
+            {
+              "content": "Ward:",
+              "line": 393,
+              "type": "jsx_text",
+              "context": "<strong>Ward:</strong> {raw.ward.name}"
+            },
+            {
+              "content": "Sub-Zone:",
+              "line": 398,
+              "type": "jsx_text",
+              "context": "<strong>Sub-Zone:</strong> {raw.subZone.name}"
+            },
+            {
+              "content": "Landmark:",
+              "line": 403,
+              "type": "jsx_text",
+              "context": "<strong>Landmark:</strong> {raw.landmark}"
+            },
+            {
+              "content": "Address:",
+              "line": 408,
+              "type": "jsx_text",
+              "context": "<strong>Address:</strong> {raw.address}"
+            },
+            {
+              "content": "Coordinates:",
+              "line": 413,
+              "type": "jsx_text",
+              "context": "<strong>Coordinates:</strong> {task.coordinates}"
+            },
+            {
+              "content": "No work progress updates available yet",
+              "line": 519,
+              "type": "jsx_text",
+              "context": "<p>No work progress updates available yet</p>"
+            },
+            {
+              "content": "Add Work Update",
+              "line": 528,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"workNote\">Add Work Update</Label>"
+            },
+            {
+              "content": "Describe current work status...",
+              "line": 534,
+              "type": "attribute",
+              "context": "placeholder=\"Describe current work status...\""
+            },
+            {
+              "content": "Maintenance Photos",
+              "line": 562,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-gray-900\">Maintenance Photos</h3>"
+            },
+            {
+              "content": "Note:",
+              "line": 617,
+              "type": "jsx_text",
+              "context": "<span className=\"font-medium\">Note:</span> {att.description}"
+            },
+            {
+              "content": "No maintenance photos available",
+              "line": 652,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm\">No maintenance photos available</p>"
+            },
+            {
+              "content": "Complaint Attachments",
+              "line": 661,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold text-gray-900\">Complaint Attachments</h3>"
+            },
+            {
+              "content": "Note:",
+              "line": 716,
+              "type": "jsx_text",
+              "context": "<span className=\"font-medium\">Note:</span> {att.description}"
+            },
+            {
+              "content": "No complaint attachments available",
+              "line": 751,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm\">No complaint attachments available</p>"
+            },
+            {
+              "content": "Maintenance Photos",
+              "line": 778,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-xl font-bold text-blue-900\">Maintenance Photos</h3>"
+            },
+            {
+              "content": "Photos taken during maintenance work",
+              "line": 779,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-blue-700\">Photos taken during maintenance work</p>"
+            },
+            {
+              "content": "Maintenance Note:",
+              "line": 866,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs font-medium text-blue-800 mb-1\">Maintenance Note:</p>"
+            },
+            {
+              "content": "No Maintenance Attachments",
+              "line": 928,
+              "type": "jsx_text",
+              "context": "<h4 className=\"text-lg font-semibold text-blue-800 mb-2\">No Maintenance Attachments</h4>"
+            },
+            {
+              "content": "Upload photos and documents from your maintenance work",
+              "line": 929,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-blue-600 mb-4\">Upload photos and documents from your maintenance work</p>"
+            },
+            {
+              "content": "Photos, documents, and reports will appear here",
+              "line": 932,
+              "type": "jsx_text",
+              "context": "<span>Photos, documents, and reports will appear here</span>"
+            },
+            {
+              "content": "Complaint Attachments",
+              "line": 960,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-xl font-bold text-gray-900\">Complaint Attachments</h3>"
+            },
+            {
+              "content": "Original files submitted with the complaint",
+              "line": 961,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-700\">Original files submitted with the complaint</p>"
+            },
+            {
+              "content": "Note:",
+              "line": 1029,
+              "type": "jsx_text",
+              "context": "<span className=\"font-medium\">Note:</span>"
+            },
+            {
+              "content": "No Complaint Attachments",
+              "line": 1097,
+              "type": "jsx_text",
+              "context": "<h4 className=\"text-lg font-semibold text-gray-800 mb-2\">No Complaint Attachments</h4>"
+            },
+            {
+              "content": "Original files submitted with the complaint",
+              "line": 1098,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-600 mb-4\">Original files submitted with the complaint</p>"
+            },
+            {
+              "content": "Documents and images from the original complaint",
+              "line": 1101,
+              "type": "jsx_text",
+              "context": "<span>Documents and images from the original complaint</span>"
+            },
+            {
+              "content": "Completion Notes",
+              "line": 1143,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"completionNote\">Completion Notes</Label>"
+            },
+            {
+              "content": "Describe the work completed, any issues resolved, and follow-up actions needed...",
+              "line": 1148,
+              "type": "attribute",
+              "context": "placeholder=\"Describe the work completed, any issues resolved, and follow-up actions needed...\""
+            },
+            {
+              "content": "Maintenance Note:",
+              "line": 1306,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs font-medium text-blue-800 mb-1\">Maintenance Note:</p>"
+            },
+            {
+              "content": "Note:",
+              "line": 1439,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs font-medium text-gray-800 mb-1\">Note:</p>"
+            },
+            {
+              "content": "Required Materials",
+              "line": 1497,
+              "type": "jsx_text",
+              "context": "<CardTitle>Required Materials</CardTitle>"
+            },
+            {
+              "content": "No materials specified for this task",
+              "line": 1513,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm\">No materials specified for this task</p>"
+            },
+            {
+              "content": "Required Tools",
+              "line": 1525,
+              "type": "jsx_text",
+              "context": "<CardTitle>Required Tools</CardTitle>"
+            },
+            {
+              "content": "No tools specified for this task",
+              "line": 1541,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm\">No tools specified for this task</p>"
+            },
+            {
+              "content": "Quick Actions",
+              "line": 1553,
+              "type": "jsx_text",
+              "context": "<CardTitle>Quick Actions</CardTitle>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 3
+        },
+        {
+          "filePath": "client/pages/ComplaintDetails.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Area:",
+              "line": 376,
+              "type": "jsx_text",
+              "context": "<strong>Area:</strong> <SafeRenderer fallback=\"Unknown Area\">{safeRenderValue(complaint.area, \"Unknown Area\")}</SafeRenderer>"
+            },
+            {
+              "content": "Ward:",
+              "line": 380,
+              "type": "jsx_text",
+              "context": "<strong>Ward:</strong> <SafeRenderer fallback=\"Unknown Ward\">{safeRenderValue(complaint.ward, \"Unknown Ward\")}</SafeRenderer>"
+            },
+            {
+              "content": "Address:",
+              "line": 385,
+              "type": "jsx_text",
+              "context": "<strong>Address:</strong> <SafeRenderer fallback=\"No address provided\">{safeRenderValue(complaint.address, \"No address provided\")}</SafeRenderer>"
+            },
+            {
+              "content": "Submitted:",
+              "line": 397,
+              "type": "jsx_text",
+              "context": "<strong>Submitted:</strong>{\" \"}"
+            },
+            {
+              "content": "Assigned:",
+              "line": 402,
+              "type": "jsx_text",
+              "context": "<strong>Assigned:</strong>{\" \"}"
+            },
+            {
+              "content": "Resolved:",
+              "line": 408,
+              "type": "jsx_text",
+              "context": "<strong>Resolved:</strong>{\" \"}"
+            },
+            {
+              "content": "Closed:",
+              "line": 414,
+              "type": "jsx_text",
+              "context": "<strong>Closed:</strong>{\" \"}"
+            },
+            {
+              "content": "SLA Deadline:",
+              "line": 427,
+              "type": "jsx_text",
+              "context": "<strong>SLA Deadline:</strong>{\" \"}"
+            },
+            {
+              "content": "SLA Status:",
+              "line": 440,
+              "type": "jsx_text",
+              "context": "<strong>SLA Status:</strong>{\" \"}"
+            },
+            {
+              "content": "Resolution Time:",
+              "line": 451,
+              "type": "jsx_text",
+              "context": "<strong>Resolution Time:</strong>{\" \"}"
+            },
+            {
+              "content": "Remarks:",
+              "line": 574,
+              "type": "jsx_text",
+              "context": "<strong>Remarks:</strong>{\" \"}"
+            },
+            {
+              "content": "Assignment Details",
+              "line": 637,
+              "type": "jsx_text",
+              "context": "<h4 className=\"font-medium mb-2\">Assignment Details</h4>"
+            },
+            {
+              "content": "Submitted By:",
+              "line": 641,
+              "type": "jsx_text",
+              "context": "<strong>Submitted By:</strong>{\" \"}"
+            },
+            {
+              "content": "Ward Officer:",
+              "line": 663,
+              "type": "jsx_text",
+              "context": "<strong>Ward Officer:</strong>{\" \"}"
+            },
+            {
+              "content": "Maintenance Team:",
+              "line": 685,
+              "type": "jsx_text",
+              "context": "<strong>Maintenance Team:</strong>{\" \"}"
+            },
+            {
+              "content": "Assigned To:",
+              "line": 707,
+              "type": "jsx_text",
+              "context": "<strong>Assigned To:</strong>{\" \"}"
+            },
+            {
+              "content": "Resolved By:",
+              "line": 729,
+              "type": "jsx_text",
+              "context": "<strong>Resolved By:</strong> {typeof complaint.resolvedById === 'string' ? complaint.resolvedById : complaint.resolvedById?.fullName || complaint.resolvedById?.name || \"Unknown\"}"
+            },
+            {
+              "content": "Technical Details",
+              "line": 735,
+              "type": "jsx_text",
+              "context": "<h4 className=\"font-medium mb-2\">Technical Details</h4>"
+            },
+            {
+              "content": "Complaint ID:",
+              "line": 738,
+              "type": "jsx_text",
+              "context": "<strong>Complaint ID:</strong>{\" \"}"
+            },
+            {
+              "content": "Tags:",
+              "line": 743,
+              "type": "jsx_text",
+              "context": "<strong>Tags:</strong>{\" \"}"
+            },
+            {
+              "content": "Created:",
+              "line": 748,
+              "type": "jsx_text",
+              "context": "<strong>Created:</strong>{\" \"}"
+            },
+            {
+              "content": "Last Updated:",
+              "line": 752,
+              "type": "jsx_text",
+              "context": "<strong>Last Updated:</strong>{\" \"}"
+            },
+            {
+              "content": "Citizen Feedback",
+              "line": 764,
+              "type": "jsx_text",
+              "context": "<h4 className=\"font-medium mb-2\">Citizen Feedback</h4>"
+            },
+            {
+              "content": "Rating:",
+              "line": 768,
+              "type": "jsx_text",
+              "context": "<strong>Rating:</strong> {complaint.rating}/5 ⭐"
+            },
+            {
+              "content": "Feedback:",
+              "line": 773,
+              "type": "jsx_text",
+              "context": "<strong>Feedback:</strong> {complaint.feedback}"
+            },
+            {
+              "content": "Quick Actions",
+              "line": 811,
+              "type": "jsx_text",
+              "context": "<CardTitle>Quick Actions</CardTitle>"
+            },
+            {
+              "content": "Complaint Submitter",
+              "line": 858,
+              "type": "jsx_text",
+              "context": "<span className=\"font-medium\">Complaint Submitter</span>"
+            },
+            {
+              "content": "User Email:",
+              "line": 915,
+              "type": "jsx_text",
+              "context": "<span className=\"text-gray-500 flex-shrink-0\">User Email: </span>"
+            },
+            {
+              "content": "Ward Officer",
+              "line": 965,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">Ward Officer</p>"
+            },
+            {
+              "content": "Not assigned",
+              "line": 983,
+              "type": "jsx_text",
+              "context": "<p className=\"text-blue-700 text-sm\">Not assigned</p>"
+            },
+            {
+              "content": "Maintenance Team",
+              "line": 987,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">Maintenance Team</p>"
+            },
+            {
+              "content": "SLA Status",
+              "line": 1039,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">SLA Status</p>"
+            },
+            {
+              "content": "SLA Timeline",
+              "line": 1060,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-2\">SLA Timeline</p>"
+            },
+            {
+              "content": "SLA Deadline:",
+              "line": 1065,
+              "type": "jsx_text",
+              "context": "<span>SLA Deadline:</span>"
+            },
+            {
+              "content": "Resolution Time:",
+              "line": 1074,
+              "type": "jsx_text",
+              "context": "<span>Resolution Time:</span>"
+            },
+            {
+              "content": "Priority Level",
+              "line": 1095,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">Priority Level</p>"
+            },
+            {
+              "content": "Complaint Type",
+              "line": 1103,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm font-medium mb-1\">Complaint Type</p>"
+            },
+            {
+              "content": "Note:",
+              "line": 1220,
+              "type": "jsx_text",
+              "context": "<span className=\"font-medium\">Note:</span> {typeof att.description === 'string' ? att.description : att.description?.text || att.description?.content || \"No description\"}"
+            },
+            {
+              "content": "Note:",
+              "line": 1364,
+              "type": "jsx_text",
+              "context": "<p className=\"text-xs font-medium text-gray-800 mb-1\">Note:</p>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/components/ComplaintDetailsModal.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [
+            {
+              "key": "a",
+              "line": 115,
+              "context": "const a = document.createElement(\"a\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            }
+          ],
+          "hardcodedStrings": [],
+          "validKeys": 0,
+          "missingKeys": 1
+        }
+      ],
+      "summary": {
+        "totalPages": 5,
+        "pagesWithTranslations": 3,
+        "totalTranslationKeys": 6,
+        "validKeys": 0,
+        "missingKeys": 6,
+        "hardcodedStrings": 106,
+        "translationCoverage": 60,
+        "keyValidityRate": 0
+      }
+    },
+    "CITIZEN": {
+      "role": "CITIZEN",
+      "accessiblePages": [
+        "client/pages/Index.tsx",
+        "client/pages/Login.tsx",
+        "client/pages/Register.tsx",
+        "client/pages/CitizenDashboard.tsx",
+        "client/pages/CitizenComplaintForm.tsx",
+        "client/pages/CreateComplaint.tsx",
+        "client/pages/GuestTrackComplaint.tsx",
+        "client/components/QuickComplaintForm.tsx",
+        "client/components/QuickTrackForm.tsx"
+      ],
+      "pageResults": [
+        {
+          "filePath": "client/pages/Index.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Loading...",
+              "line": 52,
+              "type": "jsx_text",
+              "context": "<p className=\"mt-2\">Loading...</p>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/Login.tsx",
+          "hasTranslationImport": true,
+          "useTranslationHook": true,
+          "translationKeys": [
+            {
+              "key": "messages.eGovernancePortal",
+              "line": 213,
+              "context": "<p className=\"text-gray-600\">{t(\"messages.eGovernancePortal\")}</p>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "guest.welcomeBack",
+              "line": 218,
+              "context": "<CardTitle>{t(\"guest.welcomeBack\")}</CardTitle>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "messages.chooseLoginMethod",
+              "line": 220,
+              "context": "{t(\"messages.chooseLoginMethod\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.passwordNotSet",
+              "line": 238,
+              "context": "<p>{t(\"auth.passwordNotSet\")}</p>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.login",
+              "line": 246,
+              "context": "{t(\"auth.login\")} with OTP",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.password",
+              "line": 255,
+              "context": "Set {t(\"auth.password\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.password",
+              "line": 275,
+              "context": "{t(\"auth.password\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.email",
+              "line": 287,
+              "context": "<Label htmlFor=\"email\">{t(\"auth.email\")}</Label>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.emailPlaceholder",
+              "line": 292,
+              "context": "placeholder={t(\"auth.emailPlaceholder\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.password",
+              "line": 300,
+              "context": "<Label htmlFor=\"password\">{t(\"auth.password\")}</Label>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.password",
+              "line": 306,
+              "context": "placeholder={`Enter your ${t(\"auth.password\").toLowerCase()}`}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.signingIn",
+              "line": 334,
+              "context": "{isLoading ? t(\"auth.signingIn\") : t(\"auth.login\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.login",
+              "line": 334,
+              "context": "{isLoading ? t(\"auth.signingIn\") : t(\"auth.login\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.email",
+              "line": 343,
+              "context": "<Label htmlFor=\"otp-email\">{t(\"auth.email\")}</Label>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "auth.emailPlaceholder",
+              "line": 348,
+              "context": "placeholder={t(\"auth.emailPlaceholder\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "messages.otpCodeSent",
+              "line": 364,
+              "context": "<p>{t(\"messages.otpCodeSent\")}</p>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "messages.noAccount",
+              "line": 373,
+              "context": "{t(\"messages.noAccount\")}{\" \"}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "messages.registerHere",
+              "line": 375,
+              "context": "{t(\"messages.registerHere\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "messages.backToHome",
+              "line": 393,
+              "context": "{t(\"messages.backToHome\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "messages.demoCredentials",
+              "line": 407,
+              "context": "<CardTitle className=\"text-lg\">{t(\"messages.demoCredentials\")}</CardTitle>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "messages.testingPurposes",
+              "line": 408,
+              "context": "<CardDescription>{t(\"messages.testingPurposes\")}</CardDescription>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            }
+          ],
+          "hardcodedStrings": [],
+          "validKeys": 21,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/Register.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Create Your Account",
+              "line": 220,
+              "type": "jsx_text",
+              "context": "<p className=\"text-gray-600\">Create Your Account</p>"
+            },
+            {
+              "content": "Full Name",
+              "line": 235,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"fullName\">Full Name</Label>"
+            },
+            {
+              "content": "Enter your full name",
+              "line": 245,
+              "type": "attribute",
+              "context": "placeholder=\"Enter your full name\""
+            },
+            {
+              "content": "Email Address",
+              "line": 253,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"email\">Email Address</Label>"
+            },
+            {
+              "content": "Enter your email",
+              "line": 263,
+              "type": "attribute",
+              "context": "placeholder=\"Enter your email\""
+            },
+            {
+              "content": "Phone Number",
+              "line": 271,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"phoneNumber\">Phone Number</Label>"
+            },
+            {
+              "content": "Enter your phone number",
+              "line": 281,
+              "type": "attribute",
+              "context": "placeholder=\"Enter your phone number\""
+            },
+            {
+              "content": "Select your ward",
+              "line": 297,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select your ward\" />"
+            },
+            {
+              "content": "Create a password",
+              "line": 330,
+              "type": "attribute",
+              "context": "placeholder=\"Create a password\""
+            },
+            {
+              "content": "Confirm Password",
+              "line": 338,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"confirmPassword\">Confirm Password</Label>"
+            },
+            {
+              "content": "Confirm your password",
+              "line": 351,
+              "type": "attribute",
+              "context": "placeholder=\"Confirm your password\""
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/CitizenDashboard.tsx",
+          "hasTranslationImport": true,
+          "useTranslationHook": true,
+          "translationKeys": [
+            {
+              "key": "search",
+              "line": 90,
+              "context": "searchParams.get(\"search\") || \"\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "status",
+              "line": 93,
+              "context": "searchParams.get(\"status\") || \"all\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "type",
+              "line": 96,
+              "context": "searchParams.get(\"type\") || \"all\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "sort",
+              "line": 99,
+              "context": "searchParams.get(\"sort\") || \"submittedOn\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "order",
+              "line": 102,
+              "context": "(searchParams.get(\"order\") as \"asc\" | \"desc\") || \"desc\",",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "dashboard.citizen.subtitle",
+              "line": 403,
+              "context": "{t(\"dashboard.citizen.subtitle\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.newComplaint",
+              "line": 412,
+              "context": "{t(\"dashboard.citizen.newComplaint\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.totalComplaints",
+              "line": 423,
+              "context": "{t(\"dashboard.citizen.totalComplaints\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.allTimeSubmissions",
+              "line": 437,
+              "context": "{t(\"dashboard.citizen.allTimeSubmissions\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.pending",
+              "line": 446,
+              "context": "<CardTitle className=\"text-sm font-medium\">{t(\"dashboard.citizen.pending\")}</CardTitle>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.awaitingAssignment",
+              "line": 460,
+              "context": "<p className=\"text-xs text-muted-foreground\">{t(\"dashboard.citizen.awaitingAssignment\")}</p>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.inProgress",
+              "line": 468,
+              "context": "<CardTitle className=\"text-sm font-medium\">{t(\"dashboard.citizen.inProgress\")}</CardTitle>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.beingWorkedOn",
+              "line": 482,
+              "context": "<p className=\"text-xs text-muted-foreground\">{t(\"dashboard.citizen.beingWorkedOn\")}</p>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.resolved",
+              "line": 490,
+              "context": "<CardTitle className=\"text-sm font-medium\">{t(\"dashboard.citizen.resolved\")}</CardTitle>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.successfullyResolved",
+              "line": 505,
+              "context": "{t(\"dashboard.citizen.successfullyResolved\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.resolutionProgress",
+              "line": 538,
+              "context": "<CardTitle className=\"text-lg\">{t(\"dashboard.citizen.resolutionProgress\")}</CardTitle>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.overallResolutionRate",
+              "line": 551,
+              "context": "{t(\"dashboard.citizen.overallResolutionRate\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.avgResolutionTime",
+              "line": 566,
+              "context": "<span>{t(\"dashboard.citizen.avgResolutionTime\")}</span>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.myComplaints",
+              "line": 579,
+              "context": "<CardTitle className=\"text-lg\">{t(\"dashboard.citizen.myComplaints\")}</CardTitle>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "common.refresh",
+              "line": 583,
+              "context": "{t(\"common.refresh\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.newComplaint",
+              "line": 587,
+              "context": "{t(\"dashboard.citizen.newComplaint\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.searchPlaceholder",
+              "line": 600,
+              "context": "placeholder={t(\"dashboard.citizen.searchPlaceholder\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.allStatus",
+              "line": 631,
+              "context": "<SelectItem value=\"all\">{t(\"dashboard.citizen.allStatus\")}</SelectItem>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.allTypes",
+              "line": 645,
+              "context": "<SelectItem value=\"all\">{t(\"dashboard.citizen.allTypes\")}</SelectItem>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "-",
+              "line": 657,
+              "context": "const [newSortBy, newSortOrder] = value.split(\"-\");",
+              "existsInEn": false,
+              "existsInHi": false,
+              "existsInMl": false,
+              "isValid": false
+            },
+            {
+              "key": "dashboard.citizen.newestFirst",
+              "line": 666,
+              "context": "<SelectItem value=\"submittedOn-desc\">{t(\"dashboard.citizen.newestFirst\")}</SelectItem>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.oldestFirst",
+              "line": 667,
+              "context": "<SelectItem value=\"submittedOn-asc\">{t(\"dashboard.citizen.oldestFirst\")}</SelectItem>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.highPriorityFirst",
+              "line": 669,
+              "context": "{t(\"dashboard.citizen.highPriorityFirst\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.clearFilters",
+              "line": 680,
+              "context": "{t(\"dashboard.citizen.clearFilters\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.loadingComplaints",
+              "line": 690,
+              "context": "<span className=\"ml-2\">{t(\"dashboard.citizen.loadingComplaints\")}</span>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.noComplaints",
+              "line": 696,
+              "context": "{t(\"dashboard.citizen.noComplaints\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.noComplaintsMessage",
+              "line": 701,
+              "context": ": t(\"dashboard.citizen.noComplaintsMessage\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.submitFirstComplaint",
+              "line": 705,
+              "context": "{t(\"dashboard.citizen.submitFirstComplaint\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.quickActions",
+              "line": 992,
+              "context": "<CardTitle className=\"text-lg\">{t(\"dashboard.citizen.quickActions\")}</CardTitle>",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.submitNewComplaint",
+              "line": 1000,
+              "context": "{t(\"dashboard.citizen.submitNewComplaint\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.viewAllComplaints",
+              "line": 1008,
+              "context": "{t(\"dashboard.citizen.viewAllComplaints\")}",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            },
+            {
+              "key": "dashboard.citizen.helpSupport",
+              "line": 1015,
+              "context": "<ContactInfoCard title={t(\"dashboard.citizen.helpSupport\")} />",
+              "existsInEn": true,
+              "existsInHi": true,
+              "existsInMl": true,
+              "isValid": true
+            }
+          ],
+          "hardcodedStrings": [
+            {
+              "content": "Authentication Error",
+              "line": 383,
+              "type": "jsx_text",
+              "context": "<h2 className=\"text-xl font-semibold mb-2\">Authentication Error</h2>"
+            },
+            {
+              "content": "Please log in again to access your dashboard.",
+              "line": 384,
+              "type": "jsx_text",
+              "context": "<p>Please log in again to access your dashboard.</p>"
+            },
+            {
+              "content": "Go to Login",
+              "line": 387,
+              "type": "jsx_text",
+              "context": "<Button>Go to Login</Button>"
+            },
+            {
+              "content": "Debug Information",
+              "line": 517,
+              "type": "jsx_text",
+              "context": "<CardTitle className=\"text-lg text-red-800\">Debug Information</CardTitle>"
+            },
+            {
+              "content": "User:",
+              "line": 521,
+              "type": "jsx_text",
+              "context": "<div><strong>User:</strong> {user?.id} ({user?.role})</div>"
+            },
+            {
+              "content": "Authenticated:",
+              "line": 522,
+              "type": "jsx_text",
+              "context": "<div><strong>Authenticated:</strong> {isAuthenticated ? 'Yes' : 'No'}</div>"
+            },
+            {
+              "content": "Stats Loading:",
+              "line": 523,
+              "type": "jsx_text",
+              "context": "<div><strong>Stats Loading:</strong> {statsLoading ? 'Yes' : 'No'}</div>"
+            },
+            {
+              "content": "Complaints Loading:",
+              "line": 524,
+              "type": "jsx_text",
+              "context": "<div><strong>Complaints Loading:</strong> {complaintsLoading ? 'Yes' : 'No'}</div>"
+            },
+            {
+              "content": "Stats Error:",
+              "line": 525,
+              "type": "jsx_text",
+              "context": "<div><strong>Stats Error:</strong> {statsError ? JSON.stringify(statsError) : 'None'}</div>"
+            },
+            {
+              "content": "Complaints Error:",
+              "line": 526,
+              "type": "jsx_text",
+              "context": "<div><strong>Complaints Error:</strong> {complaintsError ? JSON.stringify(complaintsError) : 'None'}</div>"
+            },
+            {
+              "content": "Stats Response:",
+              "line": 527,
+              "type": "jsx_text",
+              "context": "<div><strong>Stats Response:</strong> {JSON.stringify(statsResponse)}</div>"
+            },
+            {
+              "content": "Complaints Count:",
+              "line": 528,
+              "type": "jsx_text",
+              "context": "<div><strong>Complaints Count:</strong> {complaints.length}</div>"
+            },
+            {
+              "content": "Dashboard Stats:",
+              "line": 529,
+              "type": "jsx_text",
+              "context": "<div><strong>Dashboard Stats:</strong> {JSON.stringify(dashboardStats)}</div>"
+            },
+            {
+              "content": "Search by complaint ID (e.g., KSC0001), description, or location",
+              "line": 604,
+              "type": "attribute",
+              "context": "title=\"Search by complaint ID (e.g., KSC0001), description, or location\""
+            },
+            {
+              "content": "All Status",
+              "line": 628,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"All Status\" />"
+            },
+            {
+              "content": "In Progress",
+              "line": 634,
+              "type": "jsx_text",
+              "context": "<SelectItem value=\"IN_PROGRESS\">In Progress</SelectItem>"
+            },
+            {
+              "content": "All Types",
+              "line": 642,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"All Types\" />"
+            },
+            {
+              "content": "Sort by",
+              "line": 663,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Sort by\" />"
+            }
+          ],
+          "validKeys": 31,
+          "missingKeys": 6
+        },
+        {
+          "filePath": "client/pages/CitizenComplaintForm.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Logged in as:",
+              "line": 564,
+              "type": "jsx_text",
+              "context": "<strong>Logged in as:</strong> {user.fullName} ({user.email})"
+            },
+            {
+              "content": "Daily Limit:",
+              "line": 593,
+              "type": "jsx_text",
+              "context": "<strong>Daily Limit:</strong> You can submit {dailyLimitData.data.remaining} more complaint{dailyLimitData.data.remaining !== 1 ? 's' : ''} today"
+            },
+            {
+              "content": "Daily Limit Reached:",
+              "line": 598,
+              "type": "jsx_text",
+              "context": "<strong>Daily Limit Reached:</strong> You have reached the maximum number of complaints allowed for today ({dailyLimitData.data.limit})."
+            },
+            {
+              "content": "Full Name",
+              "line": 682,
+              "type": "jsx_text",
+              "context": "<Label>Full Name</Label>"
+            },
+            {
+              "content": "Email Address",
+              "line": 690,
+              "type": "jsx_text",
+              "context": "<Label>Email Address</Label>"
+            },
+            {
+              "content": "Phone Number",
+              "line": 698,
+              "type": "jsx_text",
+              "context": "<Label>Phone Number</Label>"
+            },
+            {
+              "content": "Citizen ID",
+              "line": 706,
+              "type": "jsx_text",
+              "context": "<Label>Citizen ID</Label>"
+            },
+            {
+              "content": "Complaint Details",
+              "line": 718,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold\">Complaint Details</h3>"
+            },
+            {
+              "content": "Complaint Type *",
+              "line": 721,
+              "type": "jsx_text",
+              "context": "<Label>Complaint Type *</Label>"
+            },
+            {
+              "content": "Select complaint type",
+              "line": 733,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select complaint type\" />"
+            },
+            {
+              "content": "Description *",
+              "line": 840,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"description\">Description *</Label>"
+            },
+            {
+              "content": "Describe the issue in detail... (What happened? When? Where exactly?)",
+              "line": 844,
+              "type": "attribute",
+              "context": "placeholder=\"Describe the issue in detail... (What happened? When? Where exactly?)\""
+            },
+            {
+              "content": "Ward *",
+              "line": 876,
+              "type": "jsx_text",
+              "context": "<Label>Ward *</Label>"
+            },
+            {
+              "content": "Select ward",
+              "line": 888,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select ward\" />"
+            },
+            {
+              "content": "Sub-Zone *",
+              "line": 906,
+              "type": "jsx_text",
+              "context": "<Label>Sub-Zone *</Label>"
+            },
+            {
+              "content": "Select sub-zone",
+              "line": 919,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select sub-zone\" />"
+            },
+            {
+              "content": "Area/Locality *",
+              "line": 941,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"area\">Area/Locality *</Label>"
+            },
+            {
+              "content": "Enter specific area or locality (e.g., Near Metro Station, Main Road)",
+              "line": 945,
+              "type": "attribute",
+              "context": "placeholder=\"Enter specific area or locality (e.g., Near Metro Station, Main Road)\""
+            },
+            {
+              "content": "Landmark *",
+              "line": 959,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"landmark\">Landmark *</Label>"
+            },
+            {
+              "content": "Nearby landmark (e.g., Next to Bank, Opposite School)",
+              "line": 963,
+              "type": "attribute",
+              "context": "placeholder=\"Nearby landmark (e.g., Next to Bank, Opposite School)\""
+            },
+            {
+              "content": "Full Address *",
+              "line": 978,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"address\">Full Address *</Label>"
+            },
+            {
+              "content": "Complete address",
+              "line": 982,
+              "type": "attribute",
+              "context": "placeholder=\"Complete address\""
+            },
+            {
+              "content": "Click to upload",
+              "line": 1049,
+              "type": "jsx_text",
+              "context": "<span className=\"font-semibold\">Click to upload</span>{\" \"}"
+            },
+            {
+              "content": "• Include wider shots to show context",
+              "line": 1119,
+              "type": "jsx_text",
+              "context": "<li>• Include wider shots to show context</li>"
+            },
+            {
+              "content": "• Capture any visible damage or hazards",
+              "line": 1120,
+              "type": "jsx_text",
+              "context": "<li>• Capture any visible damage or hazards</li>"
+            },
+            {
+              "content": "Review Your Complaint",
+              "line": 1134,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-semibold\">Review Your Complaint</h3>"
+            },
+            {
+              "content": "Name:",
+              "line": 1146,
+              "type": "jsx_text",
+              "context": "<strong>Name:</strong> {formData.fullName}"
+            },
+            {
+              "content": "Email:",
+              "line": 1149,
+              "type": "jsx_text",
+              "context": "<strong>Email:</strong> {formData.email}"
+            },
+            {
+              "content": "Phone:",
+              "line": 1152,
+              "type": "jsx_text",
+              "context": "<strong>Phone:</strong> {formData.phoneNumber}"
+            },
+            {
+              "content": "Citizen ID:",
+              "line": 1155,
+              "type": "jsx_text",
+              "context": "<strong>Citizen ID:</strong>{\" \"}"
+            },
+            {
+              "content": "Type:",
+              "line": 1170,
+              "type": "jsx_text",
+              "context": "<strong>Type:</strong> {selectedComplaintType?.label}"
+            },
+            {
+              "content": "Priority:",
+              "line": 1173,
+              "type": "jsx_text",
+              "context": "<strong>Priority:</strong>"
+            },
+            {
+              "content": "SLA Hours:",
+              "line": 1181,
+              "type": "jsx_text",
+              "context": "<strong>SLA Hours:</strong> {formData.slaHours} hours"
+            },
+            {
+              "content": "Description:",
+              "line": 1184,
+              "type": "jsx_text",
+              "context": "<strong>Description:</strong> {formData.description}"
+            },
+            {
+              "content": "Ward:",
+              "line": 1196,
+              "type": "jsx_text",
+              "context": "<strong>Ward:</strong>{\" \"}"
+            },
+            {
+              "content": "Sub-Zone:",
+              "line": 1201,
+              "type": "jsx_text",
+              "context": "<strong>Sub-Zone:</strong> {formData.subZoneId}"
+            },
+            {
+              "content": "Area:",
+              "line": 1205,
+              "type": "jsx_text",
+              "context": "<strong>Area:</strong> {formData.area}"
+            },
+            {
+              "content": "Landmark:",
+              "line": 1209,
+              "type": "jsx_text",
+              "context": "<strong>Landmark:</strong> {formData.landmark}"
+            },
+            {
+              "content": "Address:",
+              "line": 1214,
+              "type": "jsx_text",
+              "context": "<strong>Address:</strong> {formData.address}"
+            },
+            {
+              "content": "GPS Coordinates:",
+              "line": 1219,
+              "type": "jsx_text",
+              "context": "<strong>GPS Coordinates:</strong> Included"
+            },
+            {
+              "content": "No attachments",
+              "line": 1252,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-500\">No attachments</p>"
+            },
+            {
+              "content": "Ready to submit!",
+              "line": 1260,
+              "type": "jsx_text",
+              "context": "<strong>Ready to submit!</strong> Your complaint will be"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/CreateComplaint.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Go to Login",
+              "line": 169,
+              "type": "jsx_text",
+              "context": "<Button onClick={() => navigate(\"/login\")}>Go to Login</Button>"
+            },
+            {
+              "content": "Complaint Type *",
+              "line": 208,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"type\">Complaint Type *</Label>"
+            },
+            {
+              "content": "Select complaint type",
+              "line": 214,
+              "type": "attribute",
+              "context": "<SelectValue placeholder=\"Select complaint type\" />"
+            },
+            {
+              "content": "Title (Optional)",
+              "line": 257,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"title\">Title (Optional)</Label>"
+            },
+            {
+              "content": "Brief title for your complaint",
+              "line": 262,
+              "type": "attribute",
+              "context": "placeholder=\"Brief title for your complaint\""
+            },
+            {
+              "content": "Description *",
+              "line": 267,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"description\">Description *</Label>"
+            },
+            {
+              "content": "Describe your complaint in detail...",
+              "line": 274,
+              "type": "attribute",
+              "context": "placeholder=\"Describe your complaint in detail...\""
+            },
+            {
+              "content": "Area/Locality *",
+              "line": 296,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"area\">Area/Locality *</Label>"
+            },
+            {
+              "content": "e.g., Fort Kochi, Mattancherry",
+              "line": 301,
+              "type": "attribute",
+              "context": "placeholder=\"e.g., Fort Kochi, Mattancherry\""
+            },
+            {
+              "content": "Nearby landmark (optional)",
+              "line": 317,
+              "type": "attribute",
+              "context": "placeholder=\"Nearby landmark (optional)\""
+            },
+            {
+              "content": "Complete Address",
+              "line": 323,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"address\">Complete Address</Label>"
+            },
+            {
+              "content": "Complete address (optional)",
+              "line": 328,
+              "type": "attribute",
+              "context": "placeholder=\"Complete address (optional)\""
+            },
+            {
+              "content": "Submit anonymously",
+              "line": 352,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"anonymous\">Submit anonymously</Label>"
+            },
+            {
+              "content": "Your name",
+              "line": 364,
+              "type": "attribute",
+              "context": "placeholder=\"Your name\""
+            },
+            {
+              "content": "your.email@example.com",
+              "line": 378,
+              "type": "attribute",
+              "context": "placeholder=\"your.email@example.com\""
+            },
+            {
+              "content": "Phone Number *",
+              "line": 384,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"contactPhone\">Phone Number *</Label>"
+            },
+            {
+              "content": "Your phone number",
+              "line": 392,
+              "type": "attribute",
+              "context": "placeholder=\"Your phone number\""
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/pages/GuestTrackComplaint.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Secure Complaint Tracking",
+              "line": 198,
+              "type": "jsx_text",
+              "context": "<span>Secure Complaint Tracking</span>"
+            },
+            {
+              "content": "Complaint ID",
+              "line": 214,
+              "type": "jsx_text",
+              "context": "<Label htmlFor=\"complaintId\">Complaint ID</Label>"
+            },
+            {
+              "content": "Enter your complaint ID (e.g., CMP123456)",
+              "line": 222,
+              "type": "attribute",
+              "context": "placeholder=\"Enter your complaint ID (e.g., CMP123456)\""
+            },
+            {
+              "content": "Complaint Details",
+              "line": 257,
+              "type": "jsx_text",
+              "context": "<span>Complaint Details</span>"
+            },
+            {
+              "content": "Status Timeline",
+              "line": 318,
+              "type": "jsx_text",
+              "context": "<CardTitle>Status Timeline</CardTitle>"
+            },
+            {
+              "content": "Expected Resolution",
+              "line": 494,
+              "type": "jsx_text",
+              "context": "<CardTitle>Expected Resolution</CardTitle>"
+            },
+            {
+              "content": "Expected Resolution Time",
+              "line": 499,
+              "type": "jsx_text",
+              "context": "<p className=\"font-medium\">Expected Resolution Time</p>"
+            },
+            {
+              "content": "2-5 days",
+              "line": 505,
+              "type": "jsx_text",
+              "context": "<p className=\"text-2xl font-bold text-blue-600\">2-5 days</p>"
+            },
+            {
+              "content": "Business days",
+              "line": 506,
+              "type": "jsx_text",
+              "context": "<p className=\"text-sm text-gray-500\">Business days</p>"
+            },
+            {
+              "content": "Need Help?",
+              "line": 517,
+              "type": "jsx_text",
+              "context": "<CardTitle>Need Help?</CardTitle>"
+            },
+            {
+              "content": "Submit New Complaint",
+              "line": 522,
+              "type": "jsx_text",
+              "context": "<h3 className=\"font-medium mb-2\">Submit New Complaint</h3>"
+            },
+            {
+              "content": "Contact Support",
+              "line": 534,
+              "type": "jsx_text",
+              "context": "<h3 className=\"font-medium mb-2\">Contact Support</h3>"
+            },
+            {
+              "content": "Contact Support",
+              "line": 538,
+              "type": "jsx_text",
+              "context": "<Button variant=\"outline\">Contact Support</Button>"
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/components/QuickComplaintForm.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [
+            {
+              "content": "Select location on map",
+              "line": 787,
+              "type": "attribute",
+              "context": "title=\"Select location on map\""
+            },
+            {
+              "content": "Refresh CAPTCHA",
+              "line": 969,
+              "type": "attribute",
+              "context": "title=\"Refresh CAPTCHA\""
+            },
+            {
+              "content": "Email Verification",
+              "line": 996,
+              "type": "jsx_text",
+              "context": "<h3 className=\"text-lg font-medium\">Email Verification</h3>"
+            },
+            {
+              "content": "Enter 6-digit code",
+              "line": 1006,
+              "type": "attribute",
+              "context": "placeholder=\"Enter 6-digit code\""
+            }
+          ],
+          "validKeys": 0,
+          "missingKeys": 0
+        },
+        {
+          "filePath": "client/components/QuickTrackForm.tsx",
+          "hasTranslationImport": false,
+          "useTranslationHook": false,
+          "translationKeys": [],
+          "hardcodedStrings": [],
+          "validKeys": 0,
+          "missingKeys": 0
+        }
+      ],
+      "summary": {
+        "totalPages": 9,
+        "pagesWithTranslations": 2,
+        "totalTranslationKeys": 58,
+        "validKeys": 52,
+        "missingKeys": 6,
+        "hardcodedStrings": 106,
+        "translationCoverage": 22,
+        "keyValidityRate": 90
+      }
+    }
+  },
+  "languageSwitchingResults": {
+    "workingKeys": [
+      "nav.dashboard",
+      "nav.complaints",
+      "nav.reports",
+      "common.submit",
+      "common.cancel",
+      "common.loading"
+    ],
+    "missingKeys": [],
+    "inconsistentKeys": []
+  },
+  "uiElementsResults": {
+    "totalElements": 374,
+    "translatedElements": 0,
+    "hardcodedElements": 374,
+    "elementsByType": {
+      "heading_text": {
+        "total": 116,
+        "translated": 0,
+        "hardcoded": 116
+      },
+      "label_text": {
+        "total": 33,
+        "translated": 0,
+        "hardcoded": 33
+      },
+      "button_text": {
+        "total": 77,
+        "translated": 0,
+        "hardcoded": 77
+      },
+      "placeholder": {
+        "total": 127,
+        "translated": 0,
+        "hardcoded": 127
+      },
+      "title": {
+        "total": 21,
+        "translated": 0,
+        "hardcoded": 21
+      }
+    }
+  },
+  "recommendations": [
+    {
+      "priority": "high",
+      "type": "missing_translation_keys",
+      "description": "49 translation keys are missing or incomplete",
+      "action": "Add missing translation keys to all language files"
+    },
+    {
+      "priority": "high",
+      "type": "hardcoded_strings",
+      "description": "497 hardcoded strings found across all role-accessible pages",
+      "action": "Replace hardcoded strings with translation keys"
+    },
+    {
+      "priority": "medium",
+      "type": "incomplete_role_coverage",
+      "description": "4 user roles do not have complete translation coverage",
+      "action": "Ensure all role-accessible pages use translation keys"
+    }
+  ]
+}

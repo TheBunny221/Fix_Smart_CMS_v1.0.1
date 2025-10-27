@@ -1,0 +1,723 @@
+{
+  "timestamp": "2025-10-27T10:06:14.251Z",
+  "summary": {
+    "systemSettingsValid": true,
+    "seedConfigurationValid": true,
+    "configurationConsistent": true,
+    "saveLoadFunctional": true,
+    "functionalityPreserved": true,
+    "overallStatus": "excellent"
+  },
+  "systemSettingsAnalysis": {
+    "filePath": "client/components/SystemSettingsManager.tsx",
+    "configFields": [
+      {
+        "name": "APP_NAME",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "APP_LOGO_URL",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "APP_LOGO_SIZE",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "ADMIN_EMAIL",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "COMPLAINT_ID_PREFIX",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "COMPLAINT_ID_START_NUMBER",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "COMPLAINT_ID_LENGTH",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "COMPLAINT_PHOTO_MAX_SIZE",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "COMPLAINT_PHOTO_MAX_COUNT",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "CITIZEN_DAILY_COMPLAINT_LIMIT",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "GUEST_COMPLAINT_ENABLED",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "DEFAULT_SLA_HOURS",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "MAP_SEARCH_PLACE",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "MAP_COUNTRY_CODES",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "MAP_DEFAULT_LAT",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "MAP_DEFAULT_LNG",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "MAP_BBOX_NORTH",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "MAP_BBOX_SOUTH",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "MAP_BBOX_EAST",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "MAP_BBOX_WEST",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "SERVICE_AREA_BOUNDARY",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "SERVICE_AREA_VALIDATION_ENABLED",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "CONTACT_HELPLINE",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "CONTACT_EMAIL",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "CONTACT_OFFICE_HOURS",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "CONTACT_OFFICE_ADDRESS",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "AUTO_ASSIGN_COMPLAINTS",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "CITIZEN_REGISTRATION_ENABLED",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "OTP_EXPIRY_MINUTES",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "MAX_FILE_SIZE_MB",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "NOTIFICATION_SETTINGS",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "COMPLAINT_PRIORITIES",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      },
+      {
+        "name": "COMPLAINT_STATUSES",
+        "type": "config_key",
+        "line": 0,
+        "context": "CONFIG_SECTIONS definition"
+      }
+    ],
+    "formInputs": [
+      {
+        "element": "<Input\r\n        type={type === \"number\" ? \"number\" : \"text\"}\r\n        value={value}\r\n        onChange={(e) =>",
+        "type": "text"
+      },
+      {
+        "element": "<Input\r\n          placeholder=\"Search settings...\"\r\n          value={searchTerm}\r\n          onChange={(e) =>",
+        "type": "text"
+      },
+      {
+        "element": "<Select\r\n          value={value}\r\n          onValueChange={(newValue) =>",
+        "type": "text"
+      },
+      {
+        "element": "<SelectTrigger className=\"w-32\">",
+        "type": "text"
+      },
+      {
+        "element": "<SelectValue />",
+        "type": "text"
+      },
+      {
+        "element": "<SelectContent>",
+        "type": "text"
+      },
+      {
+        "element": "<SelectItem value=\"true\">",
+        "type": "text"
+      },
+      {
+        "element": "<SelectItem value=\"false\">",
+        "type": "text"
+      },
+      {
+        "element": "<Select\r\n          value={value}\r\n          onValueChange={(newValue) =>",
+        "type": "text"
+      },
+      {
+        "element": "<SelectTrigger className=\"w-32\">",
+        "type": "text"
+      },
+      {
+        "element": "<SelectValue />",
+        "type": "text"
+      },
+      {
+        "element": "<SelectContent>",
+        "type": "text"
+      },
+      {
+        "element": "<SelectItem value=\"small\">",
+        "type": "text"
+      },
+      {
+        "element": "<SelectItem value=\"medium\">",
+        "type": "text"
+      },
+      {
+        "element": "<SelectItem value=\"large\">",
+        "type": "text"
+      },
+      {
+        "element": "<Textarea\r\n          value={value}\r\n          onChange={(e) =>",
+        "type": "text"
+      }
+    ],
+    "stateReferences": [
+      "useState(\"\")",
+      "useState(false)",
+      "dispatch(showSuccessToast(\"No Changes\", \"No changes to save\")",
+      "dispatch(showSuccessToast(\"Settings Saved\", `Updated ${changedSettings.length} settings successfully`)",
+      "dispatch(showErrorToast(\"Save Failed\", error.message || \"Failed to save settings\")",
+      "React.FC = () => {\r\n  const dispatch = useAppDispatch()",
+      "s.key === setting.key)",
+      "changedSettings.length === 0) {\r\n        dispatch(showSuccessToast(\"No Changes\", \"No changes to save\"))",
+      "filteredSections.length === 0 && searchTerm && (\r\n        <div className=\"text-center py-8\">\r\n          <Search className=\"h-12 w-12 text-gray-400 mx-auto mb-4\" />\r\n          <h3 className=\"text-lg font-medium text-gray-900 mb-2\">No settings found</h3>\r\n          <p className=\"text-gray-600\">Try adjusting your search terms</p>\r\n        </div>\r\n      )}\r\n    </div>\r\n  )"
+    ],
+    "hasTranslationSupport": true,
+    "hasValidation": true,
+    "hasErrorHandling": true
+  },
+  "seedConfigurationAnalysis": {
+    "totalEntries": 41,
+    "systemConfigEntries": 41,
+    "configKeys": [
+      {
+        "key": "APP_NAME",
+        "value": "NLC-CMS",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "APP_LOGO_URL",
+        "value": "/logo.png",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "APP_LOGO_SIZE",
+        "value": "medium",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "COMPLAINT_ID_PREFIX",
+        "value": "AMC",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "COMPLAINT_ID_START_NUMBER",
+        "value": "1",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "COMPLAINT_ID_LENGTH",
+        "value": "5",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "OTP_EXPIRY_MINUTES",
+        "value": "5",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAX_FILE_SIZE_MB",
+        "value": "10",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "DEFAULT_SLA_HOURS",
+        "value": "48",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "ADMIN_EMAIL",
+        "value": "admin@cochinsmartcity.in",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "NOTIFICATION_SETTINGS",
+        "value": "{\"email\":true,\"sms\":false}",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "AUTO_ASSIGN_COMPLAINTS",
+        "value": "true",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "CITIZEN_REGISTRATION_ENABLED",
+        "value": "true",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "COMPLAINT_PRIORITIES",
+        "value": "[\"LOW\",\"MEDIUM\",\"HIGH\",\"CRITICAL\"]",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "COMPLAINT_STATUSES",
+        "value": "[\"REGISTERED\",\"ASSIGNED\",\"IN_PROGRESS\",\"RESOLVED\",\"CLOSED\",\"REOPENED\"]",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAP_SEARCH_PLACE",
+        "value": "Kochi, Kerala, India",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAP_COUNTRY_CODES",
+        "value": "in",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAP_DEFAULT_LAT",
+        "value": "9.9312",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAP_DEFAULT_LNG",
+        "value": "76.2673",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAP_BBOX_NORTH",
+        "value": "10.10",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAP_BBOX_SOUTH",
+        "value": "9.80",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAP_BBOX_EAST",
+        "value": "76.40",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAP_BBOX_WEST",
+        "value": "76.15",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "CONTACT_HELPLINE",
+        "value": "+91-484-2206410",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "CONTACT_EMAIL",
+        "value": "support@cochinsmartcity.in",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "CONTACT_OFFICE_HOURS",
+        "value": "Monday to Friday: 9:00 AM - 5:00 PM",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "CONTACT_OFFICE_ADDRESS",
+        "value": "Kochi Corporation Office, Ernakulam, Kochi - 682011, Kerala, India",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "SYSTEM_VERSION",
+        "value": "1.0.0",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "MAINTENANCE_MODE",
+        "value": "false",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "GUEST_COMPLAINT_ENABLED",
+        "value": "true",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "EMAIL_NOTIFICATIONS_ENABLED",
+        "value": "true",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "SMS_NOTIFICATIONS_ENABLED",
+        "value": "false",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "COMPLAINT_PHOTO_MAX_SIZE",
+        "value": "5",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "COMPLAINT_PHOTO_MAX_COUNT",
+        "value": "5",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "AUTO_CLOSE_RESOLVED_COMPLAINTS",
+        "value": "true",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "AUTO_CLOSE_DAYS",
+        "value": "7",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "CITIZEN_DAILY_COMPLAINT_LIMIT",
+        "value": "5",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+        "value": "true",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "SERVICE_AREA_BOUNDARY",
+        "value": "{\"type\":\"Polygon\",\"coordinates\":[[[76.15,9.80],[76.40,9.80],[76.40,10.10],[76.15,10.10],[76.15,9.80]]]}",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "SERVICE_AREA_VALIDATION_ENABLED",
+        "value": "true",
+        "type": "string",
+        "hasDescription": true
+      },
+      {
+        "key": "AUTO_ASSIGN_ON_REOPEN",
+        "value": "false",
+        "type": "string",
+        "hasDescription": true
+      }
+    ],
+    "duplicateKeys": [],
+    "invalidEntries": [],
+    "validationErrors": []
+  },
+  "consistencyAnalysis": {
+    "uiFields": [
+      "APP_NAME",
+      "APP_LOGO_URL",
+      "APP_LOGO_SIZE",
+      "ADMIN_EMAIL",
+      "COMPLAINT_ID_PREFIX",
+      "COMPLAINT_ID_START_NUMBER",
+      "COMPLAINT_ID_LENGTH",
+      "COMPLAINT_PHOTO_MAX_SIZE",
+      "COMPLAINT_PHOTO_MAX_COUNT",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+      "GUEST_COMPLAINT_ENABLED",
+      "DEFAULT_SLA_HOURS",
+      "MAP_SEARCH_PLACE",
+      "MAP_COUNTRY_CODES",
+      "MAP_DEFAULT_LAT",
+      "MAP_DEFAULT_LNG",
+      "MAP_BBOX_NORTH",
+      "MAP_BBOX_SOUTH",
+      "MAP_BBOX_EAST",
+      "MAP_BBOX_WEST",
+      "SERVICE_AREA_BOUNDARY",
+      "SERVICE_AREA_VALIDATION_ENABLED",
+      "CONTACT_HELPLINE",
+      "CONTACT_EMAIL",
+      "CONTACT_OFFICE_HOURS",
+      "CONTACT_OFFICE_ADDRESS",
+      "AUTO_ASSIGN_COMPLAINTS",
+      "CITIZEN_REGISTRATION_ENABLED",
+      "OTP_EXPIRY_MINUTES",
+      "MAX_FILE_SIZE_MB",
+      "NOTIFICATION_SETTINGS",
+      "COMPLAINT_PRIORITIES",
+      "COMPLAINT_STATUSES"
+    ],
+    "seedKeys": [
+      "APP_NAME",
+      "APP_LOGO_URL",
+      "APP_LOGO_SIZE",
+      "COMPLAINT_ID_PREFIX",
+      "COMPLAINT_ID_START_NUMBER",
+      "COMPLAINT_ID_LENGTH",
+      "OTP_EXPIRY_MINUTES",
+      "MAX_FILE_SIZE_MB",
+      "DEFAULT_SLA_HOURS",
+      "ADMIN_EMAIL",
+      "NOTIFICATION_SETTINGS",
+      "AUTO_ASSIGN_COMPLAINTS",
+      "CITIZEN_REGISTRATION_ENABLED",
+      "COMPLAINT_PRIORITIES",
+      "COMPLAINT_STATUSES",
+      "MAP_SEARCH_PLACE",
+      "MAP_COUNTRY_CODES",
+      "MAP_DEFAULT_LAT",
+      "MAP_DEFAULT_LNG",
+      "MAP_BBOX_NORTH",
+      "MAP_BBOX_SOUTH",
+      "MAP_BBOX_EAST",
+      "MAP_BBOX_WEST",
+      "CONTACT_HELPLINE",
+      "CONTACT_EMAIL",
+      "CONTACT_OFFICE_HOURS",
+      "CONTACT_OFFICE_ADDRESS",
+      "SYSTEM_VERSION",
+      "MAINTENANCE_MODE",
+      "GUEST_COMPLAINT_ENABLED",
+      "EMAIL_NOTIFICATIONS_ENABLED",
+      "SMS_NOTIFICATIONS_ENABLED",
+      "COMPLAINT_PHOTO_MAX_SIZE",
+      "COMPLAINT_PHOTO_MAX_COUNT",
+      "AUTO_CLOSE_RESOLVED_COMPLAINTS",
+      "AUTO_CLOSE_DAYS",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+      "SERVICE_AREA_BOUNDARY",
+      "SERVICE_AREA_VALIDATION_ENABLED",
+      "AUTO_ASSIGN_ON_REOPEN"
+    ],
+    "matchingKeys": [
+      "APP_NAME",
+      "APP_LOGO_URL",
+      "APP_LOGO_SIZE",
+      "ADMIN_EMAIL",
+      "COMPLAINT_ID_PREFIX",
+      "COMPLAINT_ID_START_NUMBER",
+      "COMPLAINT_ID_LENGTH",
+      "COMPLAINT_PHOTO_MAX_SIZE",
+      "COMPLAINT_PHOTO_MAX_COUNT",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT",
+      "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+      "GUEST_COMPLAINT_ENABLED",
+      "DEFAULT_SLA_HOURS",
+      "MAP_SEARCH_PLACE",
+      "MAP_COUNTRY_CODES",
+      "MAP_DEFAULT_LAT",
+      "MAP_DEFAULT_LNG",
+      "MAP_BBOX_NORTH",
+      "MAP_BBOX_SOUTH",
+      "MAP_BBOX_EAST",
+      "MAP_BBOX_WEST",
+      "SERVICE_AREA_BOUNDARY",
+      "SERVICE_AREA_VALIDATION_ENABLED",
+      "CONTACT_HELPLINE",
+      "CONTACT_EMAIL",
+      "CONTACT_OFFICE_HOURS",
+      "CONTACT_OFFICE_ADDRESS",
+      "AUTO_ASSIGN_COMPLAINTS",
+      "CITIZEN_REGISTRATION_ENABLED",
+      "OTP_EXPIRY_MINUTES",
+      "MAX_FILE_SIZE_MB",
+      "NOTIFICATION_SETTINGS",
+      "COMPLAINT_PRIORITIES",
+      "COMPLAINT_STATUSES"
+    ],
+    "uiOnlyKeys": [],
+    "seedOnlyKeys": [
+      "SYSTEM_VERSION",
+      "MAINTENANCE_MODE",
+      "EMAIL_NOTIFICATIONS_ENABLED",
+      "SMS_NOTIFICATIONS_ENABLED",
+      "AUTO_CLOSE_RESOLVED_COMPLAINTS",
+      "AUTO_CLOSE_DAYS",
+      "AUTO_ASSIGN_ON_REOPEN"
+    ],
+    "consistencyRate": 83
+  },
+  "saveLoadAnalysis": {
+    "hasApiEndpoints": true,
+    "hasStateManagement": true,
+    "hasValidationLogic": false,
+    "hasPersistenceLayer": true,
+    "testResults": []
+  },
+  "functionalityAnalysis": {
+    "coreFeatures": [
+      {
+        "file": "client/components/Navigation.tsx",
+        "status": "exists",
+        "hasErrors": false
+      },
+      {
+        "file": "client/components/RoleBasedDashboard.tsx",
+        "status": "exists",
+        "hasErrors": false
+      },
+      {
+        "file": "client/pages/Login.tsx",
+        "status": "exists",
+        "hasErrors": false
+      },
+      {
+        "file": "server/app.js",
+        "status": "exists",
+        "hasErrors": false
+      },
+      {
+        "file": "server/server.js",
+        "status": "exists",
+        "hasErrors": false
+      }
+    ],
+    "brokenReferences": [],
+    "missingDependencies": [],
+    "functionalityStatus": "preserved"
+  },
+  "recommendations": []
+}

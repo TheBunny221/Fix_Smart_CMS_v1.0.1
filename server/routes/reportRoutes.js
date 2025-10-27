@@ -1431,15 +1431,16 @@ async function calculatePerformanceMetrics(prisma, where, closedWhere) {
         toStatus: "ASSIGNED",
         complaint: closedWhere
       },
-      having: {
-        _count: {
-          gt: 1 // More than one assignment = reassignment
-        }
+      _count: {
+        complaintId: true
       }
     });
 
+    // Filter for complaints with more than one assignment
+    const actualReassignedComplaints = reassignedComplaints.filter(item => item._count.complaintId > 1);
+
     const firstCallResolution = resolvedComplaints > 0 
-      ? ((resolvedComplaints - reassignedComplaints.length) / resolvedComplaints) * 100 
+      ? ((resolvedComplaints - actualReassignedComplaints.length) / resolvedComplaints) * 100 
       : 0;
 
     // Calculate repeat complaints (same citizen submitting multiple complaints)
