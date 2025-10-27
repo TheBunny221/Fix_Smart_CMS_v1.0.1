@@ -214,6 +214,24 @@
     "nextSteps": "अगले कदम",
     "supportContact": "मदद चाहिए?"
   },
+  "index": {
+    "title": "शिकायत प्रबंधन पोर्टल",
+    "subtitle": "शिकायत प्रबंधन प्रणाली में आपका स्वागत है। नागरिक मुद्दे दर्ज करें, प्रगति ट्रैक करें, और एक बेहतर शहर बनाने में मदद करें।",
+    "heroTitle": "{{appName}} पोर्टल",
+    "trackYourComplaint": "अपनी शिकायत ट्रैक करें",
+    "complaintIdPlaceholder": "अपनी शिकायत आईडी दर्ज करें (उदा., {{example}})",
+    "verifyAndTrack": "सत्यापित करें और ट्रैक करें",
+    "sending": "भेजा जा रहा है...",
+    "keyFeatures": "मुख्य विशेषताएं",
+    "realTimeTracking": "रियल-टाइम ट्रैकिंग",
+    "realTimeTrackingDesc": "वास्तविक समय में तुरंत अपडेट के साथ शिकायत की प्रगति की निगरानी करें",
+    "quickRegistration": "त्वरित शिकायत पंजीकरण",
+    "quickRegistrationDesc": "प्रकार, फोटो और स्थान के साथ एक मिनट से भी कम समय में मुद्दे लॉग करें",
+    "emailAlerts": "ईमेल अलर्ट",
+    "emailAlertsDesc": "पंजीकरण से समाधान तक प्रत्येक चरण में सूचना प्राप्त करें",
+    "multilingualSupport": "बहुभाषी सहायता",
+    "multilingualSupportDesc": "अंग्रेजी, मलयालम और हिंदी में उपलब्ध"
+  },
   "forms": {
     "contactInformation": "संपर्क जानकारी",
     "problemDetails": "समस्या विवरण",

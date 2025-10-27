@@ -214,6 +214,24 @@
     "nextSteps": "Next Steps",
     "supportContact": "Need Help?"
   },
+  "index": {
+    "title": "Complaint Management Portal",
+    "subtitle": "Welcome to the Complaint Management System. Submit civic issues, track progress, and help build a better city together.",
+    "heroTitle": "{{appName}} Portal",
+    "trackYourComplaint": "Track Your Complaint",
+    "complaintIdPlaceholder": "Enter your complaint ID (e.g., {{example}})",
+    "verifyAndTrack": "Verify & Track",
+    "sending": "Sending...",
+    "keyFeatures": "Key Features",
+    "realTimeTracking": "Real-Time Tracking",
+    "realTimeTrackingDesc": "Monitor complaint progress in real time with instant updates",
+    "quickRegistration": "Quick Complaint Registration",
+    "quickRegistrationDesc": "Log issues in under a minute with type, photo, and location",
+    "emailAlerts": "Email Alerts",
+    "emailAlertsDesc": "Get notified at each stage — from registration to resolution",
+    "multilingualSupport": "Multilingual Support",
+    "multilingualSupportDesc": "Available in English, Malayalam, and Hindi"
+  },
   "forms": {
     "contactInformation": "Contact Information",
     "problemDetails": "Problem Details",

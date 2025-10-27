@@ -26,7 +26,7 @@ const generateSequentialComplaintId = async () => {
       acc[setting.key] = setting.value;
       return acc;
     }, {});
-    const prefix = settings.COMPLAINT_ID_PREFIX || "KSC";
+    const prefix = settings.COMPLAINT_ID_PREFIX || "AMC";
     const startNumber = parseInt(settings.COMPLAINT_ID_START_NUMBER || "1");
     const idLength = parseInt(settings.COMPLAINT_ID_LENGTH || "4");
 

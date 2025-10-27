@@ -30,7 +30,7 @@ const DEFAULT_CONFIG: SystemConfigContextType = {
     APP_NAME: "NLC-CMS",
     APP_LOGO_URL: "/logo.png",
     APP_LOGO_SIZE: "medium",
-    COMPLAINT_ID_PREFIX: "KSC",
+    COMPLAINT_ID_PREFIX: "AMC",
     COMPLAINT_ID_START_NUMBER: "1",
     COMPLAINT_ID_LENGTH: "4",
   },

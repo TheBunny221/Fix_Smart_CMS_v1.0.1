@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction, createSelector } from "@reduxjs/toolkit";
 
 // Types
 export interface SystemConfigItem {
@@ -205,8 +205,10 @@ export const selectSystemConfigError = (state: { systemConfig: SystemConfigState
 export const selectLastFetched = (state: { systemConfig: SystemConfigState }) => state.systemConfig.lastFetched;
 
 // Specific config selectors
-export const selectComplaintTypes = (state: { systemConfig: SystemConfigState }) => 
-  state.systemConfig.complaintTypes.filter(type => type.isActive);
+export const selectComplaintTypes = createSelector(
+  [(state: { systemConfig: SystemConfigState }) => state.systemConfig.complaintTypes],
+  (complaintTypes) => complaintTypes.filter(type => type.isActive)
+);
 
 export const selectComplaintPriorities = (state: { systemConfig: SystemConfigState }) => 
   state.systemConfig.data.COMPLAINT_PRIORITIES || ["LOW", "MEDIUM", "HIGH", "CRITICAL"];

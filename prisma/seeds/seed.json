@@ -1,5 +1,5 @@
 {
-    "config-of": "Ahmedabad-city",
+    "config-of": "ahmedabad-city",
     "systemConfig": [
         {
             "key": "APP_NAME",
@@ -251,7 +251,7 @@
     "ward": [
         {
             "name": "Ward 1 - Sabarmati",
-            "description": "Sabarmati area including Sabarmati Ashram",
+            "description": "Sabarmati area including Sabarmati Ashram and riverfront",
             "isActive": true
         },
         {
@@ -266,17 +266,17 @@
         },
         {
             "name": "Ward 4 - Paldi",
-            "description": "Paldi area",
+            "description": "Paldi area with mixed residential and commercial zones",
             "isActive": true
         },
         {
             "name": "Ward 5 - Vastrapur",
-            "description": "Vastrapur and surrounding areas",
+            "description": "Vastrapur and surrounding upscale areas",
             "isActive": true
         },
         {
             "name": "Ward 6 - Satellite",
-            "description": "Satellite residential area",
+            "description": "Satellite residential area with shopping complexes",
             "isActive": true
         },
         {
@@ -286,51 +286,75 @@
         },
         {
             "name": "Ward 8 - Isanpur",
-            "description": "Isanpur area",
+            "description": "Isanpur area with developing infrastructure",
+            "isActive": true
+        },
+        {
+            "name": "Ward 9 - Bopal",
+            "description": "Bopal IT corridor and modern residential area",
+            "isActive": true
+        },
+        {
+            "name": "Ward 10 - Chandkheda",
+            "description": "Chandkheda suburban area",
             "isActive": true
         }
     ],
     "complaintType": [
         {
             "name": "Water Supply",
-            "description": "Issues related to water supply",
+            "description": "Issues related to water supply and distribution",
             "priority": "HIGH",
             "slaHours": 24,
             "isActive": true
         },
         {
             "name": "Electricity",
-            "description": "Power outages",
+            "description": "Power outages and electrical infrastructure",
             "priority": "HIGH",
             "slaHours": 12,
             "isActive": true
         },
         {
             "name": "Road Repair",
-            "description": "Damaged roads",
+            "description": "Damaged roads, potholes, and road maintenance",
             "priority": "MEDIUM",
             "slaHours": 72,
             "isActive": true
         },
         {
             "name": "Waste Management",
-            "description": "Garbage collection",
+            "description": "Garbage collection and waste disposal",
             "priority": "MEDIUM",
             "slaHours": 48,
             "isActive": true
         },
         {
             "name": "Street Lighting",
-            "description": "Street lights",
+            "description": "Street light maintenance and installation",
             "priority": "LOW",
             "slaHours": 48,
             "isActive": true
         },
         {
             "name": "Drainage",
-            "description": "Blocked drains",
+            "description": "Blocked drains and waterlogging issues",
             "priority": "HIGH",
             "slaHours": 24,
+            "isActive": true
+        },
+        {
+            "name": "Air Pollution",
+            "description": "Air quality and pollution control issues",
+            "priority": "MEDIUM",
+            "slaHours": 48,
+            "isActive": true
+        },
+        {
+            "name": "Noise Pollution",
+            "description": "Noise pollution complaints",
+            "priority": "LOW",
+            "slaHours": 72,
             "isActive": true
         }
     ]

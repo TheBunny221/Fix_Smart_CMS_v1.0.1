@@ -107,6 +107,7 @@ interface UpdateSubZoneRequest {
 }
 
 export const wardApi = baseApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // Get all wards (with optional subzones)
     getWards: builder.query<ApiResponse<{ wards: Ward[] }>, { includeSubzones?: boolean; all?: boolean }>({

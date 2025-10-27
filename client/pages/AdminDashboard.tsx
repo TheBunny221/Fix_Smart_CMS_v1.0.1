@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../store/hooks";
 import {
@@ -149,17 +149,21 @@ const AdminDashboard: React.FC = () => {
   const metrics: DashboardAnalyticsResponse["metrics"] =
     analytics?.metrics ?? defaultMetrics;
 
-  // Development debugging
-  if (process.env.NODE_ENV === "development") {
-    console.log("Dashboard Data Debug:", {
-      analytics: analytics,
-      complaintTrends: complaintTrends,
-      complaintsByType: complaintsByType,
-      wardPerformance: wardPerformance,
-      metrics: metrics,
-      systemStats: systemStats,
-    });
-  }
+  // Development debugging - memoized to prevent infinite re-renders
+  const debugData = useMemo(() => ({
+    analytics: analytics,
+    complaintTrends: complaintTrends,
+    complaintsByType: complaintsByType,
+    wardPerformance: wardPerformance,
+    metrics: metrics,
+    systemStats: systemStats,
+  }), [analytics, complaintTrends, complaintsByType, wardPerformance, metrics, systemStats]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      console.log("Dashboard Data Debug:", debugData);
+    }
+  }, [debugData]);
 
   // Heatmap overview state
   const [overviewHeatmap, setOverviewHeatmap] = useState<HeatmapData | null>(

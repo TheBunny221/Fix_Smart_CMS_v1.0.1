@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../store/hooks";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setCredentials } from "../store/slices/authSlice";
 import {
   useRequestComplaintOtpMutation,
   useVerifyComplaintOtpMutation,
 } from "../store/api/guestApi";
+import { useSystemConfig } from "../contexts/SystemConfigContext";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -13,6 +14,7 @@ import { Label } from "./ui/label";
 import { Alert, AlertDescription } from "./ui/alert";
 import { AlertCircle, Lock, RefreshCw, Search } from "lucide-react";
 import OtpVerificationModal from "./OtpVerificationModal";
+import { generateComplaintIdPlaceholder, getComplaintIdConfig } from "../utils/complaintIdUtils";
 
 interface Props {
   onClose?: () => void;
@@ -21,10 +23,20 @@ interface Props {
 const QuickTrackForm: React.FC<Props> = ({ onClose }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const { translations } = useAppSelector((state) => state.language);
+  const { config } = useSystemConfig();
   const [complaintId, setComplaintId] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
   const [error, setError] = useState<string>("");
   const [showOtpModal, setShowOtpModal] = useState(false);
+
+  // Generate dynamic complaint ID placeholder
+  const complaintIdPlaceholder = useMemo(() => {
+    const complaintConfig = getComplaintIdConfig(config);
+    const example = generateComplaintIdPlaceholder(complaintConfig);
+    return translations?.index?.complaintIdPlaceholder?.replace('{{example}}', example) || 
+           `Enter your complaint ID (e.g., ${example})`;
+  }, [config, translations]);
 
   const [requestOtp, { isLoading: isRequestingOtp }] =
     useRequestComplaintOtpMutation();
@@ -89,20 +101,22 @@ const QuickTrackForm: React.FC<Props> = ({ onClose }) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Lock className="h-5 w-5 text-blue-600" />
-          Track Your Complaint
+          {translations?.index?.trackYourComplaint || "Track Your Complaint"}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleRequest} className="space-y-4">
           <div>
-            <Label htmlFor="complaintId">Complaint ID</Label>
+            <Label htmlFor="complaintId">
+              {translations?.complaints?.complaintId || "Complaint ID"}
+            </Label>
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 id="complaintId"
                 value={complaintId}
                 onChange={(e) => setComplaintId(e.target.value)}
-                placeholder="Enter your complaint ID (e.g., CSC...)"
+                placeholder={complaintIdPlaceholder}
                 className="pl-10"
                 required
               />
@@ -118,14 +132,15 @@ const QuickTrackForm: React.FC<Props> = ({ onClose }) => {
             <Button type="submit" disabled={isRequestingOtp}>
               {isRequestingOtp ? (
                 <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> Sending...
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  {translations?.index?.sending || "Sending..."}
                 </>
               ) : (
-                "Verify & Track"
+                translations?.index?.verifyAndTrack || "Verify & Track"
               )}
             </Button>
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              {translations?.common?.cancel || "Cancel"}
             </Button>
           </div>
         </form>

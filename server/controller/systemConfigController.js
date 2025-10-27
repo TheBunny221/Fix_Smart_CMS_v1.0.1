@@ -405,8 +405,8 @@ const getDefaultPublicSettings = () => {
     // Complaint ID configuration
     {
       key: "COMPLAINT_ID_PREFIX",
-      value: "KSC",
-      description: "Prefix for complaint IDs (e.g., KSC for NLC-CMS)",
+      value: "AMC",
+      description: "Prefix for complaint IDs (e.g., AMC for Municipal Corporation)",
       type: "string",
     },
     {

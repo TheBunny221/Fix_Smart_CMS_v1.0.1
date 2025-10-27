@@ -253,9 +253,13 @@ export const validateComplaintFeedback = [
   handleValidationErrors,
 ];
 
-// ID validation
+// ID validation - Updated to support CUID format used by Prisma
 export const validateMongoId = [
-  param("id").isMongoId().withMessage("Invalid ID format"),
+  param("id")
+    .isLength({ min: 1 })
+    .withMessage("ID is required")
+    .matches(/^[a-zA-Z0-9_-]+$/)
+    .withMessage("Invalid ID format"),
 
   handleValidationErrors,
 ];

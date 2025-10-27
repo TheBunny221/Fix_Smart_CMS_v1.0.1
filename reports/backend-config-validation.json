@@ -1,0 +1,855 @@
+{
+  "timestamp": "2025-10-27T01:03:51.415Z",
+  "summary": {
+    "totalFilesAnalyzed": 78,
+    "totalConfigReferences": 72,
+    "totalIssues": 0,
+    "filesWithIssues": 0,
+    "unknownConfigKeys": [],
+    "missingFromSeed": []
+  },
+  "fileAnalysis": [
+    {
+      "file": "server\\controller\\complaintController.js",
+      "configReferences": [
+        {
+          "key": "AUTO_ASSIGN_COMPLAINTS",
+          "line": 483,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "AUTO_ASSIGN_ON_REOPEN",
+          "line": 1437,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "AUTO_ASSIGN_ON_REOPEN",
+          "line": 1964,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "SERVICE_AREA_BOUNDARY",
+          "line": 2552,
+          "method": "getActiveSystemConfigs",
+          "isKnown": true
+        },
+        {
+          "key": "SERVICE_AREA_VALIDATION_ENABLED",
+          "line": 2552,
+          "method": "getActiveSystemConfigs",
+          "isKnown": true
+        },
+        {
+          "key": "CITIZEN_DAILY_COMPLAINT_LIMIT",
+          "line": 2629,
+          "method": "getActiveSystemConfigs",
+          "isKnown": true
+        },
+        {
+          "key": "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+          "line": 2629,
+          "method": "getActiveSystemConfigs",
+          "isKnown": true
+        },
+        {
+          "key": "AUTO_ASSIGN_COMPLAINTS",
+          "line": 151,
+          "method": "direct_reference",
+          "isKnown": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "file": "server\\controller\\guestController.js",
+      "configReferences": [
+        {
+          "key": "AUTO_ASSIGN_COMPLAINTS",
+          "line": 246,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "AUTO_ASSIGN_COMPLAINTS",
+          "line": 542,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "file": "server\\controller\\reportsControllerRevamped.js",
+      "configReferences": [
+        {
+          "key": "APP_NAME",
+          "line": 381,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "APP_LOGO_URL",
+          "line": 382,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_ID_PREFIX",
+          "line": 383,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "APP_NAME",
+          "line": 960,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "APP_LOGO_URL",
+          "line": 961,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_ID_PREFIX",
+          "line": 962,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "APP_NAME",
+          "line": 1383,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "APP_LOGO_URL",
+          "line": 1384,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_ID_PREFIX",
+          "line": 1385,
+          "method": "getActiveSystemConfig",
+          "isKnown": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "file": "server\\controller\\systemConfigController.js",
+      "configReferences": [
+        {
+          "key": "APP_NAME",
+          "line": 283,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "APP_NAME",
+          "line": 388,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "APP_LOGO_URL",
+          "line": 288,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "APP_LOGO_URL",
+          "line": 394,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "APP_LOGO_SIZE",
+          "line": 293,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "APP_LOGO_SIZE",
+          "line": 400,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "ADMIN_EMAIL",
+          "line": 328,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "ADMIN_EMAIL",
+          "line": 446,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_ID_PREFIX",
+          "line": 298,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_ID_PREFIX",
+          "line": 407,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_ID_START_NUMBER",
+          "line": 303,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_ID_START_NUMBER",
+          "line": 413,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_ID_LENGTH",
+          "line": 308,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_ID_LENGTH",
+          "line": 419,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "CITIZEN_DAILY_COMPLAINT_LIMIT",
+          "line": 364,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "DEFAULT_SLA_HOURS",
+          "line": 323,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "DEFAULT_SLA_HOURS",
+          "line": 426,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAP_SEARCH_PLACE",
+          "line": 530,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAP_COUNTRY_CODES",
+          "line": 536,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAP_DEFAULT_LAT",
+          "line": 542,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAP_DEFAULT_LNG",
+          "line": 548,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAP_BBOX_NORTH",
+          "line": 554,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAP_BBOX_SOUTH",
+          "line": 560,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAP_BBOX_EAST",
+          "line": 566,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAP_BBOX_WEST",
+          "line": 572,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "CONTACT_HELPLINE",
+          "line": 452,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "CONTACT_EMAIL",
+          "line": 458,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "CONTACT_OFFICE_HOURS",
+          "line": 464,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "CONTACT_OFFICE_ADDRESS",
+          "line": 470,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "AUTO_ASSIGN_COMPLAINTS",
+          "line": 343,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "AUTO_ASSIGN_COMPLAINTS",
+          "line": 489,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "CITIZEN_REGISTRATION_ENABLED",
+          "line": 348,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "CITIZEN_REGISTRATION_ENABLED",
+          "line": 483,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "OTP_EXPIRY_MINUTES",
+          "line": 313,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "OTP_EXPIRY_MINUTES",
+          "line": 432,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAX_FILE_SIZE_MB",
+          "line": 318,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "MAX_FILE_SIZE_MB",
+          "line": 439,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "NOTIFICATION_SETTINGS",
+          "line": 338,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "NOTIFICATION_SETTINGS",
+          "line": 496,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_PRIORITIES",
+          "line": 353,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_PRIORITIES",
+          "line": 503,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_STATUSES",
+          "line": 358,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "COMPLAINT_STATUSES",
+          "line": 509,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "SYSTEM_MAINTENANCE",
+          "line": 333,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "SYSTEM_MAINTENANCE",
+          "line": 477,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "DATE_TIME_FORMAT",
+          "line": 517,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "TIME_ZONE",
+          "line": 523,
+          "method": "direct_reference",
+          "isKnown": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "file": "server\\controller\\uploadController.js",
+      "configReferences": [
+        {
+          "key": "APP_LOGO_URL",
+          "line": 213,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "APP_LOGO_URL",
+          "line": 215,
+          "method": "direct_reference",
+          "isKnown": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "file": "server\\scripts\\testEmailBroadcaster.js",
+      "configReferences": [
+        {
+          "key": "APP_NAME",
+          "line": 27,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "APP_NAME",
+          "line": 30,
+          "method": "direct_reference",
+          "isKnown": true
+        }
+      ],
+      "issues": []
+    },
+    {
+      "file": "server\\services\\emailBroadcaster.js",
+      "configReferences": [
+        {
+          "key": "APP_NAME",
+          "line": 52,
+          "method": "direct_reference",
+          "isKnown": true
+        },
+        {
+          "key": "APP_LOGO_URL",
+          "line": 52,
+          "method": "direct_reference",
+          "isKnown": true
+        }
+      ],
+      "issues": []
+    }
+  ],
+  "configKeyUsage": {
+    "AUTO_ASSIGN_COMPLAINTS": {
+      "count": 6,
+      "files": [
+        "server\\controller\\complaintController.js:483",
+        "server\\controller\\complaintController.js:151",
+        "server\\controller\\guestController.js:246",
+        "server\\controller\\guestController.js:542",
+        "server\\controller\\systemConfigController.js:343",
+        "server\\controller\\systemConfigController.js:489"
+      ],
+      "methods": [
+        "getActiveSystemConfig",
+        "direct_reference"
+      ]
+    },
+    "AUTO_ASSIGN_ON_REOPEN": {
+      "count": 2,
+      "files": [
+        "server\\controller\\complaintController.js:1437",
+        "server\\controller\\complaintController.js:1964"
+      ],
+      "methods": [
+        "getActiveSystemConfig"
+      ]
+    },
+    "SERVICE_AREA_BOUNDARY": {
+      "count": 1,
+      "files": [
+        "server\\controller\\complaintController.js:2552"
+      ],
+      "methods": [
+        "getActiveSystemConfigs"
+      ]
+    },
+    "SERVICE_AREA_VALIDATION_ENABLED": {
+      "count": 1,
+      "files": [
+        "server\\controller\\complaintController.js:2552"
+      ],
+      "methods": [
+        "getActiveSystemConfigs"
+      ]
+    },
+    "CITIZEN_DAILY_COMPLAINT_LIMIT": {
+      "count": 2,
+      "files": [
+        "server\\controller\\complaintController.js:2629",
+        "server\\controller\\systemConfigController.js:364"
+      ],
+      "methods": [
+        "getActiveSystemConfigs",
+        "direct_reference"
+      ]
+    },
+    "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED": {
+      "count": 1,
+      "files": [
+        "server\\controller\\complaintController.js:2629"
+      ],
+      "methods": [
+        "getActiveSystemConfigs"
+      ]
+    },
+    "APP_NAME": {
+      "count": 8,
+      "files": [
+        "server\\controller\\reportsControllerRevamped.js:381",
+        "server\\controller\\reportsControllerRevamped.js:960",
+        "server\\controller\\reportsControllerRevamped.js:1383",
+        "server\\controller\\systemConfigController.js:283",
+        "server\\controller\\systemConfigController.js:388",
+        "server\\scripts\\testEmailBroadcaster.js:27",
+        "server\\scripts\\testEmailBroadcaster.js:30",
+        "server\\services\\emailBroadcaster.js:52"
+      ],
+      "methods": [
+        "getActiveSystemConfig",
+        "direct_reference"
+      ]
+    },
+    "APP_LOGO_URL": {
+      "count": 8,
+      "files": [
+        "server\\controller\\reportsControllerRevamped.js:382",
+        "server\\controller\\reportsControllerRevamped.js:961",
+        "server\\controller\\reportsControllerRevamped.js:1384",
+        "server\\controller\\systemConfigController.js:288",
+        "server\\controller\\systemConfigController.js:394",
+        "server\\controller\\uploadController.js:213",
+        "server\\controller\\uploadController.js:215",
+        "server\\services\\emailBroadcaster.js:52"
+      ],
+      "methods": [
+        "getActiveSystemConfig",
+        "direct_reference"
+      ]
+    },
+    "COMPLAINT_ID_PREFIX": {
+      "count": 5,
+      "files": [
+        "server\\controller\\reportsControllerRevamped.js:383",
+        "server\\controller\\reportsControllerRevamped.js:962",
+        "server\\controller\\reportsControllerRevamped.js:1385",
+        "server\\controller\\systemConfigController.js:298",
+        "server\\controller\\systemConfigController.js:407"
+      ],
+      "methods": [
+        "getActiveSystemConfig",
+        "direct_reference"
+      ]
+    },
+    "APP_LOGO_SIZE": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:293",
+        "server\\controller\\systemConfigController.js:400"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "ADMIN_EMAIL": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:328",
+        "server\\controller\\systemConfigController.js:446"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "COMPLAINT_ID_START_NUMBER": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:303",
+        "server\\controller\\systemConfigController.js:413"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "COMPLAINT_ID_LENGTH": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:308",
+        "server\\controller\\systemConfigController.js:419"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "DEFAULT_SLA_HOURS": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:323",
+        "server\\controller\\systemConfigController.js:426"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "MAP_SEARCH_PLACE": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:530"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "MAP_COUNTRY_CODES": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:536"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "MAP_DEFAULT_LAT": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:542"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "MAP_DEFAULT_LNG": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:548"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "MAP_BBOX_NORTH": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:554"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "MAP_BBOX_SOUTH": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:560"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "MAP_BBOX_EAST": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:566"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "MAP_BBOX_WEST": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:572"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "CONTACT_HELPLINE": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:452"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "CONTACT_EMAIL": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:458"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "CONTACT_OFFICE_HOURS": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:464"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "CONTACT_OFFICE_ADDRESS": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:470"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "CITIZEN_REGISTRATION_ENABLED": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:348",
+        "server\\controller\\systemConfigController.js:483"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "OTP_EXPIRY_MINUTES": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:313",
+        "server\\controller\\systemConfigController.js:432"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "MAX_FILE_SIZE_MB": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:318",
+        "server\\controller\\systemConfigController.js:439"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "NOTIFICATION_SETTINGS": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:338",
+        "server\\controller\\systemConfigController.js:496"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "COMPLAINT_PRIORITIES": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:353",
+        "server\\controller\\systemConfigController.js:503"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "COMPLAINT_STATUSES": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:358",
+        "server\\controller\\systemConfigController.js:509"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "SYSTEM_MAINTENANCE": {
+      "count": 2,
+      "files": [
+        "server\\controller\\systemConfigController.js:333",
+        "server\\controller\\systemConfigController.js:477"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "DATE_TIME_FORMAT": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:517"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    },
+    "TIME_ZONE": {
+      "count": 1,
+      "files": [
+        "server\\controller\\systemConfigController.js:523"
+      ],
+      "methods": [
+        "direct_reference"
+      ]
+    }
+  },
+  "issues": [],
+  "recommendations": [
+    {
+      "type": "ALL_GOOD",
+      "priority": "INFO",
+      "description": "All backend configuration references are valid",
+      "action": "No action required"
+    }
+  ]
+}
