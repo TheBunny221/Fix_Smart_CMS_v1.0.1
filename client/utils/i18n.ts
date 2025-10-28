@@ -3,9 +3,9 @@ import { useSelector } from "react-redux";
 import i18n from "i18next";
 import { initReactI18next, useTranslation, type UseTranslationResponse } from "react-i18next";
 
-import en from "@/store/resources/en.json";
-import hi from "@/store/resources/hi.json";
-import ml from "@/store/resources/ml.json";
+import en from "../store/resources/en.json";
+import hi from "../store/resources/hi.json";
+import ml from "../store/resources/ml.json";
 
 type SupportedLanguage = "en" | "hi" | "ml";
 

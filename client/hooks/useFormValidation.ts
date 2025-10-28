@@ -8,7 +8,7 @@ import {
   PathValue,
   Resolver,
 } from "react-hook-form";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "./use-toast";
 import { useAppSelector } from "../store/hooks";
 import { selectTranslations } from "../store/slices/languageSlice";
 

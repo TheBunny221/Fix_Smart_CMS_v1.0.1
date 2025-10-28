@@ -1315,8 +1315,8 @@ router.get(
  *         required: true
  *         schema:
  *           type: string
- *           enum: ["csv", "json"]
- *         description: Export format
+ *           enum: ["json"]
+ *         description: Export format (JSON only - all exports handled by frontend)
  *       - in: query
  *         name: from
  *         schema:
@@ -1425,16 +1425,28 @@ async function calculatePerformanceMetrics(prisma, where, closedWhere) {
     });
     
     // Count complaints that were reassigned (indicating not first-call resolution)
-    const reassignedComplaints = await prisma.statusLog.groupBy({
+    // First get the complaint IDs that match our criteria
+    const eligibleComplaints = await prisma.complaint.findMany({
+      where: {
+        ...closedWhere,
+        status: { in: ["RESOLVED", "CLOSED"] }
+      },
+      select: { id: true }
+    });
+    
+    const eligibleComplaintIds = eligibleComplaints.map(c => c.id);
+    
+    // Then group status logs for these complaints
+    const reassignedComplaints = eligibleComplaintIds.length > 0 ? await prisma.statusLog.groupBy({
       by: ["complaintId"],
       where: {
         toStatus: "ASSIGNED",
-        complaint: closedWhere
+        complaintId: { in: eligibleComplaintIds }
       },
       _count: {
         complaintId: true
       }
-    });
+    }) : [];
 
     // Filter for complaints with more than one assignment
     const actualReassignedComplaints = reassignedComplaints.filter(item => item._count.complaintId > 1);

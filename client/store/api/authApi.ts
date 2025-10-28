@@ -55,6 +55,19 @@ interface ResetPasswordRequest {
   newPassword: string;
 }
 
+interface SendPasswordSetupOTPRequest {
+  // No body needed - uses authenticated user
+}
+
+interface VerifyPasswordSetupOTPRequest {
+  otpCode: string;
+}
+
+interface SetPasswordAfterOTPRequest {
+  password: string;
+  confirmPassword: string;
+}
+
 interface UpdateProfileRequest {
   fullName?: string;
   phoneNumber?: string;
@@ -322,6 +335,58 @@ export const authApi = baseApi.injectEndpoints({
       // Let RTK Query handle response naturally
       invalidatesTags: ["Auth"],
     }),
+
+    // Send OTP for password setup (new OTP-based flow)
+    sendPasswordSetupOTP: builder.mutation<
+      ApiResponse<{ email: string; expiresAt: string }>,
+      SendPasswordSetupOTPRequest
+    >({
+      query: () => ({
+        url: "/users/send-otp",
+        method: "POST",
+      }),
+    }),
+
+    // Verify OTP for password setup
+    verifyPasswordSetupOTP: builder.mutation<
+      ApiResponse<{ email: string; verified: boolean }>,
+      VerifyPasswordSetupOTPRequest
+    >({
+      query: (data) => ({
+        url: "/users/verify-otp",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    // Set password after OTP verification
+    setPasswordAfterOTP: builder.mutation<
+      ApiResponse<{ hasPassword: boolean }>,
+      SetPasswordAfterOTPRequest
+    >({
+      query: (data) => ({
+        url: "/users/set-password",
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Auth"],
+      // Update cached user data after successful password setup
+      onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
+        try {
+          await queryFulfilled;
+          // Update the getCurrentUser cache with hasPassword: true
+          dispatch(
+            authApi.util.updateQueryData("getCurrentUser", undefined, (draft) => {
+              if (draft.data?.user) {
+                draft.data.user.hasPassword = true;
+              }
+            })
+          );
+        } catch (error) {
+          // Handle error if needed
+        }
+      },
+    }),
   }),
 });
 
@@ -341,6 +406,9 @@ export const {
   useUpdateProfileMutation,
   useLogoutMutation,
   useRefreshTokenMutation,
+  useSendPasswordSetupOTPMutation,
+  useVerifyPasswordSetupOTPMutation,
+  useSetPasswordAfterOTPMutation,
 } = authApi;
 
 // Re-export for convenience and consistency
@@ -358,4 +426,7 @@ export const useAuthApi = {
   useUpdateProfileMutation,
   useLogoutMutation,
   useRefreshTokenMutation,
+  useSendPasswordSetupOTPMutation,
+  useVerifyPasswordSetupOTPMutation,
+  useSetPasswordAfterOTPMutation,
 };

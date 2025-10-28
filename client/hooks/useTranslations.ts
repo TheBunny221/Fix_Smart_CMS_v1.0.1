@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
-import en from "@/store/resources/en.json";
-import { useAppTranslation } from "@/utils/i18n";
-import { mergeWithFallback } from "@/utils/translationHelpers";
+import en from "../store/resources/en.json";
+import { useAppTranslation } from "../utils/i18n";
+import { mergeWithFallback } from "../utils/translationHelpers";
 import { useAppSelector } from "../store/hooks";
 
 type TranslationResource = typeof en;

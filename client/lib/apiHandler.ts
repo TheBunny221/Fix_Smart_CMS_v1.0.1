@@ -1,4 +1,4 @@
-import { getApiErrorMessage } from "@/store/api/baseApi";
+import { getApiErrorMessage } from "../store/api/baseApi";
 
 export type StandardApiResponse<T = any> = {
   success: boolean;

@@ -557,16 +557,17 @@ router.get(
  *     summary: Export reports with enhanced branding and formatting
  *     tags: [Reports Revamped]
  *     description: |
- *       Export complaint reports in various formats with enhanced system branding,
- *       professional formatting, and comprehensive metadata.
+ *       Provides structured complaint data for frontend export processing.
+ *       All export formats (PDF, Excel, CSV) are handled by the frontend for better
+ *       performance and user experience.
  *       
- *       **Key Enhancements:**
- *       - Dynamic system branding in exports (app name, logo, complaint ID formatting)
- *       - Enhanced CSV format with BOM for proper Excel compatibility
- *       - Comprehensive metadata including export context and user information
- *       - Improved SLA status calculation and display
- *       - Better complaint type name resolution
- *       - Professional filename generation with system name
+ *       **Key Features:**
+ *       - Structured JSON data with enhanced metadata
+ *       - Dynamic system branding information (app name, complaint ID formatting)
+ *       - Comprehensive complaint details with relationships
+ *       - SLA status calculation and display
+ *       - Proper complaint type name resolution
+ *       - Role-based data filtering and access control
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -574,10 +575,10 @@ router.get(
  *         name: format
  *         schema:
  *           type: string
- *           enum: [csv, json]
+ *           enum: [json]
  *           default: json
- *         description: Export format (CSV returns file directly, JSON returns structured data)
- *         example: "csv"
+ *         description: Export format (JSON returns structured data for frontend processing)
+ *         example: "json"
  *       - in: query
  *         name: from
  *         schema:
@@ -634,10 +635,6 @@ router.get(
  *                   example: "Export data prepared successfully with enhanced formatting"
  *                 data:
  *                   $ref: '#/components/schemas/EnhancedExportData'
- *           text/csv:
- *             schema:
- *               type: string
- *               description: CSV file with BOM for Excel compatibility
  *       400:
  *         description: Invalid export parameters
  *       401:

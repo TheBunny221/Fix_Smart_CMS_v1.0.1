@@ -1052,3 +1052,361 @@ export const changePassword = asyncHandler(async (req, res) => {
     message: "Password updated successfully",
   });
 });
+// @desc    Send OTP for password setting (for users without password)
+// @route   POST /api/user/send-otp
+// @access  Private
+export const sendPasswordSetupOTP = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  // Get user details
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      password: true,
+      isActive: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+      data: null,
+    });
+  }
+
+  if (!user.isActive) {
+    return res.status(400).json({
+      success: false,
+      message: "Account is deactivated. Please contact support.",
+      data: null,
+    });
+  }
+
+  // Check if user already has a password set
+  let hasValidPassword = false;
+  try {
+    if (user.password && typeof user.password === 'string') {
+      // Try to parse as JSON - if it succeeds, it's a verification token, not a password
+      JSON.parse(user.password);
+      hasValidPassword = false;
+    } else if (user.password) {
+      hasValidPassword = true;
+    }
+  } catch {
+    // If JSON.parse fails, it's a regular hashed password
+    hasValidPassword = !!user.password;
+  }
+
+  if (hasValidPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Password already set. Use change password instead.",
+      data: null,
+    });
+  }
+
+  // Invalidate existing password setup OTP sessions
+  await prisma.oTPSession.updateMany({
+    where: {
+      email: user.email,
+      purpose: "PASSWORD_SETUP",
+      isVerified: false,
+    },
+    data: {
+      expiresAt: new Date(), // Expire immediately
+    },
+  });
+
+  // Generate new OTP
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  // Create new OTP session
+  await prisma.oTPSession.create({
+    data: {
+      userId: user.id,
+      email: user.email,
+      otpCode,
+      purpose: "PASSWORD_SETUP",
+      expiresAt,
+    },
+  });
+
+  // Send OTP email using existing mail service
+  try {
+    const { sendOTPEmail } = await import("../utils/emailService.js");
+    const emailSent = await sendOTPEmail(user.email, otpCode, {
+      purpose: "password_setup",
+      fullName: user.fullName,
+    });
+
+    if (!emailSent) {
+      throw new Error("Email service failed");
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent to your email for password setup",
+      data: {
+        email: user.email,
+        expiresAt,
+      },
+    });
+  } catch (error) {
+    // Clean up the OTP session if email fails
+    await prisma.oTPSession.updateMany({
+      where: {
+        email: user.email,
+        purpose: "PASSWORD_SETUP",
+        otpCode,
+      },
+      data: {
+        expiresAt: new Date(),
+      },
+    });
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to send OTP. Please try again.",
+      data: null,
+    });
+  }
+});
+
+// @desc    Verify OTP for password setting
+// @route   POST /api/user/verify-otp
+// @access  Private
+export const verifyPasswordSetupOTP = asyncHandler(async (req, res) => {
+  const { otpCode } = req.body;
+  const userId = req.user.id;
+
+  if (!otpCode) {
+    return res.status(400).json({
+      success: false,
+      message: "OTP code is required",
+      data: null,
+    });
+  }
+
+  // Get user details
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      isActive: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+      data: null,
+    });
+  }
+
+  if (!user.isActive) {
+    return res.status(400).json({
+      success: false,
+      message: "Account is deactivated. Please contact support.",
+      data: null,
+    });
+  }
+
+  // Find valid OTP session
+  const otpSession = await prisma.oTPSession.findFirst({
+    where: {
+      email: user.email,
+      otpCode,
+      purpose: "PASSWORD_SETUP",
+      isVerified: false,
+      expiresAt: {
+        gt: new Date(),
+      },
+    },
+  });
+
+  if (!otpSession) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid or expired OTP",
+      data: null,
+    });
+  }
+
+  // Mark OTP as verified
+  await prisma.oTPSession.update({
+    where: { id: otpSession.id },
+    data: {
+      isVerified: true,
+      verifiedAt: new Date(),
+    },
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "OTP verified successfully",
+    data: {
+      email: user.email,
+      verified: true,
+    },
+  });
+});
+
+// @desc    Set password after OTP verification
+// @route   POST /api/user/set-password
+// @access  Private
+export const setPasswordAfterOTP = asyncHandler(async (req, res) => {
+  const { password, confirmPassword } = req.body;
+  const userId = req.user.id;
+
+  if (!password || !confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Password and confirm password are required",
+      data: null,
+    });
+  }
+
+  if (password !== confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Passwords do not match",
+      data: null,
+    });
+  }
+
+  // Validate password strength
+  const passwordValidation = validatePasswordStrength(password);
+  if (!passwordValidation.isValid) {
+    return res.status(400).json({
+      success: false,
+      message: "Password does not meet security requirements",
+      data: {
+        errors: passwordValidation.errors,
+      },
+    });
+  }
+
+  // Get user details
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      password: true,
+      isActive: true,
+    },
+  });
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+      data: null,
+    });
+  }
+
+  if (!user.isActive) {
+    return res.status(400).json({
+      success: false,
+      message: "Account is deactivated. Please contact support.",
+      data: null,
+    });
+  }
+
+  // Check if user already has a password set
+  let hasValidPassword = false;
+  try {
+    if (user.password && typeof user.password === 'string') {
+      // Try to parse as JSON - if it succeeds, it's a verification token, not a password
+      JSON.parse(user.password);
+      hasValidPassword = false;
+    } else if (user.password) {
+      hasValidPassword = true;
+    }
+  } catch {
+    // If JSON.parse fails, it's a regular hashed password
+    hasValidPassword = !!user.password;
+  }
+
+  if (hasValidPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Password already set. Use change password instead.",
+      data: null,
+    });
+  }
+
+  // Find verified OTP session (within last 30 minutes)
+  const verifiedOTPSession = await prisma.oTPSession.findFirst({
+    where: {
+      email: user.email,
+      purpose: "PASSWORD_SETUP",
+      isVerified: true,
+      verifiedAt: {
+        gt: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes
+      },
+    },
+    orderBy: {
+      verifiedAt: "desc",
+    },
+  });
+
+  if (!verifiedOTPSession) {
+    return res.status(400).json({
+      success: false,
+      message: "OTP verification required or expired. Please request a new OTP.",
+      data: null,
+    });
+  }
+
+  // Hash new password
+  const hashedPassword = await hashPassword(password);
+
+  // Update user password
+  await prisma.user.update({
+    where: { id: userId },
+    data: { password: hashedPassword },
+  });
+
+  // Invalidate all password setup OTP sessions for this user
+  await prisma.oTPSession.updateMany({
+    where: {
+      email: user.email,
+      purpose: "PASSWORD_SETUP",
+    },
+    data: {
+      expiresAt: new Date(), // Expire immediately
+    },
+  });
+
+  // Send confirmation email
+  try {
+    const { sendPasswordResetSuccessEmail } = await import("../utils/mailService.js");
+    const ipAddress = req.ip || req.connection.remoteAddress || 'Unknown';
+    await sendPasswordResetSuccessEmail(
+      user.email,
+      user.fullName,
+      ipAddress
+    );
+  } catch (emailError) {
+    // Don't fail the request if email fails
+    console.error("Failed to send password setup confirmation email:", emailError);
+  }
+
+  res.status(200).json({
+    success: true,
+    message: "Password set successfully",
+    data: {
+      hasPassword: true,
+    },
+  });
+});

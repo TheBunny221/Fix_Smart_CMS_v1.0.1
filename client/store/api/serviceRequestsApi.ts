@@ -1,5 +1,5 @@
 import { baseApi } from "./baseApi";
-import type { ApiResponse } from "@/types/common";
+import type { ApiResponse } from "../../types/common";
 
 // Service Request Types - keeping local definitions to avoid conflicts
 export interface ServiceRequest {

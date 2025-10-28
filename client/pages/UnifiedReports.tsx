@@ -33,10 +33,9 @@ const UnifiedReports: React.FC = () => {
 
   const [rechartsLoaded, setRechartsLoaded] = useState(false);
   const [dateFnsLoaded, setDateFnsLoaded] = useState(false);
-  const [exportUtilsLoaded, setExportUtilsLoaded] = useState(false);
-  const [dynamicLibraries, setDynamicLibraries] = useState<any>({});
   const [libraryLoadError, setLibraryLoadError] = useState<string | null>(null);
   const [filtersExpanded, setFiltersExpanded] = useState(true);
+  const [dynamicLibraries, setDynamicLibraries] = useState<any>({});
 
   const loadDynamicLibraries = useCallback(async () => {
     try {
@@ -50,16 +49,11 @@ const UnifiedReports: React.FC = () => {
         setDynamicLibraries((prev: any) => ({ ...prev, dateFns }));
         setDateFnsLoaded(true);
       }
-      if (!exportUtilsLoaded) {
-        const exportUtils = await import("../utils/exportUtils");
-        setDynamicLibraries((prev: any) => ({ ...prev, exportUtils }));
-        setExportUtilsLoaded(true);
-      }
     } catch (error) {
       console.error("Failed to load dynamic libraries:", error);
       setLibraryLoadError(translations?.reports?.errors?.libraryLoadError || "Failed to load required libraries. Some features may not work.");
     }
-  }, [rechartsLoaded, dateFnsLoaded, exportUtilsLoaded]);
+  }, [rechartsLoaded, dateFnsLoaded]);
 
   useEffect(() => {
     loadDynamicLibraries();
@@ -201,6 +195,7 @@ const UnifiedReports: React.FC = () => {
   const { complaintTypes, isLoading: complaintTypesLoading, getComplaintTypeById } = useComplaintTypes();
 
   const handleExport = async (format: "pdf" | "excel" | "csv") => {
+    // Check permissions
     if (!permissions.canExportData) {
       toast({
         title: "Permission Denied",
@@ -209,6 +204,8 @@ const UnifiedReports: React.FC = () => {
       });
       return;
     }
+
+    // Check if we have data
     if (!analyticsData) {
       toast({
         title: translations?.common?.noData || "No Data",
@@ -217,23 +214,24 @@ const UnifiedReports: React.FC = () => {
       });
       return;
     }
-    if (!exportUtilsLoaded || !dynamicLibraries.exportUtils) {
-      toast({
-        title: translations?.common?.loading || "Loading",
-        description: translations?.reports?.export?.stillLoading || "Export functionality is still loading. Please try again in a moment.",
-        variant: "destructive"
-      });
-      return;
-    }
 
     setIsExporting(true);
+    
     try {
-      const { validateExportPermissions, validateAnalyticsData, exportAnalyticsToPDF, exportAnalyticsToExcel, exportAnalyticsToCSV } = dynamicLibraries.exportUtils;
+      // Import the simplified export utilities
+      const { 
+        validateExportPermissions, 
+        validateAnalyticsData, 
+        exportAnalyticsToPDF, 
+        exportAnalyticsToExcel, 
+        exportAnalyticsToCSV 
+      } = await import("../utils/exportUtils");
 
+      // Validate permissions
       if (!validateExportPermissions(user?.role || "")) {
         toast({
-          title: translations?.errors?.unauthorized || "Permission Denied",
-          description: translations?.reports?.export?.permissionDenied || "You don't have permission to export data",
+          title: "Permission Denied",
+          description: "You don't have permission to export data",
           variant: "destructive"
         });
         return;
@@ -254,6 +252,7 @@ const UnifiedReports: React.FC = () => {
           ...(filters.priority !== "all" && { priority: filters.priority }),
         });
 
+        // Apply ward restriction for ward officers
         if (user?.role === "WARD_OFFICER" && user?.wardId) {
           queryParams.set("ward", user.wardId);
         }
@@ -268,14 +267,23 @@ const UnifiedReports: React.FC = () => {
 
         if (response.ok) {
           const result = await response.json();
-          complaintsData = result.data || [];
+          if (result.success && result.data) {
+            complaintsData = Array.isArray(result.data) ? result.data : result.data.complaints || [];
+          } else if (Array.isArray(result.data)) {
+            complaintsData = result.data;
+          } else if (Array.isArray(result)) {
+            complaintsData = result;
+          }
+          console.log(`Fetched ${complaintsData.length} complaints for export`);
+        } else {
+          console.warn(`Failed to fetch complaints: ${response.status} ${response.statusText}`);
         }
       } catch (error) {
         console.warn("Failed to fetch detailed complaint data for export:", error);
         // Continue with analytics data only
       }
 
-      // Create comprehensive export data
+      // Create export data structure
       const exportData = {
         summary: {
           total: analyticsData.complaints?.total || 0,
@@ -286,29 +294,16 @@ const UnifiedReports: React.FC = () => {
           reopened: (analyticsData.complaints as any)?.reopened || 0,
           inProgress: (analyticsData.complaints as any)?.inProgress || 0,
         },
-        sla: {
-          compliance: analyticsData.sla?.compliance || 0,
-          avgResolutionTime: analyticsData.sla?.avgResolutionTime || 0,
-          target: analyticsData.sla?.target || 48,
-          onTimeResolutions: (analyticsData.sla as any)?.onTimeResolutions || 0,
-          breachedSLA: (analyticsData.sla as any)?.breachedSLA || 0,
-        },
-        performance: analyticsData.performance || {
-          userSatisfaction: 0,
-          escalationRate: 0,
-          firstCallResolution: 0,
-          repeatComplaints: 0,
-        },
-        priorities: (analyticsData as any).priorities || [],
-        trends: analyticsData.trends || [],
+        complaints: complaintsData,
         categories: analyticsData.categories || [],
         wards: analyticsData.wards || [],
-        complaints: complaintsData, // Include actual complaint data
+        trends: analyticsData.trends || [],
         filters: {
           dateRange: filters.dateRange,
-          ward: filters.ward !== "all" ? filters.ward : (translations?.reports?.filters?.allWards || "All Wards"),
-          complaintType: filters.complaintType !== "all" ? filters.complaintType : (translations?.reports?.filters?.allTypes || "All Types"),
-          status: filters.status !== "all" ? filters.status : (translations?.reports?.filters?.allStatus || "All Statuses"),
+          ward: filters.ward !== "all" ? filters.ward : "All Wards",
+          complaintType: filters.complaintType !== "all" ? 
+            (getComplaintTypeById(filters.complaintType)?.name || filters.complaintType) : "All Types",
+          status: filters.status !== "all" ? filters.status : "All Statuses",
           priority: filters.priority !== "all" ? filters.priority : "All Priorities",
         },
         metadata: {
@@ -321,19 +316,19 @@ const UnifiedReports: React.FC = () => {
 
       const exportOptions = {
         systemConfig: {
-          appName,
-          appLogoUrl,
+          appName: appName || "Smart CMS",
+          appLogoUrl: appLogoUrl || "/logo.png",
           complaintIdPrefix: getConfig("COMPLAINT_ID_PREFIX", "KSC"),
         },
         userRole: user?.role || "Unknown",
-        userWard: user?.ward?.name || permissions.defaultWard,
+        userWard: user?.ward?.name || permissions.defaultWard || "Unknown",
         includeCharts: true,
         maxRecords: user?.role === "ADMINISTRATOR" ? 1000 : 500,
         filters: filters,
         metadata: {
           exportedAt: new Date().toISOString(),
           exportedBy: user?.fullName || "Unknown User",
-          totalRecords: analyticsData.complaints?.total || 0,
+          totalRecords: complaintsData.length || analyticsData.complaints?.total || 0,
         }
       };
 
@@ -341,13 +336,14 @@ const UnifiedReports: React.FC = () => {
       const validation = validateAnalyticsData(exportData);
       if (!validation.isValid) {
         toast({
-          title: translations?.reports?.export?.noDataToExport || "No Data to Export",
-          description: validation.message || translations?.reports?.export?.noDataAvailable || "No data available for export",
+          title: "No Data to Export",
+          description: validation.message || "No data available for export with current filters. Try adjusting your date range or filters.",
           variant: "destructive"
         });
         return;
       }
 
+      // Execute export
       switch (format) {
         case "pdf":
           await exportAnalyticsToPDF(exportData, exportOptions);
@@ -361,33 +357,33 @@ const UnifiedReports: React.FC = () => {
       }
 
       // Show success message
+      const recordCount = complaintsData.length || analyticsData.complaints?.total || 0;
       toast({
-        title: translations?.reports?.export?.successful || "Export Successful",
-        description: translations?.reports?.export?.successMessage?.replace('{{format}}', format.toUpperCase()) || `${format.toUpperCase()} export completed successfully! Check your downloads folder.`,
+        title: "Export Successful",
+        description: `${format.toUpperCase()} export completed successfully! ${recordCount} records exported. Check your downloads folder.`,
       });
+
     } catch (err) {
       console.error("Export error:", err);
-      const errorMessage = err instanceof Error ? err.message : (translations?.errors?.somethingWentWrong || "Unknown error");
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
 
-      // Show user-friendly error message with suggestions
-      if (errorMessage.includes('Failed to resolve module specifier') || errorMessage.includes('dependency loading issue')) {
+      // Show appropriate error message
+      if (errorMessage.includes('No complaint data available')) {
         toast({
-          title: translations?.reports?.export?.libraryError || "Export Library Error",
-          description: translations?.reports?.export?.libraryErrorMessage || "Export library failed to load due to development cache issue. Try refreshing the page (Ctrl+F5) or use CSV export as alternative.",
+          title: "No Data Available",
+          description: "No complaint data available for export with current filters. Please adjust your filters and try again.",
           variant: "destructive"
         });
-      } else if (format !== 'csv') {
-        // If PDF or Excel failed, suggest CSV as fallback
+      } else if (errorMessage.includes('failed. Please try again or use CSV export')) {
         toast({
-          title: translations?.reports?.export?.failed || "Export Failed",
-          description: `${errorMessage}. ${translations?.reports?.export?.csvAlternative || "Try using CSV export as a reliable alternative."}`,
+          title: `${format.toUpperCase()} Export Failed`,
+          description: `${format.toUpperCase()} export encountered an error. Please try CSV export as an alternative.`,
           variant: "destructive"
         });
       } else {
-        // CSV export failed - this is more serious
         toast({
-          title: translations?.reports?.export?.failed || "Export Failed",
-          description: `${translations?.reports?.export?.csvFailed || "CSV export failed"}: ${errorMessage}. ${translations?.reports?.export?.tryAgainOrSupport || "Please try again or contact support."}`,
+          title: "Export Failed",
+          description: `Export failed: ${errorMessage}. Please try again.`,
           variant: "destructive"
         });
       }

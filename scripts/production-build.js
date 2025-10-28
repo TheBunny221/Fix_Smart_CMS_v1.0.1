@@ -153,10 +153,18 @@ function installDependencies() {
   console.log('\n📦 Installing Dependencies');
   console.log('='.repeat(50));
 
+  // Skip dependency installation if requested
+  if (process.env.SKIP_DEPS === 'true') {
+    console.log('⚠️ Skipping dependency installation (SKIP_DEPS=true)');
+    console.log('💡 Assuming dependencies are already installed');
+    return true;
+  }
+
   // Install all dependencies (including dev) for building
   const result = execCommand('npm ci');
   if (!result.success) {
     console.error('❌ Failed to install dependencies');
+    console.log('💡 Try running with SKIP_DEPS=true if dependencies are already installed');
     return false;
   }
 

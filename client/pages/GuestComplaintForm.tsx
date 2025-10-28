@@ -91,7 +91,6 @@ import {
   Check,
 } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
-import { useComplaintTypes } from "../hooks/useComplaintTypes";
 
 // Legacy complaint types removed - now using dynamic types from system configuration
 

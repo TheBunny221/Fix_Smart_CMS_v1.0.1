@@ -17,6 +17,9 @@ import {
   updateSubZone,
   deleteSubZone,
   changePassword,
+  sendPasswordSetupOTP,
+  verifyPasswordSetupOTP,
+  setPasswordAfterOTP,
 } from "../controller/userController.js";
 import {
   requestResetOTP,
@@ -102,6 +105,11 @@ router.use(sanitizeInputs); // Sanitize all inputs for protected routes
 
 // Password management (accessible to all authenticated users)
 router.post("/change-password", passwordLimiter, changePassword);
+
+// Password setup with OTP (accessible to all authenticated users)
+router.post("/send-otp", otpLimiter, sendPasswordSetupOTP);
+router.post("/verify-otp", passwordLimiter, verifyPasswordSetupOTP);
+router.post("/set-password", passwordLimiter, setPasswordAfterOTP);
 
 // Ward management (accessible to all authenticated users for ward list)
 router.get("/wards", getWards);

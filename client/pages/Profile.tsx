@@ -30,7 +30,11 @@ import {
   useSetPasswordMutation,
   useChangePasswordMutation,
   useGetCurrentUserQuery,
+  useSendPasswordSetupOTPMutation,
+  useVerifyPasswordSetupOTPMutation,
+  useSetPasswordAfterOTPMutation,
 } from "../store/api/authApi";
+import SetPasswordModal from "../components/SetPasswordModal";
 import { getApiErrorMessage } from "../store/api/baseApi";
 import {
   User,
@@ -83,6 +87,7 @@ const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState("personal");
   const [emailStep, setEmailStep] = useState<"none" | "sent">("none");
   const [setupToken, setSetupToken] = useState("");
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -369,7 +374,7 @@ const Profile: React.FC = () => {
                 </p>
                 <div className="mt-4">
                   <Button
-                    onClick={() => setActiveTab("security")}
+                    onClick={() => setShowSetPasswordModal(true)}
                     className="bg-orange-600 hover:bg-orange-700"
                     size="sm"
                   >
@@ -554,7 +559,7 @@ const Profile: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Email Setup for Password Setup */}
+              {/* OTP-based Password Setup */}
               {!user?.hasPassword && (
                 <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="space-y-2">
@@ -562,54 +567,16 @@ const Profile: React.FC = () => {
                       Password Setup Required
                     </h4>
                     <p className="text-sm text-blue-700">
-                      We'll send you a secure link to set up your password.
+                      Set up a secure password for your account using OTP verification.
                     </p>
                   </div>
 
-                  {emailStep === "none" && (
-                    <Button
-                      onClick={handleSendPasswordSetupEmail}
-                      className="w-full bg-blue-600 hover:bg-blue-700"
-                    >
-                      Send Setup Link to {user?.email}
-                    </Button>
-                  )}
-
-                  {emailStep === "sent" && (
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2 text-green-700">
-                        <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm font-medium">
-                          Setup link sent! Check your email.
-                        </span>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="setupToken">
-                          Setup Token (from email)
-                        </Label>
-                        <Input
-                          id="setupToken"
-                          value={setupToken}
-                          onChange={(e) => setSetupToken(e.target.value)}
-                          placeholder="Enter token from email link"
-                          className="w-full"
-                        />
-                        <p className="text-xs text-gray-500">
-                          You can either click the link in your email to go to
-                          the setup page, or copy the token from the link and
-                          paste it here.
-                        </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleSendPasswordSetupEmail}
-                          className="mt-2"
-                        >
-                          Resend Email
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                  <Button
+                    onClick={() => setShowSetPasswordModal(true)}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    Set Up Password with OTP
+                  </Button>
                 </div>
               )}
               {user?.hasPassword && (
@@ -756,6 +723,13 @@ const Profile: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Set Password Modal */}
+      <SetPasswordModal
+        isOpen={showSetPasswordModal}
+        onClose={() => setShowSetPasswordModal(false)}
+        userEmail={user?.email || ""}
+      />
     </div>
   );
 };

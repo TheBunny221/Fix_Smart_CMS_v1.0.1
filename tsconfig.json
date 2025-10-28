@@ -36,6 +36,7 @@
     "node_modules",
     "dist",
     "**/__tests__/**",
+    "client/store/resources",
     "tsbuild", // don't recompile build output
     "client/legacy-components/**" // exclude legacy components with syntax errors
   ]
