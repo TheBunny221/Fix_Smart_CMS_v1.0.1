@@ -1099,44 +1099,74 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
 }) => {
   const { getConfig, isLoading: configLoading } = useSystemConfig();
 
-  // Defaults and bbox for Kochi (keeps original intent)
-  const KOCHI_DEFAULT_LAT = 9.9312;
-  const KOCHI_DEFAULT_LNG = 76.2673;
-  const KOCHI_BBOX = useMemo(
+  // Unified system configuration state
+  const [systemConfig, setSystemConfig] = useState<{
+    boundary: any;
+    bbox: {
+      north: number;
+      south: number;
+      east: number;
+      west: number;
+    };
+    defaultLat: number;
+    defaultLng: number;
+    mapPlace: string;
+    countryCodes: string;
+    validationEnabled: boolean;
+  } | null>(null);
+
+  // Fallback configuration (using Ahmedabad data as default)
+  const FALLBACK_CONFIG = useMemo(
     () => ({
-      north: 10.05,
-      south: 9.85,
-      east: 76.39,
-      west: 76.2,
+      boundary: {
+        type: "Polygon",
+        coordinates: [[[72.4500, 22.9500], [72.7000, 22.9500], [72.7000, 23.1500], [72.4500, 23.1500], [72.4500, 22.9500]]]
+      },
+      bbox: {
+        north: 23.1500,
+        south: 22.9500,
+        east: 72.7000,
+        west: 72.4500,
+      },
+      defaultLat: 23.0225,
+      defaultLng: 72.5714,
+      mapPlace: "Ahmedabad, Gujarat, India",
+      countryCodes: "in",
+      validationEnabled: true,
     }),
     []
   );
 
-  const defaultLat =
-    parseFloat(getConfig("MAP_DEFAULT_LAT", KOCHI_DEFAULT_LAT.toString())) ||
-    KOCHI_DEFAULT_LAT;
-  const defaultLng =
-    parseFloat(getConfig("MAP_DEFAULT_LNG", KOCHI_DEFAULT_LNG.toString())) ||
-    KOCHI_DEFAULT_LNG;
-  const mapPlace = getConfig("MAP_SEARCH_PLACE", "Kochi, Kerala, India");
-  const countryCodes = getConfig("MAP_COUNTRY_CODES", "in").trim();
+  // Use system config or fallback
+  const config = systemConfig || FALLBACK_CONFIG;
+  const { boundary, bbox, defaultLat, defaultLng, mapPlace, countryCodes, validationEnabled } = config;
+  const { north: bboxNorth, south: bboxSouth, east: bboxEast, west: bboxWest } = bbox;
 
-  const bboxNorth =
-    parseFloat(getConfig("MAP_BBOX_NORTH", KOCHI_BBOX.north.toString())) ||
-    KOCHI_BBOX.north;
-  const bboxSouth =
-    parseFloat(getConfig("MAP_BBOX_SOUTH", KOCHI_BBOX.south.toString())) ||
-    KOCHI_BBOX.south;
-  const bboxEast =
-    parseFloat(getConfig("MAP_BBOX_EAST", KOCHI_BBOX.east.toString())) ||
-    KOCHI_BBOX.east;
-  const bboxWest =
-    parseFloat(getConfig("MAP_BBOX_WEST", KOCHI_BBOX.west.toString())) ||
-    KOCHI_BBOX.west;
-
-  const hasBbox = true; // Always apply Kochi bounds
+  const hasBbox = true; // Always apply configured bounds
 
   const defaultPosition = { lat: defaultLat, lng: defaultLng };
+
+  // Load unified system configuration on component mount
+  useEffect(() => {
+    const loadSystemConfig = async () => {
+      try {
+        const response = await fetch('/api/system-config/boundary/data');
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success && result.data) {
+            setSystemConfig(result.data);
+            console.log('🗺️ Loaded unified system configuration:', result.data);
+          }
+        } else {
+          console.warn('🗺️ Failed to load system config, using fallback');
+        }
+      } catch (error) {
+        console.warn('🗺️ Error loading system config, using fallback:', error);
+      }
+    };
+
+    loadSystemConfig();
+  }, []);
 
   const [position, setPosition] = useState<{ lat: number; lng: number }>(
     initialLocation
@@ -1178,26 +1208,74 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
   // Small debounce for search
   const searchDebounceRef = useRef<number | null>(null);
 
-  const isWithinKochiBoundary = useCallback(
+  const isWithinServiceBoundary = useCallback(
     (lat: number, lng: number): boolean => {
+      // If validation is disabled, allow all locations
+      if (!validationEnabled) {
+        return true;
+      }
+
+      // If we have a GeoJSON boundary, use point-in-polygon check
+      if (boundary && boundary.type === 'Polygon' && boundary.coordinates) {
+        try {
+          const coordinates = boundary.coordinates[0]; // Outer ring
+          return isPointInPolygon({ lat, lng }, coordinates);
+        } catch (error) {
+          console.warn('🗺️ Error checking GeoJSON boundary, falling back to bbox:', error);
+        }
+      }
+      
+      // Fallback to bounding box check
       return lat >= bboxSouth && lat <= bboxNorth && lng >= bboxWest && lng <= bboxEast;
     },
-    [bboxNorth, bboxSouth, bboxWest, bboxEast]
+    [boundary, bboxNorth, bboxSouth, bboxWest, bboxEast, validationEnabled]
   );
 
+  // Point-in-polygon helper function
+  const isPointInPolygon = useCallback((point: { lat: number; lng: number }, polygon: number[][]) => {
+    const { lat, lng } = point;
+    let inside = false;
+
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const coord_i = polygon[i];
+      const coord_j = polygon[j];
+      
+      if (!coord_i || !coord_j || coord_i.length < 2 || coord_j.length < 2) {
+        continue; // Skip invalid coordinates
+      }
+      
+      const lng_i = coord_i[0]; // GeoJSON uses [lng, lat] format
+      const lat_i = coord_i[1];
+      const lng_j = coord_j[0];
+      const lat_j = coord_j[1];
+
+      if (
+        typeof lat_i === 'number' && typeof lat_j === 'number' && 
+        typeof lng_i === 'number' && typeof lng_j === 'number' &&
+        lat_i > lat !== lat_j > lat &&
+        lng < ((lng_j - lng_i) * (lat - lat_i)) / (lat_j - lat_i) + lng_i
+      ) {
+        inside = !inside;
+      }
+    }
+
+    return inside;
+  }, []);
+
   const showBoundaryError = useCallback((action: string) => {
-    const message = `${action} is outside Kochi service area. Please select a location within Kochi.`;
+    const areaName = mapPlace.split(',')[0] || 'service area';
+    const message = `${action} is outside ${areaName}. Please select a location within the service area.`;
     setMapError(message);
     toast({
       title: "Location Outside Service Area",
       description: message,
       variant: "destructive",
     });
-  }, []);
+  }, [mapPlace]);
 
   const setPositionWithValidation = useCallback(
     (newPos: { lat: number; lng: number }, action: string = "Selected location") => {
-      if (!isWithinKochiBoundary(newPos.lat, newPos.lng)) {
+      if (!isWithinServiceBoundary(newPos.lat, newPos.lng)) {
         showBoundaryError(action);
         return false;
       }
@@ -1210,7 +1288,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
       setMapError(null);
       return true;
     },
-    [isWithinKochiBoundary, showBoundaryError]
+    [isWithinServiceBoundary, showBoundaryError]
   );
 
   // Initialize map when dialog opens or when mapReloadKey changes (retry)
@@ -1260,7 +1338,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
 
         // fallback to defaults if outside bounds
         let effectiveCenter = { ...initCenter };
-        if (!isWithinKochiBoundary(effectiveCenter.lat, effectiveCenter.lng)) {
+        if (!isWithinServiceBoundary(effectiveCenter.lat, effectiveCenter.lng)) {
           effectiveCenter = { ...defaultPosition };
           setPosition(effectiveCenter);
           showBoundaryError("Selected location");
@@ -1293,23 +1371,50 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
         });
         tileLayer.addTo(leafletMapRef.current);
 
-        // add boundary polygon for Kochi
-        const boundaryCoords: [number, number][] = [
-          [bboxNorth, bboxWest],
-          [bboxNorth, bboxEast],
-          [bboxSouth, bboxEast],
-          [bboxSouth, bboxWest],
-        ];
-        const boundaryPolygon = L.polygon(boundaryCoords, {
-          color: "#2563eb",
-          weight: 2,
-          opacity: 0.9,
-          fillColor: "#2563eb",
-          fillOpacity: 0.08,
-          dashArray: "6,6",
-          pane: 'boundaryPane', // Use custom pane with lower z-index
-        }).addTo(leafletMapRef.current);
-        boundaryPolygon.bindPopup("Service Area Boundary");
+        // Add service area boundary visualization (only if validation is enabled)
+        if (validationEnabled) {
+          let boundaryPolygon;
+          
+          // Use GeoJSON boundary if available
+          if (boundary && boundary.type === 'Polygon' && boundary.coordinates) {
+            try {
+              // Convert GeoJSON coordinates to Leaflet format [lat, lng]
+              const geoJsonCoords = boundary.coordinates[0].map(([lng, lat]: [number, number]) => [lat, lng] as [number, number]);
+              boundaryPolygon = L.polygon(geoJsonCoords, {
+                color: "#2563eb",
+                weight: 2,
+                opacity: 0.9,
+                fillColor: "#2563eb",
+                fillOpacity: 0.08,
+                dashArray: "6,6",
+                pane: 'boundaryPane',
+              }).addTo(leafletMapRef.current);
+              boundaryPolygon.bindPopup("Service Area Boundary");
+            } catch (error) {
+              console.warn('🗺️ Error rendering GeoJSON boundary, falling back to bbox:', error);
+            }
+          }
+          
+          // Fallback to bounding box if GeoJSON not available or failed
+          if (!boundaryPolygon) {
+            const boundaryCoords: [number, number][] = [
+              [bboxNorth, bboxWest],
+              [bboxNorth, bboxEast],
+              [bboxSouth, bboxEast],
+              [bboxSouth, bboxWest],
+            ];
+            boundaryPolygon = L.polygon(boundaryCoords, {
+              color: "#2563eb",
+              weight: 2,
+              opacity: 0.9,
+              fillColor: "#2563eb",
+              fillOpacity: 0.08,
+              dashArray: "6,6",
+              pane: 'boundaryPane',
+            }).addTo(leafletMapRef.current);
+            boundaryPolygon.bindPopup("Service Area Boundary (Fallback)");
+          }
+        }
 
         // add draggable marker at center
         markerRef.current = L.marker([effectiveCenter.lat, effectiveCenter.lng], {
@@ -1322,10 +1427,10 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
         markerRef.current.on("dragend", (e: any) => {
           const { lat, lng } = e.target.getLatLng();
           // If invalid, reset to previous valid position immediately
-          if (!isWithinKochiBoundary(lat, lng)) {
+          if (!isWithinServiceBoundary(lat, lng)) {
             toast({
               title: "Out of service area",
-              description: "Marker moved outside Kochi boundary. Resetting to last valid location.",
+              description: "Marker moved outside service area boundary. Resetting to last valid location.",
               variant: "destructive",
             });
             markerRef.current?.setLatLng([position.lat, position.lng]);
@@ -1346,7 +1451,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
         // map click to set marker
         leafletMapRef.current.on("click", (e: any) => {
           const { lat, lng } = e.latlng;
-          if (!isWithinKochiBoundary(lat, lng)) {
+          if (!isWithinServiceBoundary(lat, lng)) {
             showBoundaryError("Clicked location");
             return;
           }
@@ -1614,7 +1719,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
         (pos) => {
           clearTimeout(timeoutId);
           const newPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          if (!isWithinKochiBoundary(newPos.lat, newPos.lng)) {
+          if (!isWithinServiceBoundary(newPos.lat, newPos.lng)) {
             showBoundaryError("Current location");
             setIsLoadingLocation(false);
             return;
@@ -1644,7 +1749,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
       setIsLoadingLocation(false);
       setMapError("Unable to fetch your location. Please try again.");
     }
-  }, [detectAdministrativeArea, reverseGeocode, isWithinKochiBoundary, showBoundaryError]);
+  }, [detectAdministrativeArea, reverseGeocode, isWithinServiceBoundary, showBoundaryError]);
 
   // Debounced search location
   const searchLocation = useCallback(
@@ -1700,7 +1805,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
             if (Number.isNaN(newPos.lat) || Number.isNaN(newPos.lng)) {
               throw new Error("Invalid coordinates from search");
             }
-            if (!isWithinKochiBoundary(newPos.lat, newPos.lng)) {
+            if (!isWithinServiceBoundary(newPos.lat, newPos.lng)) {
               showBoundaryError("Search result");
               return;
             }
@@ -1757,7 +1862,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
       countryCodes,
       mapPlace,
       hasBbox,
-      isWithinKochiBoundary,
+      isWithinServiceBoundary,
       showBoundaryError,
       detectAdministrativeArea,
       detectedWard,
@@ -1775,7 +1880,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
       setMapError("Please select a location on the map first.");
       return;
     }
-    if (!isWithinKochiBoundary(position.lat, position.lng)) {
+    if (!isWithinServiceBoundary(position.lat, position.lng)) {
       showBoundaryError("Selected location");
       return;
     }
@@ -1806,7 +1911,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
     landmark,
     onLocationSelect,
     onClose,
-    isWithinKochiBoundary,
+    isWithinServiceBoundary,
     showBoundaryError,
   ]);
 
@@ -1852,7 +1957,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
     const center = leafletMapRef.current.getCenter();
     const lat = center.lat;
     const lng = center.lng;
-    if (!isWithinKochiBoundary(lat, lng)) {
+    if (!isWithinServiceBoundary(lat, lng)) {
       showBoundaryError("Pin drop location");
       return;
     }
@@ -1861,7 +1966,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
       detectAdministrativeArea({ lat, lng });
       reverseGeocode({ lat, lng });
     }
-  }, [detectAdministrativeArea, isWithinKochiBoundary, reverseGeocode, setPositionWithValidation, showBoundaryError]);
+  }, [detectAdministrativeArea, isWithinServiceBoundary, reverseGeocode, setPositionWithValidation, showBoundaryError]);
 
   // keypress handler for search input (Enter)
   const handleSearchKey = useCallback(
@@ -2019,7 +2124,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
 
                   {mapInitialized && (
                     <div className="absolute bottom-2 left-2 bg-blue-50/95 backdrop-blur-sm rounded-md px-3 py-2 text-xs text-blue-700 shadow-lg border border-blue-200 z-[1001]">
-                      🗺️ Service area: Kochi boundaries
+                      🗺️ Service area: {mapPlace.split(',')[0] || 'Service Area'} boundaries
                     </div>
                   )}
                 </>

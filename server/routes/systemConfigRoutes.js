@@ -9,6 +9,7 @@ import {
   getSystemHealth,
   getPublicSystemSettings,
   bulkUpdateSystemSettings,
+  syncConfigurationsFromSeedEndpoint,
 } from "../controller/systemConfigController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import { body, param } from "express-validator";
@@ -16,8 +17,140 @@ import { handleValidationErrors, validateSystemConfigBulk, sanitizeInputs } from
 
 const router = express.Router();
 
-// Public route (no authentication required)
+// Public routes (no authentication required)
 router.get("/public", getPublicSystemSettings);
+
+/**
+ * @swagger
+ * /api/system-config/boundary/data:
+ *   get:
+ *     summary: Get system boundary configuration (public endpoint)
+ *     tags: [System Config]
+ *     responses:
+ *       200:
+ *         description: Boundary configuration data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     boundary:
+ *                       type: object
+ *                       description: GeoJSON boundary data
+ *                     defaultLat:
+ *                       type: number
+ *                     defaultLng:
+ *                       type: number
+ *                     mapPlace:
+ *                       type: string
+ *                     countryCodes:
+ *                       type: string
+ *                     bbox:
+ *                       type: object
+ *                       properties:
+ *                         north:
+ *                           type: number
+ *                         south:
+ *                           type: number
+ *                         east:
+ *                           type: number
+ *                         west:
+ *                           type: number
+ */
+// Public endpoint for boundary data (no authentication required)
+router.get("/boundary/data", async (req, res) => {
+  try {
+    const { getActiveSystemConfigs } = await import("../controller/systemConfigController.js");
+    
+    const configs = await getActiveSystemConfigs([
+      "SERVICE_AREA_BOUNDARY",
+      "SERVICE_AREA_VALIDATION_ENABLED",
+      "MAP_DEFAULT_LAT",
+      "MAP_DEFAULT_LNG", 
+      "MAP_SEARCH_PLACE",
+      "MAP_COUNTRY_CODES"
+    ]);
+
+    // Parse SERVICE_AREA_BOUNDARY to extract boundary and derive bbox
+    let boundary = null;
+    let bbox = null;
+    
+    if (configs.SERVICE_AREA_BOUNDARY) {
+      try {
+        boundary = JSON.parse(configs.SERVICE_AREA_BOUNDARY);
+        
+        // Extract bounding box from GeoJSON polygon
+        if (boundary && boundary.type === 'Polygon' && boundary.coordinates && boundary.coordinates[0]) {
+          const coordinates = boundary.coordinates[0];
+          let minLat = Infinity, maxLat = -Infinity;
+          let minLng = Infinity, maxLng = -Infinity;
+          
+          coordinates.forEach(([lng, lat]) => {
+            if (typeof lat === 'number' && typeof lng === 'number') {
+              minLat = Math.min(minLat, lat);
+              maxLat = Math.max(maxLat, lat);
+              minLng = Math.min(minLng, lng);
+              maxLng = Math.max(maxLng, lng);
+            }
+          });
+          
+          if (isFinite(minLat) && isFinite(maxLat) && isFinite(minLng) && isFinite(maxLng)) {
+            bbox = {
+              north: maxLat,
+              south: minLat,
+              east: maxLng,
+              west: minLng
+            };
+          }
+        }
+      } catch (error) {
+        console.warn("Invalid SERVICE_AREA_BOUNDARY configuration:", error);
+      }
+    }
+    
+    // Fallback bbox if boundary parsing failed (using Ahmedabad coordinates)
+    if (!bbox) {
+      bbox = {
+        north: 23.1500,
+        south: 22.9500,
+        east: 72.7000,
+        west: 72.4500
+      };
+    }
+
+    // Default values as fallback (using Ahmedabad coordinates)
+    const defaultLat = parseFloat(configs.MAP_DEFAULT_LAT || "23.0225");
+    const defaultLng = parseFloat(configs.MAP_DEFAULT_LNG || "72.5714");
+    const mapPlace = configs.MAP_SEARCH_PLACE || "Ahmedabad, Gujarat, India";
+    const countryCodes = configs.MAP_COUNTRY_CODES || "in";
+    const validationEnabled = configs.SERVICE_AREA_VALIDATION_ENABLED === "true";
+
+    res.status(200).json({
+      success: true,
+      data: {
+        boundary,
+        bbox,
+        defaultLat,
+        defaultLng,
+        mapPlace,
+        countryCodes,
+        validationEnabled
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching boundary configuration:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch boundary configuration",
+      error: error.message
+    });
+  }
+});
 
 // Validation middleware for system settings
 const validateSystemSetting = [
@@ -133,6 +266,20 @@ router.get("/health", getSystemHealth);
  *         description: Settings reset successfully
  */
 router.post("/reset", resetSystemSettings);
+
+/**
+ * @swagger
+ * /api/system-config/sync:
+ *   post:
+ *     summary: Sync configurations from seed.json
+ *     tags: [System Config]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Configurations synced successfully
+ */
+router.post("/sync", syncConfigurationsFromSeedEndpoint);
 
 /**
  * @swagger

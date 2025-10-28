@@ -919,7 +919,7 @@ const CitizenComplaintForm: React.FC = () => {
                           <SelectValue placeholder="Select sub-zone" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="" disabled>
+                          <SelectItem value="select-subzone" disabled>
                             Select sub-zone
                           </SelectItem>
                           {availableSubZones.map((subZone) => (

@@ -125,9 +125,7 @@ const UnifiedReports: React.FC = () => {
       setWardsLoading(true);
       try {
         const baseUrl = window.location.origin;
-        const resp = await fetch(`${baseUrl}/api/users/wards`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
+        const resp = await fetch(`${baseUrl}/api/guest/wards`);
         if (resp.ok) {
           const data = await resp.json();
           const list = (data?.data || data)?.wards || data?.wards || data;
@@ -829,9 +827,9 @@ const UnifiedReports: React.FC = () => {
                     <SelectContent className="rounded-xl">
                       <SelectItem value="all">{translations?.reports?.filters?.allTypes || "All Types"}</SelectItem>
                       {complaintTypesLoading ? (
-                        <SelectItem value="" disabled>{translations?.reports?.filters?.loadingTypes || "Loading types..."}</SelectItem>
+                        <SelectItem value="loading" disabled>{translations?.reports?.filters?.loadingTypes || "Loading types..."}</SelectItem>
                       ) : complaintTypes.length === 0 ? (
-                        <SelectItem value="" disabled>{translations?.reports?.filters?.noTypesAvailable || "No types available"}</SelectItem>
+                        <SelectItem value="no-types" disabled>{translations?.reports?.filters?.noTypesAvailable || "No types available"}</SelectItem>
                       ) : (
                         complaintTypes.map((type) => <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>)
                       )}

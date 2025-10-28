@@ -115,7 +115,8 @@ const router = express.Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/boundaries", protect, authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM"), sanitizeInputs, getAllWardsWithBoundaries);
+// Make boundaries endpoint public for location selection
+router.get("/boundaries", sanitizeInputs, getAllWardsWithBoundaries);
 
 /**
  * @swagger
@@ -236,6 +237,7 @@ router.put("/:wardId/boundaries", protect, authorize("ADMINISTRATOR"), sanitizeI
  *       500:
  *         description: Internal server error
  */
-router.post("/detect-area", protect, authorize("ADMINISTRATOR", "WARD_OFFICER", "MAINTENANCE_TEAM", "CITIZEN"), sanitizeInputs, validateLocationDetection, detectLocationArea);
+// Make detect-area endpoint public (no authentication required) for location selection
+router.post("/detect-area", sanitizeInputs, validateLocationDetection, detectLocationArea);
 
 export default router;

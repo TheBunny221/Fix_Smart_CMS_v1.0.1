@@ -111,7 +111,7 @@ export const wardApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Get all wards (with optional subzones)
     getWards: builder.query<ApiResponse<{ wards: Ward[] }>, { includeSubzones?: boolean; all?: boolean }>({
-      query: ({ includeSubzones = false, all = false }) => ({
+      query: ({ includeSubzones = false, all = false } = {}) => ({
         url: "/users/wards",
         params: {
           include: includeSubzones ? "subzones" : undefined,

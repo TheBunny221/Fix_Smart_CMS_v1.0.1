@@ -7,9 +7,6 @@ const prisma = getPrisma();
 // @route   GET /api/system-config
 // @access  Private (Admin only)
 export const getSystemSettings = asyncHandler(async (req, res) => {
-  // Sync configurations from seed.json to ensure all are available
-  await syncConfigurationsFromSeed();
-
   const settings = await prisma.systemConfig.findMany({
     where: {
       key: {
@@ -616,9 +613,6 @@ export const getPublicSystemSettings = asyncHandler(async (req, res) => {
   }
 
   try {
-    // Sync configurations from seed.json to ensure all are available
-    await syncConfigurationsFromSeed();
-
     // Only return non-sensitive settings
     const publicKeys = [
       "APP_NAME",
@@ -792,6 +786,30 @@ export const getSystemHealth = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Sync configurations from seed.json
+// @route   POST /api/system-config/sync
+// @access  Private (Admin only)
+export const syncConfigurationsFromSeedEndpoint = asyncHandler(async (req, res) => {
+  try {
+    const result = await syncConfigurationsFromSeed();
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: {
+        synced: result.synced,
+        updated: result.updated,
+        total: result.total,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to sync configurations from seed.json",
+      error: error.message,
+    });
+  }
+});
+
 // @desc    Bulk update system settings
 // @route   PUT /api/system-config/bulk
 // @access  Private (Admin only)
@@ -911,17 +929,20 @@ const syncConfigurationsFromSeed = async () => {
     
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    const seedPath = path.join(__dirname, '../../prisma/seed.json');
+    const seedPath = path.join(__dirname, '../../prisma/seeds/seed.json');
     
     if (!fs.existsSync(seedPath)) {
       console.log('⚠️ seed.json not found, skipping configuration sync');
-      return;
+      return { synced: 0, updated: 0, message: 'Seed file not found' };
     }
     
     const seedData = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
     const seedConfigs = seedData.systemConfig || [];
     
     console.log(`📋 Syncing ${seedConfigs.length} configurations from seed.json`);
+    
+    let syncedCount = 0;
+    let updatedCount = 0;
     
     for (const seedConfig of seedConfigs) {
       const existingConfig = await prisma.systemConfig.findUnique({
@@ -939,6 +960,7 @@ const syncConfigurationsFromSeed = async () => {
           }
         });
         console.log(`✅ Added missing configuration: ${seedConfig.key}`);
+        syncedCount++;
       } else if (!existingConfig.description && seedConfig.description) {
         // Update description if missing
         await prisma.systemConfig.update({
@@ -946,11 +968,19 @@ const syncConfigurationsFromSeed = async () => {
           data: { description: seedConfig.description }
         });
         console.log(`📝 Updated description for: ${seedConfig.key}`);
+        updatedCount++;
       }
     }
     
-    console.log('✅ Configuration sync completed');
+    console.log(`✅ Configuration sync completed: ${syncedCount} added, ${updatedCount} updated`);
+    return { 
+      synced: syncedCount, 
+      updated: updatedCount, 
+      total: seedConfigs.length,
+      message: `Successfully synced ${syncedCount} new configurations and updated ${updatedCount} descriptions`
+    };
   } catch (error) {
     console.error('❌ Error syncing configurations from seed.json:', error);
+    throw error;
   }
 };
