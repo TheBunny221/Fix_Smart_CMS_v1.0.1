@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAppDispatch } from "../store/hooks";
 import { showSuccessToast, showErrorToast } from "../store/slices/uiSlice";
+import { useAppTranslation } from "../utils/i18n";
 import {
   useGetAllSystemConfigQuery,
   useUpdateSystemConfigMutation,
@@ -53,94 +54,95 @@ interface ConfigSection {
   keys: string[];
 }
 
-const CONFIG_SECTIONS: ConfigSection[] = [
-  {
-    title: "Application Settings",
-    icon: <Globe className="h-5 w-5" />,
-    description: "Application branding and general settings",
-    keys: [
-      "APP_NAME",
-      "APP_LOGO_URL",
-      "APP_LOGO_SIZE",
-      "ADMIN_EMAIL",
-    ],
-  },
-  {
-    title: "Complaint Management",
-    icon: <FileText className="h-5 w-5" />,
-    description: "Complaint submission and management settings",
-    keys: [
-      "COMPLAINT_ID_PREFIX",
-      "COMPLAINT_ID_START_NUMBER",
-      "COMPLAINT_ID_LENGTH",
-      "COMPLAINT_PHOTO_MAX_SIZE",
-      "COMPLAINT_PHOTO_MAX_COUNT",
-      "CITIZEN_DAILY_COMPLAINT_LIMIT",
-      "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
-      "GUEST_COMPLAINT_ENABLED",
-      "DEFAULT_SLA_HOURS",
-    ],
-  },
-  {
-    title: "Geographic & Location Settings",
-    icon: <Map className="h-5 w-5" />,
-    description: "Geographic and location-based configuration",
-    keys: [
-      "MAP_SEARCH_PLACE",
-      "MAP_COUNTRY_CODES", 
-      "MAP_DEFAULT_LAT",
-      "MAP_DEFAULT_LNG",
-      "MAP_BBOX_NORTH",
-      "MAP_BBOX_SOUTH",
-      "MAP_BBOX_EAST",
-      "MAP_BBOX_WEST",
-      "SERVICE_AREA_BOUNDARY",
-      "SERVICE_AREA_VALIDATION_ENABLED",
-    ],
-  },
-  {
-    title: "Contact Information",
-    icon: <Phone className="h-5 w-5" />,
-    description: "Contact details and office information",
-    keys: [
-      "CONTACT_HELPLINE",
-      "CONTACT_EMAIL",
-      "CONTACT_OFFICE_HOURS",
-      "CONTACT_OFFICE_ADDRESS",
-    ],
-  },
-  {
-    title: "System Behavior",
-    icon: <Settings className="h-5 w-5" />,
-    description: "Core system functionality and behavior",
-    keys: [
-      "AUTO_ASSIGN_COMPLAINTS",
-      "CITIZEN_REGISTRATION_ENABLED",
-      "OTP_EXPIRY_MINUTES",
-      "MAX_FILE_SIZE_MB",
-    ],
-  },
-  {
-    title: "Notification & Communication",
-    icon: <MessageSquare className="h-5 w-5" />,
-    description: "Notification settings and communication preferences",
-    keys: [
-      "NOTIFICATION_SETTINGS",
-    ],
-  },
-  {
-    title: "System Data Structures",
-    icon: <Database className="h-5 w-5" />,
-    description: "System data structures and configurations",
-    keys: [
-      "COMPLAINT_PRIORITIES",
-      "COMPLAINT_STATUSES",
-    ],
-  },
-];
-
 const SystemSettingsManager: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { t } = useAppTranslation();
+
+  const CONFIG_SECTIONS: ConfigSection[] = [
+    {
+      title: t("admin.systemSettings.sections.applicationSettings"),
+      icon: <Globe className="h-5 w-5" />,
+      description: t("admin.systemSettings.sections.applicationSettingsDesc"),
+      keys: [
+        "APP_NAME",
+        "APP_LOGO_URL",
+        "APP_LOGO_SIZE",
+        "ADMIN_EMAIL",
+      ],
+    },
+    {
+      title: t("admin.systemSettings.sections.complaintManagement"),
+      icon: <FileText className="h-5 w-5" />,
+      description: t("admin.systemSettings.sections.complaintManagementDesc"),
+      keys: [
+        "COMPLAINT_ID_PREFIX",
+        "COMPLAINT_ID_START_NUMBER",
+        "COMPLAINT_ID_LENGTH",
+        "COMPLAINT_PHOTO_MAX_SIZE",
+        "COMPLAINT_PHOTO_MAX_COUNT",
+        "CITIZEN_DAILY_COMPLAINT_LIMIT",
+        "CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED",
+        "GUEST_COMPLAINT_ENABLED",
+        "DEFAULT_SLA_HOURS",
+      ],
+    },
+    {
+      title: t("admin.systemSettings.sections.geographicSettings"),
+      icon: <Map className="h-5 w-5" />,
+      description: t("admin.systemSettings.sections.geographicSettingsDesc"),
+      keys: [
+        "MAP_SEARCH_PLACE",
+        "MAP_COUNTRY_CODES", 
+        "MAP_DEFAULT_LAT",
+        "MAP_DEFAULT_LNG",
+        "MAP_BBOX_NORTH",
+        "MAP_BBOX_SOUTH",
+        "MAP_BBOX_EAST",
+        "MAP_BBOX_WEST",
+        "SERVICE_AREA_BOUNDARY",
+        "SERVICE_AREA_VALIDATION_ENABLED",
+      ],
+    },
+    {
+      title: t("admin.systemSettings.sections.contactInformation"),
+      icon: <Phone className="h-5 w-5" />,
+      description: t("admin.systemSettings.sections.contactInformationDesc"),
+      keys: [
+        "CONTACT_HELPLINE",
+        "CONTACT_EMAIL",
+        "CONTACT_OFFICE_HOURS",
+        "CONTACT_OFFICE_ADDRESS",
+      ],
+    },
+    {
+      title: t("admin.systemSettings.sections.systemBehavior"),
+      icon: <Settings className="h-5 w-5" />,
+      description: t("admin.systemSettings.sections.systemBehaviorDesc"),
+      keys: [
+        "AUTO_ASSIGN_COMPLAINTS",
+        "CITIZEN_REGISTRATION_ENABLED",
+        "OTP_EXPIRY_MINUTES",
+        "MAX_FILE_SIZE_MB",
+      ],
+    },
+    {
+      title: t("admin.systemSettings.sections.notificationCommunication"),
+      icon: <MessageSquare className="h-5 w-5" />,
+      description: t("admin.systemSettings.sections.notificationCommunicationDesc"),
+      keys: [
+        "NOTIFICATION_SETTINGS",
+      ],
+    },
+    {
+      title: t("admin.systemSettings.sections.systemDataStructures"),
+      icon: <Database className="h-5 w-5" />,
+      description: t("admin.systemSettings.sections.systemDataStructuresDesc"),
+      keys: [
+        "COMPLAINT_PRIORITIES",
+        "COMPLAINT_STATUSES",
+      ],
+    },
+  ];
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [localSettings, setLocalSettings] = useState<Record<string, SystemConfigItem>>({});
@@ -174,52 +176,52 @@ const SystemSettingsManager: React.FC = () => {
   const getSettingLabel = (key: string): string => {
     const labels: Record<string, string> = {
       // Application Settings
-      APP_NAME: "Application Name",
-      APP_LOGO_URL: "Logo URL",
-      APP_LOGO_SIZE: "Logo Size",
-      ADMIN_EMAIL: "Administrator Email",
+      APP_NAME: t("admin.systemSettings.labels.appName"),
+      APP_LOGO_URL: t("admin.systemSettings.labels.logoUrl"),
+      APP_LOGO_SIZE: t("admin.systemSettings.labels.logoSize"),
+      ADMIN_EMAIL: t("admin.systemSettings.labels.adminEmail"),
       
       // Complaint Management
-      COMPLAINT_ID_PREFIX: "Complaint ID Prefix",
-      COMPLAINT_ID_START_NUMBER: "ID Start Number",
-      COMPLAINT_ID_LENGTH: "ID Number Length",
-      COMPLAINT_PHOTO_MAX_SIZE: "Max Photo Size (MB)",
-      COMPLAINT_PHOTO_MAX_COUNT: "Max Photo Count",
-      CITIZEN_DAILY_COMPLAINT_LIMIT: "Daily Complaint Limit",
-      CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED: "Enable Daily Limit",
-      GUEST_COMPLAINT_ENABLED: "Allow Guest Complaints",
-      DEFAULT_SLA_HOURS: "Default SLA Hours",
+      COMPLAINT_ID_PREFIX: t("admin.systemSettings.labels.complaintIdPrefix"),
+      COMPLAINT_ID_START_NUMBER: t("admin.systemSettings.labels.idStartNumber"),
+      COMPLAINT_ID_LENGTH: t("admin.systemSettings.labels.idNumberLength"),
+      COMPLAINT_PHOTO_MAX_SIZE: t("admin.systemSettings.labels.maxPhotoSize"),
+      COMPLAINT_PHOTO_MAX_COUNT: t("admin.systemSettings.labels.maxPhotoCount"),
+      CITIZEN_DAILY_COMPLAINT_LIMIT: t("admin.systemSettings.labels.dailyComplaintLimit"),
+      CITIZEN_DAILY_COMPLAINT_LIMIT_ENABLED: t("admin.systemSettings.labels.enableDailyLimit"),
+      GUEST_COMPLAINT_ENABLED: t("admin.systemSettings.labels.allowGuestComplaints"),
+      DEFAULT_SLA_HOURS: t("admin.systemSettings.labels.defaultSlaHours"),
       
       // Geographic Settings
-      MAP_SEARCH_PLACE: "Search Place Context",
-      MAP_COUNTRY_CODES: "Country Codes (ISO2)",
-      MAP_DEFAULT_LAT: "Default Latitude",
-      MAP_DEFAULT_LNG: "Default Longitude",
-      MAP_BBOX_NORTH: "Bounding Box North",
-      MAP_BBOX_SOUTH: "Bounding Box South",
-      MAP_BBOX_EAST: "Bounding Box East",
-      MAP_BBOX_WEST: "Bounding Box West",
-      SERVICE_AREA_BOUNDARY: "Service Area Boundary (GeoJSON)",
-      SERVICE_AREA_VALIDATION_ENABLED: "Enable Location Validation",
+      MAP_SEARCH_PLACE: t("admin.systemSettings.labels.searchPlaceContext"),
+      MAP_COUNTRY_CODES: t("admin.systemSettings.labels.countryCodes"),
+      MAP_DEFAULT_LAT: t("admin.systemSettings.labels.defaultLatitude"),
+      MAP_DEFAULT_LNG: t("admin.systemSettings.labels.defaultLongitude"),
+      MAP_BBOX_NORTH: t("admin.systemSettings.labels.boundingBoxNorth"),
+      MAP_BBOX_SOUTH: t("admin.systemSettings.labels.boundingBoxSouth"),
+      MAP_BBOX_EAST: t("admin.systemSettings.labels.boundingBoxEast"),
+      MAP_BBOX_WEST: t("admin.systemSettings.labels.boundingBoxWest"),
+      SERVICE_AREA_BOUNDARY: t("admin.systemSettings.labels.serviceAreaBoundary"),
+      SERVICE_AREA_VALIDATION_ENABLED: t("admin.systemSettings.labels.enableLocationValidation"),
       
       // Contact Information
-      CONTACT_HELPLINE: "Helpline Number",
-      CONTACT_EMAIL: "Support Email",
-      CONTACT_OFFICE_HOURS: "Office Hours",
-      CONTACT_OFFICE_ADDRESS: "Office Address",
+      CONTACT_HELPLINE: t("admin.systemSettings.labels.helplineNumber"),
+      CONTACT_EMAIL: t("admin.systemSettings.labels.supportEmail"),
+      CONTACT_OFFICE_HOURS: t("admin.systemSettings.labels.officeHours"),
+      CONTACT_OFFICE_ADDRESS: t("admin.systemSettings.labels.officeAddress"),
       
       // System Behavior
-      AUTO_ASSIGN_COMPLAINTS: "Auto-assign Complaints",
-      CITIZEN_REGISTRATION_ENABLED: "Allow Citizen Registration",
-      OTP_EXPIRY_MINUTES: "OTP Expiry Minutes",
-      MAX_FILE_SIZE_MB: "Max File Size (MB)",
+      AUTO_ASSIGN_COMPLAINTS: t("admin.systemSettings.labels.autoAssignComplaints"),
+      CITIZEN_REGISTRATION_ENABLED: t("admin.systemSettings.labels.allowCitizenRegistration"),
+      OTP_EXPIRY_MINUTES: t("admin.systemSettings.labels.otpExpiryMinutes"),
+      MAX_FILE_SIZE_MB: t("admin.systemSettings.labels.maxFileSize"),
       
       // Notifications
-      NOTIFICATION_SETTINGS: "Notification Configuration (JSON)",
+      NOTIFICATION_SETTINGS: t("admin.systemSettings.labels.notificationConfig"),
       
       // System Data
-      COMPLAINT_PRIORITIES: "Complaint Priorities (JSON)",
-      COMPLAINT_STATUSES: "Complaint Statuses (JSON)",
+      COMPLAINT_PRIORITIES: t("admin.systemSettings.labels.complaintPriorities"),
+      COMPLAINT_STATUSES: t("admin.systemSettings.labels.complaintStatuses"),
     };
     return labels[key] || key.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
   };
@@ -264,7 +266,7 @@ const SystemSettingsManager: React.FC = () => {
       });
 
       if (changedSettings.length === 0) {
-        dispatch(showSuccessToast("No Changes", "No changes to save"));
+        dispatch(showSuccessToast(t("admin.systemSettings.noChanges"), t("admin.systemSettings.noChangesToSave")));
         return;
       }
 
@@ -278,10 +280,10 @@ const SystemSettingsManager: React.FC = () => {
       }).unwrap();
 
       setHasChanges(false);
-      dispatch(showSuccessToast("Settings Saved", `Updated ${changedSettings.length} settings successfully`));
+      dispatch(showSuccessToast(t("admin.systemSettings.settingsSaved"), t("admin.systemSettings.updatedSettings", { count: changedSettings.length })));
       refetch();
     } catch (error: any) {
-      dispatch(showErrorToast("Save Failed", error.message || "Failed to save settings"));
+      dispatch(showErrorToast(t("admin.systemSettings.saveFailed"), error.message || t("admin.systemSettings.failedToSaveSettings")));
     }
   };
 
@@ -307,8 +309,8 @@ const SystemSettingsManager: React.FC = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="true">Enabled</SelectItem>
-            <SelectItem value="false">Disabled</SelectItem>
+            <SelectItem value="true">{t("admin.systemSettings.enabled")}</SelectItem>
+            <SelectItem value="false">{t("admin.systemSettings.disabled")}</SelectItem>
           </SelectContent>
         </Select>
       );
@@ -319,7 +321,7 @@ const SystemSettingsManager: React.FC = () => {
         <Textarea
           value={value}
           onChange={(e) => updateLocalSetting(key, "value", e.target.value)}
-          placeholder="Enter valid JSON"
+          placeholder={t("admin.systemSettings.enterValidJson")}
           className="font-mono text-sm"
           rows={4}
         />
@@ -336,9 +338,9 @@ const SystemSettingsManager: React.FC = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="small">Small</SelectItem>
-            <SelectItem value="medium">Medium</SelectItem>
-            <SelectItem value="large">Large</SelectItem>
+            <SelectItem value="small">{t("admin.systemSettings.small")}</SelectItem>
+            <SelectItem value="medium">{t("admin.systemSettings.medium")}</SelectItem>
+            <SelectItem value="large">{t("admin.systemSettings.large")}</SelectItem>
           </SelectContent>
         </Select>
       );
@@ -349,7 +351,7 @@ const SystemSettingsManager: React.FC = () => {
         type={type === "number" ? "number" : "text"}
         value={value}
         onChange={(e) => updateLocalSetting(key, "value", e.target.value)}
-        placeholder={`Enter ${type} value`}
+        placeholder={t("admin.systemSettings.enterValue", { type })}
       />
     );
   };
@@ -375,7 +377,7 @@ const SystemSettingsManager: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <RefreshCw className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading system settings...</span>
+        <span className="ml-2">{t("admin.systemSettings.loadingSettings")}</span>
       </div>
     );
   }
@@ -385,9 +387,9 @@ const SystemSettingsManager: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Error Loading Settings</h2>
-          <p className="text-gray-600 mb-4">Failed to load system configuration</p>
-          <Button onClick={() => refetch()}>Try Again</Button>
+          <h2 className="text-xl font-semibold mb-2">{t("admin.systemSettings.errorLoadingSettings")}</h2>
+          <p className="text-gray-600 mb-4">{t("admin.systemSettings.failedToLoadConfig")}</p>
+          <Button onClick={() => refetch()}>{t("admin.systemSettings.tryAgain")}</Button>
         </div>
       </div>
     );
@@ -398,24 +400,24 @@ const SystemSettingsManager: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">System Configuration</h2>
-          <p className="text-gray-600">Manage all system settings with enable/disable controls</p>
+          <h2 className="text-2xl font-bold">{t("admin.systemSettings.title")}</h2>
+          <p className="text-gray-600">{t("admin.systemSettings.subtitle")}</p>
         </div>
         <div className="flex items-center space-x-2">
           {hasChanges && (
             <>
               <Button variant="outline" onClick={handleResetChanges}>
-                Reset Changes
+                {t("admin.systemSettings.resetChanges")}
               </Button>
               <Button onClick={handleSaveChanges}>
                 <Save className="h-4 w-4 mr-2" />
-                Save Changes
+                {t("admin.systemSettings.saveChanges")}
               </Button>
             </>
           )}
           <Button variant="outline" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            {t("admin.systemSettings.refresh")}
           </Button>
         </div>
       </div>
@@ -424,7 +426,7 @@ const SystemSettingsManager: React.FC = () => {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
-          placeholder="Search settings..."
+          placeholder={t("admin.systemSettings.searchPlaceholder")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="pl-10"
@@ -451,7 +453,7 @@ const SystemSettingsManager: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">
-                        {section.keys.length} settings
+                        {section.keys.length} {t("admin.systemSettings.settings")}
                       </span>
                       {expandedSections.has(section.title) ? (
                         <ChevronDown className="h-4 w-4" />
@@ -482,20 +484,20 @@ const SystemSettingsManager: React.FC = () => {
                                   }
                                 />
                                 <span className="text-sm text-gray-500">
-                                  {setting.isActive ? "Active" : "Inactive"}
+                                  {setting.isActive ? t("admin.systemSettings.active") : t("admin.systemSettings.inactive")}
                                 </span>
                               </div>
                               <p className="text-sm text-gray-600 mb-3">
                                 {setting.description}
                               </p>
                               <div className="space-y-2">
-                                <Label className="text-xs text-gray-500">Value</Label>
+                                <Label className="text-xs text-gray-500">{t("admin.systemSettings.value")}</Label>
                                 {renderSettingInput(setting)}
                               </div>
                             </div>
                           </div>
                           <div className="text-xs text-gray-400 mt-2">
-                            Key: {key} | Type: {setting.type}
+                            {t("admin.systemSettings.key")}: {key} | {t("admin.systemSettings.type")}: {setting.type}
                           </div>
                         </div>
                       );
@@ -511,8 +513,8 @@ const SystemSettingsManager: React.FC = () => {
       {filteredSections.length === 0 && searchTerm && (
         <div className="text-center py-8">
           <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No settings found</h3>
-          <p className="text-gray-600">Try adjusting your search terms</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">{t("admin.systemSettings.noSettingsFound")}</h3>
+          <p className="text-gray-600">{t("admin.systemSettings.adjustSearchTerms")}</p>
         </div>
       )}
     </div>

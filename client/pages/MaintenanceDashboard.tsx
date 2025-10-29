@@ -36,10 +36,12 @@ import {
   Phone,
   MessageSquare,
 } from "lucide-react";
+import { useAppTranslation } from "../utils/i18n";
 
 const MaintenanceDashboard: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const { translations } = useAppSelector((state) => state.language);
+  const { t } = useAppTranslation();
 
   // Fetch complaints assigned to this maintenance team member
   // Let the backend handle role-based filtering automatically for maintenance team
@@ -214,9 +216,9 @@ const MaintenanceDashboard: React.FC = () => {
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-green-600 to-green-800 rounded-lg p-6 text-white">
           <h1 className="text-2xl font-bold mb-2">
-            🚧 Maintenance Dashboard 🛠️
+            🚧 {t('maintenance.dashboard.title')} 🛠️
           </h1>
-          <p className="text-green-100">Loading your assigned tasks...</p>
+          <p className="text-green-100">{t('maintenance.dashboard.loadingTasks')}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
@@ -241,9 +243,9 @@ const MaintenanceDashboard: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-lg p-6 text-white">
-          <h1 className="text-2xl font-bold mb-2">⚠️ Dashboard Error</h1>
+          <h1 className="text-2xl font-bold mb-2">⚠️ {t('maintenance.dashboard.error')}</h1>
           <p className="text-red-100">
-            Failed to load your tasks. Please try again.
+            {t('maintenance.dashboard.errorMessage')}
           </p>
           <div className="mt-4">
             <Button
@@ -251,7 +253,7 @@ const MaintenanceDashboard: React.FC = () => {
               onClick={() => refetchComplaints()}
             >
               <AlertTriangle className="h-4 w-4 mr-2" />
-              Retry
+              {t('common.retry')}
             </Button>
           </div>
         </div>
@@ -265,10 +267,10 @@ const MaintenanceDashboard: React.FC = () => {
       <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
         <div className="flex-1">
           <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
-            🚧 Maintenance Dashboard 🛠️
+            🚧 {t('maintenance.dashboard.title')} 🛠️
           </h1>
           <p className="text-primary-foreground/90 text-sm md:text-base">
-            Manage your assigned tasks and track field work progress.
+            {t('maintenance.dashboard.subtitle')}
           </p>
         </div>
         
@@ -282,12 +284,12 @@ const MaintenanceDashboard: React.FC = () => {
                 <div className="p-1.5 rounded-lg bg-white/20">
                   <Navigation className="h-4 w-4 text-white" />
                 </div>
-                Field Work
+                {t('maintenance.dashboard.fieldWork')}
               </CardTitle>
             </CardHeader>
 
             <CardContent className="p-0">
-              <div className="text-xs text-white/80">Start your tasks</div>
+              <div className="text-xs text-white/80">{t('maintenance.dashboard.startTasks')}</div>
             </CardContent>
           </Card>
 
@@ -300,12 +302,12 @@ const MaintenanceDashboard: React.FC = () => {
                 <div className="p-1.5 rounded-lg bg-white/20">
                   <Clock className="h-4 w-4 text-white" />
                 </div>
-                Refresh
+                {t('common.refresh')}
               </CardTitle>
             </CardHeader>
 
             <CardContent className="p-0">
-              <div className="text-xs text-white/80">Update data</div>
+              <div className="text-xs text-white/80">{t('maintenance.dashboard.updateData')}</div>
             </CardContent>
           </Card>
         </div>
@@ -315,17 +317,17 @@ const MaintenanceDashboard: React.FC = () => {
         <Card className="bg-yellow-50 border-yellow-200">
           <CardHeader>
             <CardTitle className="text-sm text-yellow-800">
-              Debug Info (Dev Mode)
+              {t('maintenance.dashboard.debugInfo')}
             </CardTitle>
           </CardHeader>
           <CardContent className="text-xs text-yellow-700">
-            <div>Total Complaints Fetched: {complaints.length}</div>
-            <div>User ID: {user?.id}</div>
-            <div>User Role: {user?.role}</div>
-            <div>My Tasks Count: {myTasks.length}</div>
+            <div>{t('maintenance.dashboard.totalComplaintsFetched')}: {complaints.length}</div>
+            <div>{t('maintenance.dashboard.userId')}: {user?.id}</div>
+            <div>{t('maintenance.dashboard.userRole')}: {user?.role}</div>
+            <div>{t('maintenance.dashboard.myTasksCount')}: {myTasks.length}</div>
             {complaints.length > 0 && (
               <div>
-                Sample Task:{" "}
+                {t('maintenance.dashboard.sampleTask')}:{" "}
                 {JSON.stringify(complaints[0], null, 2).substring(0, 200)}...
               </div>
             )}
@@ -337,33 +339,33 @@ const MaintenanceDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('maintenance.dashboard.totalTasks')}</CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {dashboardStats.totalTasks}
             </div>
-            <p className="text-xs text-muted-foreground">Assigned to you</p>
+            <p className="text-xs text-muted-foreground">{t('maintenance.dashboard.assignedToYou')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today's Tasks</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('maintenance.dashboard.todaysTasks')}</CardTitle>
             <Calendar className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
               {dashboardStats.todayTasks}
             </div>
-            <p className="text-xs text-muted-foreground">Scheduled for today</p>
+            <p className="text-xs text-muted-foreground">{t('maintenance.dashboard.scheduledForToday')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">In Progress</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('maintenance.dashboard.inProgress')}</CardTitle>
             <Clock className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
@@ -371,21 +373,21 @@ const MaintenanceDashboard: React.FC = () => {
               {dashboardStats.inProgress}
             </div>
             <p className="text-xs text-muted-foreground">
-              Currently working on
+              {t('maintenance.dashboard.currentlyWorkingOn')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Efficiency</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('maintenance.dashboard.efficiency')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
               {dashboardStats.efficiency}%
             </div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <p className="text-xs text-muted-foreground">{t('maintenance.dashboard.thisMonth')}</p>
           </CardContent>
         </Card>
       </div>
@@ -394,13 +396,13 @@ const MaintenanceDashboard: React.FC = () => {
       <Tabs defaultValue="active" className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="active">
-            Active Tasks ({activeTasks.length})
+            {t('maintenance.dashboard.activeTasks')} ({activeTasks.length})
           </TabsTrigger>
           <TabsTrigger value="urgent">
-            Urgent ({urgentTasks.length})
+            {t('maintenance.dashboard.urgent')} ({urgentTasks.length})
           </TabsTrigger>
-          <TabsTrigger value="completed">Completed</TabsTrigger>
-          <TabsTrigger value="tools">Tools & Reports</TabsTrigger>
+          <TabsTrigger value="completed">{t('maintenance.dashboard.completed')}</TabsTrigger>
+          <TabsTrigger value="tools">{t('maintenance.dashboard.toolsReports')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="space-y-6">
@@ -410,16 +412,16 @@ const MaintenanceDashboard: React.FC = () => {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Wrench className="h-5 w-5 mr-2" />
-                  Active Tasks
+                  {t('maintenance.dashboard.activeTasks')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {activeTasks.length === 0 ? (
                   <div className="text-center py-8">
                     <CheckCircle className="h-12 w-12 mx-auto text-green-400 mb-4" />
-                    <p className="text-gray-500">No active tasks</p>
+                    <p className="text-gray-500">{t('maintenance.dashboard.noActiveTasks')}</p>
                     <p className="text-sm text-gray-400">
-                      Great job! All caught up.
+                      {t('maintenance.dashboard.allCaughtUp')}
                     </p>
                   </div>
                 ) : (
@@ -449,20 +451,20 @@ const MaintenanceDashboard: React.FC = () => {
                           <MapPin className="h-3 w-3 mr-1" />
                           {task.area}, {task.landmark}
                           <Calendar className="h-3 w-3 ml-3 mr-1" />
-                          Due:{" "}
+                          {t('maintenance.dashboard.due')}:{" "}
                           {task.deadline && typeof task.deadline === 'string'
                             ? new Date(task.deadline).toLocaleDateString()
-                            : "No deadline"}
+                            : t('maintenance.dashboard.noDeadline')}
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="flex space-x-2">
                             <Button size="sm" variant="outline">
                               <Navigation className="h-3 w-3 mr-1" />
-                              Navigate
+                              {t('maintenance.dashboard.navigate')}
                             </Button>
                             <Button size="sm" variant="outline">
                               <Phone className="h-3 w-3 mr-1" />
-                              Call Citizen
+                              {t('maintenance.dashboard.callCitizen')}
                             </Button>
                           </div>
                           <div className="flex space-x-2">
@@ -473,7 +475,7 @@ const MaintenanceDashboard: React.FC = () => {
                                   handleStatusUpdate(task.id, "IN_PROGRESS")
                                 }
                               >
-                                Start Work
+                                {t('maintenance.dashboard.startWork')}
                               </Button>
                             )}
                             {task.status === "IN_PROGRESS" && (
@@ -483,12 +485,12 @@ const MaintenanceDashboard: React.FC = () => {
                                   handleStatusUpdate(task.id, "RESOLVED")
                                 }
                               >
-                                Mark Complete
+                                {t('maintenance.dashboard.markComplete')}
                               </Button>
                             )}
                             <Link to={`/tasks/${task.id}`}>
                               <Button size="sm" variant="outline">
-                                Details
+                                {t('common.details')}
                               </Button>
                             </Link>
                           </div>
@@ -505,24 +507,24 @@ const MaintenanceDashboard: React.FC = () => {
               {/* Quick Actions */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Quick Actions</CardTitle>
+                  <CardTitle className="text-lg">{t('maintenance.dashboard.quickActions')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <Button className="w-full justify-start">
                     <Camera className="h-4 w-4 mr-2" />
-                    Take Work Photo
+                    {t('maintenance.dashboard.takeWorkPhoto')}
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <FileText className="h-4 w-4 mr-2" />
-                    Submit Report
+                    {t('maintenance.dashboard.submitReport')}
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <MessageSquare className="h-4 w-4 mr-2" />
-                    Contact Supervisor
+                    {t('maintenance.dashboard.contactSupervisor')}
                   </Button>
                   <Button variant="outline" className="w-full justify-start">
                     <Navigation className="h-4 w-4 mr-2" />
-                    View Route Map
+                    {t('maintenance.dashboard.viewRouteMap')}
                   </Button>
                 </CardContent>
               </Card>
@@ -530,12 +532,12 @@ const MaintenanceDashboard: React.FC = () => {
               {/* Progress Stats */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Progress Stats</CardTitle>
+                  <CardTitle className="text-lg">{t('maintenance.dashboard.progressStats')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span>Tasks Completed</span>
+                      <span>{t('maintenance.dashboard.tasksCompleted')}</span>
                       <span>
                         {dashboardStats.totalTasks > 0
                           ? Math.round(
@@ -563,7 +565,7 @@ const MaintenanceDashboard: React.FC = () => {
                       {dashboardStats.avgCompletionTime}
                     </div>
                     <p className="text-xs text-gray-500">
-                      Avg. Completion Time (days)
+                      {t('maintenance.dashboard.avgCompletionTime')}
                     </p>
                   </div>
                   <div className="text-center">
@@ -571,7 +573,7 @@ const MaintenanceDashboard: React.FC = () => {
                       {dashboardStats.completed}
                     </div>
                     <p className="text-xs text-gray-500">
-                      Tasks Completed This Month
+                      {t('maintenance.dashboard.tasksCompletedThisMonth')}
                     </p>
                   </div>
                 </CardContent>
@@ -585,14 +587,14 @@ const MaintenanceDashboard: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-red-600">
                 <AlertTriangle className="h-5 w-5 mr-2" />
-                Urgent Tasks Requiring Immediate Attention
+                {t('maintenance.dashboard.urgentTasksTitle')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {urgentTasks.length === 0 ? (
                 <div className="text-center py-8">
                   <CheckCircle className="h-12 w-12 mx-auto text-green-400 mb-4" />
-                  <p className="text-gray-500">No urgent tasks! Well done!</p>
+                  <p className="text-gray-500">{t('maintenance.dashboard.noUrgentTasks')}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -621,29 +623,29 @@ const MaintenanceDashboard: React.FC = () => {
                         <MapPin className="h-3 w-3 mr-1" />
                         {task.area}
                         <Clock className="h-3 w-3 ml-3 mr-1" />
-                        Due:{" "}
+                        {t('maintenance.dashboard.due')}:{" "}
                         {task.deadline && typeof task.deadline === 'string'
                           ? new Date(task.deadline).toLocaleDateString()
-                          : "ASAP"}
+                          : t('maintenance.dashboard.asap')}
                       </div>
                       <div className="flex justify-between items-center">
                         <div className="flex space-x-2">
                           <Button size="sm" variant="outline">
                             <Navigation className="h-3 w-3 mr-1" />
-                            Navigate
+                            {t('maintenance.dashboard.navigate')}
                           </Button>
                           <Button size="sm" variant="outline">
                             <Phone className="h-3 w-3 mr-1" />
-                            Emergency Contact
+                            {t('maintenance.dashboard.emergencyContact')}
                           </Button>
                         </div>
                         <div className="flex space-x-2">
                           <Button size="sm" variant="destructive">
-                            Start Immediately
+                            {t('maintenance.dashboard.startImmediately')}
                           </Button>
                           <Link to={`/tasks/${task.id}`}>
                             <Button size="sm" variant="outline">
-                              Details
+                              {t('common.details')}
                             </Button>
                           </Link>
                         </div>
@@ -659,7 +661,7 @@ const MaintenanceDashboard: React.FC = () => {
         <TabsContent value="completed" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recently Completed Tasks</CardTitle>
+              <CardTitle>{t('maintenance.dashboard.recentlyCompletedTasks')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -674,20 +676,20 @@ const MaintenanceDashboard: React.FC = () => {
                       <div className="flex justify-between items-center">
                         <div>
                           <h3 className="font-medium text-sm">
-                            {task.title || `Task #${task.id.slice(-6)}`}
+                            {task.title || `${t('maintenance.dashboard.task')} #${task.id.slice(-6)}`}
                           </h3>
                           <p className="text-xs text-gray-600 mt-1">
-                            Completed on{" "}
+                            {t('maintenance.dashboard.completedOn')}{" "}
                             {task.resolvedOn
                               ? new Date(task.resolvedOn).toLocaleDateString()
-                              : "Recently"}
+                              : t('maintenance.dashboard.recently')}
                           </p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <CheckCircle className="h-5 w-5 text-green-600" />
                           <Link to={`/tasks/${task.id}`}>
                             <Button size="sm" variant="outline">
-                              View Report
+                              {t('maintenance.dashboard.viewReport')}
                             </Button>
                           </Link>
                         </div>
@@ -703,48 +705,48 @@ const MaintenanceDashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Field Tools</CardTitle>
+                <CardTitle>{t('maintenance.dashboard.fieldTools')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button className="w-full justify-start">
                   <Camera className="h-4 w-4 mr-2" />
-                  Photo Documentation
+                  {t('maintenance.dashboard.photoDocumentation')}
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Navigation className="h-4 w-4 mr-2" />
-                  GPS Navigation
+                  {t('maintenance.dashboard.gpsNavigation')}
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <FileText className="h-4 w-4 mr-2" />
-                  Work Order Scanner
+                  {t('maintenance.dashboard.workOrderScanner')}
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Incident Reporting
+                  {t('maintenance.dashboard.incidentReporting')}
                 </Button>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Reports & Analytics</CardTitle>
+                <CardTitle>{t('maintenance.dashboard.reportsAnalytics')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button variant="outline" className="w-full justify-start">
                   <BarChart3 className="h-4 w-4 mr-2" />
-                  Daily Work Report
+                  {t('maintenance.dashboard.dailyWorkReport')}
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <TrendingUp className="h-4 w-4 mr-2" />
-                  Performance Summary
+                  {t('maintenance.dashboard.performanceSummary')}
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Calendar className="h-4 w-4 mr-2" />
-                  Time Tracking
+                  {t('maintenance.dashboard.timeTracking')}
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <FileText className="h-4 w-4 mr-2" />
-                  Completion Certificate
+                  {t('maintenance.dashboard.completionCertificate')}
                 </Button>
               </CardContent>
             </Card>

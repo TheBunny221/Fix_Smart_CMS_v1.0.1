@@ -13,7 +13,7 @@ const ContactInfoCard: React.FC<ContactInfoCardProps> = ({ title }) => {
   const { getConfig } = useSystemConfig();
 
   const headerTitle =
-    title || translations?.guest?.supportContact || "Need Help? Contact Us";
+    title || translations?.guest?.supportContact || translations?.index?.needHelpContactUs || "Need Help? Contact Us";
 
   return (
     <Card>
@@ -29,7 +29,7 @@ const ContactInfoCard: React.FC<ContactInfoCardProps> = ({ title }) => {
             <Phone className="h-5 w-5 text-green-500 flex-shrink-0" />
             <div>
               <div className="font-medium">
-                {translations?.guest?.supportContact || "Helpline"}
+                {translations?.guest?.supportContact || translations?.index?.helpline || "Helpline"}
               </div>
               <div className="text-sm text-gray-600">
                 {getConfig("CONTACT_HELPLINE", "1800-XXX-XXXX")}
@@ -40,7 +40,7 @@ const ContactInfoCard: React.FC<ContactInfoCardProps> = ({ title }) => {
             <Mail className="h-5 w-5 text-blue-500 flex-shrink-0" />
             <div>
               <div className="font-medium">
-                {translations?.auth?.email || "Email Support"}
+                {translations?.auth?.email || translations?.index?.emailSupport || "Email Support"}
               </div>
               <div className="text-sm text-gray-600">
                 {getConfig("CONTACT_EMAIL", "support@cochinsmartcity.in")}
@@ -51,7 +51,7 @@ const ContactInfoCard: React.FC<ContactInfoCardProps> = ({ title }) => {
             <Clock className="h-5 w-5 text-orange-500 flex-shrink-0" />
             <div>
               <div className="font-medium">
-                {translations?.common?.time || "Office Hours"}
+                {translations?.common?.time || translations?.index?.officeHours || "Office Hours"}
               </div>
               <div className="text-sm text-gray-600">
                 {getConfig(
@@ -65,7 +65,7 @@ const ContactInfoCard: React.FC<ContactInfoCardProps> = ({ title }) => {
             <MapPin className="h-5 w-5 text-purple-500 flex-shrink-0" />
             <div>
               <div className="font-medium">
-                {translations?.complaints?.location || "Office Location"}
+                {translations?.complaints?.location || translations?.index?.officeLocation || "Office Location"}
               </div>
               <div className="text-sm text-gray-600">
                 {getConfig(

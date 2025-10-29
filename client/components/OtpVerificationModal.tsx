@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useAppSelector } from "../store/hooks";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +43,7 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
   onResendOtp,
   isResending = false,
 }) => {
+  const { translations } = useAppSelector((state) => state.language);
   const [otpCode, setOtpCode] = useState("");
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes
   const [canResend, setCanResend] = useState(false);
@@ -107,11 +109,10 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
             <div className="p-2 bg-blue-100 rounded-lg">
               <Shield className="h-5 w-5 text-blue-600" />
             </div>
-            <span>Verify Your Identity</span>
+            <span>{translations?.forms?.verifyYourIdentity || "Verify Your Identity"}</span>
           </DialogTitle>
           <DialogDescription>
-            We've sent a verification code to your email address to ensure the
-            security of your complaint details.
+            {translations?.forms?.verificationCodeSentSecurity || "We've sent a verification code to your email address to ensure the security of your complaint details."}
           </DialogDescription>
         </DialogHeader>
 
@@ -121,10 +122,10 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
             <Mail className="h-5 w-5 text-blue-600" />
             <div>
               <p className="text-sm font-medium text-blue-900">
-                Code sent to: {maskedEmail}
+                {translations?.forms?.codeSentTo || "Code sent to"}: {maskedEmail}
               </p>
               <p className="text-xs text-blue-600">
-                Check your inbox and spam folder
+                {translations?.forms?.checkInboxSpam || "Check your inbox and spam folder"}
               </p>
             </div>
           </div>
@@ -132,7 +133,7 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
           {/* OTP Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="otpCode">Enter 6-digit verification code</Label>
+              <Label htmlFor="otpCode">{translations?.forms?.enter6DigitVerificationCode || "Enter 6-digit verification code"}</Label>
               <Input
                 id="otpCode"
                 type="text"
@@ -145,7 +146,7 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
                 autoFocus
               />
               <p className="text-xs text-gray-500 mt-1">
-                Enter the 6-digit code from your email
+                {translations?.forms?.enter6DigitCodeFromEmail || "Enter the 6-digit code from your email"}
               </p>
             </div>
 
@@ -154,11 +155,11 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
               <div className="flex items-center space-x-2">
                 <Clock className="h-4 w-4 text-gray-500" />
                 <span className="text-gray-600">
-                  Code expires in: {formatTime(timeLeft)}
+                  {translations?.forms?.codeExpiresIn || "Code expires in"}: {formatTime(timeLeft)}
                 </span>
               </div>
               {timeLeft === 0 && (
-                <span className="text-red-600 font-medium">Code expired</span>
+                <span className="text-red-600 font-medium">{translations?.forms?.codeExpired || "Code expired"}</span>
               )}
             </div>
 
@@ -175,7 +176,7 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
-                  Code entered successfully. Click verify to continue.
+                  {translations?.forms?.codeEnteredSuccessfully || "Code entered successfully. Click verify to continue."}
                 </AlertDescription>
               </Alert>
             )}
@@ -190,11 +191,9 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
                 {isVerifying ? (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Verifying...
+                    {translations?.forms?.verifying || "Verifying..."}
                   </>
-                ) : (
-                  "Verify Code"
-                )}
+                ) : ("translations?.forms?.verifyCode" || "Verify Code")}
               </Button>
               <Button
                 type="button"
@@ -205,7 +204,7 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
                 {isResending ? (
                   <RefreshCw className="h-4 w-4 animate-spin" />
                 ) : (
-                  "Resend"
+                  translations?.forms?.resend || "Resend"
                 )}
               </Button>
             </div>
@@ -214,17 +213,17 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
           {/* Help Text */}
           <div className="text-center">
             <p className="text-xs text-gray-500">
-              Didn't receive the code?{" "}
+              {translations?.forms?.didntReceiveCode || "Didn't receive the code?"}{" "}
               {canResend ? (
                 <button
                   onClick={handleResend}
                   className="text-blue-600 hover:underline"
                   disabled={isResending}
                 >
-                  Click to resend
+                  {translations?.forms?.clickToResend || "Click to resend"}
                 </button>
               ) : (
-                `Wait ${formatTime(timeLeft)} to resend`
+                `${translations?.forms?.wait || "Wait"} ${formatTime(timeLeft)} ${translations?.forms?.toResend || "to resend"}`
               )}
             </p>
           </div>
@@ -235,11 +234,10 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
               <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
               <div>
                 <p className="text-xs font-medium text-yellow-800">
-                  Security Note
+                  {translations?.forms?.securityNote || "Security Note"}
                 </p>
                 <p className="text-xs text-yellow-700">
-                  Never share this code with anyone. Our team will never ask for
-                  your verification code.
+                  {translations?.forms?.neverShareCode || "Never share this code with anyone. Our team will never ask for your verification code."}
                 </p>
               </div>
             </div>

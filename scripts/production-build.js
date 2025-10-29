@@ -161,7 +161,7 @@ function installDependencies() {
   }
 
   // Install all dependencies (including dev) for building
-  const result = execCommand('npm ci');
+  const result = execCommand('npm install');
   if (!result.success) {
     console.error('❌ Failed to install dependencies');
     console.log('💡 Try running with SKIP_DEPS=true if dependencies are already installed');

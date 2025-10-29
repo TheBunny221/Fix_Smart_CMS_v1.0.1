@@ -232,15 +232,15 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
           break;
         case "area":
           if (!value || value.trim().length < 3)
-            throw new Error("Area must be at least 3 characters");
+            throw new Error(translations?.forms?.areaMinCharacters || "Area must be at least 3 characters");
           break;
         case "description":
           if (!value || value.trim().length < 10)
-            throw new Error("Description must be at least 10 characters");
+            throw new Error(translations?.forms?.descriptionMinCharacters || "Description must be at least 10 characters");
           break;
         case "captcha":
           if (!value)
-            throw new Error("Please complete the CAPTCHA verification");
+            throw new Error(translations?.forms?.completeCaptchaVerification || "Please complete the CAPTCHA verification");
           break;
         default:
           break;
@@ -278,8 +278,8 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
         } else {
           dispatch(
             showErrorToast(
-              "Invalid File Type",
-              "Only JPG and PNG images are allowed",
+              translations?.forms?.invalidFileType || "Invalid File Type",
+              translations?.forms?.onlyJpgPngAllowed || "Only JPG and PNG images are allowed",
             ),
           );
         }
@@ -367,6 +367,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
           const complaintData = {
             title: `${selectedComplaintType?.label || formData.problemType} complaint`,
             description: formData.description,
+            type: formData.problemType as ComplaintType,
             complaintTypeId: parseInt(formData.problemType), // Send as ID for new backend
             priority: "MEDIUM" as Priority,
             wardId: formData.ward,
@@ -388,8 +389,8 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
           ).unwrap();
           console.warn(result);
           toast({
-            title: "Complaint Submitted Successfully!",
-            description: `Your complaint has been registered with ID: ${result.complaintId}. You can track its progress from your dashboard.`,
+            title: translations?.forms?.complaintSubmittedSuccessfully || "Complaint Submitted Successfully!",
+            description: translations?.forms?.complaintRegisteredWithId?.replace('{{complaintId}}', result.complaintId) || `Your complaint has been registered with ID: ${result.complaintId}. You can track its progress from your dashboard.`,
           });
 
           // Reset form and call success callback
@@ -413,8 +414,8 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
             setShowOtpInput(false);
             setShowOtpDialog(true);
             toast({
-              title: "Verification Code Sent",
-              description: `A verification code has been sent to ${formData.email}. Please check your email and enter the code below.`,
+              title: translations?.forms?.verificationCodeSent || "Verification Code Sent",
+              description: translations?.forms?.verificationCodeSentToEmail?.replace('{{email}}', formData.email) || `A verification code has been sent to ${formData.email}. Please check your email and enter the code below.`,
             });
           }
         }
@@ -423,9 +424,9 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
         const message =
           typeof error === "string" ? error : getApiErrorMessage(error);
         toast({
-          title: "Submission Failed",
+          title: translations?.forms?.submissionFailed || "Submission Failed",
           description:
-            message || "Failed to submit complaint. Please try again.",
+            message || translations?.forms?.failedToSubmitComplaint || "Failed to submit complaint. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -454,8 +455,8 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
       const inputCode = code ?? otpCode;
       if (!inputCode || inputCode.length !== 6) {
         toast({
-          title: "Invalid Code",
-          description: "Please enter a valid 6-digit verification code.",
+          title: translations?.forms?.invalidCode || "Invalid Code",
+          description: translations?.forms?.enterValid6DigitCode || "Please enter a valid 6-digit verification code.",
           variant: "destructive",
         });
         return;
@@ -493,10 +494,10 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
         }
 
         toast({
-          title: "Success!",
+          title: translations?.forms?.success || "Success!",
           description: result.data?.isNewUser
-            ? "Your complaint has been verified and your citizen account has been created successfully!"
-            : "Your complaint has been verified and you've been logged in successfully!",
+            ? translations?.forms?.complaintVerifiedAccountCreated || "Your complaint has been verified and your citizen account has been created successfully!"
+            : translations?.forms?.complaintVerifiedLoggedIn || "Your complaint has been verified and you've been logged in successfully!",
         });
 
         resetForm();
@@ -510,9 +511,9 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
         const message =
           typeof error === "string" ? error : getApiErrorMessage(error);
         toast({
-          title: "Verification Failed",
+          title: translations?.forms?.verificationFailed || "Verification Failed",
           description:
-            message || "Invalid verification code. Please try again.",
+            message || translations?.forms?.invalidVerificationCode || "Invalid verification code. Please try again.",
           variant: "destructive",
         });
       } finally {
@@ -592,7 +593,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                       handleInputChange("fullName", e.target.value)
                     }
                     onBlur={() => validateField("fullName", formData.fullName)}
-                    placeholder={`${translations?.common?.name || "Enter your"} ${translations?.auth?.fullName || "full name"}`}
+                    placeholder={translations?.forms?.enterYourFullName || `${translations?.common?.name || "Enter your"} ${translations?.auth?.fullName || "full name"}`}
                     required
                   />
                   {errors.fullName && (
@@ -611,7 +612,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                       handleInputChange("mobile", e.target.value)
                     }
                     onBlur={() => validateField("mobile", formData.mobile)}
-                    placeholder={`${translations?.common?.required || "Enter your"} ${translations?.complaints?.mobile || "mobile number"}`}
+                    placeholder={translations?.forms?.enterYourMobileNumber || `${translations?.common?.required || "Enter your"} ${translations?.complaints?.mobile || "mobile number"}`}
                     required
                     disabled={isAuthenticated && !!user?.phoneNumber}
                   />
@@ -630,7 +631,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     onBlur={() => validateField("email", formData.email)}
-                    placeholder={`${"Enter your"} ${translations?.auth?.email || "email address"}`}
+                    placeholder={translations?.forms?.enterYourEmailAddress || `${"Enter your"} ${translations?.auth?.email || "email address"}`}
                     disabled={isAuthenticated && !!user?.email}
                   />
                   {errors.email && (
@@ -662,7 +663,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                   >
                     <SelectTrigger>
                       <SelectValue
-                        placeholder={`${translations?.common?.selectAll || "Select"} ${translations?.complaints?.complaintType || "complaint type"}`}
+                        placeholder={translations?.forms?.selectComplaintType || `${translations?.common?.selectAll || "Select"} ${translations?.complaints?.complaintType || "complaint type"}`}
                       />
                     </SelectTrigger>
                     <SelectContent>
@@ -687,17 +688,17 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                   >
                     <SelectTrigger>
                       <SelectValue
-                        placeholder={`${translations?.common?.selectAll || "Select your"} ${translations?.complaints?.ward || "ward"}`}
+                        placeholder={translations?.forms?.selectYourWard || `${translations?.common?.selectAll || "Select your"} ${translations?.complaints?.ward || "ward"}`}
                       />
                     </SelectTrigger>
                     <SelectContent>
                       {wardsLoading ? (
                         <SelectItem value="loading" disabled>
-                          Loading wards...
+                          {translations?.forms?.loadingWards || "Loading wards..."}
                         </SelectItem>
                       ) : wardsError ? (
                         <SelectItem value="error" disabled>
-                          Error loading wards
+                          {translations?.forms?.errorLoadingWards || "Error loading wards"}
                         </SelectItem>
                       ) : (
                         wards.map((ward) => (
@@ -946,11 +947,11 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                 <div className="bg-gray-100 p-2 rounded border min-h-[60px] flex items-center justify-center">
                   {captchaLoading ? (
                     <div className="text-sm text-gray-500">
-                      Loading CAPTCHA...
+                      {translations?.forms?.loadingCaptcha || "Loading CAPTCHA..."}
                     </div>
                   ) : captchaError ? (
                     <div className="text-sm text-red-500">
-                      Error loading CAPTCHA
+                      {translations?.forms?.errorLoadingCaptcha || "Error loading CAPTCHA"}
                     </div>
                   ) : captchaData?.success && captchaData.data ? (
                     <div
@@ -961,7 +962,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                     />
                   ) : (
                     <div className="text-sm text-gray-500">
-                      Click refresh to load CAPTCHA
+                      {translations?.forms?.clickRefreshCaptcha || "Click refresh to load CAPTCHA"}
                     </div>
                   )}
                 </div>
@@ -998,17 +999,17 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
               <>
                 <Separator />
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Email Verification</h3>
+                  <h3 className="text-lg font-medium">{translations?.forms?.emailVerification || "Email Verification"}</h3>
                   <div className="max-w-md mx-auto space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="otpCode" className="text-center block">
-                        Enter Verification Code
+                        {translations?.forms?.enterVerificationCode || "Enter Verification Code"}
                       </Label>
                       <Input
                         id="otpCode"
                         name="otpCode"
                         type="text"
-                        placeholder="Enter 6-digit code"
+                        placeholder={translations?.forms?.enter6DigitCode || "Enter 6-digit code"}
                         maxLength={6}
                         className="text-center text-xl font-mono tracking-widest"
                         value={otpCode}
@@ -1021,7 +1022,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                       />
                     </div>
                     <div className="text-center text-sm text-gray-500">
-                      Code sent to: {formData.email}
+                      {translations?.forms?.codeSentTo || "Code sent to"}: {formData.email}
                     </div>
                     <div className="flex space-x-2">
                       <Button
@@ -1030,7 +1031,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                         className="flex-1"
                         disabled={isLoading || otpCode.length !== 6}
                       >
-                        Verify & Submit
+                        {translations?.forms?.verifyAndSubmit || "Verify & Submit"}
                       </Button>
                       <Button
                         type="button"
@@ -1041,7 +1042,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                           setSessionId(null);
                         }}
                       >
-                        Back
+                        {translations?.common?.back || "Back"}
                       </Button>
                     </div>
                   </div>
@@ -1065,10 +1066,10 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                     isSendingOtp || isSubmittingLocal ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Sending Code...
+                        {translations?.forms?.sendingCode || "Sending Code..."}
                       </>
                     ) : (
-                      "Submit & Send Verification"
+                      translations?.forms?.submitAndSendVerification || "Submit & Send Verification"
                     )
                   ) : isLoading ? (
                     translations?.common?.loading || "Submitting..."
@@ -1100,15 +1101,15 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
             try {
               await resendGuestOtp({ email: formData.email }).unwrap();
               toast({
-                title: "Verification Code Resent",
+                title: translations?.forms?.verificationCodeResent || "Verification Code Resent",
                 description:
-                  "A new verification code has been sent to your email.",
+                  translations?.forms?.newVerificationCodeSent || "A new verification code has been sent to your email.",
               });
             } catch (error: any) {
               toast({
-                title: "Failed to Resend",
+                title: translations?.forms?.failedToResend || "Failed to Resend",
                 description:
-                  error?.message || "Failed to resend verification code.",
+                  error?.message || translations?.forms?.failedToResendVerificationCode || "Failed to resend verification code.",
                 variant: "destructive",
               });
             }

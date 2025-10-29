@@ -1,4 +1,5 @@
 import React from "react";
+import { useAppTranslation } from "../utils/i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Clock,
@@ -107,46 +108,46 @@ const STYLE: Record<
   },
 };
 
-const META = [
+const getMetadata = (t: any) => [
   {
     id: "registered" as const,
-    label: "Registered",
-    subtitle: "Newly registered",
+    label: t("complaints.statusOverview.registered"),
+    subtitle: t("complaints.statusOverview.registeredSubtitle"),
     icon: Clock,
     valueKey: "registered" as const,
   },
   {
     id: "assigned" as const,
-    label: "Assigned",
-    subtitle: "Assigned to teams",
+    label: t("complaints.statusOverview.assigned"),
+    subtitle: t("complaints.statusOverview.assignedSubtitle"),
     icon: Users,
     valueKey: "assigned" as const,
   },
   {
     id: "inProgress" as const,
-    label: "In Progress",
-    subtitle: "Active work",
+    label: t("complaints.statusOverview.inProgress"),
+    subtitle: t("complaints.statusOverview.inProgressSubtitle"),
     icon: Settings,
     valueKey: "in_progress" as const, // NOTE: backend uses snake_case here
   },
   {
     id: "resolved" as const,
-    label: "Resolved",
-    subtitle: "Resolved complaints",
+    label: t("complaints.statusOverview.resolved"),
+    subtitle: t("complaints.statusOverview.resolvedSubtitle"),
     icon: CheckCircle,
     valueKey: "resolved" as const,
   },
   {
     id: "reopened" as const,
-    label: "Reopened",
-    subtitle: "Reopened after closure",
+    label: t("complaints.statusOverview.reopened"),
+    subtitle: t("complaints.statusOverview.reopenedSubtitle"),
     icon: RotateCcw,
     valueKey: "reopened" as const,
   },
   {
     id: "closed" as const,
-    label: "Closed",
-    subtitle: "Closed complaints",
+    label: t("complaints.statusOverview.closed"),
+    subtitle: t("complaints.statusOverview.closedSubtitle"),
     icon: FileText,
     valueKey: "closed" as const,
   },
@@ -161,6 +162,9 @@ export default function StatusOverviewGrid({
   filters: Filters;
   onMainFilterChange: (next: StatusId) => void;
 }) {
+  const { t } = useAppTranslation();
+  const META = getMetadata(t);
+
 return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-2 sm:gap-3">
       {META.map((m) => {

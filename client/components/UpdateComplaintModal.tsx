@@ -75,6 +75,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
   onSuccess,
 }) => {
   const { user } = useAppSelector((state) => state.auth);
+  const { translations } = useAppSelector((state) => state.language);
 
   const [formData, setFormData] = useState({
     status: "",
@@ -229,9 +230,10 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
 
   const getDropdownLabel = () => {
     if (user?.role === "ADMINISTRATOR")
-      return "Select Ward Officer & Team Member";
-    if (user?.role === "WARD_OFFICER") return "Select Maintenance Team Member";
-    return "Select User";
+      return translations?.complaints?.updateModal?.selectWardOfficer || "Select Ward Officer & Team Member";
+    if (user?.role === "WARD_OFFICER") 
+      return translations?.complaints?.updateModal?.selectMaintenanceTeamMember || "Select Maintenance Team Member";
+    return translations?.complaints?.updateModal?.selectUser || "Select User";
   };
 
   const getAvailableStatusOptions = () => {
@@ -277,20 +279,21 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
 
     if (formData.status && !availableStatuses.includes(formData.status)) {
       errors.push(
+        translations?.complaints?.updateModal?.validationMessages?.statusPermissionDenied?.replace('{{status}}', formData.status).replace('{{options}}', availableStatuses.join(", ")) ||
         `You don't have permission to set status to '${formData.status}'. Available options: ${availableStatuses.join(", ")}`,
       );
     }
 
     if (user?.role === "MAINTENANCE_TEAM") {
       if (formData.status === "ASSIGNED" && complaint?.status !== "ASSIGNED") {
-        errors.push("Maintenance team cannot set status back to 'Assigned'.");
+        errors.push(translations?.complaints?.updateModal?.validationMessages?.maintenanceCannotAssign || "Maintenance team cannot set status back to 'Assigned'.");
       }
       if (formData.status === "REGISTERED") {
-        errors.push("Maintenance team cannot set status to 'Registered'.");
+        errors.push(translations?.complaints?.updateModal?.validationMessages?.maintenanceCannotRegister || "Maintenance team cannot set status to 'Registered'.");
       }
       if (complaintPriority && formData.priority !== complaintPriority) {
         errors.push(
-          "Maintenance team cannot change complaint priority. Contact your supervisor if needed.",
+          translations?.complaints?.updateModal?.validationMessages?.maintenanceCannotChangePriority || "Maintenance team cannot change complaint priority. Contact your supervisor if needed.",
         );
       }
     }
@@ -304,19 +307,19 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
       if (user?.role === "WARD_OFFICER") {
         if (!formData.maintenanceTeamId || formData.maintenanceTeamId === "none") {
           errors.push(
-            "Please assign a maintenance team member before setting status to 'Assigned'.",
+            translations?.complaints?.updateModal?.validationMessages?.assignMaintenanceTeam || "Please assign a maintenance team member before setting status to 'Assigned'.",
           );
         }
       } else if (user?.role === "ADMINISTRATOR") {
         // Admin needs both ward officer and maintenance team for ASSIGNED status
         if (!formData.wardOfficerId || formData.wardOfficerId === "none") {
           errors.push(
-            "Please select a Ward Officer before setting status to 'Assigned'.",
+            translations?.complaints?.updateModal?.validationMessages?.selectWardOfficer || "Please select a Ward Officer before setting status to 'Assigned'.",
           );
         }
         if (!formData.maintenanceTeamId || formData.maintenanceTeamId === "none") {
           errors.push(
-            "Please assign a maintenance team member before setting status to 'Assigned'.",
+            translations?.complaints?.updateModal?.validationMessages?.assignMaintenanceTeam || "Please assign a maintenance team member before setting status to 'Assigned'.",
           );
         }
       }
@@ -325,9 +328,9 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
     // Additional validation for REOPENED status (Admin only)
     if (formData.status === "REOPENED") {
       if (user?.role !== "ADMINISTRATOR") {
-        errors.push("Only administrators can reopen complaints.");
+        errors.push(translations?.complaints?.updateModal?.validationMessages?.onlyAdminCanReopen || "Only administrators can reopen complaints.");
       } else if (complaintStatus !== "CLOSED") {
-        errors.push("Only closed complaints can be reopened.");
+        errors.push(translations?.complaints?.updateModal?.validationMessages?.onlyClosedCanReopen || "Only closed complaints can be reopened.");
       } else {
         // Inform admin that REOPENED will transition to ASSIGNED
         // This is informational, not an error
@@ -343,7 +346,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
         !["RESOLVED", "CLOSED"].includes(complaintStatus)
       ) {
         errors.push(
-          "This complaint needs a maintenance team assignment. Please select a team member.",
+          translations?.complaints?.updateModal?.validationMessages?.needsTeamAssignment || "This complaint needs a maintenance team assignment. Please select a team member.",
         );
       }
     }
@@ -377,8 +380,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
         }).unwrap();
 
         toast({
-          title: "Success",
-          description: "Complaint reopened successfully. It has been set to ASSIGNED status and requires reassignment.",
+          title: translations?.complaints?.updateModal?.success || "Success",
+          description: translations?.complaints?.updateModal?.reopenSuccessMessage || "Complaint reopened successfully. It has been set to ASSIGNED status and requires reassignment.",
         });
 
         if (reopenResponse?.data) {
@@ -436,9 +439,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
       }).unwrap();
 
       toast({
-        title: "Success",
-        description:
-          "Complaint updated successfully. You can see the updated assignment below.",
+        title: translations?.complaints?.updateModal?.success || "Success",
+        description: translations?.complaints?.updateModal?.updateSuccessMessage || "Complaint updated successfully. You can see the updated assignment below.",
       });
 
       if (updatedComplaintResponse?.data) {
@@ -465,8 +467,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
       const message =
         error?.data?.message ||
         getApiErrorMessage(error) ||
-        "Failed to update complaint";
-      toast({ title: "Error", description: message, variant: "destructive" });
+        (translations?.complaints?.updateModal?.updateFailedMessage || "Failed to update complaint");
+      toast({ title: translations?.complaints?.updateModal?.error || "Error", description: message, variant: "destructive" });
     }
   };
 
@@ -504,23 +506,23 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             <div>
               <h2 className="font-semibold text-gray-900">
                 {user?.role === "MAINTENANCE_TEAM"
-                  ? "Update Task Status"
+                  ? (translations?.complaints?.updateModal?.updateTaskStatus || "Update Task Status")
                   : user?.role === "WARD_OFFICER"
-                    ? "Manage Complaint"
-                    : "Update Complaint"}
+                    ? (translations?.complaints?.updateModal?.manageComplaint || "Manage Complaint")
+                    : (translations?.complaints?.updateModal?.title || "Update Complaint")}
               </h2>
               <DialogDescription className="text-sm text-gray-600 mt-1">
-                <SafeRenderer fallback="Update complaint status">
+                <SafeRenderer fallback={translations?.complaints?.updateModal?.description || "Update complaint status"}>
                   {(() => {
                     const complaintId = safeRenderValue(complaint.complaintId) ||
-                      (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : 'Unknown');
+                      (complaint.id && typeof complaint.id === 'string' ? complaint.id.slice(-6) : (translations?.common?.unknown || 'Unknown'));
 
                     if (user?.role === "MAINTENANCE_TEAM") {
-                      return `Update your work status for complaint #${complaintId}`;
+                      return (translations?.complaints?.updateModal?.updateTaskDescription || "Update your work status for complaint") + ` #${complaintId}`;
                     } else if (user?.role === "WARD_OFFICER") {
-                      return `Assign and manage complaint #${complaintId}`;
+                      return (translations?.complaints?.updateModal?.manageComplaintDescription || "Assign and manage complaint") + ` #${complaintId}`;
                     } else {
-                      return `Update the status and assignment of complaint #${complaintId}`;
+                      return (translations?.complaints?.updateModal?.description || "Update the status and assignment of complaint") + ` #${complaintId}`;
                     }
                   })()}
                 </SafeRenderer>
@@ -538,14 +540,14 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
               </div>
               <div>
                 <p className="text-sm font-medium text-blue-900">
-                  Acting as: {user?.role?.replace("_", " ")}
+                  {translations?.complaints?.updateModal?.actingAs || "Acting as"}: {user?.role?.replace("_", " ")}
                 </p>
                 <p className="text-xs text-blue-700">
                   {user?.role === "MAINTENANCE_TEAM"
-                    ? "You can update work status and add progress notes"
+                    ? (translations?.complaints?.updateModal?.maintenancePermissions || "You can update work status and add progress notes")
                     : user?.role === "WARD_OFFICER"
-                      ? "You can assign complaints and manage their status"
-                      : "You have full administrative control over this complaint"
+                      ? (translations?.complaints?.updateModal?.wardOfficerPermissions || "You can assign complaints and manage their status")
+                      : (translations?.complaints?.updateModal?.adminPermissions || "You have full administrative control over this complaint")
                   }
                 </p>
               </div>
@@ -555,7 +557,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                 variant="outline"
                 className="text-xs text-blue-600 border-blue-300 bg-white"
               >
-                Limited Permissions
+                {translations?.complaints?.updateModal?.limitedPermissions || "Limited Permissions"}
               </Badge>
             )}
           </div>
@@ -564,24 +566,24 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-5 border border-gray-200">
             <div className="flex items-center mb-4">
               <FileText className="h-5 w-5 text-gray-600 mr-2" />
-              <h3 className="font-semibold text-gray-900">Complaint Summary</h3>
+              <h3 className="font-semibold text-gray-900">{translations?.complaints?.updateModal?.complaintSummary || "Complaint Summary"}</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 font-medium">Type:</span>
+                  <span className="text-gray-600 font-medium">{translations?.common?.type || "Type"}:</span>
                   <span className="text-gray-900">
-                    <SafeRenderer fallback="UNKNOWN">
-                      {(complaint.type ?? "UNKNOWN").replace("_", " ")}
+                    <SafeRenderer fallback={translations?.complaints?.unknownType || "UNKNOWN"}>
+                      {(complaint.type ?? (translations?.complaints?.unknownType || "UNKNOWN")).replace("_", " ")}
                     </SafeRenderer>
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 font-medium">Area:</span>
+                  <span className="text-gray-600 font-medium">{translations?.complaints?.area || "Area"}:</span>
                   <span className="text-gray-900">
-                    <SafeRenderer fallback="Unknown Area">
-                      {safeRenderValue(complaint.area, "Unknown Area")}
+                    <SafeRenderer fallback={translations?.complaints?.details?.unknownArea || "Unknown Area"}>
+                      {safeRenderValue(complaint.area, translations?.complaints?.details?.unknownArea || "Unknown Area")}
                     </SafeRenderer>
                   </span>
                 </div>
@@ -589,22 +591,22 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 font-medium">Status:</span>
+                  <span className="text-gray-600 font-medium">{translations?.common?.status || "Status"}:</span>
                   <Badge
                     className={`${getStatusColor(complaint.status ?? "REGISTERED")}`}
                   >
-                    <SafeRenderer fallback="REGISTERED">
-                      {(complaint.status ?? "REGISTERED").replace("_", " ")}
+                    <SafeRenderer fallback={translations?.complaints?.statuses?.registered || "REGISTERED"}>
+                      {(complaint.status ?? (translations?.complaints?.statuses?.registered || "REGISTERED")).replace("_", " ")}
                     </SafeRenderer>
                   </Badge>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600 font-medium">Priority:</span>
+                  <span className="text-gray-600 font-medium">{translations?.common?.priority || "Priority"}:</span>
                   <Badge
                     className={`${getPriorityColor(complaint.priority ?? "MEDIUM")}`}
                   >
-                    <SafeRenderer fallback="MEDIUM">
-                      {safeRenderValue(complaint.priority, "MEDIUM")}
+                    <SafeRenderer fallback={translations?.complaints?.priorities?.medium || "MEDIUM"}>
+                      {safeRenderValue(complaint.priority, translations?.complaints?.priorities?.medium || "MEDIUM")}
                     </SafeRenderer>
                   </Badge>
                 </div>
@@ -612,10 +614,10 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             </div>
 
             <div className="mt-4 pt-4 border-t border-gray-200">
-              <span className="text-gray-600 font-medium">Description:</span>
+              <span className="text-gray-600 font-medium">{translations?.common?.description || "Description"}:</span>
               <p className="text-sm mt-2 text-gray-700 leading-relaxed">
-                <SafeRenderer fallback="No description available">
-                  {safeRenderValue(complaint.description, "No description available")}
+                <SafeRenderer fallback={translations?.complaints?.details?.noDescriptionAvailable || "No description available"}>
+                  {safeRenderValue(complaint.description, translations?.complaints?.details?.noDescriptionAvailable || "No description available")}
                 </SafeRenderer>
               </p>
             </div>
@@ -623,12 +625,12 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             <div className="mt-5 pt-4 border-t border-gray-200">
               <div className="flex items-center mb-3">
                 <Users className="h-4 w-4 text-gray-600 mr-2" />
-                <h4 className="font-medium text-sm text-gray-900">Current Assignments</h4>
+                <h4 className="font-medium text-sm text-gray-900">{translations?.complaints?.updateModal?.currentAssignments || "Current Assignments"}</h4>
               </div>
 
               {process.env.NODE_ENV === "development" && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-xs my-3">
-                  <strong className="text-yellow-800">Debug Info:</strong>
+                  <strong className="text-yellow-800">{translations?.complaints?.updateModal?.debugInfo || "Debug Info"}:</strong>
                   <div className="mt-1 space-y-1 text-yellow-700">
                     <div>wardOfficer: {JSON.stringify(complaint.wardOfficer) || "null"}</div>
                     <div>maintenanceTeam: {JSON.stringify(complaint.maintenanceTeam) || "null"}</div>
@@ -644,8 +646,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                         <User className="h-4 w-4 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Ward Officer</p>
-                        <p className="text-xs text-gray-500">Complaint oversight</p>
+                        <p className="text-sm font-medium text-gray-900">{translations?.complaints?.updateModal?.wardOfficer || "Ward Officer"}</p>
+                        <p className="text-xs text-gray-500">{translations?.complaints?.updateModal?.complaintOversight || "Complaint oversight"}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -653,7 +655,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                         <div>
                           <p className="text-sm font-medium text-blue-600">{wardOfficerName}</p>
                           <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
-                            Assigned
+                            {translations?.complaints?.updateModal?.assigned || "Assigned"}
                           </Badge>
                         </div>
                       ) : (
@@ -672,8 +674,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                         <Settings className="h-4 w-4 text-green-600" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Maintenance Team</p>
-                        <p className="text-xs text-gray-500">Field work execution</p>
+                        <p className="text-sm font-medium text-gray-900">{translations?.complaints?.updateModal?.maintenanceTeam || "Maintenance Team"}</p>
+                        <p className="text-xs text-gray-500">{translations?.complaints?.updateModal?.fieldWorkExecution || "Field work execution"}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -681,12 +683,12 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                         <div>
                           <p className="text-sm font-medium text-green-600">{maintenanceTeamName}</p>
                           <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                            Assigned
+                            {translations?.complaints?.updateModal?.assigned || "Assigned"}
                           </Badge>
                         </div>
                       ) : (complaint as any).needsTeamAssignment ? (
                         <Badge className="bg-orange-100 text-orange-800 text-xs">
-                          Needs Assignment
+                          {translations?.complaints?.updateModal?.needsAssignment || "Needs Assignment"}
                         </Badge>
                       ) : (
                         <Badge variant="outline" className="text-xs text-gray-500">
@@ -706,10 +708,9 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
               <div className="flex items-start">
                 <AlertTriangle className="h-4 w-4 text-amber-500 mr-2 mt-0.5" />
                 <div className="text-sm">
-                  <p className="text-amber-800 font-medium">Status Transition Notice</p>
+                  <p className="text-amber-800 font-medium">{translations?.complaints?.updateModal?.statusTransitionNotice || "Status Transition Notice"}</p>
                   <p className="text-amber-700 mt-1">
-                    When you reopen this complaint, it will automatically transition to <strong>ASSIGNED</strong> status
-                    and require reassignment to a maintenance team member.
+                    {translations?.complaints?.updateModal?.reopenTransitionMessage || "When you reopen this complaint, it will automatically transition to ASSIGNED status and require reassignment to a maintenance team member."}
                   </p>
                 </div>
               </div>
@@ -720,21 +721,21 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center mb-2">
               <Settings className="h-4 w-4 text-gray-600 mr-2" />
-              <h4 className="text-sm font-medium text-gray-900">Status & Priority</h4>
+              <h4 className="text-sm font-medium text-gray-900">{translations?.complaints?.updateModal?.statusAndPriority || "Status & Priority"}</h4>
             </div>
 
             <div
               className={`grid gap-6 ${user?.role === "MAINTENANCE_TEAM" ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}
             >
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+                <Label htmlFor="status" className="text-sm font-medium">{translations?.complaints?.updateModal?.status || "Status"}</Label>
 
                 {user?.role === "ADMINISTRATOR" && (
-                  <p className="text-xs text-gray-500">Set complaint priority level</p>
+                  <p className="text-xs text-gray-500">{translations?.complaints?.updateModal?.setPriorityLevel || "Set complaint priority level"}</p>
                 )}
                 {user?.role === "MAINTENANCE_TEAM" && (
                   <p className="text-xs text-gray-500">
-                    You can update status to In Progress or mark as Resolved
+                    {translations?.complaints?.updateModal?.updateStatusNote || "You can update status to In Progress or mark as Resolved"}
                   </p>
                 )}
                 {/* Validation error display for status */}
@@ -754,17 +755,17 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                     "h-11",
                     validationErrors.some(error => error.includes('status') || error.includes('Assigned')) && "border-red-300 focus:border-red-500"
                   )}>
-                    <SelectValue placeholder="Select status" />
+                    <SelectValue placeholder={translations?.complaints?.updateModal?.selectStatus || "Select status"} />
                   </SelectTrigger>
                   <SelectContent>
                     {getAvailableStatusOptions().map((status: string) => {
                       const statusConfig: Record<string, any> = {
-                        REGISTERED: { icon: Clock, label: "Registered", color: "text-yellow-600" },
-                        ASSIGNED: { icon: User, label: "Assigned", color: "text-blue-600" },
-                        IN_PROGRESS: { icon: Settings, label: "In Progress", color: "text-orange-600" },
-                        RESOLVED: { icon: CheckCircle, label: "Resolved", color: "text-green-600" },
-                        CLOSED: { icon: FileText, label: "Closed", color: "text-gray-600" },
-                        REOPENED: { icon: RotateCcw, label: "Reopened", color: "text-amber-600" },
+                        REGISTERED: { icon: Clock, label: translations?.complaints?.updateModal?.statusLabels?.registered || "Registered", color: "text-yellow-600" },
+                        ASSIGNED: { icon: User, label: translations?.complaints?.updateModal?.statusLabels?.assigned || "Assigned", color: "text-blue-600" },
+                        IN_PROGRESS: { icon: Settings, label: translations?.complaints?.updateModal?.statusLabels?.inProgress || "In Progress", color: "text-orange-600" },
+                        RESOLVED: { icon: CheckCircle, label: translations?.complaints?.updateModal?.statusLabels?.resolved || "Resolved", color: "text-green-600" },
+                        CLOSED: { icon: FileText, label: translations?.complaints?.updateModal?.statusLabels?.closed || "Closed", color: "text-gray-600" },
+                        REOPENED: { icon: RotateCcw, label: translations?.complaints?.updateModal?.statusLabels?.reopened || "Reopened", color: "text-amber-600" },
                       };
                       const config = statusConfig[status];
                       if (!config) return null;
@@ -776,7 +777,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                             <span className="font-medium">{config.label}</span>
                             {status === "REOPENED" && user?.role === "ADMINISTRATOR" && (
                               <span className="ml-2 text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded">
-                                → Assigned
+                                → {translations?.complaints?.updateModal?.statusLabels?.assigned || "Assigned"}
                               </span>
                             )}
                           </div>
@@ -789,8 +790,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
 
               {user?.role !== "MAINTENANCE_TEAM" && (
                 <div className="space-y-2">
-                  <Label htmlFor="priority" className="text-sm font-medium">Priority</Label>
-                  <p className="text-xs text-gray-500">Set complaint priority level</p>
+                  <Label htmlFor="priority" className="text-sm font-medium">{translations?.complaints?.updateModal?.priority || "Priority"}</Label>
+                  <p className="text-xs text-gray-500">{translations?.complaints?.updateModal?.setPriorityLevel || "Set complaint priority level"}</p>
                   <Select
                     value={formData.priority}
                     onValueChange={(value) =>
@@ -798,35 +799,35 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                     }
                   >
                     <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Select priority" />
+                      <SelectValue placeholder={translations?.complaints?.updateModal?.selectPriority || "Select priority"} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="LOW">
                         <div className="flex items-center">
                           <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                          <span className="font-medium">Low</span>
-                          <span className="ml-2 text-xs text-gray-500">Non-urgent</span>
+                          <span className="font-medium">{translations?.complaints?.updateModal?.priorityLabels?.low || "Low"}</span>
+                          <span className="ml-2 text-xs text-gray-500">{translations?.complaints?.updateModal?.priorityDescriptions?.low || "Non-urgent"}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="MEDIUM">
                         <div className="flex items-center">
                           <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
-                          <span className="font-medium">Medium</span>
-                          <span className="ml-2 text-xs text-gray-500">Standard</span>
+                          <span className="font-medium">{translations?.complaints?.updateModal?.priorityLabels?.medium || "Medium"}</span>
+                          <span className="ml-2 text-xs text-gray-500">{translations?.complaints?.updateModal?.priorityDescriptions?.medium || "Standard"}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="HIGH">
                         <div className="flex items-center">
                           <div className="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
-                          <span className="font-medium">High</span>
-                          <span className="ml-2 text-xs text-gray-500">Urgent</span>
+                          <span className="font-medium">{translations?.complaints?.updateModal?.priorityLabels?.high || "High"}</span>
+                          <span className="ml-2 text-xs text-gray-500">{translations?.complaints?.updateModal?.priorityDescriptions?.high || "Urgent"}</span>
                         </div>
                       </SelectItem>
                       <SelectItem value="CRITICAL">
                         <div className="flex items-center">
                           <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
-                          <span className="font-medium">Critical</span>
-                          <span className="ml-2 text-xs text-gray-500">Emergency</span>
+                          <span className="font-medium">{translations?.complaints?.updateModal?.priorityLabels?.critical || "Critical"}</span>
+                          <span className="ml-2 text-xs text-gray-500">{translations?.complaints?.updateModal?.priorityDescriptions?.critical || "Emergency"}</span>
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -850,10 +851,10 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                         <AlertTriangle className="h-4 w-4 text-blue-500 mr-3 flex-shrink-0" />
                         <div>
                           <p className="text-sm font-medium text-blue-800">
-                            Assignment Required
+                            {translations?.complaints?.updateModal?.assignmentRequired || "Assignment Required"}
                           </p>
                           <p className="text-sm text-blue-700 mt-1">
-                            This complaint needs to be assigned to a maintenance team member to proceed.
+                            {translations?.complaints?.updateModal?.assignmentRequiredMessage || "This complaint needs to be assigned to a maintenance team member to proceed."}
                           </p>
                         </div>
                       </div>
@@ -866,9 +867,9 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                     // Admin: Two-column layout for Ward Officer + Maintenance Team
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-medium text-gray-900">User Assignments</h4>
+                        <h4 className="text-sm font-medium text-gray-900">{translations?.complaints?.updateModal?.userAssignments || "User Assignments"}</h4>
                         <Badge variant="outline" className="text-xs">
-                          Admin Controls
+                          {translations?.complaints?.updateModal?.adminControls || "Admin Controls"}
                         </Badge>
                       </div>
 
@@ -883,8 +884,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                             }));
                             setValidationErrors([]);
                           }}
-                          label="Ward Officer"
-                          placeholder="Select Ward Officer"
+                          label={translations?.complaints?.updateModal?.wardOfficer || "Ward Officer"}
+                          placeholder={translations?.complaints?.updateModal?.selectWardOfficer || "Select Ward Officer"}
                           disabled={isLoadingWardOfficers}
                           isLoading={isLoadingWardOfficers}
                           error={validationErrors.find(error => error.includes('Ward Officer'))}
@@ -901,8 +902,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                             }));
                             setValidationErrors([]);
                           }}
-                          label="Maintenance Team"
-                          placeholder="Select Maintenance Team"
+                          label={translations?.complaints?.updateModal?.maintenanceTeam || "Maintenance Team"}
+                          placeholder={translations?.complaints?.updateModal?.selectMaintenanceTeam || "Select Maintenance Team"}
                           disabled={isLoadingMaintenance}
                           isLoading={isLoadingMaintenance}
                           error={validationErrors.find(error =>
@@ -924,7 +925,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                             complaint.status ?? "REGISTERED",
                           ) && (
                             <Badge className="bg-orange-100 text-orange-800 text-xs">
-                              Assignment Required
+                              {translations?.complaints?.updateModal?.assignmentRequiredBadge || "Assignment Required"}
                             </Badge>
                           )}
                       </div>
@@ -969,7 +970,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
                       <div className="flex items-center">
                         <AlertTriangle className="h-4 w-4 text-red-500 mr-2" />
                         <span className="text-sm text-red-700">
-                          Error loading users. Please try again.
+                          {translations?.complaints?.updateModal?.errorLoadingUsers || "Error loading users. Please try again."}
                         </span>
                       </div>
                     </div>
@@ -984,7 +985,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
               <div className="flex items-start">
                 <AlertTriangle className="h-4 w-4 text-red-500 mr-2 mt-0.5" />
                 <div className="text-sm">
-                  <p className="text-red-800 font-medium">Please fix the following issues:</p>
+                  <p className="text-red-800 font-medium">{translations?.complaints?.updateModal?.validationErrors || "Please fix the following issues:"}</p>
                   <ul className="text-red-700 mt-1 space-y-1">
                     {validationErrors.map((error, index) => (
                       <li key={index} className="flex items-start">
@@ -1004,18 +1005,18 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
               <FileText className="h-4 w-4 text-gray-600 mr-2" />
               <Label htmlFor="remarks" className="text-sm font-medium">
                 {user?.role === "MAINTENANCE_TEAM"
-                  ? "Work Notes (Optional)"
-                  : "Remarks (Optional)"}
+                  ? (translations?.complaints?.updateModal?.workNotes || "Work Notes (Optional)")
+                  : (translations?.complaints?.updateModal?.remarks || "Remarks (Optional)")}
               </Label>
             </div>
             <Textarea
               id="remarks"
               placeholder={
                 user?.role === "MAINTENANCE_TEAM"
-                  ? "Add notes about work progress, issues encountered, or completion details..."
+                  ? (translations?.complaints?.updateModal?.workNotesPlaceholder || "Add notes about work progress, issues encountered, or completion details...")
                   : user?.role === "WARD_OFFICER"
-                    ? "Add notes about assignment, instructions, or status changes..."
-                    : "Add any additional comments or remarks about this update..."
+                    ? (translations?.complaints?.updateModal?.wardOfficerNotesPlaceholder || "Add notes about assignment, instructions, or status changes...")
+                    : (translations?.complaints?.updateModal?.remarksPlaceholder || "Add any additional comments or remarks about this update...")
               }
               value={formData.remarks}
               onChange={(e) =>
@@ -1026,8 +1027,8 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
             />
             <p className="text-xs text-gray-500">
               {user?.role === "MAINTENANCE_TEAM"
-                ? "Document your work progress and any issues for future reference"
-                : "Add context or instructions that will help with complaint resolution"
+                ? (translations?.complaints?.updateModal?.workProgressNote || "Document your work progress and any issues for future reference")
+                : (translations?.complaints?.updateModal?.contextNote || "Add context or instructions that will help with complaint resolution")
               }
             </p>
           </div>
@@ -1039,7 +1040,7 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
               onClick={handleClose}
               className="w-full sm:w-auto order-2 sm:order-1"
             >
-              Cancel
+              {translations?.complaints?.updateModal?.cancel || "Cancel"}
             </Button>
             <Button
               type="submit"
@@ -1053,29 +1054,29 @@ const UpdateComplaintModal: React.FC<UpdateComplaintModalProps> = ({
               {isUpdating || isReopening ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  {formData.status === "REOPENED" ? "Reopening..." : "Updating..."}
+                  {formData.status === "REOPENED" ? (translations?.complaints?.updateModal?.reopening || "Reopening...") : (translations?.complaints?.updateModal?.updating || "Updating...")}
                 </div>
               ) : (
                 <>
                   {formData.status === "REOPENED" ? (
                     <>
                       <RotateCcw className="h-4 w-4 mr-2" />
-                      Reopen Complaint
+                      {translations?.complaints?.updateModal?.reopenComplaint || "Reopen Complaint"}
                     </>
                   ) : user?.role === "MAINTENANCE_TEAM" ? (
                     <>
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      Update Status
+                      {translations?.complaints?.updateModal?.updateStatus || "Update Status"}
                     </>
                   ) : user?.role === "WARD_OFFICER" ? (
                     <>
                       <Settings className="h-4 w-4 mr-2" />
-                      Save Changes
+                      {translations?.complaints?.updateModal?.saveChanges || "Save Changes"}
                     </>
                   ) : (
                     <>
                       <FileText className="h-4 w-4 mr-2" />
-                      Update Complaint
+                      {translations?.complaints?.updateModal?.updateComplaint || "Update Complaint"}
                     </>
                   )}
                 </>

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { useAppTranslation } from "../utils/i18n";
 import { useAppSelector } from "../store/hooks";
 import { useGetComplaintsQuery } from "../store/api/complaintsApi";
 import type { Complaint } from "../store/api/complaintsApi";
@@ -46,6 +47,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
   userRole,
   user,
 }) => {
+  const { t } = useAppTranslation();
   const { user: currentUser } = useAppSelector((state) => state.auth);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedComplaint, setSelectedComplaint] = useState<any>(null);
@@ -117,14 +119,14 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
   const getTeamAssignmentStatus = (complaint: any) => {
     if (complaint.maintenanceTeamId) {
       return {
-        status: "Assigned",
+        status: t("complaints.widget.assigned"),
         color: "bg-green-100 text-green-800",
         teamMember:
-          complaint.maintenanceTeam?.fullName || "Unknown Team Member",
+          complaint.maintenanceTeam?.fullName || t("complaints.widget.unknownTeamMember"),
       };
     } else {
       return {
-        status: "Needs Assignment",
+        status: t("complaints.widget.needsAssignment"),
         color: "bg-orange-100 text-orange-800",
         teamMember: null,
       };
@@ -149,7 +151,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
           </span>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-1" />
-            Refresh
+            {t("complaints.widget.refresh")}
           </Button>
         </CardTitle>
       </CardHeader>
@@ -157,9 +159,9 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
         {error ? (
           <div className="text-center py-8">
             <FileText className="h-12 w-12 mx-auto text-red-400 mb-4" />
-            <p className="text-red-500 mb-2">Failed to load complaints</p>
+            <p className="text-red-500 mb-2">{t("complaints.widget.failedToLoad")}</p>
             <Button variant="outline" onClick={() => refetch()}>
-              Try Again
+              {t("complaints.widget.tryAgain")}
             </Button>
           </div>
         ) : isLoading ? (
@@ -174,11 +176,11 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
         ) : complaints.length === 0 ? (
           <div className="text-center py-8">
             <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 mb-2">No complaints found</p>
+            <p className="text-gray-500 mb-2">{t("complaints.widget.noComplaintsFound")}</p>
             <p className="text-sm text-gray-400">
               {hasFilters
-                ? "No complaints match the selected filters"
-                : "No complaints available"}
+                ? t("complaints.widget.noComplaintsMatchFilters")
+                : t("complaints.widget.noComplaintsAvailable")}
             </p>
           </div>
         ) : (
@@ -186,29 +188,29 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
+                  <TableHead>{t("complaints.widget.id")}</TableHead>
+                  <TableHead>{t("complaints.widget.description")}</TableHead>
+                  <TableHead>{t("complaints.widget.location")}</TableHead>
+                  <TableHead>{t("complaints.widget.status")}</TableHead>
+                  <TableHead>{t("complaints.widget.priority")}</TableHead>
                   {/* {effectiveUserRole === "WARD_OFFICER" && (
-                    <TableHead>Team Assignment</TableHead>
+                    <TableHead>{t("complaints.widget.teamAssignment")}</TableHead>
                   )} */}
                   {effectiveUserRole === "WARD_OFFICER" && (
-                    <TableHead>Team </TableHead>
+                    <TableHead>{t("complaints.widget.team")}</TableHead>
                   )}
                   {effectiveUserRole !== "WARD_OFFICER" && (
-                    <TableHead>Rating</TableHead>
+                    <TableHead>{t("complaints.widget.rating")}</TableHead>
                   )}
                   {effectiveUserRole !== "WARD_OFFICER" && (
-                    <TableHead>SLA</TableHead>
+                    <TableHead>{t("complaints.widget.sla")}</TableHead>
                   )}
                   {effectiveUserRole !== "WARD_OFFICER" && (
-                    <TableHead>Closed</TableHead>
+                    <TableHead>{t("complaints.widget.closed")}</TableHead>
                   )}
-                  <TableHead>Updated</TableHead>
-                  <TableHead>Date</TableHead>
-                  {showActions && <TableHead>Actions</TableHead>}
+                  <TableHead>{t("complaints.widget.updated")}</TableHead>
+                  <TableHead>{t("complaints.widget.date")}</TableHead>
+                  {showActions && <TableHead>{t("complaints.widget.actions")}</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -268,7 +270,7 @@ const ComplaintsListWidget: React.FC<ComplaintsListWidgetProps> = ({
                             ) : (
                               <div className="flex items-center text-sm text-gray-500">
                                 <Users className="h-3 w-3 mr-1" />
-                                Not assigned
+                                {t("complaints.widget.notAssigned")}
                               </div>
                             );
                           })()}

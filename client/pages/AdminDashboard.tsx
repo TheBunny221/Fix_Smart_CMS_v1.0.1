@@ -349,7 +349,7 @@ const AdminDashboard: React.FC = () => {
               {t("dashboard.admin.openPastDeadline")}
             </p>
             <p className="text-[11px] text-gray-500 mt-1">
-              SLA breaches (open + resolved late): {metrics.slaBreaches ?? 0}
+              {t("dashboard.admin.slaBreaches")}: {metrics.slaBreaches ?? 0}
             </p>
           </CardContent>
         </Card>
@@ -380,7 +380,8 @@ const AdminDashboard: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {(metrics?.avgResolutionTime || 0).toFixed(1)}days
+              {(metrics?.avgResolutionTime || 0).toFixed(1)}
+              {t("reports.kpi.days")}
             </div>
             <p className="text-xs text-muted-foreground">
               {t("dashboard.admin.averageClosureTime")}
@@ -584,7 +585,7 @@ const AdminDashboard: React.FC = () => {
             <CardHeader>
               <CardTitle>{t("dashboard.admin.overviewHeatmap")}</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                High-level view of complaints across wards and types
+                {t("dashboard.admin.overviewHeatmapDesc")}
               </p>
             </CardHeader>
             <CardContent>

@@ -1,0 +1,27 @@
+{
+  "name": "i18n-audit-infrastructure",
+  "version": "1.0.0",
+  "description": "Comprehensive I18n audit infrastructure for systematic internationalization analysis",
+  "main": "comprehensive-audit-orchestrator.js",
+  "scripts": {
+    "audit": "node comprehensive-audit-orchestrator.js",
+    "audit:basic": "node audit-main.js",
+    "audit:strings": "node structured-data-generator.js",
+    "audit:reports": "node audit-reporting-system.js"
+  },
+  "dependencies": {
+    "@babel/parser": "^7.23.0",
+    "@babel/traverse": "^7.23.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "i18n",
+    "internationalization",
+    "audit",
+    "react",
+    "translation",
+    "hardcoded-strings"
+  ],
+  "author": "I18n Audit Infrastructure System",
+  "license": "MIT"
+}

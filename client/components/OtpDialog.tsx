@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useAppSelector } from "../store/hooks";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,7 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
   title,
   description,
 }) => {
+  const { translations } = useAppSelector((state) => state.language);
   const [otpCode, setOtpCode] = useState("");
   const [timeLeft, setTimeLeft] = useState(0);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -131,7 +133,7 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
 
   const handleVerify = async () => {
     if (otpCode.length !== 6) {
-      setLocalError("Please enter the complete 6-digit code");
+      setLocalError(translations?.forms?.enterComplete6DigitCode || "Please enter the complete 6-digit code");
       return;
     }
 
@@ -161,44 +163,44 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
     switch (context) {
       case "login":
         return {
-          title: title || "Verify Your Identity",
+          title: title || translations?.forms?.verifyYourIdentity || "Verify Your Identity",
           description:
-            description || "Enter the 6-digit code sent to your email to login",
-          submitText: "Verify & Login",
+            description || translations?.forms?.enter6DigitCodeLogin || "Enter the 6-digit code sent to your email to login",
+          submitText: translations?.forms?.verifyAndLogin || "Verify & Login",
           icon: "🔐",
         };
       case "register":
         return {
-          title: title || "Complete Registration",
+          title: title || translations?.forms?.completeRegistration || "Complete Registration",
           description:
             description ||
-            "Enter the 6-digit code sent to your email to activate your account",
-          submitText: "Verify & Complete Registration",
+            translations?.forms?.enter6DigitCodeActivate || "Enter the 6-digit code sent to your email to activate your account",
+          submitText: translations?.forms?.verifyAndCompleteRegistration || "Verify & Complete Registration",
           icon: "✨",
         };
       case "guestComplaint":
         return {
-          title: title || "Verify Your Complaint",
+          title: title || translations?.forms?.verifyYourComplaint || "Verify Your Complaint",
           description:
             description ||
-            "Enter the 6-digit code sent to your email to complete your complaint submission",
-          submitText: "Verify & Activate Complaint",
+            translations?.forms?.enter6DigitCodeComplaint || "Enter the 6-digit code sent to your email to complete your complaint submission",
+          submitText: translations?.forms?.verifyAndActivateComplaint || "Verify & Activate Complaint",
           icon: "📝",
         };
       case "complaintAuth":
         return {
-          title: title || "Verify Your Access",
+          title: title || translations?.forms?.verifyYourAccess || "Verify Your Access",
           description:
             description ||
-            "Enter the 6-digit code sent to your email to access this complaint",
-          submitText: "Verify & Continue",
+            translations?.forms?.enter6DigitCodeAccess || "Enter the 6-digit code sent to your email to access this complaint",
+          submitText: translations?.forms?.verifyAndContinue || "Verify & Continue",
           icon: "🔍",
         };
       default:
         return {
-          title: "Verify OTP",
-          description: "Enter the 6-digit code sent to your email",
-          submitText: "Verify",
+          title: translations?.forms?.verifyOtp || "Verify OTP",
+          description: translations?.forms?.enter6DigitCodeEmail || "Enter the 6-digit code sent to your email",
+          submitText: translations?.common?.verify || "Verify",
           icon: "✉️",
         };
     }
@@ -232,7 +234,7 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
           )}
 
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Enter 6-digit code</Label>
+            <Label className="text-sm font-medium">{translations?.forms?.enter6DigitCode || "Enter 6-digit code"}</Label>
             <div className="flex gap-2 justify-center">
               {Array.from({ length: 6 }).map((_, index) => (
                 <Input
@@ -264,7 +266,7 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
             {isVerifying ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Verifying...
+                {translations?.forms?.verifying || "Verifying..."}
               </>
             ) : (
               config.submitText
@@ -275,7 +277,7 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
             {timeLeft > 0 ? (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Clock className="h-4 w-4" />
-                Expires in {formatTime(timeLeft)}
+                {translations?.forms?.expiresIn || "Expires in"} {formatTime(timeLeft)}
               </div>
             ) : (
               <Button
@@ -288,10 +290,10 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
                 {isResending ? (
                   <>
                     <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                    Sending...
+                    {translations?.forms?.sending || "Sending..."}
                   </>
                 ) : (
-                  "Resend OTP"
+                  translations?.forms?.resendOtp || "Resend OTP"
                 )}
               </Button>
             )}
@@ -303,14 +305,14 @@ const OtpDialog: React.FC<OtpDialogProps> = ({
               className="p-0 h-auto font-normal"
             >
               <ArrowLeft className="mr-1 h-3 w-3" />
-              Back
+              {translations?.common?.back || "Back"}
             </Button>
           </div>
 
           {complaintId && (
             <div className="mt-4 p-3 bg-muted rounded-lg">
               <p className="text-xs text-muted-foreground">
-                <strong>Complaint ID:</strong> {complaintId}
+                <strong>{translations?.complaints?.complaintId || "Complaint ID"}:</strong> {complaintId}
               </p>
             </div>
           )}

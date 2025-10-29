@@ -58,10 +58,12 @@ import {
   RefreshCw,
   Filter,
 } from "lucide-react";
+import { useAppTranslation } from "../utils/i18n";
 
 const MaintenanceTasks: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
   const { translations } = useAppSelector((state) => state.language);
+  const { t } = useAppTranslation();
 
   const [activeFilter, setActiveFilter] = useState<string>("all");
   const [isMarkResolvedOpen, setIsMarkResolvedOpen] = useState(false);
@@ -93,15 +95,15 @@ const MaintenanceTasks: React.FC = () => {
   function getPriorityEstimatedTime(priority: string) {
     switch (priority) {
       case "CRITICAL":
-        return "2-4 hours";
+        return t('maintenance.tasks.estimatedTime.critical');
       case "HIGH":
-        return "4-8 hours";
+        return t('maintenance.tasks.estimatedTime.high');
       case "MEDIUM":
-        return "1-2 days";
+        return t('maintenance.tasks.estimatedTime.medium');
       case "LOW":
-        return "2-5 days";
+        return t('maintenance.tasks.estimatedTime.low');
       default:
-        return "1-2 days";
+        return t('maintenance.tasks.estimatedTime.default');
     }
   }
 
@@ -375,15 +377,15 @@ const MaintenanceTasks: React.FC = () => {
       <div className="border-t bg-gray-50 p-4">
         <div className="flex items-center mb-3">
           <FileText className="h-4 w-4 mr-2 text-gray-600" />
-          <h4 className="font-medium text-gray-800">Work Progress & Updates</h4>
+          <h4 className="font-medium text-gray-800">{t('maintenance.tasks.workProgressUpdates')}</h4>
         </div>
 
         {timelineItems.length === 0 ? (
           <div className="text-center py-4 text-gray-500">
             <Camera className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm">No updates or photos yet</p>
+            <p className="text-sm">{t('maintenance.tasks.noUpdatesYet')}</p>
             <p className="text-xs">
-              Upload photos and add progress notes as you work
+              {t('maintenance.tasks.uploadPhotosAndNotes')}
             </p>
           </div>
         ) : (
@@ -406,7 +408,7 @@ const MaintenanceTasks: React.FC = () => {
                       </p>
                       {item.type === "photo" && (
                         <Badge variant="outline" className="text-xs">
-                          Photo
+                          {t('maintenance.tasks.photo')}
                         </Badge>
                       )}
                     </div>
@@ -416,7 +418,7 @@ const MaintenanceTasks: React.FC = () => {
                         <div className="flex items-start space-x-3">
                           <img
                             src={item.content.photoUrl}
-                            alt="Work progress photo"
+                            alt={t('maintenance.tasks.workProgressPhoto')}
                             className="w-16 h-16 object-cover rounded-lg border cursor-pointer hover:opacity-75 transition-opacity"
                             onClick={() =>
                               handleViewPhoto(item.content.photoUrl)
@@ -424,9 +426,9 @@ const MaintenanceTasks: React.FC = () => {
                           />
                           <div className="flex-1">
                             <p className="text-sm text-gray-600 mb-1">
-                              Uploaded by{" "}
+                              {t('maintenance.tasks.uploadedBy')}{" "}
                               {item.content.uploadedByTeam?.fullName ||
-                                "Team Member"}
+                                t('maintenance.tasks.teamMember')}
                             </p>
                             {item.content.description && (
                               <p className="text-sm text-gray-800 bg-white rounded p-2 border">
@@ -474,7 +476,7 @@ const MaintenanceTasks: React.FC = () => {
 
         {photosError && (
           <div className="text-center py-2 text-red-500 text-sm">
-            Failed to load photos
+            {t('maintenance.tasks.failedToLoadPhotos')}
           </div>
         )}
       </div>
@@ -552,14 +554,14 @@ const MaintenanceTasks: React.FC = () => {
         <div className="text-center py-12">
           <AlertTriangle className="h-12 w-12 mx-auto text-red-400 mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Error Loading Tasks
+            {t('maintenance.tasks.errorLoadingTasks')}
           </h2>
           <p className="text-gray-600 mb-4">
-            Failed to load your maintenance tasks. Please try again.
+            {t('maintenance.tasks.errorMessage')}
           </p>
           <Button onClick={() => refetchComplaints()}>
             <RotateCcw className="h-4 w-4 mr-2" />
-            Retry
+            {t('common.retry')}
           </Button>
         </div>
       </div>
@@ -582,10 +584,10 @@ const MaintenanceTasks: React.FC = () => {
       <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
         <div className="flex-1">
           <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
-            🚧 Maintenance Dashboard 🛠️
+            🚧 {t('maintenance.tasks.title')} 🛠️
           </h1>
           <p className="text-primary-foreground/90 text-sm md:text-base">
-            Welcome back! Here's your current workload.
+            {t('maintenance.tasks.welcomeMessage')}
           </p>
         </div>
 
@@ -601,7 +603,7 @@ const MaintenanceTasks: React.FC = () => {
               <div className="p-1.5 rounded-lg bg-white/20">
                 <ListTodo className="h-4 w-4 text-white" />
               </div>
-              All Tasks
+              {t('maintenance.tasks.allTasks')}
             </CardTitle>
           </CardHeader>
 
@@ -609,7 +611,7 @@ const MaintenanceTasks: React.FC = () => {
             <div className="text-3xl md:text-4xl font-bold text-white mb-1">
               {taskCounts.total}
             </div>
-            <p className="text-xs text-white/80">Total tasks assigned</p>
+            <p className="text-xs text-white/80">{t('maintenance.tasks.totalTasksAssigned')}</p>
           </CardContent>
 
           {/* Active Indicator */}
@@ -628,14 +630,14 @@ const MaintenanceTasks: React.FC = () => {
           onClick={() => refetchComplaints()}
         >
           <RefreshCw className="h-3.5 w-3.5 mr-2" />
-          Refresh
+          {t('common.refresh')}
         </Button>
       </div>
 
       {/* Total card + StatusOverviewGrid (reuse WardOfficer components for consistent UI) */}
       <div className="mt-4">
         <div className="hidden md:flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Filter by Status</h2>
+          <h2 className="text-lg font-semibold">{t('maintenance.tasks.filterByStatus')}</h2>
           {activeFilter !== "all" && (
             <Button
               variant="outline"
@@ -643,7 +645,7 @@ const MaintenanceTasks: React.FC = () => {
               className="h-11 md:h-9"
               onClick={() => setActiveFilter("all")}
             >
-              Clear Filter
+              {t('maintenance.tasks.clearFilter')}
             </Button>
           )}
         </div>
@@ -659,7 +661,7 @@ const MaintenanceTasks: React.FC = () => {
               onClick={() => setMobileFiltersOpen((o) => !o)}
             >
               <Filter className="h-3.5 w-3.5 mr-2" />
-              Filter Tasks
+              {t('maintenance.tasks.filterTasks')}
               <ChevronDown className={`h-3.5 w-3.5 ml-2 transition-transform ${mobileFiltersOpen ? 'rotate-180' : ''}`} />
             </Button>
           </div>
@@ -676,8 +678,8 @@ const MaintenanceTasks: React.FC = () => {
             {[
               {
                 id: "pending",
-                label: "Pending",
-                subtitle: "Assigned tasks",
+                label: t('maintenance.tasks.pending'),
+                subtitle: t('maintenance.tasks.assignedTasks'),
                 icon: Clock,
                 value: taskCounts.pending,
                 style: {
@@ -690,8 +692,8 @@ const MaintenanceTasks: React.FC = () => {
               },
               {
                 id: "overdue",
-                label: "Overdue",
-                subtitle: "Past deadline",
+                label: t('maintenance.tasks.overdue'),
+                subtitle: t('maintenance.tasks.pastDeadline'),
                 icon: AlertCircle,
                 value: taskCounts.overdue,
                 style: {
@@ -704,8 +706,8 @@ const MaintenanceTasks: React.FC = () => {
               },
               {
                 id: "inProgress",
-                label: "In Progress",
-                subtitle: "Active work",
+                label: t('maintenance.tasks.inProgress'),
+                subtitle: t('maintenance.tasks.activeWork'),
                 icon: Play,
                 value: taskCounts.inProgress,
                 style: {
@@ -718,8 +720,8 @@ const MaintenanceTasks: React.FC = () => {
               },
               {
                 id: "resolved",
-                label: "Resolved",
-                subtitle: "Resolved tasks",
+                label: t('maintenance.tasks.resolved'),
+                subtitle: t('maintenance.tasks.resolvedTasks'),
                 icon: CheckCircle,
                 value: taskCounts.resolved,
                 style: {
@@ -732,8 +734,8 @@ const MaintenanceTasks: React.FC = () => {
               },
               {
                 id: "reopened",
-                label: "Reopened",
-                subtitle: "Reopened tasks",
+                label: t('maintenance.tasks.reopened'),
+                subtitle: t('maintenance.tasks.reopenedTasks'),
                 icon: RotateCcw,
                 value: taskCounts.reopened,
                 style: {
@@ -746,8 +748,8 @@ const MaintenanceTasks: React.FC = () => {
               },
               {
                 id: "closed",
-                label: "Closed",
-                subtitle: "Closed tasks",
+                label: t('maintenance.tasks.closed'),
+                subtitle: t('maintenance.tasks.closedTasks'),
                 icon: FileText,
                 value: taskCounts.closed,
                 style: {
@@ -845,7 +847,7 @@ const MaintenanceTasks: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Total Tasks
+                    {t('maintenance.tasks.totalTasks')}
                   </p>
                   <p className="text-2xl font-bold text-blue-600">
                     {taskCounts.total}
@@ -864,7 +866,7 @@ const MaintenanceTasks: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Pending Tasks
+                    {t('maintenance.tasks.pendingTasks')}
                   </p>
                   <p className="text-2xl font-bold text-blue-600">
                     {taskCounts.pending}
@@ -883,7 +885,7 @@ const MaintenanceTasks: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Overdue Tasks
+                    {t('maintenance.tasks.overdueTasks')}
                   </p>
                   <p className="text-2xl font-bold text-red-600">
                     {taskCounts.overdue}
@@ -902,7 +904,7 @@ const MaintenanceTasks: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    In Progress
+                    {t('maintenance.tasks.inProgress')}
                   </p>
                   <p className="text-2xl font-bold text-orange-600">
                     {taskCounts.inProgress}
@@ -921,7 +923,7 @@ const MaintenanceTasks: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Resolved Tasks
+                    {t('maintenance.tasks.resolvedTasks')}
                   </p>
                   <p className="text-2xl font-bold text-green-600">
                     {taskCounts.resolved}
@@ -939,7 +941,7 @@ const MaintenanceTasks: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">
-                    Reopened Tasks
+                    {t('maintenance.tasks.reopenedTasks')}
                   </p>
                   <p className="text-2xl font-bold text-purple-600">
                     {taskCounts.reopened}
@@ -957,7 +959,7 @@ const MaintenanceTasks: React.FC = () => {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Closed</p>
+                  <p className="text-sm font-medium text-gray-600">{t('maintenance.tasks.closed')}</p>
                   <p className="text-2xl font-bold text-gray-800">
                     {taskCounts.closed}
                   </p>
@@ -975,11 +977,11 @@ const MaintenanceTasks: React.FC = () => {
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center">
               <Wrench className="h-5 w-5 mr-2" />
-              My Tasks{" "}
+              {t('maintenance.tasks.myTasks')}{" "}
               {activeFilter !== "all" &&
                 `(${activeFilter.charAt(0).toUpperCase() + activeFilter.slice(1)})`}
             </CardTitle>
-            <Badge variant="secondary">{filteredTasks.length} tasks</Badge>
+            <Badge variant="secondary">{filteredTasks.length} {t('maintenance.tasks.tasksCount')}</Badge>
           </div>
         </CardHeader>
         <CardContent>
@@ -1004,20 +1006,20 @@ const MaintenanceTasks: React.FC = () => {
               </div>
               <p className="font-medium">
                 {activeFilter === "overdue"
-                  ? "No overdue tasks"
+                  ? t('maintenance.tasks.noOverdueTasks')
                   : activeFilter === "pending"
-                    ? "No pending tasks"
+                    ? t('maintenance.tasks.noPendingTasks')
                     : activeFilter === "inProgress"
-                      ? "No in-progress tasks"
+                      ? t('maintenance.tasks.noInProgressTasks')
                       : activeFilter === "resolved"
-                        ? "No resolved tasks"
+                        ? t('maintenance.tasks.noResolvedTasks')
                         : activeFilter === "reopened"
-                          ? "No reopened tasks"
+                          ? t('maintenance.tasks.noReopenedTasks')
                           : activeFilter === "closed"
-                            ? "No closed tasks"
-                            : "No tasks to show"}
+                            ? t('maintenance.tasks.noClosedTasks')
+                            : t('maintenance.tasks.noTasksToShow')}
               </p>
-              <p className="text-sm mt-1">Try a different filter or refresh.</p>
+              <p className="text-sm mt-1">{t('maintenance.tasks.tryDifferentFilter')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -1055,11 +1057,11 @@ const MaintenanceTasks: React.FC = () => {
                     </div>
                     <div className="flex items-center">
                       <Clock className="h-4 w-4 mr-1" />
-                      <span>Est. {task.estimatedTime}</span>
+                      <span>{t('maintenance.tasks.estimated')} {task.estimatedTime}</span>
                     </div>
                     <div className="flex items-center">
                       <Calendar className="h-4 w-4 mr-1" />
-                      <span>Due: {task.dueDate}</span>
+                      <span>{t('maintenance.tasks.due')}: {task.dueDate}</span>
                     </div>
                   </div>
 
@@ -1075,7 +1077,7 @@ const MaintenanceTasks: React.FC = () => {
                         <Navigation
                           className={`h-3 w-3 mr-1 ${navigatingId === task.id ? "animate-pulse" : ""}`}
                         />
-                        {navigatingId === task.id ? "Opening..." : "Navigate"}
+                        {navigatingId === task.id ? t('maintenance.tasks.opening') : t('maintenance.tasks.navigate')}
                       </Button>
                       {task.photo ? (
                         <DropdownMenu>
@@ -1086,20 +1088,20 @@ const MaintenanceTasks: React.FC = () => {
                               className="h-11 md:h-9"
                             >
                               <Camera className="h-3 w-3 mr-1" />
-                              Photos
+                              {t('maintenance.tasks.photos')}
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
                             <DropdownMenuItem
                               onClick={() => handleViewPhoto(task.photo)}
                             >
-                              View Existing Photo
+                              {t('maintenance.tasks.viewExistingPhoto')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               onClick={() => handlePhotoUpload(task)}
                             >
-                              Upload New Photos
+                              {t('maintenance.tasks.uploadNewPhotos')}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -1111,7 +1113,7 @@ const MaintenanceTasks: React.FC = () => {
                           onClick={() => handlePhotoUpload(task)}
                         >
                           <Camera className="h-3 w-3 mr-1" />
-                          Add Photos
+                          {t('maintenance.tasks.addPhotos')}
                         </Button>
                       )}
                       <Button
@@ -1125,7 +1127,7 @@ const MaintenanceTasks: React.FC = () => {
                         ) : (
                           <ChevronDown className="h-3 w-3 mr-1" />
                         )}
-                        Progress
+                        {t('maintenance.tasks.progress')}
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-2 w-full md:w-auto md:justify-end">
@@ -1136,7 +1138,7 @@ const MaintenanceTasks: React.FC = () => {
                           onClick={() => handleStartWork(task.id)}
                         >
                           <Play className="h-3 w-3 mr-1" />
-                          Start Work
+                          {t('maintenance.tasks.startWork')}
                         </Button>
                       )}
                       {(task.status === "IN_PROGRESS" ||
@@ -1147,7 +1149,7 @@ const MaintenanceTasks: React.FC = () => {
                             onClick={() => handleMarkResolved(task)}
                           >
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            Mark as Resolved
+                            {t('maintenance.tasks.markAsResolved')}
                           </Button>
                         )}
                       <Link to={`/tasks/${task.id}`}>
@@ -1156,7 +1158,7 @@ const MaintenanceTasks: React.FC = () => {
                           size="sm"
                           className="h-11 md:h-9"
                         >
-                          Details
+                          {t('common.details')}
                         </Button>
                       </Link>
                     </div>
@@ -1176,7 +1178,7 @@ const MaintenanceTasks: React.FC = () => {
       <Dialog open={isMarkResolvedOpen} onOpenChange={setIsMarkResolvedOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Mark Task as Resolved</DialogTitle>
+            <DialogTitle>{t('maintenance.tasks.markTaskAsResolved')}</DialogTitle>
           </DialogHeader>
           {selectedTask && (
             <div className="space-y-4">
@@ -1186,18 +1188,18 @@ const MaintenanceTasks: React.FC = () => {
               </div>
 
               <div>
-                <Label htmlFor="resolveComment">Completion Notes</Label>
+                <Label htmlFor="resolveComment">{t('maintenance.tasks.completionNotes')}</Label>
                 <Textarea
                   id="resolveComment"
                   value={resolveComment}
                   onChange={(e) => setResolveComment(e.target.value)}
-                  placeholder="Add notes about the work completed..."
+                  placeholder={t('maintenance.tasks.addNotesPlaceholder')}
                   rows={3}
                 />
               </div>
 
               <div>
-                <Label htmlFor="resolvePhoto">Upload Completion Photo</Label>
+                <Label htmlFor="resolvePhoto">{t('maintenance.tasks.uploadCompletionPhoto')}</Label>
                 <Input
                   id="resolvePhoto"
                   type="file"
@@ -1206,7 +1208,7 @@ const MaintenanceTasks: React.FC = () => {
                 />
                 {resolvePhoto && (
                   <p className="text-sm text-green-600 mt-1">
-                    Photo selected: {resolvePhoto.name}
+                    {t('maintenance.tasks.photoSelected')}: {resolvePhoto.name}
                   </p>
                 )}
               </div>
@@ -1221,14 +1223,14 @@ const MaintenanceTasks: React.FC = () => {
                     setSelectedTask(null);
                   }}
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   onClick={submitMarkResolved}
                   disabled={!resolveComment.trim()}
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Mark Resolved
+                  {t('maintenance.tasks.markResolved')}
                 </Button>
               </div>
             </div>
@@ -1242,7 +1244,7 @@ const MaintenanceTasks: React.FC = () => {
           fallback={
             <div className="fixed inset-0 z-50 grid place-items-center bg-black/10">
               <div className="rounded-md bg-white px-4 py-2 text-sm shadow">
-                Loading…
+                {t('common.loading')}
               </div>
             </div>
           }

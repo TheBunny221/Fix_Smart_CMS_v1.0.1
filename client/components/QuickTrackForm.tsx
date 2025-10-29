@@ -57,6 +57,7 @@ const QuickTrackForm: React.FC<Props> = ({ onClose }) => {
     } catch (err: any) {
       setError(
         err?.data?.message ||
+          translations?.index?.complaintNotFound ||
           "Complaint not found. Please check your complaint ID.",
       );
     }

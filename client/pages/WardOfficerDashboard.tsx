@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAppTranslation } from "../utils/i18n";
 import { useAppSelector } from "../store/hooks";
 import { useGetWardDashboardStatisticsQuery } from "../store/api/complaintsApi";
 import ComplaintsListWidget from "../components/ComplaintsListWidget";
@@ -53,6 +54,7 @@ interface FilterState {
 }
 
 const WardOfficerDashboard: React.FC = () => {
+  const { t } = useAppTranslation();
   const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
 
@@ -215,8 +217,8 @@ const WardOfficerDashboard: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-lg p-6 text-white">
-          <h1 className="text-2xl font-bold mb-2">Ward Officer Dashboard</h1>
-          <p className="text-blue-100">Loading ward statistics...</p>
+          <h1 className="text-2xl font-bold mb-2">{t("dashboard.wardOfficer.title")}</h1>
+          <p className="text-blue-100">{t("dashboard.wardOfficer.loadingWardStatistics")}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
           {Array(6)
@@ -241,16 +243,16 @@ const WardOfficerDashboard: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-lg p-6 text-white">
-          <h1 className="text-2xl font-bold mb-2">Ward Officer Dashboard</h1>
-          <p className="text-red-100">Error loading ward statistics</p>
+          <h1 className="text-2xl font-bold mb-2">{t("dashboard.wardOfficer.title")}</h1>
+          <p className="text-red-100">{t("dashboard.wardOfficer.errorLoadingWardStatistics")}</p>
         </div>
         <Card>
           <CardContent className="p-6">
             <p className="text-center text-gray-500 mb-4">
-              Failed to load dashboard data
+              {t("dashboard.wardOfficer.failedToLoadDashboardData")}
             </p>
             <Button onClick={() => refetchStats()} className="w-full">
-              Retry
+              {t("dashboard.wardOfficer.retry")}
             </Button>
           </CardContent>
         </Card>
@@ -264,11 +266,10 @@ const WardOfficerDashboard: React.FC = () => {
       <div className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 md:p-8 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
         <div className="flex-1">
           <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-white to-white/90 bg-clip-text text-transparent">
-            Ward Officer Dashboard
+            {t("dashboard.wardOfficer.title")}
           </h1>
           <p className="text-primary-foreground/90 text-sm md:text-base">
-            Manage complaints for {user?.ward?.name || "your assigned ward"} and
-            monitor team performance.
+            {t("dashboard.wardOfficer.manageComplaints", { wardName: user?.ward?.name || t("dashboard.wardOfficer.yourAssignedWard") })}
           </p>
         </div>
         
@@ -289,7 +290,7 @@ const WardOfficerDashboard: React.FC = () => {
               <div className="p-1.5 rounded-lg bg-white/20">
                 <BarChart3 className="h-4 w-4 text-white" />
               </div>
-              Total Complaints
+              {t("dashboard.wardOfficer.totalComplaints")}
             </CardTitle>
           </CardHeader>
 
@@ -297,7 +298,7 @@ const WardOfficerDashboard: React.FC = () => {
             <div className="text-3xl md:text-4xl font-bold text-white mb-1">
               {stats?.summary?.totalComplaints ?? 0}
             </div>
-            <p className="text-xs text-white/80">All complaints in ward</p>
+            <p className="text-xs text-white/80">{t("dashboard.wardOfficer.allComplaintsInWard")}</p>
           </CardContent>
           
           {/* Active Indicator */}
@@ -309,7 +310,7 @@ const WardOfficerDashboard: React.FC = () => {
 
       {/* Statistics Cards with Filters */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Filter by Status</h2>
+        <h2 className="text-lg font-semibold">{t("dashboard.wardOfficer.filterByStatus")}</h2>
         {filters.mainFilter !== "none" && (
           <Button
             variant="outline"
@@ -318,7 +319,7 @@ const WardOfficerDashboard: React.FC = () => {
               setFilters((prev) => ({ ...prev, mainFilter: "none" }))
             }
           >
-            Clear Filter
+            {t("dashboard.wardOfficer.clearFilter")}
           </Button>
         )}
       </div>
@@ -394,19 +395,19 @@ const WardOfficerDashboard: React.FC = () => {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">
-            {hasActiveFilters ? "Filtered Complaints" : "Recent Complaints"}
+            {hasActiveFilters ? t("dashboard.wardOfficer.filteredComplaints") : t("dashboard.wardOfficer.recentComplaints")}
           </h3>
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigateToComplaints(hasActiveFilters ? complaintsFilter : { wardId: user?.ward?.id })}
           >
-            View All in Complaints Page
+            {t("dashboard.wardOfficer.viewAllInComplaintsPage")}
           </Button>
         </div>
         <ComplaintsListWidget
           filters={hasActiveFilters ? complaintsFilter : { wardId: user?.ward?.id }}
-          title={hasActiveFilters ? "Filtered Results" : "Recent Complaints"}
+          title={hasActiveFilters ? t("dashboard.wardOfficer.filteredResults") : t("dashboard.wardOfficer.recentComplaints")}
           maxHeight="500px"
           showActions={true}
           userRole={user?.role || "GUEST"}
@@ -458,29 +459,29 @@ const WardOfficerDashboard: React.FC = () => {
       {/* Overview Heatmap */}
       <Card>
         <CardHeader>
-          <CardTitle>Overview Heatmap</CardTitle>
+          <CardTitle>{t("dashboard.wardOfficer.overviewHeatmap")}</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Complaints distribution across sub-zones in your ward
+            {t("dashboard.wardOfficer.overviewHeatmapDesc")}
           </p>
         </CardHeader>
         <CardContent>
           <HeatmapGrid
-            title="Ward Overview Heatmap"
-            description={`Complaints by type within ${user?.ward?.name || "your ward"}`}
+            title={t("dashboard.wardOfficer.wardOverviewHeatmap")}
+            description={t("dashboard.wardOfficer.complaintsByType", { wardName: user?.ward?.name || t("dashboard.wardOfficer.yourAssignedWard") })}
             data={
               overviewHeatmap || {
                 xLabels: [],
                 yLabels: [],
                 matrix: [],
-                xAxisLabel: "Complaint Type",
-                yAxisLabel: "Sub-zone",
+                xAxisLabel: t("dashboard.complaintType"),
+                yAxisLabel: t("complaints.subZone"),
               }
             }
             className="min-h-[420px]"
           />
           {overviewHeatmapLoading && (
             <div className="mt-2 text-xs text-muted-foreground">
-              Loading heatmap...
+              {t("dashboard.wardOfficer.loadingHeatmap")}
             </div>
           )}
         </CardContent>
