@@ -1,0 +1,171 @@
+{
+  "timestamp": "2025-10-29T05:27:19.137Z",
+  "summary": {
+    "totalFilesRemoved": 19,
+    "duplicatesRemoved": 18,
+    "scriptsRemoved": 0,
+    "validationPassed": true
+  },
+  "removedFiles": [
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\AHMEDABAD_SEED_UPDATE_SUMMARY.md",
+      "type": "archived_markdown",
+      "reason": "File archived in docs/legacy-doc/",
+      "archivePath": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\docs\\legacy-doc\\root-markdown\\AHMEDABAD_SEED_UPDATE_SUMMARY.md",
+      "removedAt": "2025-10-29T05:27:19.032Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.env.development",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.env",
+      "removedAt": "2025-10-29T05:27:19.036Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.env.production",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.env",
+      "removedAt": "2025-10-29T05:27:19.038Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\client\\legacy-components\\LanguageSwitcher.tsx",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.040Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\DEPLOYMENT.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.043Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\DATABASE_SETUP.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.045Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\DB_SETUP.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.047Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\MAP_INTEGRATION_SUMMARY.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\architecture\\map-integration-summary.md",
+      "removedAt": "2025-10-29T05:27:19.049Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\MIGRATION_SUMMARY.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\architecture\\migration-summary.md",
+      "removedAt": "2025-10-29T05:27:19.052Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\REDUX_TOOLKIT_MIGRATION.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\developer\\redux-toolkit-migration.md",
+      "removedAt": "2025-10-29T05:27:19.055Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\TESTING.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\developer\\testing.md",
+      "removedAt": "2025-10-29T05:27:19.057Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\UNIFIED_COMPLAINT_FORM_IMPLEMENTATION.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\legacy-docs ( Ignore )\\architecture\\unified-complaint-form-implementation.md",
+      "removedAt": "2025-10-29T05:27:19.061Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\misc\\IMPLEMENTATION_VALIDATION_CHECKLIST.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.063Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\misc\\PDF_EXPORT_IMPLEMENTATION_SUMMARY.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.064Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\misc\\PRISMA_VALIDATION_FIXES_SUMMARY.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.067Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\misc\\UNIFIED_REPORTS_INTEGRATION_SUMMARY.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.069Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\documents\\system\\SECURITY_AND_AUTHENTICATION.md",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.071Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\public\\templates\\export\\unifiedReport.html",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\client\\templates\\export\\unifiedReport.html",
+      "removedAt": "2025-10-29T05:27:19.074Z"
+    },
+    {
+      "path": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\server\\scripts\\checkComplaintTypes.js",
+      "type": "duplicate",
+      "reason": "identical_content",
+      "originalFile": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.kiro\\specs\\dynamic-import-routing-fix\\requirements.md",
+      "removedAt": "2025-10-29T05:27:19.079Z"
+    }
+  ],
+  "validationResults": [
+    {
+      "name": "package.json exists",
+      "passed": true
+    },
+    {
+      "name": "client directory exists",
+      "passed": true
+    },
+    {
+      "name": "server directory exists",
+      "passed": true
+    },
+    {
+      "name": "prisma schema exists",
+      "passed": true
+    },
+    {
+      "name": "vite config exists",
+      "passed": true
+    },
+    {
+      "name": "tsconfig exists",
+      "passed": true
+    }
+  ],
+  "backupLocation": "D:\\CCRSM\\NEW\\Fix_Smart_CMS_v1.0.3\\.cleanup-backup"
+}

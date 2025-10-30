@@ -1,0 +1,887 @@
+{
+  "timestamp": "2025-10-29T06:49:24.427Z",
+  "summary": {
+    "filesScanned": 144,
+    "linksValidated": 557,
+    "errors": 94,
+    "warnings": 10
+  },
+  "errors": [
+    {
+      "type": "MISSING_DEPARTMENT_README",
+      "sourceFile": "ROOT",
+      "linkUrl": "QA/README.md",
+      "linkText": "QA README",
+      "message": "Missing department README: QA/README.md"
+    },
+    {
+      "type": "MISSING_DEPARTMENT_README",
+      "sourceFile": "ROOT",
+      "linkUrl": "Developer/README.md",
+      "linkText": "Developer README",
+      "message": "Missing department README: Developer/README.md"
+    },
+    {
+      "type": "MISSING_DEPARTMENT_README",
+      "sourceFile": "ROOT",
+      "linkUrl": "Onboarding/README.md",
+      "linkText": "Onboarding README",
+      "message": "Missing department README: Onboarding/README.md"
+    },
+    {
+      "type": "MISSING_DEPARTMENT_README",
+      "sourceFile": "ROOT",
+      "linkUrl": "System/README.md",
+      "linkText": "System README",
+      "message": "Missing department README: System/README.md"
+    },
+    {
+      "type": "MISSING_DEPARTMENT_README",
+      "sourceFile": "ROOT",
+      "linkUrl": "Database/README.md",
+      "linkText": "Database README",
+      "message": "Missing department README: Database/README.md"
+    },
+    {
+      "type": "MISSING_DEPARTMENT_README",
+      "sourceFile": "ROOT",
+      "linkUrl": "Deployment/README.md",
+      "linkText": "Deployment README",
+      "message": "Missing department README: Deployment/README.md"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DEPLOYMENT_GUIDE.md",
+      "linkUrl": "config/apache/README.md",
+      "linkText": "Apache Configuration Guide",
+      "message": "Broken link: \"config/apache/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DEPLOYMENT_GUIDE.md",
+      "linkUrl": "config/apache/SSL_SETUP.md",
+      "linkText": "SSL Setup Guide",
+      "message": "Broken link: \"config/apache/SSL_SETUP.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DEPLOYMENT_GUIDE.md",
+      "linkUrl": "scripts/configure-environment.js",
+      "linkText": "Environment Configuration",
+      "message": "Broken link: \"scripts/configure-environment.js\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "AGENTS.md",
+      "linkText": "`AGENTS.md`",
+      "message": "Broken link: \"AGENTS.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "prisma/SEEDING_GUIDE.md",
+      "linkText": "`prisma/SEEDING_GUIDE.md`",
+      "message": "Broken link: \"prisma/SEEDING_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/architecture/ARCHITECTURE_OVERVIEW.md",
+      "linkText": "`documents/architecture/ARCHITECTURE_OVERVIEW.md`",
+      "message": "Broken link: \"documents/architecture/ARCHITECTURE_OVERVIEW.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/developer/API_REFERENCE.md",
+      "linkText": "`documents/developer/API_REFERENCE.md`",
+      "message": "Broken link: \"documents/developer/API_REFERENCE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/onboarding/PROJECT_OVERVIEW_FOR_NEW_DEVS.md",
+      "linkText": "`documents/onboarding/PROJECT_OVERVIEW_FOR_NEW_DEVS.md`",
+      "message": "Broken link: \"documents/onboarding/PROJECT_OVERVIEW_FOR_NEW_DEVS.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/onboarding/ENVIRONMENT_SETUP.md",
+      "linkText": "`documents/onboarding/ENVIRONMENT_SETUP.md`",
+      "message": "Broken link: \"documents/onboarding/ENVIRONMENT_SETUP.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/onboarding/NEW_DEVELOPER_CHECKLIST.md",
+      "linkText": "`documents/onboarding/NEW_DEVELOPER_CHECKLIST.md`",
+      "message": "Broken link: \"documents/onboarding/NEW_DEVELOPER_CHECKLIST.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/developer/DEVELOPER_GUIDE.md",
+      "linkText": "`documents/developer/DEVELOPER_GUIDE.md`",
+      "message": "Broken link: \"documents/developer/DEVELOPER_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/deployment/PRODUCTION_SETUP.md",
+      "linkText": "`documents/deployment/PRODUCTION_SETUP.md`",
+      "message": "Broken link: \"documents/deployment/PRODUCTION_SETUP.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/deployment/DEPLOYMENT_GUIDE.md",
+      "linkText": "`documents/deployment/DEPLOYMENT_GUIDE.md`",
+      "message": "Broken link: \"documents/deployment/DEPLOYMENT_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/system/ECOSYSTEM_AND_ENV_SETUP.md",
+      "linkText": "`documents/system/ECOSYSTEM_AND_ENV_SETUP.md`",
+      "message": "Broken link: \"documents/system/ECOSYSTEM_AND_ENV_SETUP.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/system/LOGGING_AND_MONITORING.md",
+      "linkText": "`documents/system/LOGGING_AND_MONITORING.md`",
+      "message": "Broken link: \"documents/system/LOGGING_AND_MONITORING.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/deployment/QA_VALIDATION_CHECKLIST.md",
+      "linkText": "`documents/deployment/QA_VALIDATION_CHECKLIST.md`",
+      "message": "Broken link: \"documents/deployment/QA_VALIDATION_CHECKLIST.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/troubleshooting/COMMON_ERRORS.md",
+      "linkText": "`documents/troubleshooting/COMMON_ERRORS.md`",
+      "message": "Broken link: \"documents/troubleshooting/COMMON_ERRORS.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/database/DB_MIGRATION_GUIDE.md",
+      "linkText": "`documents/database/DB_MIGRATION_GUIDE.md`",
+      "message": "Broken link: \"documents/database/DB_MIGRATION_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/database/SEED_DATA_GUIDE.md",
+      "linkText": "`documents/database/SEED_DATA_GUIDE.md`",
+      "message": "Broken link: \"documents/database/SEED_DATA_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/troubleshooting/TYPESCRIPT_ERRORS_REFERENCE.md",
+      "linkText": "`documents/troubleshooting/TYPESCRIPT_ERRORS_REFERENCE.md`",
+      "message": "Broken link: \"documents/troubleshooting/TYPESCRIPT_ERRORS_REFERENCE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+      "linkUrl": "documents/troubleshooting/DEPLOYMENT_ISSUES.md",
+      "linkText": "`documents/troubleshooting/DEPLOYMENT_ISSUES.md`",
+      "message": "Broken link: \"documents/troubleshooting/DEPLOYMENT_ISSUES.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\README.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\README.md",
+      "linkUrl": "../troubleshooting/README.md",
+      "linkText": "Troubleshooting",
+      "message": "Broken link: \"../troubleshooting/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-misc\\README.md",
+      "linkUrl": "../release/README.md",
+      "linkText": "Release Documentation",
+      "message": "Broken link: \"../release/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../architecture/ARCHITECTURE_OVERVIEW.md",
+      "linkText": "Architecture Overview",
+      "message": "Broken link: \"../architecture/ARCHITECTURE_OVERVIEW.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../architecture/MODULE_BREAKDOWN.md",
+      "linkText": "Module Breakdown",
+      "message": "Broken link: \"../architecture/MODULE_BREAKDOWN.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../architecture/DATA_FLOW_DIAGRAM.md",
+      "linkText": "Data Flow Diagram",
+      "message": "Broken link: \"../architecture/DATA_FLOW_DIAGRAM.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../developer/API_REFERENCE.md",
+      "linkText": "API Reference",
+      "message": "Broken link: \"../developer/API_REFERENCE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../developer/SCHEMA_REFERENCE.md",
+      "linkText": "Schema Reference",
+      "message": "Broken link: \"../developer/SCHEMA_REFERENCE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../developer/TESTING_GUIDE.md",
+      "linkText": "Testing Guide",
+      "message": "Broken link: \"../developer/TESTING_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../developer/CODE_STYLE_GUIDE.md",
+      "linkText": "Code Style Guide",
+      "message": "Broken link: \"../developer/CODE_STYLE_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../deployment/DEPLOYMENT_GUIDE.md",
+      "linkText": "Deployment Guide",
+      "message": "Broken link: \"../deployment/DEPLOYMENT_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "PROJECT_OVERVIEW_FOR_NEW_DEVS.md",
+      "linkText": "Project Overview",
+      "message": "Broken link: \"PROJECT_OVERVIEW_FOR_NEW_DEVS.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "ENVIRONMENT_SETUP.md",
+      "linkText": "Environment Setup",
+      "message": "Broken link: \"ENVIRONMENT_SETUP.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "FIRST_BUILD_AND_RUN.md",
+      "linkText": "First Build and Run",
+      "message": "Broken link: \"FIRST_BUILD_AND_RUN.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../developer/DEVELOPER_GUIDE.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/DEVELOPER_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+      "linkUrl": "../troubleshooting/COMMON_ERRORS.md",
+      "linkText": "Common Errors",
+      "message": "Broken link: \"../troubleshooting/COMMON_ERRORS.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../architecture/ARCHITECTURE_OVERVIEW.md",
+      "linkText": "Architecture Overview",
+      "message": "Broken link: \"../architecture/ARCHITECTURE_OVERVIEW.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../architecture/DATA_FLOW_DIAGRAM.md",
+      "linkText": "Data Flow Diagram",
+      "message": "Broken link: \"../architecture/DATA_FLOW_DIAGRAM.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../architecture/MODULE_BREAKDOWN.md",
+      "linkText": "Module Breakdown",
+      "message": "Broken link: \"../architecture/MODULE_BREAKDOWN.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../developer/SCHEMA_REFERENCE.md",
+      "linkText": "Schema Reference",
+      "message": "Broken link: \"../developer/SCHEMA_REFERENCE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../database/DB_MIGRATION_GUIDE.md",
+      "linkText": "Database Migration Guide",
+      "message": "Broken link: \"../database/DB_MIGRATION_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../developer/API_REFERENCE.md",
+      "linkText": "API Reference",
+      "message": "Broken link: \"../developer/API_REFERENCE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../developer/STATE_MANAGEMENT.md",
+      "linkText": "State Management",
+      "message": "Broken link: \"../developer/STATE_MANAGEMENT.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../developer/DEVELOPER_GUIDE.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/DEVELOPER_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../architecture/README.md",
+      "linkText": "Architecture Overview",
+      "message": "Broken link: \"../architecture/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../database/README.md",
+      "linkText": "Database Documentation",
+      "message": "Broken link: \"../database/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-onboarding\\README.md",
+      "linkUrl": "../deployment/README.md",
+      "linkText": "Deployment Guide",
+      "message": "Broken link: \"../deployment/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-release\\README.md",
+      "linkUrl": "../architecture/README.md",
+      "linkText": "Architecture Overview",
+      "message": "Broken link: \"../architecture/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-release\\README.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-release\\README.md",
+      "linkUrl": "../deployment/README.md",
+      "linkText": "Deployment Guide",
+      "message": "Broken link: \"../deployment/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-release\\README.md",
+      "linkUrl": "../database/README.md",
+      "linkText": "Database Documentation",
+      "message": "Broken link: \"../database/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-release\\VERSION_HISTORY.md",
+      "linkUrl": "CHANGELOG.md",
+      "linkText": "Changelog",
+      "message": "Broken link: \"CHANGELOG.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-release\\VERSION_HISTORY.md",
+      "linkUrl": "../database/DB_MIGRATION_GUIDE.md",
+      "linkText": "Database Migration Guide",
+      "message": "Broken link: \"../database/DB_MIGRATION_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\DEVELOPMENT_ENVIRONMENT_NOTES.md",
+      "linkUrl": "../../prisma/schema.prisma",
+      "linkText": "prisma/schema.prisma",
+      "message": "Broken link: \"../../prisma/schema.prisma\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\DEVELOPMENT_ENVIRONMENT_NOTES.md",
+      "linkUrl": "../architecture/README.md",
+      "linkText": "Architecture",
+      "message": "Broken link: \"../architecture/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\DEVELOPMENT_ENVIRONMENT_NOTES.md",
+      "linkUrl": "../database/README.md",
+      "linkText": "Database",
+      "message": "Broken link: \"../database/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\DEVELOPMENT_ENVIRONMENT_NOTES.md",
+      "linkUrl": "../deployment/README.md",
+      "linkText": "Deployment",
+      "message": "Broken link: \"../deployment/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\ECOSYSTEM_AND_ENV_SETUP.md",
+      "linkUrl": "../deployment/QA_VALIDATION_CHECKLIST.md",
+      "linkText": "QA Validation Checklist",
+      "message": "Broken link: \"../deployment/QA_VALIDATION_CHECKLIST.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\README.md",
+      "linkUrl": "../architecture/README.md",
+      "linkText": "Architecture Overview",
+      "message": "Broken link: \"../architecture/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\README.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\README.md",
+      "linkUrl": "../deployment/README.md",
+      "linkText": "Deployment Guide",
+      "message": "Broken link: \"../deployment/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\README.md",
+      "linkUrl": "../database/README.md",
+      "linkText": "Database Documentation",
+      "message": "Broken link: \"../database/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\README.md",
+      "linkUrl": "../../prisma/schema.prisma",
+      "linkText": "prisma/schema.prisma",
+      "message": "Broken link: \"../../prisma/schema.prisma\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\SYSTEM_CONFIG_ENHANCEMENT_SUMMARY.md",
+      "linkUrl": "../../prisma/schema.prisma",
+      "linkText": "prisma/schema.prisma",
+      "message": "Broken link: \"../../prisma/schema.prisma\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\SYSTEM_CONFIG_ENHANCEMENT_SUMMARY.md",
+      "linkUrl": "../architecture/README.md",
+      "linkText": "Architecture",
+      "message": "Broken link: \"../architecture/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\SYSTEM_CONFIG_ENHANCEMENT_SUMMARY.md",
+      "linkUrl": "../database/README.md",
+      "linkText": "Database",
+      "message": "Broken link: \"../database/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-system\\SYSTEM_CONFIG_ENHANCEMENT_SUMMARY.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\COMMON_ERRORS.md",
+      "linkUrl": "TYPESCRIPT_ERRORS_REFERENCE.md",
+      "linkText": "TypeScript Errors Reference",
+      "message": "Broken link: \"TYPESCRIPT_ERRORS_REFERENCE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\COMMON_ERRORS.md",
+      "linkUrl": "../system/ECOSYSTEM_AND_ENV_SETUP.md",
+      "linkText": "Ecosystem and Environment Setup",
+      "message": "Broken link: \"../system/ECOSYSTEM_AND_ENV_SETUP.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\CRITICAL_FIXES_SUMMARY.md",
+      "linkUrl": "../../prisma/schema.prisma",
+      "linkText": "prisma/schema.prisma",
+      "message": "Broken link: \"../../prisma/schema.prisma\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\CRITICAL_FIXES_SUMMARY.md",
+      "linkUrl": "../architecture/README.md",
+      "linkText": "Architecture",
+      "message": "Broken link: \"../architecture/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\CRITICAL_FIXES_SUMMARY.md",
+      "linkUrl": "../database/README.md",
+      "linkText": "Database",
+      "message": "Broken link: \"../database/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\CRITICAL_FIXES_SUMMARY.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\DYNAMIC_IMPORT_ERRORS.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\DYNAMIC_IMPORT_ERRORS.md",
+      "linkUrl": "../system/README.md",
+      "linkText": "System Configuration",
+      "message": "Broken link: \"../system/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\EXPORT_FUNCTIONALITY_TROUBLESHOOTING.md",
+      "linkUrl": "../../prisma/schema.prisma",
+      "linkText": "prisma/schema.prisma",
+      "message": "Broken link: \"../../prisma/schema.prisma\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\EXPORT_FUNCTIONALITY_TROUBLESHOOTING.md",
+      "linkUrl": "../developer/EXPORT_TESTING_GUIDE.md",
+      "linkText": "Export Testing Guide",
+      "message": "Broken link: \"../developer/EXPORT_TESTING_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\EXPORT_FUNCTIONALITY_TROUBLESHOOTING.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\README.md",
+      "linkUrl": "../deployment/SSL_TESTING_GUIDE.md",
+      "linkText": "SSL Issues",
+      "message": "Broken link: \"../deployment/SSL_TESTING_GUIDE.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\README.md",
+      "linkUrl": "../deployment/README.md",
+      "linkText": "Deployment Guide",
+      "message": "Broken link: \"../deployment/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\README.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\README.md",
+      "linkUrl": "../../prisma/schema.prisma",
+      "linkText": "prisma/schema.prisma",
+      "message": "Broken link: \"../../prisma/schema.prisma\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\README.md",
+      "linkUrl": "../architecture/README.md",
+      "linkText": "Architecture",
+      "message": "Broken link: \"../architecture/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\README.md",
+      "linkUrl": "../database/README.md",
+      "linkText": "Database",
+      "message": "Broken link: \"../database/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "legacy-doc\\documents-troubleshooting\\VITE_DEPENDENCY_CACHE_ISSUES.md",
+      "linkUrl": "../developer/README.md",
+      "linkText": "Developer Guide",
+      "message": "Broken link: \"../developer/README.md\" not found"
+    },
+    {
+      "type": "BROKEN_LINK",
+      "sourceFile": "System\\README.md",
+      "linkUrl": "../Developer/README.md#troubleshooting",
+      "linkText": "troubleshooting guides",
+      "message": "Broken link: \"../Developer/README.md#troubleshooting\" not found"
+    }
+  ],
+  "warnings": [
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "documents-misc\\component-analysis-report.json",
+      "linkText": "`component-analysis-report.json`",
+      "message": "Link points to non-markdown file: \"documents-misc\\component-analysis-report.json\""
+    },
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "documents-misc\\documentation_sync_report.json",
+      "linkText": "`documentation_sync_report.json`",
+      "message": "Link points to non-markdown file: \"documents-misc\\documentation_sync_report.json\""
+    },
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "documents-misc\\tsbuild-report.json",
+      "linkText": "`tsbuild-report.json`",
+      "message": "Link points to non-markdown file: \"documents-misc\\tsbuild-report.json\""
+    },
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "documents-misc\\validation-report.json",
+      "linkText": "`validation-report.json`",
+      "message": "Link points to non-markdown file: \"documents-misc\\validation-report.json\""
+    },
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "reports\\backend-config-validation.json",
+      "linkText": "`backend-config-validation.json`",
+      "message": "Link points to non-markdown file: \"reports\\backend-config-validation.json\""
+    },
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "reports\\hardcoded-strings-audit.json",
+      "linkText": "`hardcoded-strings-audit.json`",
+      "message": "Link points to non-markdown file: \"reports\\hardcoded-strings-audit.json\""
+    },
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "reports\\redundancy-analysis-report.json",
+      "linkText": "`redundancy-analysis-report.json`",
+      "message": "Link points to non-markdown file: \"reports\\redundancy-analysis-report.json\""
+    },
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "reports\\system-config-cleanup-plan.json",
+      "linkText": "`system-config-cleanup-plan.json`",
+      "message": "Link points to non-markdown file: \"reports\\system-config-cleanup-plan.json\""
+    },
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "reports\\system-config-mapping.json",
+      "linkText": "`system-config-mapping.json`",
+      "message": "Link points to non-markdown file: \"reports\\system-config-mapping.json\""
+    },
+    {
+      "type": "NON_MARKDOWN_LINK",
+      "sourceFile": "legacy-doc\\README.md",
+      "linkUrl": "reports\\system-config-usage-analysis.json",
+      "linkText": "`system-config-usage-analysis.json`",
+      "message": "Link points to non-markdown file: \"reports\\system-config-usage-analysis.json\""
+    }
+  ],
+  "validatedFiles": [
+    "admin\\system-configuration-management.md",
+    "Database\\migration_guidelines.md",
+    "Database\\performance_tuning.md",
+    "Database\\README.md",
+    "Database\\schema_reference.md",
+    "Database\\seed_fallback_logic.md",
+    "Deployment\\linux_deployment.md",
+    "Deployment\\multi_env_setup.md",
+    "Deployment\\pm2_services.md",
+    "Deployment\\README.md",
+    "Deployment\\reverse_proxy_ssl.md",
+    "Deployment\\windows_deployment.md",
+    "Developer\\api_contracts.md",
+    "Developer\\architecture_overview.md",
+    "Developer\\code_guidelines.md",
+    "Developer\\i18n_conversion_guide.md",
+    "Developer\\README.md",
+    "legacy-doc\\documents-misc\\ADMIN_USERS_EDIT_FEATURE.md",
+    "legacy-doc\\documents-misc\\ADMIN_USERS_UI_FIX.md",
+    "legacy-doc\\documents-misc\\API_RESPONSE_STRUCTURE_FIX.md",
+    "legacy-doc\\documents-misc\\ATTACHMENT_PREVIEW_FIX_SUMMARY.md",
+    "legacy-doc\\documents-misc\\ATTACHMENT_SYSTEM_CHANGES.md",
+    "legacy-doc\\documents-misc\\AUTHORIZATION_FIX_SUMMARY.md",
+    "legacy-doc\\documents-misc\\BACKEND_FIXES_SUMMARY.md",
+    "legacy-doc\\documents-misc\\CENTRALIZED_LOADER_IMPLEMENTATION.md",
+    "legacy-doc\\documents-misc\\COMPLAINT_FILTER_OPTIMIZATION_SUMMARY.md",
+    "legacy-doc\\documents-misc\\COMPONENT_CLEANUP_SUMMARY.md",
+    "legacy-doc\\documents-misc\\COMPONENT_REFACTORING_SUMMARY.md",
+    "legacy-doc\\documents-misc\\COMPREHENSIVE_UNIFIED_REPORTS_ENHANCEMENT.md",
+    "legacy-doc\\documents-misc\\DAILY_COMPLAINT_LIMIT_CHANGES.md",
+    "legacy-doc\\documents-misc\\DAILY_COMPLAINT_LIMIT_FEATURE_SUMMARY.md",
+    "legacy-doc\\documents-misc\\DASHBOARD_FIX_SUMMARY.md",
+    "legacy-doc\\documents-misc\\DEPENDENCIES_ADDED_SUMMARY.md",
+    "legacy-doc\\documents-misc\\DEPLOYMENT_GUIDE.md",
+    "legacy-doc\\documents-misc\\DOCUMENTATION_INDEX.md",
+    "legacy-doc\\documents-misc\\DOCUMENTATION_MIGRATION_LOG.md",
+    "legacy-doc\\documents-misc\\DROPDOWN_REMOVAL_SUMMARY.md",
+    "legacy-doc\\documents-misc\\DYNAMIC_COMPLAINT_TYPE_FILTERS_SUMMARY.md",
+    "legacy-doc\\documents-misc\\EXPORT_FEATURE_FIX_SUMMARY.md",
+    "legacy-doc\\documents-misc\\EXPORT_FUNCTIONALITY_FIX_SUMMARY.md",
+    "legacy-doc\\documents-misc\\EXPORT_FUNCTIONALITY_STATUS.md",
+    "legacy-doc\\documents-misc\\FRONTEND_TEMPLATE_EXPORT_SUMMARY.md",
+    "legacy-doc\\documents-misc\\IMPLEMENTATION_CHECKLIST.md",
+    "legacy-doc\\documents-misc\\IMPLEMENTATION_SUMMARY.md",
+    "legacy-doc\\documents-misc\\IMPLEMENTATION_VALIDATION_CHECKLIST.md",
+    "legacy-doc\\documents-misc\\INDEX_PAGE_MULTILINGUAL_ENHANCEMENT_SUMMARY.md",
+    "legacy-doc\\documents-misc\\INFINITE_FETCH_FIX_SUMMARY.md",
+    "legacy-doc\\documents-misc\\LAN_ACCESS_FIX_GUIDE.md",
+    "legacy-doc\\documents-misc\\PASSWORD_SETTING_FLOW_IMPLEMENTATION_SUMMARY.md",
+    "legacy-doc\\documents-misc\\PDF_EXPORT_IMPLEMENTATION_SUMMARY.md",
+    "legacy-doc\\documents-misc\\PDF_EXPORT_SUCCESS_SUMMARY.md",
+    "legacy-doc\\documents-misc\\PRISMA_VALIDATION_FIXES_SUMMARY.md",
+    "legacy-doc\\documents-misc\\README.md",
+    "legacy-doc\\documents-misc\\REOPEN_COMPLAINT_FIX_SUMMARY.md",
+    "legacy-doc\\documents-misc\\REPORT_EXPORT_STABILITY_SUMMARY.md",
+    "legacy-doc\\documents-misc\\REPORT_GENERATOR_IMPLEMENTATION.md",
+    "legacy-doc\\documents-misc\\SYSTEM_CONFIG_API_OPTIMIZATION_SUMMARY.md",
+    "legacy-doc\\documents-misc\\TYPESCRIPT_FIXES_SUMMARY.md",
+    "legacy-doc\\documents-misc\\ULTRA_COMPACT_FILTER_SUMMARY.md",
+    "legacy-doc\\documents-misc\\UNIFIED_EXPORT_SYSTEM_SUMMARY.md",
+    "legacy-doc\\documents-misc\\UNIFIED_REPORTS_FIXES_SUMMARY.md",
+    "legacy-doc\\documents-misc\\UNIFIED_REPORTS_INTEGRATION_SUMMARY.md",
+    "legacy-doc\\documents-misc\\UNIFIED_REPORTS_RESTORATION_SUMMARY.md",
+    "legacy-doc\\documents-misc\\UNIFIED_REPORTS_REVAMP_SUMMARY.md",
+    "legacy-doc\\documents-misc\\UPDATE_STATUS_MODAL_SUMMARY.md",
+    "legacy-doc\\documents-misc\\VITE_CACHE_FIX_SUMMARY.md",
+    "legacy-doc\\documents-misc\\WARD_COMPLAINT_TYPE_MANAGEMENT_SUMMARY.md",
+    "legacy-doc\\documents-misc\\WARD_CRUD_IMPLEMENTATION_SUMMARY.md",
+    "legacy-doc\\documents-misc\\WARD_INACTIVE_DISPLAY_SUMMARY.md",
+    "legacy-doc\\documents-misc\\WARD_MANAGEMENT_FIX_SUMMARY.md",
+    "legacy-doc\\documents-onboarding\\NEW_DEVELOPER_CHECKLIST.md",
+    "legacy-doc\\documents-onboarding\\README.md",
+    "legacy-doc\\documents-release\\FINAL_FIX_SUMMARY.md",
+    "legacy-doc\\documents-release\\README.md",
+    "legacy-doc\\documents-release\\VERSION_HISTORY.md",
+    "legacy-doc\\documents-system\\broken-features-and-issues.md",
+    "legacy-doc\\documents-system\\BUILD_STRUCTURE.md",
+    "legacy-doc\\documents-system\\DEVELOPMENT_ENVIRONMENT_NOTES.md",
+    "legacy-doc\\documents-system\\ECOSYSTEM_AND_ENV_SETUP.md",
+    "legacy-doc\\documents-system\\ENVIRONMENT_SETUP_GUIDE.md",
+    "legacy-doc\\documents-system\\HTTPS_SSL_REMOVAL_SUMMARY.md",
+    "legacy-doc\\documents-system\\LOGGING_AND_MONITORING.md",
+    "legacy-doc\\documents-system\\PACKAGE_CLEANUP_SUMMARY.md",
+    "legacy-doc\\documents-system\\README.md",
+    "legacy-doc\\documents-system\\SECURITY_AND_AUTHENTICATION.md",
+    "legacy-doc\\documents-system\\system-config-cleanup-analysis.md",
+    "legacy-doc\\documents-system\\SYSTEM_CONFIG_ENHANCEMENT_SUMMARY.md",
+    "legacy-doc\\documents-system\\SYSTEM_CONFIG_IMPLEMENTATION_SUMMARY.md",
+    "legacy-doc\\documents-system\\SYSTEM_CONFIG_UI_CLEANUP_SUMMARY.md",
+    "legacy-doc\\documents-system\\SYSTEM_CONFIG_UPDATE.md",
+    "legacy-doc\\documents-system\\SYSTEM_SETTINGS_REFACTOR_EXAMPLE.md",
+    "legacy-doc\\documents-system\\SYSTEM_VALIDATION_SUMMARY.md",
+    "legacy-doc\\documents-system\\translation-audit-report.md",
+    "legacy-doc\\documents-system\\vulnerability-report.md",
+    "legacy-doc\\documents-troubleshooting\\COMMON_ERRORS.md",
+    "legacy-doc\\documents-troubleshooting\\COMPLAINT_DETAILS_DEBUG.md",
+    "legacy-doc\\documents-troubleshooting\\COMPLAINT_DETAILS_FINAL_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\COMPLAINT_TYPES_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\CRITICAL_FIXES_SUMMARY.md",
+    "legacy-doc\\documents-troubleshooting\\DYNAMIC_IMPORT_ERRORS.md",
+    "legacy-doc\\documents-troubleshooting\\EMERGENCY_DEPLOYMENT_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\EXPORT_FUNCTIONALITY_TROUBLESHOOTING.md",
+    "legacy-doc\\documents-troubleshooting\\FRONTEND_ERROR_FIXES.md",
+    "legacy-doc\\documents-troubleshooting\\FRONTEND_WARD_OFFICER_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\LOGO_UPLOAD_RADIO_BUTTON_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\NETWORK_ACCESS_TROUBLESHOOTING.md",
+    "legacy-doc\\documents-troubleshooting\\OBJECT_RENDERING_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\README.md",
+    "legacy-doc\\documents-troubleshooting\\SATISFACTION_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\SLICE_ERROR_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\STATUS_TRANSITION_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\TASKDETAILS_CONTACT_OBJECT_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\TASKDETAILS_DATA_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\TASKDETAILS_MATERIALS_TOOLS_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\TASKDETAILS_OBJECT_RENDER_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\UPDATE_COMPLAINT_DIALOG_FIX.md",
+    "legacy-doc\\documents-troubleshooting\\VITE_DEPENDENCY_CACHE_ISSUES.md",
+    "legacy-doc\\documents-troubleshooting\\VITE_SERVING_FIX.md",
+    "legacy-doc\\README.md",
+    "legacy-doc\\reports\\backend-config-references-update.md",
+    "legacy-doc\\reports\\seed-synchronization-summary.md",
+    "legacy-doc\\reports\\system-config-analysis-summary.md",
+    "legacy-doc\\reports\\ui-configuration-cleanup-results.md",
+    "legacy-doc\\root-markdown\\AHMEDABAD_SEED_UPDATE_SUMMARY.md",
+    "Onboarding\\branching_strategy.md",
+    "Onboarding\\debugging_tips.md",
+    "Onboarding\\development_tools.md",
+    "Onboarding\\local_setup.md",
+    "Onboarding\\README.md",
+    "QA\\bug_reporting.md",
+    "QA\\integration_checklist.md",
+    "QA\\README.md",
+    "QA\\release_validation.md",
+    "QA\\test_cases.md",
+    "README.md",
+    "REFACTORING_SUMMARY.md",
+    "reports\\dynamic-metrics-system.md",
+    "reports\\dynamic-type-filter.md",
+    "SAAS_DEPLOYMENT_GUIDE.md",
+    "System\\env_management.md",
+    "System\\logging_monitoring.md",
+    "System\\README.md",
+    "System\\security_standards.md",
+    "System\\system_config_overview.md"
+  ]
+}

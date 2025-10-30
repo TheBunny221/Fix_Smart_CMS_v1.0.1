@@ -1,0 +1,131 @@
+{
+  "timestamp": "2025-10-27T00:00:00.000Z",
+  "summary": {
+    "totalFilesScanned": 3,
+    "filesWithTranslations": 0,
+    "filesWithHardcodedStrings": 3,
+    "totalHardcodedStrings": 7,
+    "totalTranslationKeys": 23,
+    "translationCoverage": 76.7
+  },
+  "detailedResults": [
+    {
+      "filePath": "client/pages/Login.tsx",
+      "hasTranslationImport": false,
+      "useTranslationHookUsage": true,
+      "hardcodedStrings": [
+        {
+          "content": "Your password is not set. You can:",
+          "line": 238,
+          "type": "jsx",
+          "context": "Password setup message",
+          "suggestedKey": "auth.password.not.set.message"
+        },
+        {
+          "content": "Enter your email",
+          "line": 292,
+          "type": "placeholder",
+          "context": "Email input placeholder",
+          "suggestedKey": "auth.email.placeholder"
+        },
+        {
+          "content": "Email Address",
+          "line": 343,
+          "type": "jsx",
+          "context": "Email field label",
+          "suggestedKey": "auth.email.label"
+        },
+        {
+          "content": "Signing In...",
+          "line": 330,
+          "type": "jsx",
+          "context": "Loading state text",
+          "suggestedKey": "auth.signing.in"
+        }
+      ],
+      "translationKeys": [
+        "messages.eGovernancePortal",
+        "guest.welcomeBack", 
+        "messages.chooseLoginMethod",
+        "auth.login",
+        "auth.password",
+        "auth.forgotPassword",
+        "auth.register",
+        "auth.sendOTP",
+        "auth.verifyOTP",
+        "messages.otpSent",
+        "messages.otpVerified",
+        "messages.loginSuccess",
+        "messages.loginFailed",
+        "messages.invalidCredentials",
+        "messages.accountLocked",
+        "messages.passwordExpired"
+      ]
+    },
+    {
+      "filePath": "client/pages/Index.tsx",
+      "hasTranslationImport": false,
+      "useTranslationHookUsage": false,
+      "hardcodedStrings": [
+        {
+          "content": "Loading...",
+          "line": 52,
+          "type": "jsx",
+          "context": "Loading state",
+          "suggestedKey": "common.loading"
+        }
+      ],
+      "translationKeys": []
+    },
+    {
+      "filePath": "client/pages/AdminConfig.tsx",
+      "hasTranslationImport": false,
+      "useTranslationHookUsage": true,
+      "hardcodedStrings": [
+        {
+          "content": "User Management",
+          "line": 75,
+          "type": "jsx",
+          "context": "Section title",
+          "suggestedKey": "admin.user.management"
+        },
+        {
+          "content": "User management interface will be implemented here",
+          "line": 76,
+          "type": "jsx",
+          "context": "Placeholder text",
+          "suggestedKey": "admin.user.management.placeholder"
+        }
+      ],
+      "translationKeys": [
+        "admin.config.title",
+        "admin.config.subtitle",
+        "admin.config.systemSettings",
+        "admin.config.userManagement",
+        "admin.config.wardBoundaries",
+        "admin.config.complaintTypes",
+        "admin.config.languages"
+      ]
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "high",
+      "description": "Add translation imports to files using t() function",
+      "affectedFiles": ["client/pages/Login.tsx", "client/pages/AdminConfig.tsx"],
+      "suggestedFix": "Import useTranslation hook from react-i18next"
+    },
+    {
+      "priority": "medium", 
+      "description": "Replace hardcoded strings with translation keys",
+      "affectedFiles": ["client/pages/Login.tsx", "client/pages/Index.tsx", "client/pages/AdminConfig.tsx"],
+      "suggestedFix": "Use t() function with appropriate translation keys"
+    },
+    {
+      "priority": "low",
+      "description": "Add missing translation keys to translation files",
+      "affectedFiles": ["client/store/resources/*.json"],
+      "suggestedFix": "Add new keys to en.json, hi.json, ml.json files"
+    }
+  ]
+}
