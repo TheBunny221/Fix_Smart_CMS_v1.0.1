@@ -13,7 +13,12 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
+.vscode
+.builder
+.cleanup-backup
+.kiro
+
+
 !.vscode/extensions.json
 .idea
 .DS_Store

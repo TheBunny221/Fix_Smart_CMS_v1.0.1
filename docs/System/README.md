@@ -7,6 +7,7 @@ This section contains comprehensive documentation for system configuration, envi
 ### Configuration Management
 - [**System Configuration Overview**](system_config_overview.md) - Complete guide to system configuration keys and management
 - [**Environment Management**](env_management.md) - Environment file management and validation procedures
+- [**Branding Configuration**](branding.md) - Application logo and branding management
 
 ### Security & Standards
 - [**Security Standards**](security_standards.md) - Security policies, access control, and best practices

@@ -4,7 +4,7 @@
     "systemConfig": [
         {
             "key": "APP_NAME",
-            "value": "Ahmedabad CMS",
+            "value": "AMC CMS",
             "description": "Application name",
             "isActive": true,
             "type": "application"

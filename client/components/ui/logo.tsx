@@ -35,18 +35,59 @@ export const Logo: React.FC<ExtendedLogoProps> = ({
     ? getResponsiveLogoClasses(size)
     : getLogoClasses(size, context);
 
+  // Check if we have a custom uploaded logo or fallback to default
   const hasCustomLogo = logoUrl && logoUrl !== "/logo.png";
+  const [logoError, setLogoError] = React.useState(false);
+  const [currentLogoUrl, setCurrentLogoUrl] = React.useState(logoUrl);
+
+  // Check for uploaded logo on mount and when logoUrl changes
+  React.useEffect(() => {
+    const checkUploadedLogo = async () => {
+      try {
+        // First try the configured logo URL
+        if (logoUrl && logoUrl !== "/logo.png") {
+          const response = await fetch(logoUrl, { method: 'HEAD' });
+          if (response.ok) {
+            setCurrentLogoUrl(logoUrl);
+            setLogoError(false);
+            return;
+          }
+        }
+        
+        // Then try the uploaded logo
+        const uploadedLogoResponse = await fetch('/uploads/logo.png', { method: 'HEAD' });
+        if (uploadedLogoResponse.ok) {
+          setCurrentLogoUrl('/uploads/logo.png');
+          setLogoError(false);
+          return;
+        }
+        
+        // Fallback to default
+        setCurrentLogoUrl('/logo.png');
+        setLogoError(false);
+      } catch (error) {
+        // If all fails, use fallback icon
+        setLogoError(true);
+        setCurrentLogoUrl(undefined);
+      }
+    };
+
+    checkUploadedLogo();
+  }, [logoUrl]);
+
+  const shouldShowImage = currentLogoUrl && !logoError;
 
   const content = (
     <div className={cn(classes.container, className)}>
       {/* Logo Image or Fallback Icon */}
-      {hasCustomLogo ? (
+      {shouldShowImage ? (
         <img
-          src={logoUrl}
+          src={currentLogoUrl}
           alt={appName}
           className={cn(classes.image, "object-contain")}
           onError={(e) => {
             // Fallback to icon if image fails to load
+            setLogoError(true);
             const target = e.target as HTMLImageElement;
             target.style.display = "none";
             const fallback = target.nextElementSibling as HTMLElement;
@@ -62,7 +103,7 @@ export const Logo: React.FC<ExtendedLogoProps> = ({
         className={cn(
           classes.fallback,
           "text-primary",
-          hasCustomLogo ? "hidden" : "block",
+          shouldShowImage ? "hidden" : "block",
         )}
       />
 

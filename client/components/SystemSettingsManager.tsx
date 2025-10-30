@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAppDispatch } from "../store/hooks";
 import { showSuccessToast, showErrorToast } from "../store/slices/uiSlice";
 import { useAppTranslation } from "../utils/i18n";
+import { useSystemConfig } from "../contexts/SystemConfigContext";
 import {
   useGetAllSystemConfigQuery,
   useUpdateSystemConfigMutation,
@@ -45,6 +46,8 @@ import {
   ChevronRight,
   Search,
   MessageSquare,
+  Upload,
+  Image,
 } from "lucide-react";
 
 interface ConfigSection {
@@ -57,8 +60,15 @@ interface ConfigSection {
 const SystemSettingsManager: React.FC = () => {
   const dispatch = useAppDispatch();
   const { t } = useAppTranslation();
+  const { refreshConfig } = useSystemConfig();
 
   const CONFIG_SECTIONS: ConfigSection[] = [
+    {
+      title: "Application Branding",
+      icon: <Image className="h-5 w-5" />,
+      description: "Manage application logo and branding settings",
+      keys: [],
+    },
     {
       title: t("admin.systemSettings.sections.applicationSettings"),
       icon: <Globe className="h-5 w-5" />,
@@ -147,6 +157,9 @@ const SystemSettingsManager: React.FC = () => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
   const [localSettings, setLocalSettings] = useState<Record<string, SystemConfigItem>>({});
   const [hasChanges, setHasChanges] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const {
     data: settingsResponse,
@@ -294,6 +307,82 @@ const SystemSettingsManager: React.FC = () => {
     });
     setLocalSettings(settingsMap);
     setHasChanges(false);
+    setLogoFile(null);
+    setLogoPreview(null);
+  };
+
+  const handleLogoFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      dispatch(showErrorToast("Invalid file type", "Please upload a PNG, JPG, or SVG file."));
+      return;
+    }
+
+    // Validate file size (2MB)
+    const maxSize = 2 * 1024 * 1024;
+    if (file.size > maxSize) {
+      dispatch(showErrorToast("File too large", "Please upload a file smaller than 2MB."));
+      return;
+    }
+
+    setLogoFile(file);
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setLogoPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleLogoUpload = async () => {
+    if (!logoFile) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('logo', logoFile);
+
+      const response = await fetch('/api/uploads/logo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload logo');
+      }
+
+      const result = await response.json();
+      
+      // Update the APP_LOGO_URL in local settings
+      updateLocalSetting("APP_LOGO_URL", "value", result.data.url);
+      
+      dispatch(showSuccessToast("Application logo updated successfully", "The new logo is now active across the application."));
+      
+      // Refresh the system config to update the logo URL
+      await refreshConfig();
+      
+      // Clear the upload state
+      setLogoFile(null);
+      setLogoPreview(null);
+      
+      // Reset file input
+      const fileInput = document.getElementById('logo-upload') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+      
+    } catch (error: any) {
+      dispatch(showErrorToast("Upload failed", error.message || "Failed to upload logo"));
+    } finally {
+      setIsUploadingLogo(false);
+    }
   };
 
   const renderSettingInput = (setting: SystemConfigItem) => {
@@ -452,9 +541,11 @@ const SystemSettingsManager: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-500">
-                        {section.keys.length} {t("admin.systemSettings.settings")}
-                      </span>
+                      {section.title !== "Application Branding" && (
+                        <span className="text-sm text-gray-500">
+                          {section.keys.length} {t("admin.systemSettings.settings")}
+                        </span>
+                      )}
                       {expandedSections.has(section.title) ? (
                         <ChevronDown className="h-4 w-4" />
                       ) : (
@@ -466,43 +557,141 @@ const SystemSettingsManager: React.FC = () => {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <CardContent className="pt-0">
-                  <div className="space-y-4">
-                    {section.keys.map((key) => {
-                      const setting = localSettings[key];
-                      if (!setting) return null;
-
-                      return (
-                        <div key={key} className="border rounded-lg p-4">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-3 mb-2">
-                                <Label className="font-medium">{getSettingLabel(key)}</Label>
-                                <Switch
-                                  checked={setting.isActive}
-                                  onCheckedChange={(checked) => 
-                                    updateLocalSetting(key, "isActive", checked)
-                                  }
-                                />
-                                <span className="text-sm text-gray-500">
-                                  {setting.isActive ? t("admin.systemSettings.active") : t("admin.systemSettings.inactive")}
-                                </span>
-                              </div>
-                              <p className="text-sm text-gray-600 mb-3">
-                                {setting.description}
-                              </p>
-                              <div className="space-y-2">
-                                <Label className="text-xs text-gray-500">{t("admin.systemSettings.value")}</Label>
-                                {renderSettingInput(setting)}
-                              </div>
-                            </div>
+                  {section.title === "Application Branding" ? (
+                    <div className="space-y-6">
+                      {/* Current Logo Display */}
+                      <div className="border rounded-lg p-4">
+                        <Label className="font-medium mb-3 block">Current Application Logo</Label>
+                        <div className="flex items-center space-x-4">
+                          <div className="w-16 h-16 border rounded-lg flex items-center justify-center bg-gray-50">
+                            {localSettings["APP_LOGO_URL"]?.value && localSettings["APP_LOGO_URL"]?.value !== "/logo.png" ? (
+                              <img 
+                                src={localSettings["APP_LOGO_URL"].value} 
+                                alt="Current logo" 
+                                className="max-w-full max-h-full object-contain"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  const fallback = target.nextElementSibling as HTMLElement;
+                                  if (fallback) fallback.style.display = 'block';
+                                }}
+                              />
+                            ) : (
+                              <Image className="h-8 w-8 text-gray-400" />
+                            )}
+                            <Image className="h-8 w-8 text-gray-400 hidden" />
                           </div>
-                          <div className="text-xs text-gray-400 mt-2">
-                            {t("admin.systemSettings.key")}: {key} | {t("admin.systemSettings.type")}: {setting.type}
+                          <div>
+                            <p className="text-sm font-medium">
+                              {localSettings["APP_NAME"]?.value || "AMC CMS"}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Size: {localSettings["APP_LOGO_SIZE"]?.value || "medium"}
+                            </p>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+
+                      {/* Logo Upload */}
+                      <div className="border rounded-lg p-4">
+                        <Label className="font-medium mb-3 block">Upload New Logo</Label>
+                        <div className="space-y-4">
+                          <div>
+                            <Input
+                              id="logo-upload"
+                              type="file"
+                              accept="image/png,image/jpeg,image/svg+xml"
+                              onChange={handleLogoFileChange}
+                              disabled={isUploadingLogo}
+                              className="mb-2"
+                            />
+                            <p className="text-xs text-gray-500">
+                              Supported formats: PNG, JPG, SVG • Maximum size: 2MB
+                            </p>
+                          </div>
+
+                          {/* Logo Preview */}
+                          {logoPreview && (
+                            <div className="border rounded-lg p-3 bg-gray-50">
+                              <Label className="text-sm font-medium mb-2 block">Preview</Label>
+                              <div className="flex items-center space-x-4">
+                                <div className="w-16 h-16 border rounded-lg flex items-center justify-center bg-white">
+                                  <img 
+                                    src={logoPreview} 
+                                    alt="Logo preview" 
+                                    className="max-w-full max-h-full object-contain"
+                                  />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium">{logoFile?.name}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {logoFile ? `${(logoFile.size / 1024 / 1024).toFixed(2)} MB` : ''}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Upload Button */}
+                          <Button
+                            onClick={handleLogoUpload}
+                            disabled={!logoFile || isUploadingLogo}
+                            className="w-full"
+                          >
+                            {isUploadingLogo ? (
+                              <>
+                                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="h-4 w-4 mr-2" />
+                                Upload Logo
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {section.keys.map((key) => {
+                        const setting = localSettings[key];
+                        if (!setting) return null;
+
+                        return (
+                          <div key={key} className="border rounded-lg p-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <Label className="font-medium">{getSettingLabel(key)}</Label>
+                                  <Switch
+                                    checked={setting.isActive}
+                                    onCheckedChange={(checked) => 
+                                      updateLocalSetting(key, "isActive", checked)
+                                    }
+                                  />
+                                  <span className="text-sm text-gray-500">
+                                    {setting.isActive ? t("admin.systemSettings.active") : t("admin.systemSettings.inactive")}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-3">
+                                  {setting.description}
+                                </p>
+                                <div className="space-y-2">
+                                  <Label className="text-xs text-gray-500">{t("admin.systemSettings.value")}</Label>
+                                  {renderSettingInput(setting)}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-xs text-gray-400 mt-2">
+                              {t("admin.systemSettings.key")}: {key} | {t("admin.systemSettings.type")}: {setting.type}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </CardContent>
               </CollapsibleContent>
             </Collapsible>

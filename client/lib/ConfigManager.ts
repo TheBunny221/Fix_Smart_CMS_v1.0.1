@@ -52,7 +52,7 @@ export type ConfigSource = 'database' | 'seed' | 'environment' | 'default';
 
 // Default configuration values to prevent null reference errors
 const DEFAULT_CONFIG: Record<string, string> = {
-  APP_NAME: "NLC-CMS",
+  APP_NAME: "AMC CMS",
   APP_LOGO_URL: "/logo.png",
   APP_LOGO_SIZE: "medium",
   COMPLAINT_ID_PREFIX: "AMC",
