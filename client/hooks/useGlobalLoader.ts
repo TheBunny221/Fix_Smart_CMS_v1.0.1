@@ -10,7 +10,7 @@ export const useGlobalLoader = () => {
   const dispatch = useAppDispatch();
 
   const showLoader = useCallback((text?: string) => {
-    dispatch(setLoading({ isLoading: true, text }));
+    dispatch(setLoading({ isLoading: true, ...(text && { text }) }));
   }, [dispatch]);
 
   const hideLoader = useCallback(() => {
@@ -27,7 +27,7 @@ export const useGlobalLoader = () => {
     [dispatch]
   );
 
-  const withDebouncedLoader = useCallback(
+  const withDebouncedLoaderHook = useCallback(
     async <T>(
       asyncOperation: () => Promise<T>,
       options: LoaderOptions & { debounceMs?: number } = {}
@@ -41,7 +41,7 @@ export const useGlobalLoader = () => {
     showLoader,
     hideLoader,
     withLoader,
-    withDebouncedLoader,
+    withDebouncedLoader: withDebouncedLoaderHook,
   };
 };
 
@@ -57,7 +57,10 @@ export const useQueryLoader = (
 
   React.useEffect(() => {
     const loading = isLoading || (isFetching ?? false);
-    dispatch(setLoading({ isLoading: loading, text: loading ? text : undefined }));
+    dispatch(setLoading({ 
+      isLoading: loading, 
+      ...(loading && text && { text })
+    }));
   }, [dispatch, isLoading, isFetching, text]);
 };
 

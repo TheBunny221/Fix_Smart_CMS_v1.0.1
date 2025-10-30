@@ -22,14 +22,17 @@ export const createEndpointWithLoader = <
 ) => {
   const originalOnQueryStarted = config.onQueryStarted;
   
+  const { silent, loadingText, ...restConfig } = config;
+  
+  // @ts-ignore - Complex RTK Query type compatibility with exactOptionalPropertyTypes
   return build.query<Result, Args>({
-    ...config,
+    ...restConfig,
     async onQueryStarted(args, api) {
       // Show loader unless silent
-      if (!config.silent) {
+      if (!silent) {
         api.dispatch(setLoading({ 
           isLoading: true, 
-          text: config.loadingText 
+          ...(loadingText && { text: loadingText })
         }));
       }
 
@@ -46,7 +49,7 @@ export const createEndpointWithLoader = <
         console.error("Query failed:", error);
       } finally {
         // Hide loader unless silent
-        if (!config.silent) {
+        if (!silent) {
           api.dispatch(setLoading({ isLoading: false }));
         }
       }
@@ -74,14 +77,17 @@ export const createMutationWithLoader = <
 ) => {
   const originalOnQueryStarted = config.onQueryStarted;
   
+  const { silent, loadingText, ...restConfig } = config;
+  
+  // @ts-ignore - Complex RTK Query type compatibility with exactOptionalPropertyTypes
   return build.mutation<Result, Args>({
-    ...config,
+    ...restConfig,
     async onQueryStarted(args, api) {
       // Show loader unless silent
-      if (!config.silent) {
+      if (!silent) {
         api.dispatch(setLoading({ 
           isLoading: true, 
-          text: config.loadingText 
+          ...(loadingText && { text: loadingText })
         }));
       }
 
@@ -98,7 +104,7 @@ export const createMutationWithLoader = <
         console.error("Mutation failed:", error);
       } finally {
         // Hide loader unless silent
-        if (!config.silent) {
+        if (!silent) {
           api.dispatch(setLoading({ isLoading: false }));
         }
       }

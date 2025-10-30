@@ -18,7 +18,7 @@ export const withGlobalLoader = async <T>(
 
   try {
     if (!silent) {
-      dispatch(setLoading({ isLoading: true, text }));
+      dispatch(setLoading({ isLoading: true, ...(text && { text }) }));
     }
     
     const result = await asyncOperation();
@@ -51,7 +51,7 @@ export const withDebouncedLoader = async <T>(
       
       // Set loading with debounce
       loaderTimeout = setTimeout(() => {
-        dispatch(setLoading({ isLoading: true, text }));
+        dispatch(setLoading({ isLoading: true, ...(text && { text }) }));
       }, debounceMs);
     }
     
@@ -93,7 +93,7 @@ export const withMutationLoader = <TArgs, TResult>(
  * Utility to show loader for specific operations
  */
 export const showLoader = (dispatch: Dispatch, text?: string) => {
-  dispatch(setLoading({ isLoading: true, text }));
+  dispatch(setLoading({ isLoading: true, ...(text && { text }) }));
 };
 
 export const hideLoader = (dispatch: Dispatch) => {
@@ -111,7 +111,7 @@ export const useLoaderForQuery = (
 ) => {
   React.useEffect(() => {
     if (isLoading || isFetching) {
-      dispatch(setLoading({ isLoading: true, text }));
+      dispatch(setLoading({ isLoading: true, ...(text && { text }) }));
     } else {
       dispatch(setLoading({ isLoading: false }));
     }

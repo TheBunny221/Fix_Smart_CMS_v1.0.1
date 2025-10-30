@@ -796,7 +796,6 @@ const ComplaintDetails: React.FC = () => {
                       text={complaint.remarks}
                       maxLength={200}
                       className="whitespace-pre-wrap leading-relaxed"
-                      tooltipClassName="max-w-md"
                     />
                   </div>
                 </div>

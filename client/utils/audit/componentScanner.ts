@@ -80,6 +80,9 @@ export class ComponentScanner {
       const line = lines[i];
       const lineNumber = i + 1;
 
+      // Skip if line is undefined
+      if (line === undefined) continue;
+
       // Find hardcoded strings
       const hardcodedStrings = this.findHardcodedStrings(line, lineNumber, options);
       result.hardcodedStrings.push(...hardcodedStrings);
@@ -156,10 +159,10 @@ export class ComponentScanner {
     for (const pattern of stringPatterns) {
       let match;
       while ((match = pattern.regex.exec(line)) !== null) {
-        const content = match[1].trim();
+        const content = match[1]?.trim();
         
-        // Skip if content is too short
-        if (content.length < minLength) continue;
+        // Skip if content is undefined or too short
+        if (!content || content.length < minLength) continue;
 
         // Skip if content matches exclude patterns
         if (excludePatterns.some(excludePattern => excludePattern.test(content))) continue;
@@ -205,6 +208,8 @@ export class ComponentScanner {
       let match;
       while ((match = pattern.exec(line)) !== null) {
         const key = match[1];
+        if (!key) continue;
+        
         const namespace = key.includes('.') ? key.split('.')[0] : undefined;
 
         translationKeys.push({
@@ -213,7 +218,7 @@ export class ComponentScanner {
           column: match.index,
           context: line.trim(),
           isValid: this.isValidTranslationKey(key),
-          namespace,
+          ...(namespace && { namespace }),
         });
       }
     }
@@ -240,14 +245,15 @@ export class ComponentScanner {
     for (const pattern of elementPatterns) {
       let match;
       while ((match = pattern.regex.exec(line)) !== null) {
-        const content = match[1].trim();
-        if (content.length > 0) {
+        const content = match[1]?.trim();
+        if (content && content.length > 0) {
+          const translationKey = this.extractTranslationKeyFromContext(line, match.index);
           textElements.push({
             type: pattern.type,
             content,
             location: `Line ${lineNumber}`,
             isTranslated: this.looksLikeTranslationKey(line, match.index),
-            translationKey: this.extractTranslationKeyFromContext(line, match.index),
+            ...(translationKey && { translationKey }),
           });
         }
       }

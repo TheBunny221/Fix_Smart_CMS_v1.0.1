@@ -38,10 +38,10 @@ export {
   type IssueReport,
 } from './auditEngine';
 
-// Utility functions
-export const createAuditEngine = () => new TranslationAuditEngine();
-export const createRoleMapper = () => new RoleBasedPageMapper();
-export const createComponentScanner = () => new ComponentScanner();
+// Utility functions - Import the classes directly instead of using factory functions
+// export const createAuditEngine = () => new TranslationAuditEngine();
+// export const createRoleMapper = () => new RoleBasedPageMapper();
+// export const createComponentScanner = () => new ComponentScanner();
 
 // Constants
 export const SUPPORTED_LANGUAGES = ['en', 'hi', 'ml'] as const;

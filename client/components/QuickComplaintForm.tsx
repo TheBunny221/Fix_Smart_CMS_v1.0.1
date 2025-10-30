@@ -31,6 +31,31 @@ import {
   useLazyGenerateCaptchaQuery,
 } from "../store/api/guestApi";
 import { useGetWardsQuery } from "../store/api/wardApi";
+
+// Import Ward and SubZone types
+interface Ward {
+  id: string;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  boundaries?: string;
+  centerLat?: number;
+  centerLng?: number;
+  boundingBox?: string;
+  subZones?: SubZone[];
+}
+
+interface SubZone {
+  id: string;
+  name: string;
+  wardId: string;
+  description?: string;
+  isActive: boolean;
+  boundaries?: string;
+  centerLat?: number;
+  centerLng?: number;
+  boundingBox?: string;
+}
 import { useResendGuestOtpMutation } from "../store/api/guestApi";
 import { selectAuth, setCredentials } from "../store/slices/authSlice";
 import { showSuccessToast, showErrorToast } from "../store/slices/uiSlice";
@@ -108,7 +133,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
     refetchOnReconnect: true,
     refetchOnFocus: true,
   });
-  
+
   // Debug logging to understand the data structure
   console.log("=== WARDS DEBUG INFO ===");
   console.log("Wards API Response:", wardsResponse);
@@ -116,40 +141,38 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
   console.log("Wards Error:", wardsError);
   console.log("Wards Response Data:", wardsResponse?.data);
   console.log("Is Wards Data Array:", Array.isArray(wardsResponse?.data));
-  
+
   // Handle different possible response structures
-  let wards = [];
+  let wards: Ward[] = [];
   if (wardsResponse) {
     // wardApi returns: { success: true, data: { wards: [...] } }
-    if (wardsResponse.data && Array.isArray(wardsResponse.data.wards)) {
+    if (wardsResponse.data && 'wards' in wardsResponse.data && Array.isArray(wardsResponse.data.wards)) {
       wards = wardsResponse.data.wards;
     }
     // Fallback for other structures
     else if (Array.isArray(wardsResponse.data)) {
-      wards = wardsResponse.data;
+      wards = wardsResponse.data as Ward[];
     } else if (Array.isArray(wardsResponse)) {
-      wards = wardsResponse;
-    } else if (wardsResponse.data && Array.isArray(wardsResponse.data.data)) {
-      wards = wardsResponse.data.data;
+      wards = wardsResponse as Ward[];
     }
   }
-  
+
   // Fallback wards for testing (remove this in production)
-  const fallbackWards = [
-    { id: "fallback-1", name: "Ward 1 - Maninagar" },
-    { id: "fallback-2", name: "Ward 2 - Navrangpura" },
-    { id: "fallback-3", name: "Ward 3 - Satellite" },
-    { id: "fallback-4", name: "Ward 4 - Vastrapur" },
-    { id: "fallback-5", name: "Ward 5 - Bopal" },
-    { id: "fallback-6", name: "Ward 6 - Old City" },
+  const fallbackWards: Ward[] = [
+    { id: "fallback-1", name: "Ward 1 - Maninagar", isActive: true },
+    { id: "fallback-2", name: "Ward 2 - Navrangpura", isActive: true },
+    { id: "fallback-3", name: "Ward 3 - Satellite", isActive: true },
+    { id: "fallback-4", name: "Ward 4 - Vastrapur", isActive: true },
+    { id: "fallback-5", name: "Ward 5 - Bopal", isActive: true },
+    { id: "fallback-6", name: "Ward 6 - Old City", isActive: true },
   ];
-  
+
   // Use fallback if no wards loaded and not loading
   if (wards.length === 0 && !wardsLoading && !wardsError) {
     console.warn("Using fallback wards - API may have failed silently");
     wards = fallbackWards;
   }
-  
+
   console.log("Final wards array:", wards);
   console.log("Wards length:", wards.length);
   console.log("First ward:", wards[0]);
@@ -187,7 +210,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
 
   const { toast } = useToast();
   const { getConfig, getBrandingConfig } = useConfigManager();
-  
+
   // Get branding configuration for complaint prefix and other settings
   const brandingConfig = getBrandingConfig();
   const [verifyGuestOtp] = useVerifyGuestOtpMutation();
@@ -221,10 +244,10 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
   // Log when sub-zones become available/unavailable
   useEffect(() => {
     if (formData.ward) {
-      const selectedWard = wards.find((w: any) => w.id === formData.ward);
+      const selectedWard = wards.find((w: Ward) => w.id === formData.ward);
       const subZones = selectedWard?.subZones || [];
-      console.log(`Ward "${selectedWard?.name}" has ${subZones.length} sub-zones:`, subZones.map(sz => sz.name));
-      
+      console.log(`Ward "${selectedWard?.name}" has ${subZones.length} sub-zones:`, subZones.map((sz: SubZone) => sz.name));
+
       if (subZones.length > 0) {
         toast({
           title: "Sub-zones Available",
@@ -248,12 +271,12 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
         const response = await fetch('/api/users/wards?include=subzones');
         console.log("Response status:", response.status);
         console.log("Response headers:", response.headers);
-        
+
         if (!response.ok) {
           console.error("Response not OK:", response.status, response.statusText);
           return;
         }
-        
+
         const data = await response.json();
         console.log("Manual fetch result:", data);
         console.log("Manual fetch data type:", typeof data);
@@ -353,7 +376,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
   // Derive sub-zones for the selected ward (from wards response which includes subZones)
   const selectedWard = wards.find((w: any) => w.id === formData.ward);
   const subZonesForWard = selectedWard?.subZones || [];
-  
+
   // Debug sub-zones
   console.log("Selected ward:", selectedWard);
   console.log("Sub-zones for ward:", subZonesForWard);
@@ -362,13 +385,13 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
   const handleInputChange = useCallback((field: string, value: string) => {
     setFormData((prev) => {
       const newData = { ...prev, [field]: value };
-      
+
       // Clear sub-zone when ward changes
       if (field === "ward") {
         newData.subZoneId = "";
         console.log("Ward changed, clearing sub-zone");
       }
-      
+
       return newData;
     });
   }, []);
@@ -446,7 +469,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
           showErrorToast(
             translations?.forms?.invalidCaptcha || "Invalid CAPTCHA",
             translations?.forms?.enterCaptcha ||
-              "Please enter the CAPTCHA code",
+            "Please enter the CAPTCHA code",
           ),
         );
         return;
@@ -464,7 +487,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
           showErrorToast(
             translations?.forms?.requiredField || "Required Field",
             translations?.forms?.requiredField ||
-              "Please fill all required fields",
+            "Please fill all required fields",
           ),
         );
         return;
@@ -492,7 +515,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
           const selectedComplaintType = complaintTypeOptions.find(
             (type) => type.value === formData.problemType
           );
-          
+
           const complaintData = {
             title: `${selectedComplaintType?.label || formData.problemType} complaint`,
             description: formData.description,
@@ -852,7 +875,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                           </div>
                         </SelectItem>
                       ) : (
-                        wards.map((ward, index) => {
+                        wards.map((ward: Ward, index: number) => {
                           console.log(`Rendering ward ${index}:`, ward);
                           if (!ward || !ward.id || !ward.name) {
                             console.warn("Invalid ward data:", ward);
@@ -863,7 +886,7 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                             <SelectItem key={ward.id} value={ward.id}>
                               <div className="flex items-center justify-between w-full">
                                 <span>{ward.name}</span>
-                                {hasSubZones && (
+                                {hasSubZones && ward.subZones && (
                                   <span className="text-xs text-blue-500 ml-2">
                                     ({ward.subZones.length} sub-zones)
                                   </span>

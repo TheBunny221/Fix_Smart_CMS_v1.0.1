@@ -193,7 +193,7 @@ const OtpVerificationModal: React.FC<OtpVerificationModalProps> = ({
                     <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
                     {translations?.forms?.verifying || "Verifying..."}
                   </>
-                ) : ("translations?.forms?.verifyCode" || "Verify Code")}
+                ) : (translations?.forms?.verifyCode || "Verify Code")}
               </Button>
               <Button
                 type="button"

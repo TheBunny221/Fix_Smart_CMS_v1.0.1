@@ -349,7 +349,7 @@ export default defineConfig(({ mode }) => {
             const templateDir = path.resolve(projectRoot, 'client/templates');
             const templates = glob.sync('**/*.html', { cwd: templateDir });
             
-            templates.forEach(template => {
+            templates.forEach((template: string) => {
               const templatePath = path.join(templateDir, template);
               const content = fs.readFileSync(templatePath, 'utf-8');
               
@@ -360,7 +360,7 @@ export default defineConfig(({ mode }) => {
               });
             });
           } catch (error) {
-            console.warn('Failed to copy templates:', error.message);
+            console.warn('Failed to copy templates:', (error as Error).message);
           }
         }
       }

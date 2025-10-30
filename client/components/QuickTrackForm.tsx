@@ -32,11 +32,17 @@ const QuickTrackForm: React.FC<Props> = ({ onClose }) => {
 
   // Generate dynamic complaint ID placeholder
   const complaintIdPlaceholder = useMemo(() => {
-    const complaintConfig = getComplaintIdConfig(config);
+    // Get all system config as an object
+    const systemConfig = {
+      COMPLAINT_ID_PREFIX: getConfig('COMPLAINT_ID_PREFIX', 'CMP'),
+      COMPLAINT_ID_LENGTH: getConfig('COMPLAINT_ID_LENGTH', '5'),
+      COMPLAINT_ID_START_NUMBER: getConfig('COMPLAINT_ID_START_NUMBER', '1'),
+    };
+    const complaintConfig = getComplaintIdConfig(systemConfig);
     const example = generateComplaintIdPlaceholder(complaintConfig);
     return translations?.index?.complaintIdPlaceholder?.replace('{{example}}', example) || 
            `Enter your complaint ID (e.g., ${example})`;
-  }, [config, translations]);
+  }, [getConfig, translations]);
 
   const [requestOtp, { isLoading: isRequestingOtp }] =
     useRequestComplaintOtpMutation();
