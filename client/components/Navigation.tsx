@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
-import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useConfigManager } from "../hooks/useConfigManager";
 import { logout } from "../store/slices/authSlice";
 import { setLanguage } from "../store/slices/languageSlice";
 import { Button } from "./ui/button";
@@ -62,7 +62,11 @@ const Navigation: React.FC = () => {
     (state) => state.language,
   );
   const { notifications } = useAppSelector((state) => state.ui);
-  const { appName, appLogoUrl, appLogoSize } = useSystemConfig();
+  const { getAppName, getBrandingConfig } = useConfigManager();
+  const brandingConfig = getBrandingConfig();
+  const appName = getAppName();
+  const appLogoUrl = brandingConfig.logoUrl;
+  const appLogoSize = brandingConfig.logoSize;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   // Close mobile menu on escape key

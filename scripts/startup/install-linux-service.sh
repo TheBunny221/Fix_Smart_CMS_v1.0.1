@@ -1,17 +1,16 @@
 #!/bin/bash
 
 # NLC-CMS Linux Service Installation Script
-# This script installs and configures the NLC-CMS systemd service
+# Usage: sudo ./install-linux-service.sh [install|uninstall|enable|disable|start|stop|restart|status]
 
 set -e
 
-# Configuration
-APP_NAME="nlc-cms"
+SERVICE_NAME="nlc-cms"
+SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+APP_DIR="/opt/nlc-cms"
 APP_USER="nlc-cms"
 APP_GROUP="nlc-cms"
-APP_DIR="/var/www/nlc-cms"
-SERVICE_FILE="/etc/systemd/system/${APP_NAME}.service"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+NODE_VERSION="18"
 
 # Colors for output
 RED='\033[0;31m'
@@ -20,243 +19,274 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Logging functions
-log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+# Function to print colored output
+print_status() {
+    echo -e "${GREEN}[INFO]${NC} $1"
 }
 
-log_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-log_warning() {
+print_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-log_error() {
+print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
+}
+
+print_header() {
+    echo -e "${BLUE}[NLC-CMS]${NC} $1"
 }
 
 # Check if running as root
 check_root() {
     if [[ $EUID -ne 0 ]]; then
-        log_error "This script must be run as root (use sudo)"
+        print_error "This script must be run as root (use sudo)"
         exit 1
     fi
 }
 
-# Create application user and group
+# Check if Node.js is installed
+check_nodejs() {
+    if ! command -v node &> /dev/null; then
+        print_error "Node.js is not installed. Please install Node.js $NODE_VERSION or higher."
+        print_status "You can install Node.js using:"
+        echo "  curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash -"
+        echo "  sudo apt-get install -y nodejs"
+        exit 1
+    fi
+    
+    NODE_VER=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+    if [[ $NODE_VER -lt $NODE_VERSION ]]; then
+        print_warning "Node.js version $NODE_VER detected. Recommended version is $NODE_VERSION or higher."
+    else
+        print_status "Node.js version $(node --version) detected"
+    fi
+}
+
+# Create application user
 create_app_user() {
-    log_info "Creating application user and group..."
-    
-    # Create group if it doesn't exist
-    if ! getent group "$APP_GROUP" > /dev/null 2>&1; then
-        groupadd --system "$APP_GROUP"
-        log_success "Created group: $APP_GROUP"
+    if ! id "$APP_USER" &>/dev/null; then
+        print_status "Creating application user: $APP_USER"
+        useradd --system --shell /bin/false --home-dir $APP_DIR --create-home $APP_USER
+        usermod -a -G $APP_GROUP $APP_USER
     else
-        log_info "Group $APP_GROUP already exists"
-    fi
-    
-    # Create user if it doesn't exist
-    if ! getent passwd "$APP_USER" > /dev/null 2>&1; then
-        useradd --system --gid "$APP_GROUP" --home-dir "$APP_DIR" \
-                --shell /bin/bash --comment "NLC-CMS Application User" "$APP_USER"
-        log_success "Created user: $APP_USER"
-    else
-        log_info "User $APP_USER already exists"
+        print_status "User $APP_USER already exists"
     fi
 }
 
-# Setup application directory
-setup_app_directory() {
-    log_info "Setting up application directory..."
-    
-    # Create application directory if it doesn't exist
-    if [[ ! -d "$APP_DIR" ]]; then
-        mkdir -p "$APP_DIR"
-        log_success "Created directory: $APP_DIR"
-    fi
-    
-    # Create necessary subdirectories
-    mkdir -p "$APP_DIR"/{logs,uploads,.pm2}
-    
-    # Set ownership and permissions
-    chown -R "$APP_USER:$APP_GROUP" "$APP_DIR"
-    chmod -R 755 "$APP_DIR"
-    chmod -R 775 "$APP_DIR"/{logs,uploads}
-    
-    log_success "Application directory configured"
-}
-
-# Install systemd service
+# Install the service
 install_service() {
-    log_info "Installing systemd service..."
+    print_header "Installing NLC-CMS Linux Service"
+    
+    check_nodejs
+    create_app_user
+    
+    # Check if application directory exists
+    if [[ ! -d "$APP_DIR" ]]; then
+        print_error "Application directory $APP_DIR does not exist."
+        print_status "Please ensure NLC-CMS is installed at $APP_DIR"
+        exit 1
+    fi
+    
+    # Check if server script exists
+    if [[ ! -f "$APP_DIR/server/server.js" ]]; then
+        print_error "Server script not found at $APP_DIR/server/server.js"
+        exit 1
+    fi
+    
+    # Create necessary directories
+    print_status "Creating necessary directories..."
+    mkdir -p $APP_DIR/logs
+    mkdir -p $APP_DIR/uploads/complaints
+    mkdir -p $APP_DIR/uploads/complaint-photos
+    
+    # Set proper ownership and permissions
+    print_status "Setting ownership and permissions..."
+    chown -R $APP_USER:$APP_GROUP $APP_DIR
+    chmod -R 755 $APP_DIR
+    chmod -R 775 $APP_DIR/logs
+    chmod -R 775 $APP_DIR/uploads
     
     # Copy service file
-    if [[ -f "$SCRIPT_DIR/nlc-cms.service" ]]; then
-        cp "$SCRIPT_DIR/nlc-cms.service" "$SERVICE_FILE"
-        log_success "Service file copied to: $SERVICE_FILE"
-    else
-        log_error "Service file not found: $SCRIPT_DIR/nlc-cms.service"
-        exit 1
-    fi
-    
-    # Set proper permissions
-    chmod 644 "$SERVICE_FILE"
+    print_status "Installing systemd service file..."
+    cp "$(dirname "$0")/nlc-cms.service" $SERVICE_FILE
     
     # Reload systemd
+    print_status "Reloading systemd daemon..."
     systemctl daemon-reload
-    log_success "Systemd daemon reloaded"
+    
+    print_status "Service installed successfully!"
+    print_status "Use the following commands to manage the service:"
+    echo "  sudo systemctl enable $SERVICE_NAME    # Enable auto-start on boot"
+    echo "  sudo systemctl start $SERVICE_NAME     # Start the service"
+    echo "  sudo systemctl status $SERVICE_NAME    # Check service status"
+    echo "  sudo systemctl stop $SERVICE_NAME      # Stop the service"
+    echo "  sudo systemctl restart $SERVICE_NAME   # Restart the service"
 }
 
-# Configure service
-configure_service() {
-    log_info "Configuring service..."
+# Uninstall the service
+uninstall_service() {
+    print_header "Uninstalling NLC-CMS Linux Service"
     
-    # Enable service
-    systemctl enable "$APP_NAME"
-    log_success "Service enabled for auto-start"
+    # Stop and disable service if it exists
+    if systemctl is-active --quiet $SERVICE_NAME; then
+        print_status "Stopping service..."
+        systemctl stop $SERVICE_NAME
+    fi
     
-    # Create PM2 startup script for the user
-    sudo -u "$APP_USER" bash -c "cd $APP_DIR && pm2 startup systemd -u $APP_USER --hp $APP_DIR"
+    if systemctl is-enabled --quiet $SERVICE_NAME; then
+        print_status "Disabling service..."
+        systemctl disable $SERVICE_NAME
+    fi
     
-    log_success "Service configured successfully"
+    # Remove service file
+    if [[ -f $SERVICE_FILE ]]; then
+        print_status "Removing service file..."
+        rm $SERVICE_FILE
+        systemctl daemon-reload
+    fi
+    
+    print_status "Service uninstalled successfully!"
+    print_warning "Application files and user account were not removed."
+    print_status "To remove completely, run:"
+    echo "  sudo userdel $APP_USER"
+    echo "  sudo rm -rf $APP_DIR"
 }
 
-# Install PM2 if not present
-install_pm2() {
-    log_info "Checking PM2 installation..."
+# Enable service
+enable_service() {
+    print_status "Enabling $SERVICE_NAME service..."
+    systemctl enable $SERVICE_NAME
+    print_status "Service enabled. It will start automatically on boot."
+}
+
+# Disable service
+disable_service() {
+    print_status "Disabling $SERVICE_NAME service..."
+    systemctl disable $SERVICE_NAME
+    print_status "Service disabled. It will not start automatically on boot."
+}
+
+# Start service
+start_service() {
+    print_status "Starting $SERVICE_NAME service..."
+    systemctl start $SERVICE_NAME
+    sleep 2
     
-    if ! command -v pm2 &> /dev/null; then
-        log_info "Installing PM2 globally..."
-        npm install -g pm2
-        log_success "PM2 installed"
+    if systemctl is-active --quiet $SERVICE_NAME; then
+        print_status "Service started successfully!"
+        
+        # Check health endpoint
+        sleep 3
+        if curl -f http://localhost:4005/api/health &>/dev/null; then
+            print_status "Health check passed!"
+        else
+            print_warning "Health check failed. Service may still be starting..."
+        fi
     else
-        log_info "PM2 already installed"
+        print_error "Failed to start service!"
+        systemctl status $SERVICE_NAME
+        exit 1
     fi
 }
 
-# Setup log rotation
-setup_log_rotation() {
-    log_info "Setting up log rotation..."
-    
-    cat > /etc/logrotate.d/nlc-cms << EOF
-$APP_DIR/logs/*.log {
-    daily
-    missingok
-    rotate 30
-    compress
-    delaycompress
-    notifempty
-    create 644 $APP_USER $APP_GROUP
-    postrotate
-        systemctl reload $APP_NAME > /dev/null 2>&1 || true
-    endscript
-}
-EOF
-    
-    log_success "Log rotation configured"
+# Stop service
+stop_service() {
+    print_status "Stopping $SERVICE_NAME service..."
+    systemctl stop $SERVICE_NAME
+    print_status "Service stopped successfully!"
 }
 
-# Setup firewall rules
-setup_firewall() {
-    log_info "Setting up firewall rules..."
+# Restart service
+restart_service() {
+    print_status "Restarting $SERVICE_NAME service..."
+    systemctl restart $SERVICE_NAME
+    sleep 2
     
-    # Check if ufw is available
-    if command -v ufw &> /dev/null; then
-        ufw allow 4005/tcp comment "NLC-CMS Application"
-        ufw allow 80/tcp comment "HTTP"
-        ufw allow 443/tcp comment "HTTPS"
-        log_success "UFW firewall rules added"
-    elif command -v firewall-cmd &> /dev/null; then
-        firewall-cmd --permanent --add-port=4005/tcp
-        firewall-cmd --permanent --add-port=80/tcp
-        firewall-cmd --permanent --add-port=443/tcp
-        firewall-cmd --reload
-        log_success "Firewalld rules added"
+    if systemctl is-active --quiet $SERVICE_NAME; then
+        print_status "Service restarted successfully!"
     else
-        log_warning "No firewall management tool found (ufw/firewalld)"
+        print_error "Failed to restart service!"
+        systemctl status $SERVICE_NAME
+        exit 1
     fi
 }
 
-# Validate installation
-validate_installation() {
-    log_info "Validating installation..."
+# Show service status
+show_status() {
+    print_header "NLC-CMS Service Status"
     
-    # Check if service file exists
-    if [[ -f "$SERVICE_FILE" ]]; then
-        log_success "Service file exists"
+    if systemctl is-active --quiet $SERVICE_NAME; then
+        print_status "Service is running"
     else
-        log_error "Service file missing"
-        return 1
+        print_warning "Service is not running"
     fi
     
-    # Check if service is enabled
-    if systemctl is-enabled "$APP_NAME" &> /dev/null; then
-        log_success "Service is enabled"
+    if systemctl is-enabled --quiet $SERVICE_NAME; then
+        print_status "Service is enabled (auto-start on boot)"
     else
-        log_error "Service is not enabled"
-        return 1
+        print_warning "Service is disabled (manual start only)"
     fi
-    
-    # Check service status
-    if systemctl status "$APP_NAME" --no-pager -l &> /dev/null; then
-        log_success "Service status is valid"
-    else
-        log_warning "Service is not running (this is normal for initial install)"
-    fi
-    
-    log_success "Installation validation completed"
-}
-
-# Display usage information
-show_usage() {
-    log_info "Service management commands:"
-    echo "  Start service:    sudo systemctl start $APP_NAME"
-    echo "  Stop service:     sudo systemctl stop $APP_NAME"
-    echo "  Restart service:  sudo systemctl restart $APP_NAME"
-    echo "  Service status:   sudo systemctl status $APP_NAME"
-    echo "  View logs:        sudo journalctl -u $APP_NAME -f"
-    echo "  Enable auto-start: sudo systemctl enable $APP_NAME"
-    echo "  Disable auto-start: sudo systemctl disable $APP_NAME"
-    echo ""
-    log_info "Application management commands:"
-    echo "  PM2 status:       sudo -u $APP_USER pm2 status"
-    echo "  PM2 logs:         sudo -u $APP_USER pm2 logs"
-    echo "  PM2 restart:      sudo -u $APP_USER pm2 restart all"
-}
-
-# Main installation function
-main() {
-    log_info "Starting NLC-CMS Linux service installation..."
-    echo "=================================================="
-    
-    # Check prerequisites
-    check_root
-    
-    # Installation steps
-    create_app_user
-    setup_app_directory
-    install_pm2
-    install_service
-    configure_service
-    setup_log_rotation
-    setup_firewall
-    validate_installation
     
     echo ""
-    log_success "NLC-CMS service installation completed successfully!"
-    echo "=================================================="
+    systemctl status $SERVICE_NAME --no-pager
     
-    show_usage
-    
-    echo ""
-    log_info "Next steps:"
-    echo "1. Copy your application files to: $APP_DIR"
-    echo "2. Install dependencies: cd $APP_DIR && npm ci --omit=dev"
-    echo "3. Configure environment: cp .env.production $APP_DIR/.env"
-    echo "4. Start the service: sudo systemctl start $APP_NAME"
+    # Check health endpoint if service is running
+    if systemctl is-active --quiet $SERVICE_NAME; then
+        echo ""
+        print_status "Checking health endpoint..."
+        if curl -f http://localhost:4005/api/health &>/dev/null; then
+            print_status "Health check: PASSED"
+        else
+            print_warning "Health check: FAILED"
+        fi
+    fi
 }
 
-# Run main function
-main "$@"
+# Main execution
+case "${1:-install}" in
+    install)
+        check_root
+        install_service
+        ;;
+    uninstall)
+        check_root
+        uninstall_service
+        ;;
+    enable)
+        check_root
+        enable_service
+        ;;
+    disable)
+        check_root
+        disable_service
+        ;;
+    start)
+        check_root
+        start_service
+        ;;
+    stop)
+        check_root
+        stop_service
+        ;;
+    restart)
+        check_root
+        restart_service
+        ;;
+    status)
+        show_status
+        ;;
+    *)
+        echo "Usage: $0 {install|uninstall|enable|disable|start|stop|restart|status}"
+        echo ""
+        echo "Commands:"
+        echo "  install    - Install the systemd service"
+        echo "  uninstall  - Remove the systemd service"
+        echo "  enable     - Enable auto-start on boot"
+        echo "  disable    - Disable auto-start on boot"
+        echo "  start      - Start the service"
+        echo "  stop       - Stop the service"
+        echo "  restart    - Restart the service"
+        echo "  status     - Show service status"
+        exit 1
+        ;;
+esac

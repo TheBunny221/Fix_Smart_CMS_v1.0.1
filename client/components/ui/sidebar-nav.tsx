@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "../../store/hooks";
 import { logout } from "../../store/slices/authSlice";
 import { setLanguage } from "../../store/slices/languageSlice";
-import { useSystemConfig } from "../../contexts/SystemConfigContext";
+import { useConfigManager } from "../../hooks/useConfigManager";
 import { Button } from "./button";
 import { cn } from "../../lib/utils";
 import { Logo } from "./logo";
@@ -56,7 +56,11 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const { translations } = useAppSelector((state) => state.language);
-  const { appName, appLogoUrl, appLogoSize } = useSystemConfig();
+  const { getAppName, getBrandingConfig } = useConfigManager();
+  const brandingConfig = getBrandingConfig();
+  const appName = getAppName();
+  const appLogoUrl = brandingConfig.logoUrl;
+  const appLogoSize = brandingConfig.logoSize;
 
   const navigationItems: SidebarNavItem[] = [
     {

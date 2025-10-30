@@ -1037,7 +1037,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { MapPin, Navigation, Search, AlertCircle } from "lucide-react";
 import { useDetectLocationAreaMutation } from "../store/api/wardApi";
-import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useConfigManager } from "../hooks/useConfigManager";
 import { toast } from "../hooks/use-toast";
 
 /**
@@ -1097,7 +1097,7 @@ const SimpleLocationMapDialog: React.FC<SimpleLocationMapDialogProps> = ({
   onLocationSelect,
   initialLocation,
 }) => {
-  const { getConfig, isLoading: configLoading } = useSystemConfig();
+  const { getConfig, isLoading: configLoading } = useConfigManager();
 
   // Unified system configuration state
   const [systemConfig, setSystemConfig] = useState<{

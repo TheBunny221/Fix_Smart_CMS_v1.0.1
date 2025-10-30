@@ -133,6 +133,11 @@
 //       },
 //     },
 //     define: {
+    // Runtime Configuration Support
+    // Configuration values are fetched from SystemConfig API at runtime
+    // instead of being injected at build time. This ensures that the same
+    // build can be deployed to different environments with different configurations.
+    
 //       // Fix React runtime issues
 //       global: "globalThis",
 //       // Ensure consistent NODE_ENV usage in client code

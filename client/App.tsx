@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -19,10 +19,13 @@ import UnifiedLayout from "./components/layouts/UnifiedLayout";
 import OtpProvider from "./contexts/OtpContext";
 import OtpErrorBoundary from "./components/OtpErrorBoundary";
 import { SystemConfigProvider } from "./contexts/SystemConfigContext";
+import { ConfigurationProvider } from "./components/ConfigurationProvider";
+import DocumentTitleManager from "./components/DocumentTitleManager";
 import RoleBasedRoute from "./components/RoleBasedRoute";
 import RoleBasedDashboard from "./components/RoleBasedDashboard";
 import GlobalLoader from "./components/GlobalLoader";
 import { Loader2 } from "lucide-react";
+import { updateMetaTags } from "./utils/documentTitle";
 
 // Lazy load components for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -87,16 +90,27 @@ const App: React.FC = () => {
       <ErrorBoundary>
         <ContextErrorBoundary contextName="SystemConfig">
           <SystemConfigProvider>
-            <ContextErrorBoundary contextName="AppInitializer">
-              <AppInitializer>
-                <SystemConfigInitializer>
-                  <ContextErrorBoundary contextName="OtpProvider">
-                    <OtpErrorBoundary>
-                      <OtpProvider>
-                        <TooltipProvider>
-                          <Router>
-                            <div className="min-h-screen bg-gray-50">
-                              <Suspense fallback={<LoadingFallback />}>
+            <ConfigurationProvider
+              onConfigLoaded={(stats) => {
+                console.log('Configuration loaded:', stats);
+                // Update meta tags when configuration is loaded
+                updateMetaTags();
+              }}
+              onConfigError={(error) => {
+                console.error('Configuration error:', error);
+              }}
+            >
+              <ContextErrorBoundary contextName="AppInitializer">
+                <AppInitializer>
+                  <SystemConfigInitializer>
+                    <ContextErrorBoundary contextName="OtpProvider">
+                      <OtpErrorBoundary>
+                        <OtpProvider>
+                          <TooltipProvider>
+                            <Router>
+                              <DocumentTitleManager>
+                                <div className="min-h-screen bg-gray-50">
+                                  <Suspense fallback={<LoadingFallback />}>
                                 <Routes>
                                   {/* Public routes */}
                                   <Route path="/login" element={<Login />} />
@@ -424,7 +438,8 @@ const App: React.FC = () => {
                             <GlobalMessageHandler />
                             <AuthErrorHandler />
                             <GlobalLoader />
-                          </Router>
+                          </DocumentTitleManager>
+                        </Router>
                         </TooltipProvider>
                       </OtpProvider>
                     </OtpErrorBoundary>
@@ -432,6 +447,7 @@ const App: React.FC = () => {
                 </SystemConfigInitializer>
               </AppInitializer>
             </ContextErrorBoundary>
+            </ConfigurationProvider>
           </SystemConfigProvider>
         </ContextErrorBoundary>
       </ErrorBoundary>

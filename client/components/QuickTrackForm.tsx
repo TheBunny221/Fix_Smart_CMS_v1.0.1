@@ -6,7 +6,7 @@ import {
   useRequestComplaintOtpMutation,
   useVerifyComplaintOtpMutation,
 } from "../store/api/guestApi";
-import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useConfigManager } from "../hooks/useConfigManager";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -24,7 +24,7 @@ const QuickTrackForm: React.FC<Props> = ({ onClose }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { translations } = useAppSelector((state) => state.language);
-  const { config } = useSystemConfig();
+  const { getConfig } = useConfigManager();
   const [complaintId, setComplaintId] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
   const [error, setError] = useState<string>("");

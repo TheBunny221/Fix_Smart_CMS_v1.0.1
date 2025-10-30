@@ -508,6 +508,9 @@ POST   /api/system-config              # Create system setting
 PUT    /api/system-config/:key         # Update system setting
 DELETE /api/system-config/:key         # Delete system setting
 GET    /api/system-config/health       # System health check
+GET    /api/system-config/audit        # Audit system configuration
+GET    /api/system-config/validate     # Validate configuration integrity
+GET    /api/system-config/canonical-keys # Get canonical keys mapping
 ```
 
 ### Ward & Geographic Management

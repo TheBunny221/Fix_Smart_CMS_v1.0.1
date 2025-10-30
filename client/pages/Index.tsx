@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppSelector } from "../store/hooks";
-import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useConfigManager } from "../hooks/useConfigManager";
 import { Button } from "../components/ui/button";
 import {
   Card,
@@ -29,8 +29,12 @@ const Index: React.FC = () => {
     (state) => state.language,
   );
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-  const { appName, getConfig } = useSystemConfig();
+  const { getAppName, getBrandingConfig, isInitialized } = useConfigManager();
   const navigate = useNavigate();
+
+  // Get configuration values
+  const appName = getAppName();
+  const brandingConfig = getBrandingConfig();
 
   // Form state
   const [isFormExpanded, setIsFormExpanded] = useState(false);
@@ -43,8 +47,8 @@ const Index: React.FC = () => {
     }
   }, [isAuthenticated, user, navigate]);
 
-  // Show loading if translations not ready
-  if (!translations) {
+  // Show loading if translations or configuration not ready
+  if (!translations || !isInitialized) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

@@ -12,7 +12,7 @@ import { useToast } from "../hooks/use-toast";
 import { useApiErrorHandler } from "../hooks/useApiErrorHandler";
 import { useRegisterMutation } from "../store/api/authApi";
 import { useOtpFlow } from "../contexts/OtpContext";
-import { useGetWardsQuery } from "../store/api/guestApi";
+import { useGetWardsQuery } from "../store/api/wardApi";
 import {
   Card,
   CardContent,
@@ -47,10 +47,8 @@ const Register: React.FC = () => {
     data: wardsResponse,
     isLoading: wardsLoading,
     error: wardsError,
-  } = useGetWardsQuery();
-  const wardsData = Array.isArray(wardsResponse?.data)
-    ? wardsResponse.data
-    : [];
+  } = useGetWardsQuery({ includeSubzones: false });
+  const wardsData = wardsResponse?.data?.wards || [];
 
   // Clear registration state on component mount
   useEffect(() => {

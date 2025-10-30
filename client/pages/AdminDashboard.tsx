@@ -62,7 +62,7 @@ import {
   Target,
 } from "lucide-react";
 
-import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useConfigManager } from "../hooks/useConfigManager";
 import { SafeRenderer, safeRenderValue } from "../components/SafeRenderer";
 import { useAppTranslation } from "../utils/i18n";
 
@@ -79,8 +79,11 @@ if (typeof window !== 'undefined') {
 
 const AdminDashboard: React.FC = () => {
   const { translations } = useAppSelector((state) => state.language);
-  const { appName } = useSystemConfig();
+  const { getAppName } = useConfigManager();
   const { t } = useAppTranslation();
+  
+  // Get app name from centralized configuration
+  const appName = getAppName();
 
   // Fetch real-time data using API queries
   const {

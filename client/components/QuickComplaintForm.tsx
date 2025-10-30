@@ -26,11 +26,11 @@ import {
   GuestComplaintData,
 } from "../store/slices/guestSlice";
 import {
-  useGetWardsQuery,
   useVerifyGuestOtpMutation,
   useGenerateCaptchaQuery,
   useLazyGenerateCaptchaQuery,
 } from "../store/api/guestApi";
+import { useGetWardsQuery } from "../store/api/wardApi";
 import { useResendGuestOtpMutation } from "../store/api/guestApi";
 import { selectAuth, setCredentials } from "../store/slices/authSlice";
 import { showSuccessToast, showErrorToast } from "../store/slices/uiSlice";
@@ -64,7 +64,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { createComplaint } from "@/store/slices/complaintsSlice";
-import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useConfigManager } from "../hooks/useConfigManager";
 import { prewarmMapAssets } from "../utils/mapTilePrefetch";
 import { emailSchema, nameSchema, phoneSchema } from "../lib/validations";
 
@@ -100,8 +100,60 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
     data: wardsResponse,
     isLoading: wardsLoading,
     error: wardsError,
-  } = useGetWardsQuery();
-  const wards = Array.isArray(wardsResponse?.data) ? wardsResponse.data : [];
+    refetch: refetchWards,
+  } = useGetWardsQuery({ includeSubzones: true }, {
+    // Force refetch to avoid cache issues
+    refetchOnMountOrArgChange: true,
+    // Skip cache entirely for debugging
+    refetchOnReconnect: true,
+    refetchOnFocus: true,
+  });
+  
+  // Debug logging to understand the data structure
+  console.log("=== WARDS DEBUG INFO ===");
+  console.log("Wards API Response:", wardsResponse);
+  console.log("Wards Loading:", wardsLoading);
+  console.log("Wards Error:", wardsError);
+  console.log("Wards Response Data:", wardsResponse?.data);
+  console.log("Is Wards Data Array:", Array.isArray(wardsResponse?.data));
+  
+  // Handle different possible response structures
+  let wards = [];
+  if (wardsResponse) {
+    // wardApi returns: { success: true, data: { wards: [...] } }
+    if (wardsResponse.data && Array.isArray(wardsResponse.data.wards)) {
+      wards = wardsResponse.data.wards;
+    }
+    // Fallback for other structures
+    else if (Array.isArray(wardsResponse.data)) {
+      wards = wardsResponse.data;
+    } else if (Array.isArray(wardsResponse)) {
+      wards = wardsResponse;
+    } else if (wardsResponse.data && Array.isArray(wardsResponse.data.data)) {
+      wards = wardsResponse.data.data;
+    }
+  }
+  
+  // Fallback wards for testing (remove this in production)
+  const fallbackWards = [
+    { id: "fallback-1", name: "Ward 1 - Maninagar" },
+    { id: "fallback-2", name: "Ward 2 - Navrangpura" },
+    { id: "fallback-3", name: "Ward 3 - Satellite" },
+    { id: "fallback-4", name: "Ward 4 - Vastrapur" },
+    { id: "fallback-5", name: "Ward 5 - Bopal" },
+    { id: "fallback-6", name: "Ward 6 - Old City" },
+  ];
+  
+  // Use fallback if no wards loaded and not loading
+  if (wards.length === 0 && !wardsLoading && !wardsError) {
+    console.warn("Using fallback wards - API may have failed silently");
+    wards = fallbackWards;
+  }
+  
+  console.log("Final wards array:", wards);
+  console.log("Wards length:", wards.length);
+  console.log("First ward:", wards[0]);
+  console.log("=== END WARDS DEBUG ===");
 
   // Form state
   const [formData, setFormData] = useState<FormData>({
@@ -134,7 +186,10 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
   const [isSubmittingLocal, setIsSubmittingLocal] = useState(false);
 
   const { toast } = useToast();
-  const { getConfig } = useSystemConfig();
+  const { getConfig, getBrandingConfig } = useConfigManager();
+  
+  // Get branding configuration for complaint prefix and other settings
+  const brandingConfig = getBrandingConfig();
   const [verifyGuestOtp] = useVerifyGuestOtpMutation();
   const [resendGuestOtp] = useResendGuestOtpMutation();
   const [submitGuestComplaintMutation, { isLoading: isSendingOtp }] =
@@ -163,9 +218,53 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
     }
   }, [isAuthenticated, user]);
 
+  // Log when sub-zones become available/unavailable
+  useEffect(() => {
+    if (formData.ward) {
+      const selectedWard = wards.find((w: any) => w.id === formData.ward);
+      const subZones = selectedWard?.subZones || [];
+      console.log(`Ward "${selectedWard?.name}" has ${subZones.length} sub-zones:`, subZones.map(sz => sz.name));
+      
+      if (subZones.length > 0) {
+        toast({
+          title: "Sub-zones Available",
+          description: `${subZones.length} sub-zones are available for ${selectedWard?.name}. You can optionally select one for more precise location.`,
+          duration: 3000,
+        });
+      }
+    }
+  }, [formData.ward, wards, toast]);
+
   // Generate CAPTCHA on component mount
   useEffect(() => {
     handleRefreshCaptcha();
+  }, []);
+
+  // Manual test to fetch wards data
+  useEffect(() => {
+    const testFetchWards = async () => {
+      try {
+        console.log("Manual fetch test for wards...");
+        const response = await fetch('/api/users/wards?include=subzones');
+        console.log("Response status:", response.status);
+        console.log("Response headers:", response.headers);
+        
+        if (!response.ok) {
+          console.error("Response not OK:", response.status, response.statusText);
+          return;
+        }
+        
+        const data = await response.json();
+        console.log("Manual fetch result:", data);
+        console.log("Manual fetch data type:", typeof data);
+        console.log("Manual fetch data.data:", data.data);
+        console.log("Manual fetch data.data.wards:", data.data?.wards);
+        console.log("Manual fetch data.data.wards is array:", Array.isArray(data.data?.wards));
+      } catch (error) {
+        console.error("Manual fetch error:", error);
+      }
+    };
+    testFetchWards();
   }, []);
 
   // Prewarm map assets (tiles + leaflet) using system-config default center
@@ -251,12 +350,27 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
       setErrors((prev) => ({ ...prev, [field]: msg }));
     }
   };
-  // Derive sub-zones for the selected ward (from public wards response which includes subZones)
+  // Derive sub-zones for the selected ward (from wards response which includes subZones)
   const selectedWard = wards.find((w: any) => w.id === formData.ward);
   const subZonesForWard = selectedWard?.subZones || [];
+  
+  // Debug sub-zones
+  console.log("Selected ward:", selectedWard);
+  console.log("Sub-zones for ward:", subZonesForWard);
+  console.log("Should show sub-zone dropdown:", formData.ward && subZonesForWard.length > 0);
 
   const handleInputChange = useCallback((field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [field]: value };
+      
+      // Clear sub-zone when ward changes
+      if (field === "ward") {
+        newData.subZoneId = "";
+        console.log("Ward changed, clearing sub-zone");
+      }
+      
+      return newData;
+    });
   }, []);
 
   const handleFileUpload = useCallback(
@@ -354,6 +468,21 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
           ),
         );
         return;
+      }
+
+      // Validate sub-zone if selected
+      if (formData.subZoneId) {
+        const selectedWard = wards.find((w: any) => w.id === formData.ward);
+        const validSubZone = selectedWard?.subZones?.find((sz: any) => sz.id === formData.subZoneId);
+        if (!validSubZone) {
+          dispatch(
+            showErrorToast(
+              translations?.forms?.invalidSubZone || "Invalid Sub-Zone",
+              translations?.forms?.selectedSubZoneNotValid || "The selected sub-zone is not valid for the chosen ward.",
+            ),
+          );
+          return;
+        }
       }
 
       try {
@@ -679,9 +808,20 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ward">
-                    {translations?.complaints?.ward || "Ward"} *
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="ward">
+                      {translations?.complaints?.ward || "Ward"} *
+                    </Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => refetchWards()}
+                      disabled={wardsLoading}
+                    >
+                      {wardsLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
+                    </Button>
+                  </div>
                   <Select
                     value={formData.ward}
                     onValueChange={(value) => handleInputChange("ward", value)}
@@ -694,18 +834,44 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                     <SelectContent>
                       {wardsLoading ? (
                         <SelectItem value="loading" disabled>
-                          {translations?.forms?.loadingWards || "Loading wards..."}
+                          <div className="flex items-center space-x-2">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>{translations?.forms?.loadingWards || "Loading wards..."}</span>
+                          </div>
                         </SelectItem>
                       ) : wardsError ? (
                         <SelectItem value="error" disabled>
-                          {translations?.forms?.errorLoadingWards || "Error loading wards"}
+                          <div className="text-red-500">
+                            {translations?.forms?.errorLoadingWards || "Error loading wards"} - {JSON.stringify(wardsError)}
+                          </div>
+                        </SelectItem>
+                      ) : wards.length === 0 ? (
+                        <SelectItem value="no-wards" disabled>
+                          <div className="text-orange-500">
+                            No wards available - Database may not be seeded. Response: {JSON.stringify(wardsResponse)}
+                          </div>
                         </SelectItem>
                       ) : (
-                        wards.map((ward) => (
-                          <SelectItem key={ward.id} value={ward.id}>
-                            {ward.name}
-                          </SelectItem>
-                        ))
+                        wards.map((ward, index) => {
+                          console.log(`Rendering ward ${index}:`, ward);
+                          if (!ward || !ward.id || !ward.name) {
+                            console.warn("Invalid ward data:", ward);
+                            return null;
+                          }
+                          const hasSubZones = ward.subZones && ward.subZones.length > 0;
+                          return (
+                            <SelectItem key={ward.id} value={ward.id}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{ward.name}</span>
+                                {hasSubZones && (
+                                  <span className="text-xs text-blue-500 ml-2">
+                                    ({ward.subZones.length} sub-zones)
+                                  </span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          );
+                        }).filter(Boolean)
                       )}
                     </SelectContent>
                   </Select>
@@ -746,26 +912,41 @@ const QuickComplaintForm: React.FC<QuickComplaintFormProps> = ({
                   <div className="space-y-2">
                     <Label htmlFor="subZone">
                       {(translations as any)?.complaints?.subZone || "Sub-Zone"}
+                      <span className="text-sm text-muted-foreground ml-1">
+                        ({subZonesForWard.length} available)
+                      </span>
                     </Label>
                     <Select
                       value={formData.subZoneId || ""}
-                      onValueChange={(value) =>
-                        handleInputChange("subZoneId", value)
-                      }
+                      onValueChange={(value) => {
+                        console.log("Sub-zone selected:", value);
+                        handleInputChange("subZoneId", value);
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue
                           placeholder={
-                            translations?.common?.selectAll || "Select sub-zone"
+                            translations?.common?.selectAll || "Select sub-zone (optional)"
                           }
                         />
                       </SelectTrigger>
                       <SelectContent>
-                        {subZonesForWard.map((sz: any) => (
-                          <SelectItem key={sz.id} value={sz.id}>
-                            {sz.name}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="">
+                          <span className="text-muted-foreground">No specific sub-zone</span>
+                        </SelectItem>
+                        {subZonesForWard.map((sz: any) => {
+                          console.log("Rendering sub-zone:", sz);
+                          return (
+                            <SelectItem key={sz.id} value={sz.id}>
+                              {sz.name}
+                              {sz.description && (
+                                <span className="text-sm text-muted-foreground ml-2">
+                                  - {sz.description}
+                                </span>
+                              )}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </div>

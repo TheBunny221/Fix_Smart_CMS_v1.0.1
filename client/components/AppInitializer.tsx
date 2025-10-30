@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useConfigManager } from "../hooks/useConfigManager";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { setCredentials, clearCredentials } from "../store/slices/authSlice";
 import { initializeLanguage } from "../store/slices/languageSlice";
@@ -24,7 +24,10 @@ interface AppInitializerProps {
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
   const dispatch = useAppDispatch();
   const [isInitialized, setIsInitialized] = useState(false);
-  const { appName } = useSystemConfig();
+  const { getAppName } = useConfigManager();
+  
+  // Get app name from centralized configuration
+  const appName = getAppName();
 
   // Use ref to track if initialization has already run
   const hasInitializedRef = useRef(false);

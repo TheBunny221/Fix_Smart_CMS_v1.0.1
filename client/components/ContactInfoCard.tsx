@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppSelector } from "../store/hooks";
-import { useSystemConfig } from "../contexts/SystemConfigContext";
+import { useConfigManager } from "../hooks/useConfigManager";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import { Phone, Mail, Clock, MapPin } from "lucide-react";
 
@@ -10,7 +10,10 @@ interface ContactInfoCardProps {
 
 const ContactInfoCard: React.FC<ContactInfoCardProps> = ({ title }) => {
   const { translations } = useAppSelector((s) => s.language);
-  const { getConfig } = useSystemConfig();
+  const { getConfig, getContactInfo } = useConfigManager();
+  
+  // Get contact information from centralized configuration
+  const contactInfo = getContactInfo();
 
   const headerTitle =
     title || translations?.guest?.supportContact || translations?.index?.needHelpContactUs || "Need Help? Contact Us";

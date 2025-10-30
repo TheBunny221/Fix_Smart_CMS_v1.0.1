@@ -58,7 +58,7 @@ import {
   type CreateUserRequest,
   type UpdateUserRequest,
 } from "../store/api/adminApi";
-import { useGetWardsQuery } from "../store/api/guestApi";
+import { useGetWardsQuery } from "../store/api/wardApi";
 import { toast } from "../components/ui/use-toast";
 
 const AdminUsers: React.FC = () => {
@@ -162,10 +162,11 @@ const AdminUsers: React.FC = () => {
     data: wardsResponse,
     isLoading: isLoadingWards,
     error: wardsError,
-  } = useGetWardsQuery();
+  } = useGetWardsQuery({ includeSubzones: false });
 
   // Extract wards data from the API response
-  const wards = wardsResponse?.data || [];
+  // wardApi returns { data: { wards: [...] } }
+  const wards = wardsResponse?.data?.wards || [];
 
   // Mutations
   const [activateUser] = useActivateUserMutation();

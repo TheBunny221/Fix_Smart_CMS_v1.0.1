@@ -8,7 +8,7 @@ import {
   getTextLogoClasses,
   LogoProps,
 } from "../../lib/logoUtils";
-import { useSystemConfig } from "../../contexts/SystemConfigContext";
+import { useConfigManager } from "../../hooks/useConfigManager";
 
 interface ExtendedLogoProps extends LogoProps {
   to?: string;
@@ -131,7 +131,11 @@ interface AppLogoProps {
 
 export const AppLogo: React.FC<AppLogoProps> = (props) => {
   // Import the hook at the top of the file
-  const { appName, appLogoUrl, appLogoSize } = useSystemConfig();
+  const { getAppName, getBrandingConfig } = useConfigManager();
+  const brandingConfig = getBrandingConfig();
+  const appName = getAppName();
+  const appLogoUrl = brandingConfig.logoUrl;
+  const appLogoSize = brandingConfig.logoSize;
 
   return (
     <Logo
