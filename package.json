@@ -13,7 +13,7 @@
     "start": "node server/server.js",
     "start:prod": "NODE_ENV=production HOST=0.0.0.0 PORT=4005 node server/server.js",
     "start:lan": "HOST=0.0.0.0 PORT=4005 node server/server.js",
-    "pm2:start": "pm2 start ecosystem.config.js --env production",
+    "pm2:start": "npm run db:setup && pm2 start ecosystem.config.js --env production",
     "pm2:start:dev": "pm2 start ecosystem.config.js --env development",
     "pm2:stop": "pm2 stop all",
     "pm2:restart": "pm2 restart all",
@@ -25,8 +25,8 @@
     "build": "node scripts/production-build.js",
     "build:clean": "rimraf dist && npm run build",
     "build:analyze": "npm run build && node scripts/analyze-build.js",
-    "deploy:linux": "node scripts/deploy-linux-debian.js",
-    "deploy:windows": "node scripts/deploy-windows-server.js",
+    "deploy:linux": "node scripts/deploy-linux-debian.cjs",
+    "deploy:windows": "node scripts/deploy-windows-server.cjs",
     "deploy:setup:linux": "node scripts/startup/install-linux-service.sh",
     "deploy:setup:windows": "powershell -ExecutionPolicy Bypass -File scripts/startup/nlc-cms-service.ps1 -Action install",
     "build:client": "vite build --outDir dist/client",
@@ -106,7 +106,8 @@
     "clean:uploads": "rimraf uploads/complaints/* uploads/complaint-photos/*",
     "env:check": "node -e \"console.log('NODE_ENV:', process.env.NODE_ENV); console.log('HOST:', process.env.HOST); console.log('PORT:', process.env.PORT);\"",
     "validate:runtime-config": "echo \"Runtime configuration validation - build supports dynamic config loading\"",
-    "build:validate": "npm run build && npm run validate:runtime-config"
+    "build:validate": "npm run build && npm run validate:runtime-config",
+    "build:production": "npm run db:setup && npm run build:only && npm run validate:runtime-config"
   },
   "dependencies": {
     "@prisma/client": "^6.16.3",
