@@ -407,6 +407,17 @@ function copyClientBuild() {
     try {
       copyDirectoryRecursive(sourceBuildDir, clientDestDir);
       console.log(`✅ Client build copied successfully from ${path.relative(rootDir, sourceBuildDir)}`);
+      
+      // Clean up the spa folder if it was the source and it's in the dist directory
+      const spaDir = path.join(CONFIG.distDir, 'spa');
+      if (sourceBuildDir === spaDir && fs.existsSync(spaDir)) {
+        try {
+          fs.rmSync(spaDir, { recursive: true, force: true });
+          console.log('✅ Cleaned up temporary spa directory');
+        } catch (cleanupError) {
+          console.log('⚠️ Could not clean up spa directory:', cleanupError.message);
+        }
+      }
     } catch (error) {
       console.log('⚠️ Client build copy failed:', error.message);
     }
@@ -727,7 +738,7 @@ function createProductionPackageJson() {
     dependencies: productionDependencies,
     devDependencies: {
       "prisma": originalPackage.devDependencies && originalPackage.devDependencies["prisma"] ? 
-        { "prisma": originalPackage.devDependencies["prisma"] } : {}
+        originalPackage.devDependencies["prisma"] : "^6.16.3"
     },
     engines: originalPackage.engines || {
       "node": ">=18.0.0",
@@ -768,8 +779,23 @@ function validateBuild() {
     'prisma/schema.prisma'
   ];
 
-  const missingFiles = [];
+  const requiredDirectories = [
+    'server',
+    'prisma',
+    'uploads'
+  ];
 
+  const optionalFiles = [
+    'client/index.html',
+    'client/assets',
+    'ecosystem.prod.config.cjs'
+  ];
+
+  const missingFiles = [];
+  const missingDirectories = [];
+  const foundOptionalFiles = [];
+
+  // Check required files
   requiredFiles.forEach(file => {
     const filePath = path.join(CONFIG.distDir, file);
     if (!fs.existsSync(filePath)) {
@@ -779,16 +805,99 @@ function validateBuild() {
     }
   });
 
+  // Check required directories
+  requiredDirectories.forEach(dir => {
+    const dirPath = path.join(CONFIG.distDir, dir);
+    if (!fs.existsSync(dirPath)) {
+      missingDirectories.push(dir);
+    } else {
+      console.log(`✅ ${dir}/`);
+    }
+  });
+
+  // Check optional files
+  optionalFiles.forEach(file => {
+    const filePath = path.join(CONFIG.distDir, file);
+    if (fs.existsSync(filePath)) {
+      foundOptionalFiles.push(file);
+      console.log(`✅ ${file}`);
+    }
+  });
+
+  // Check for problematic spa directory
+  const spaDir = path.join(CONFIG.distDir, 'spa');
+  if (fs.existsSync(spaDir)) {
+    console.log('⚠️ Found spa/ directory - this should have been cleaned up');
+    console.log('💡 Consider running the build again to fix this issue');
+  }
+
+  // Report validation results
   if (missingFiles.length > 0) {
     console.error('❌ Missing required files:');
     missingFiles.forEach(file => console.error(`   - ${file}`));
-    return false;
+  }
+
+  if (missingDirectories.length > 0) {
+    console.error('❌ Missing required directories:');
+    missingDirectories.forEach(dir => console.error(`   - ${dir}/`));
+  }
+
+  if (foundOptionalFiles.length > 0) {
+    console.log(`📁 Found ${foundOptionalFiles.length} optional components`);
   }
 
   // Check dist directory size
   console.log(`📊 Build size: ${Math.round(getDirectorySize(CONFIG.distDir) / 1024 / 1024)} MB`);
 
+  const hasErrors = missingFiles.length > 0 || missingDirectories.length > 0;
+  
+  if (hasErrors) {
+    console.error('❌ Build validation failed - missing required components');
+    return false;
+  }
+
   console.log('✅ Build validation completed successfully');
+  return true;
+}
+
+/**
+ * Clean up temporary build artifacts
+ */
+function cleanupBuildArtifacts() {
+  console.log('\n🧹 Cleaning Up Build Artifacts');
+  console.log('='.repeat(50));
+
+  const artifactsToClean = [
+    path.join(CONFIG.distDir, 'spa'),           // Remove spa directory if it exists
+    path.join(CONFIG.distDir, 'node_modules')  // Remove node_modules if accidentally copied
+  ];
+
+  let cleanedCount = 0;
+
+  artifactsToClean.forEach(artifactPath => {
+    if (fs.existsSync(artifactPath)) {
+      try {
+        const stats = fs.statSync(artifactPath);
+        if (stats.isDirectory()) {
+          fs.rmSync(artifactPath, { recursive: true, force: true });
+          console.log(`✅ Removed directory: ${path.relative(CONFIG.distDir, artifactPath)}`);
+        } else {
+          fs.unlinkSync(artifactPath);
+          console.log(`✅ Removed file: ${path.relative(CONFIG.distDir, artifactPath)}`);
+        }
+        cleanedCount++;
+      } catch (error) {
+        console.log(`⚠️ Could not remove ${path.relative(CONFIG.distDir, artifactPath)}: ${error.message}`);
+      }
+    }
+  });
+
+  if (cleanedCount === 0) {
+    console.log('✅ No build artifacts to clean up');
+  } else {
+    console.log(`✅ Cleaned up ${cleanedCount} build artifact(s)`);
+  }
+
   return true;
 }
 
@@ -865,6 +974,7 @@ function main() {
     { name: 'Create Environment Example', fn: createEnvExample },
     { name: 'Copy Deployment Scripts', fn: copyDeploymentScripts },
     { name: 'Create Production Package.json', fn: createProductionPackageJson },
+    { name: 'Clean Up Build Artifacts', fn: cleanupBuildArtifacts },
     { name: 'Validate Build Output', fn: validateBuild }
   ];
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAppDispatch } from "../store/hooks";
 import { showSuccessToast, showErrorToast } from "../store/slices/uiSlice";
+import { handleApiError } from "../utils/errorHandling";
 import {
   useGetAllWardsForManagementQuery,
   useCreateWardMutation,
@@ -134,7 +135,7 @@ const WardManagement: React.FC = () => {
       resetWardForm();
       refetch();
     } catch (error: any) {
-      dispatch(showErrorToast("Creation Failed", error.data?.message || "Failed to create ward"));
+      handleApiError(error, dispatch, showErrorToast, "Ward Creation Failed");
     }
   };
 
@@ -156,7 +157,7 @@ const WardManagement: React.FC = () => {
       setEditingWard(null);
       refetch();
     } catch (error: any) {
-      dispatch(showErrorToast("Update Failed", error.data?.message || "Failed to update ward"));
+      handleApiError(error, dispatch, showErrorToast, "Ward Update Failed");
     }
   };
 
@@ -168,7 +169,7 @@ const WardManagement: React.FC = () => {
       dispatch(showSuccessToast("Ward Deleted", `Ward "${ward.name}" deleted successfully`));
       refetch();
     } catch (error: any) {
-      dispatch(showErrorToast("Deletion Failed", error.data?.message || "Failed to delete ward"));
+      handleApiError(error, dispatch, showErrorToast, "Ward Deletion Failed");
     }
   };
 
@@ -189,7 +190,7 @@ const WardManagement: React.FC = () => {
       resetSubZoneForm();
       refetch();
     } catch (error: any) {
-      dispatch(showErrorToast("Creation Failed", error.data?.message || "Failed to create subzone"));
+      handleApiError(error, dispatch, showErrorToast, "SubZone Creation Failed");
     }
   };
 
@@ -212,7 +213,7 @@ const WardManagement: React.FC = () => {
       setEditingSubZone(null);
       refetch();
     } catch (error: any) {
-      dispatch(showErrorToast("Update Failed", error.data?.message || "Failed to update subzone"));
+      handleApiError(error, dispatch, showErrorToast, "SubZone Update Failed");
     }
   };
 
@@ -237,7 +238,7 @@ const WardManagement: React.FC = () => {
       dispatch(showSuccessToast("SubZone Deleted", `SubZone "${subZone.name}" deleted successfully`));
       refetch();
     } catch (error: any) {
-      dispatch(showErrorToast("Deletion Failed", error.data?.message || "Failed to delete subzone"));
+      handleApiError(error, dispatch, showErrorToast, "SubZone Deletion Failed");
     }
   };
 

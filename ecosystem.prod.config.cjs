@@ -17,7 +17,7 @@ module.exports = {
       restart_delay: 5000,
 
       // Load environment variables from .env files
-      env_file: ".env.production",
+      env_file: ".env",
 
       // Log management
       out_file: path.join(logDir, "api-out.log"),

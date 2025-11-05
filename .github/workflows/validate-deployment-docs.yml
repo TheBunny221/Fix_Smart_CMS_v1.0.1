@@ -1,0 +1,277 @@
+name: Validate Deployment Documentation
+
+on:
+  push:
+    paths:
+      - 'docs/deployments/**'
+      - 'config/**'
+      - '.env.*'
+      - 'ecosystem.*.config.*'
+      - 'scripts/validate-*.cjs'
+      - 'scripts/test-deployment-*.cjs'
+      - 'scripts/run-deployment-*.cjs'
+  pull_request:
+    paths:
+      - 'docs/deployments/**'
+      - 'config/**'
+      - '.env.*'
+      - 'ecosystem.*.config.*'
+      - 'scripts/validate-*.cjs'
+      - 'scripts/test-deployment-*.cjs'
+      - 'scripts/run-deployment-*.cjs'
+  workflow_dispatch:
+    inputs:
+      validation_type:
+        description: 'Type of validation to run'
+        required: true
+        default: 'ci'
+        type: choice
+        options:
+          - ci
+          - full
+          - docs-only
+          - commands-only
+
+jobs:
+  validate-docs:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run CI validation (fast)
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.validation_type == 'ci')
+        run: npm run validate:deployment:ci
+        
+      - name: Run full validation
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.validation_type == 'full'
+        run: npm run validate:deployment
+        
+      - name: Run docs-only validation
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.validation_type == 'docs-only'
+        run: npm run validate:deployment:docs-only
+        
+      - name: Run commands-only validation
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.validation_type == 'commands-only'
+        run: npm run validate:deployment:commands-only
+        
+      - name: Run comprehensive validation on PR
+        if: github.event_name == 'pull_request'
+        run: npm run validate:deployment:docs-only
+        
+      - name: Upload validation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-results-${{ github.run_number }}
+          path: |
+            logs/
+            ci-validation-results.json
+          retention-days: 30
+          
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read CI results if available
+            let results = null;
+            try {
+              if (fs.existsSync('ci-validation-results.json')) {
+                results = JSON.parse(fs.readFileSync('ci-validation-results.json', 'utf8'));
+              }
+            } catch (error) {
+              console.log('Could not read validation results:', error.message);
+            }
+            
+            // Create comment body
+            let commentBody = '## 📚 Deployment Documentation Validation Results\n\n';
+            
+            if (results) {
+              const status = results.exitCode === 0 ? '✅ PASSED' : '❌ FAILED';
+              commentBody += `**Status:** ${status}\n`;
+              commentBody += `**Success Rate:** ${results.successRate}%\n`;
+              commentBody += `**Passed:** ${results.passed} | **Failed:** ${results.failed} | **Warnings:** ${results.warnings}\n\n`;
+              
+              if (results.errors && results.errors.length > 0) {
+                const errors = results.errors.filter(e => e.type === 'error');
+                const warnings = results.errors.filter(e => e.type === 'warning');
+                
+                if (errors.length > 0) {
+                  commentBody += '### ❌ Errors\n';
+                  errors.forEach((error, index) => {
+                    commentBody += `${index + 1}. ${error.message}\n`;
+                  });
+                  commentBody += '\n';
+                }
+                
+                if (warnings.length > 0) {
+                  commentBody += '### ⚠️ Warnings\n';
+                  warnings.forEach((warning, index) => {
+                    commentBody += `${index + 1}. ${warning.message}\n`;
+                  });
+                  commentBody += '\n';
+                }
+              }
+              
+              if (results.exitCode === 0) {
+                commentBody += '### 🎉 All Critical Validations Passed!\n';
+                commentBody += 'The deployment documentation is ready for use.\n\n';
+              } else {
+                commentBody += '### 🔧 Action Required\n';
+                commentBody += 'Please fix the errors above before merging.\n\n';
+              }
+            } else {
+              commentBody += '**Status:** Validation completed (detailed results not available)\n\n';
+            }
+            
+            commentBody += '### 📋 What was validated:\n';
+            commentBody += '- ✅ Critical internal links\n';
+            commentBody += '- ✅ Required configuration files\n';
+            commentBody += '- ✅ Documentation structure\n';
+            commentBody += '- ✅ Command syntax\n\n';
+            
+            commentBody += '### 🔍 For detailed validation:\n';
+            commentBody += 'Run `npm run validate:deployment` locally for comprehensive analysis.\n';
+            
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: commentBody
+            });
+
+  validate-commands:
+    name: Test Deployment Commands
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+      fail-fast: false
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Test deployment commands (simulation mode)
+        run: npm run test:deployment-commands:simulation
+        env:
+          TEST_MODE: simulation
+          
+      - name: Upload command test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: command-test-results-${{ matrix.os }}-${{ github.run_number }}
+          path: logs/deployment-command-test-*.log
+          retention-days: 7
+
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Check for sensitive information in docs
+        run: |
+          echo "🔍 Checking for sensitive information in documentation..."
+          
+          # Check for potential secrets or sensitive data
+          if grep -r -i "password\|secret\|key\|token" docs/deployments/ --include="*.md" | grep -v "your-" | grep -v "example" | grep -v "placeholder"; then
+            echo "❌ Potential sensitive information found in documentation"
+            exit 1
+          fi
+          
+          # Check for hardcoded IPs (except localhost/examples)
+          if grep -r -E "[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}" docs/deployments/ --include="*.md" | grep -v "127.0.0.1" | grep -v "0.0.0.0" | grep -v "localhost" | grep -v "example"; then
+            echo "⚠️ Hardcoded IP addresses found - consider using placeholders"
+          fi
+          
+          echo "✅ Security check completed"
+
+  link-check:
+    name: External Link Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Check external links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'yes'
+          config-file: '.github/mlc_config.json'
+          folder-path: 'docs/deployments'
+          
+  summary:
+    name: Validation Summary
+    runs-on: ubuntu-latest
+    needs: [validate-docs, validate-commands, security-check]
+    if: always()
+    
+    steps:
+      - name: Generate summary
+        run: |
+          echo "## 📊 Deployment Documentation Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check job results
+          docs_result="${{ needs.validate-docs.result }}"
+          commands_result="${{ needs.validate-commands.result }}"
+          security_result="${{ needs.security-check.result }}"
+          
+          echo "### Job Results:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Documentation Validation:** $docs_result" >> $GITHUB_STEP_SUMMARY
+          echo "- **Command Testing:** $commands_result" >> $GITHUB_STEP_SUMMARY
+          echo "- **Security Check:** $security_result" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Overall status
+          if [[ "$docs_result" == "success" && "$security_result" == "success" ]]; then
+            echo "### ✅ Overall Status: PASSED" >> $GITHUB_STEP_SUMMARY
+            echo "All critical validations completed successfully." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Overall Status: FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "Some validations failed. Please review the job details." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Validation Coverage:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Internal link validation" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Configuration file validation" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Documentation structure validation" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Command syntax validation" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Cross-platform command testing" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Security scanning" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Artifacts:" >> $GITHUB_STEP_SUMMARY
+          echo "- Validation results and logs are available in the workflow artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- Download artifacts to view detailed validation reports" >> $GITHUB_STEP_SUMMARY

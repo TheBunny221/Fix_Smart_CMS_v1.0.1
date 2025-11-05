@@ -37,6 +37,7 @@ import {
   validateWard,
   validateSubZone,
   validateMongoId,
+  validateWardId,
   sanitizeInputs
 } from "../middleware/validation.js";
 
@@ -140,11 +141,11 @@ router.route("/wards").post(validateWard, createWard);
 router.route("/wards/:id").put(validateMongoId, validateWard, updateWard).delete(validateMongoId, deleteWard);
 
 // Sub-zone management (admin only)
-router.route("/wards/:wardId/subzones").post(validateMongoId, validateSubZone, createSubZone);
+router.route("/wards/:wardId/subzones").post(validateWardId, validateSubZone, createSubZone);
 
 router
   .route("/wards/:wardId/subzones/:id")
-  .put(validateMongoId, validateSubZone, updateSubZone)
-  .delete(validateMongoId, deleteSubZone);
+  .put(validateWardId, validateMongoId, validateSubZone, updateSubZone)
+  .delete(validateWardId, validateMongoId, deleteSubZone);
 
 export default router;

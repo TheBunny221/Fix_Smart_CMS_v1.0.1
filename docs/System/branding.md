@@ -8,21 +8,25 @@ The application supports dynamic logo management, allowing administrators to upl
 
 ## How to Update the Application Logo
 
-1. **Navigate to System Settings → Application Branding**
+1. **Navigate to System Settings → Application Settings**
    - Log in as an administrator
    - Go to System Settings from the admin menu
-   - Expand the "Application Branding" section
+   - Expand the "Application Settings" section
+   - Find the "Logo URL" setting
 
 2. **Upload your logo image**
-   - Click "Choose Files" to select your logo
+   - In the Logo URL setting, you'll see the current logo preview
+   - Click "Choose Files" to select your new logo
    - Supported formats: PNG, JPG, SVG
    - Maximum file size: 2MB
    - The system will show a preview of your selected logo
 
 3. **Apply the changes**
-   - Click "Upload Logo" to apply the new logo
+   - Click "Upload" to upload the new logo
    - The uploaded logo replaces the existing `/uploads/logo.png` file
+   - The Logo URL field is automatically updated
    - The new logo is used across all modules automatically
+   - Save your changes to make them permanent
 
 ## Technical Details
 
