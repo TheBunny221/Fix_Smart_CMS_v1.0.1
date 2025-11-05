@@ -8,6 +8,7 @@ This section contains comprehensive documentation for system configuration, envi
 - [**System Configuration Overview**](system_config_overview.md) - Complete guide to system configuration keys and management
 - [**System Seed Initialization Update (v1.0.4)**](system-seed-initialization-update.md) - Release-ready seed coverage for configs, wards, and complaint types
 - [**Environment Management**](env_management.md) - Environment file management and validation procedures
+- [**PM2 Ecosystem & Environment Strategy**](pm2-environment-strategy.md) - Multi-environment PM2 orchestration and env separation guidance
 - [**Branding Configuration**](branding.md) - Application logo and branding management
 
 ### Security & Standards
