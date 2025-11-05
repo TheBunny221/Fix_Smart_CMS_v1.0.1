@@ -93,8 +93,9 @@ open http://localhost:4005
 - **Reverse Proxy**: Nginx with SSL support (optional)
 - **Development Tools**: Hot reload, email testing, Redis cache
 
-📖 **Complete Docker Guide**: [Docker Deployment Documentation](./documents/deployment/DOCKER_DEPLOYMENT.md)##
- 🛠️ Technology Stack
+📖 **Deployment Playbooks**: [Deployment Documentation Index](./docs/deployments/README.md) – Linux, Windows, and build-only runbooks with Docker quick starts.
+
+## 🛠️ Technology Stack
 
 ### Frontend Architecture
 - **React 18.3.1** - Modern React with concurrent features and TypeScript
@@ -838,25 +839,27 @@ test(api): add integration tests for complaint endpoints
 ### Complete Documentation
 
 **Setup & Deployment**:
-- 📖 [Deployment Guide](./documents/deployment/README.md) - Production deployment instructions
-- 🔧 [Database Setup](./documents/database/README.md) - Database configuration guide
-- ⚙️ [Environment Configuration](./documents/system/README.md) - Environment setup
+- 📖 [Deployment Documentation Index](./docs/deployments/README.md) - Linux, Windows, and build-only deployment runbooks.
+- 🚀 [Deployment Department Hub](./docs/Deployment/README.md) - Reverse proxy, automation, and environment orchestration guides.
+- 🗂️ [Configuration Reference](./docs/deployments/file-references.md) - Explanation of `.env`, PM2, and web server assets used during rollout.
+- 🧾 [System Seed Initialization Update (v1.0.4)](./docs/System/system-seed-initialization-update.md) - Seed coverage for configuration keys, wards, and complaint types.
+- 🔄 [PM2 Ecosystem & Environment Strategy](./docs/System/pm2-environment-strategy.md) - Environment separation and process management for Urban-voice deployments.
 
 **Feature Documentation**:
-- 👥 [Guest Complaint System](./documents/developer/README.md) - Anonymous user features
-- 🔄 [Redux Toolkit Migration](./documents/developer/STATE_MANAGEMENT.md) - State management guide
-- 🏗️ [Architecture Overview](./documents/architecture/README.md) - System architecture details
-- 📊 [API Reference](./documents/developer/API_REFERENCE.md) - Complete API documentation
+- 👨‍💻 [Developer Documentation Hub](./docs/Developer/README.md) - Architecture, coding standards, and implementation references.
+- 🏗️ [Architecture Overview](./docs/architecture/README.md) - System architecture and component relationships.
+- 📜 [API Contracts](./docs/Developer/api_contracts.md) - REST interface definitions and integration notes.
+- 🌐 [Environment Management](./docs/System/env_management.md) - Environment variable cloning, validation, and secrets handling.
 
 **Quality Assurance**:
-- ✅ [QA Test Results](./documents/deployment/QA_VALIDATION_CHECKLIST.md) - Comprehensive testing results
-- 🔍 [Code Audit Report](./documents/misc/README.md) - Security and quality audit
-- 📋 [Project Overview](./documents/README.md) - High-level project summary
+- 🧪 [QA Portal](./docs/QA/README.md) - Testing standards and validation workflows.
+- ✅ [Release Validation Checklist](./docs/QA/release_validation.md) - Pre-release verification steps.
+- 🔄 [Integration Checklist](./docs/QA/integration_checklist.md) - Cross-team deployment readiness review.
 
 ### Getting Support
 
 **Development Support**:
-- 📖 Check comprehensive documentation in `/documents` directory
+- 📖 Check comprehensive documentation in `/docs` directory
 - 🔍 Review existing GitHub issues and discussions
 - 📊 Consult API documentation at `/api-docs` endpoint
 - 🧪 Review QA test results for known issues
@@ -952,22 +955,22 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 📚 Documentation Index
 
 ### Core Documentation
-- [🏗️ Architecture Overview](./documents/architecture/README.md) - System design and technical architecture
-- [🗄️ Database Design](./documents/database/README.md) - Schema, migrations, and data management
-- [🚀 Deployment Guide](./documents/deployment/README.md) - Production deployment and configuration
-- [👨‍💻 Developer Guide](./documents/developer/README.md) - Development setup and coding standards
+- [🏗️ Architecture Overview](./docs/architecture/README.md) - System design and component topology.
+- [🗄️ Database Design](./docs/Database/README.md) - Schema management, migrations, and performance tuning.
+- [🚀 Deployment Playbooks](./docs/deployments/README.md) - OS-specific and build-only deployment guidance.
+- [👨‍💻 Developer Guide](./docs/Developer/README.md) - Coding standards, API contracts, and implementation notes.
 
 ### Operational Documentation
-- [⚙️ System Configuration](./documents/system/README.md) - Configuration management and settings
-- [📋 Onboarding Guide](./documents/onboarding/README.md) - User onboarding and training materials
-- [📝 Release Notes](./documents/release/README.md) - Version history and changelog
-- [🔧 Troubleshooting](./documents/troubleshooting/README.md) - Common issues and solutions
+- [⚙️ System Configuration](./docs/System/README.md) - Environment, security, and operations runbooks.
+- [📋 Onboarding Guide](./docs/Onboarding/README.md) - New team setup and tooling references.
+- [🧪 QA Handbook](./docs/QA/README.md) - Testing processes, checklists, and validation flows.
+- [📝 Version History](./docs/legacy-doc/documents-release/VERSION_HISTORY.md) - Historical release notes and changelog.
 
 ### Additional Resources
-- [📊 API Reference](./documents/developer/API_REFERENCE.md) - Complete API documentation
-- [🔒 Security Guide](./documents/system/SECURITY_AND_AUTHENTICATION.md) - Security best practices
-- [📧 Email Configuration](./documents/developer/EMAIL_BROADCASTER.md) - Email service setup
-- [🧪 Testing Guide](./documents/developer/README.md#testing) - Testing strategies and tools
+- [🗂️ Deployment File Reference](./docs/deployments/file-references.md) - Configuration assets used across environments.
+- [🧾 System Seed Initialization Update](./docs/System/system-seed-initialization-update.md) - Seed data coverage for v1.0.4.
+- [🔄 PM2 Ecosystem & Environment Strategy](./docs/System/pm2-environment-strategy.md) - Multi-environment PM2 topology.
+- [🌐 Environment Management](./docs/System/env_management.md) - Environment variable templates and validation.
 
 ---
 
